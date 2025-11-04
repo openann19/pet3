@@ -6,7 +6,7 @@ interface UseTypingIndicatorOptions {
 
 export function useTypingIndicator({ timeout = 1000 }: UseTypingIndicatorOptions = {}) {
   const [isTyping, setIsTyping] = useState(false)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimeoutRef = useRef<number | null>(null)
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | string) => {
     const value = typeof e === 'string' ? e : e.target.value

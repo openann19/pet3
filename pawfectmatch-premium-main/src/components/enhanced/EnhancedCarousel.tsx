@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence, PanInfo } from 'framer-motion'
+import type { PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -28,7 +29,7 @@ export function EnhancedCarousel({
 }: EnhancedCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState<'left' | 'right'>('right')
-  const autoPlayRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const autoPlayRef = useRef<number | undefined>(undefined)
 
   const itemCount = items.length
 

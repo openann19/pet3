@@ -41,9 +41,9 @@ export class WebSocketManager {
   private reconnectInterval: number
   private heartbeatInterval: number
   private messageTimeout: number
-  private heartbeatTimer?: NodeJS.Timeout
-  private reconnectTimer?: NodeJS.Timeout
-  private pendingAcknowledgments: Map<string, NodeJS.Timeout> = new Map()
+  private heartbeatTimer?: number
+  private reconnectTimer?: number
+  private pendingAcknowledgments: Map<string, number> = new Map()
 
   constructor(options: WebSocketManagerOptions) {
     this.url = options.url

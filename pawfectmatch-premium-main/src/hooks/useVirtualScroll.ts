@@ -33,7 +33,7 @@ export function useVirtualScroll<T>(
   const [scrollTop, setScrollTop] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const scrollTimeoutRef = useRef<number | undefined>(undefined)
 
   const totalHeight = items.length * itemHeight
 
