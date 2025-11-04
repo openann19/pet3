@@ -110,7 +110,7 @@ export class DatabaseService {
       ...collection[index],
       ...updates,
       updatedAt: new Date().toISOString(),
-    }
+    } as T
 
     collection[index] = updatedRecord
     await this.setCollection(collectionName, collection)

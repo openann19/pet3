@@ -18,6 +18,9 @@ declare global {
       delete: (key: string) => Promise<void>
       keys: () => Promise<string[]>
     }
+    llmPrompt?: unknown
+    llm?: unknown
+    user?: unknown
   }
 }
 
@@ -41,7 +44,7 @@ const kv = {
 }
 
 beforeAll(() => {
-  globalThis.spark = { kv } as typeof globalThis.spark
+  globalThis.spark = { kv, llmPrompt: undefined, llm: undefined, user: undefined } as unknown as typeof globalThis.spark
 })
 
 beforeEach(() => {
@@ -124,7 +127,11 @@ describe('LostFoundAPI.createSighting', () => {
     expect(alerts[0]?.sightingsCount).toBe(1)
 
     expect(notificationsService.notifyNewSighting).toHaveBeenCalledTimes(1)
-    const [sightingArg, alertArg] = vi.mocked(notificationsService.notifyNewSighting).mock.calls[0]
+    const callArgs = vi.mocked(notificationsService.notifyNewSighting).mock.calls[0]
+    if (!callArgs) {
+      throw new Error('Expected notifyNewSighting to be called')
+    }
+    const [sightingArg, alertArg] = callArgs
     expect(sightingArg).toMatchObject({ alertId: baseSightingInput.alertId })
     expect(alertArg.id).toBe(baseAlert.id)
   })

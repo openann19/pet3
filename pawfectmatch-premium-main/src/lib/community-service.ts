@@ -54,11 +54,13 @@ export const communityService = {
           tags.some(tag => followedTags.includes(tag))
       })
     } else {
-      filteredPosts = await rankFeedPosts(filteredPosts, userId, options.lat, options.lng)
+      const lat = options.lat
+      const lng = options.lng
+      filteredPosts = await rankFeedPosts(filteredPosts, userId, lat, lng)
     }
     
-    const limit = options.limit || 20
-    const cursorIndex = options.cursor ? parseInt(options.cursor) : 0
+    const limit = options.limit ?? 20
+    const cursorIndex = options.cursor ? parseInt(options.cursor, 10) : 0
     const paginatedPosts = filteredPosts.slice(cursorIndex, cursorIndex + limit)
     const hasMore = cursorIndex + limit < filteredPosts.length
     
@@ -150,12 +152,13 @@ export const communityService = {
     }
     
     const newReaction: Reaction = {
+      id: generateULID(),
       _id: generateULID(),
       postId,
       userId: user.id,
       userName: user.login,
       userAvatar: user.avatarUrl,
-      type: 'like',
+      emoji: '❤️',
       createdAt: new Date().toISOString()
     }
     
@@ -229,6 +232,7 @@ export const communityService = {
     const posts = safeParseCommunityPosts(await spark.kv.get<unknown>(POSTS_KEY))
     
     const newComment: Comment = {
+      id: generateULID(),
       _id: generateULID(),
       postId,
       authorId: user.id,
@@ -439,6 +443,7 @@ export const communityService = {
     const reports = isReportArray(reportsData) ? reportsData : []
     
     const newReport: Report = {
+      id: generateULID(),
       _id: generateULID(),
       targetType,
       targetId,
@@ -459,9 +464,10 @@ export const communityService = {
   async saveDraft(draft: Partial<PostDraft>): Promise<PostDraft> {
     const draftsData = await spark.kv.get<unknown>(DRAFTS_KEY)
     const drafts = isPostDraftArray(draftsData) ? draftsData : []
-    const _user = await spark.user()
     
     const existingIndex = drafts.findIndex(d => d.id === draft.id)
+    
+    const existingDraft = existingIndex !== -1 ? drafts[existingIndex] : undefined
     
     const updatedDraft: PostDraft = {
       id: draft.id || generateULID(),
@@ -472,7 +478,7 @@ export const communityService = {
       location: draft.location,
       tags: draft.tags || [],
       visibility: draft.visibility || 'public',
-      createdAt: existingIndex !== -1 ? drafts[existingIndex].createdAt : new Date().toISOString(),
+      createdAt: existingDraft?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
     
@@ -519,7 +525,10 @@ export const communityService = {
       notifications[data.receiverId] = []
     }
     
-    notifications[data.receiverId].unshift(newNotification)
+    const receiverNotifications = notifications[data.receiverId]
+    if (receiverNotifications) {
+      receiverNotifications.unshift(newNotification)
+    }
     await spark.kv.set(NOTIFICATIONS_KEY, notifications)
   },
 

@@ -179,7 +179,7 @@ export default function CommunityView() {
       // Filter posts by follow relationships if "following" tab is selected
       let filteredPosts = response.posts
       if (feedTab === 'following') {
-        filteredPosts = await filterPostsByFollows(response.posts, user.id)
+        filteredPosts = await filterPostsByFollows<Post>(response.posts, user.id)
       }
       
       if (loadMore) {

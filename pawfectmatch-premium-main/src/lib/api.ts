@@ -21,14 +21,14 @@ export class APIClient {
     const correlationId = generateCorrelationId()
     const url = `${this.baseURL}${endpoint}`
 
-    const headers: Record<string, string> = {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'X-Correlation-ID': correlationId,
       ...(options.headers as Record<string, string>)
     }
 
     if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`
     }
 
     try {

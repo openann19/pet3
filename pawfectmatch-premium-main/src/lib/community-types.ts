@@ -75,6 +75,7 @@ export interface Comment {
 
 export interface Reaction {
   id: string
+  _id?: string // Alias for compatibility
   postId: string
   userId: string
   userName: string
@@ -195,6 +196,8 @@ export interface Follow {
 export type ReportReason = 'spam' | 'harassment' | 'inappropriate' | 'misleading' | 'violence' | 'hate-speech' | 'copyright' | 'other'
 
 export interface Report {
+  id?: string
+  _id?: string // Alias for compatibility
   targetType: 'post' | 'comment' | 'user'
   targetId: string
   reporterId: string
@@ -202,14 +205,21 @@ export interface Report {
   reasons: ReportReason[]
   createdAt: string
   state: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
+  description?: string
 }
 
 export interface PostDraft {
   id: string
   text: string
   media: string[]
+  video?: string
   petIds: string[]
   tags: string[]
+  location?: {
+    lat: number
+    lng: number
+    address?: string
+  }
   visibility: PostVisibility
   createdAt: string
   updatedAt: string
@@ -226,8 +236,10 @@ export interface CommunityNotification {
   type: 'like' | 'comment' | 'reply' | 'follow' | 'mention' | 'moderation'
   actorId: string
   actorName: string
+  actorAvatar?: string
   targetId: string
   targetType: 'post' | 'comment' | 'user'
+  content?: string
   createdAt: string
   read: boolean
 }

@@ -49,3 +49,18 @@ See `src/api/types.ts` for type definitions using `OptionalWithUndef<T>`.
 - `adoption-api-strict.ts` - Example strict implementation
 - `README.md` - This file
 
+STRICT MODE – NON-NEGOTIABLE
+
+You must:
+1) Write code + tests + types simultaneously. No stubs, no “TODO”, no broad “any”.
+2) Run the local strict pipeline and reach 100% pass before proposing code.
+3) If a gate fails, self-repair and re-run until green. Do not ask for approval with failing gates.
+4) Output: PR with diff, passing CI, coverage report, and short design notes.
+
+Definition of Done (all must be green):
+- Type safety: tsc --noEmit
+- Lint: eslint (errors only), stylelint
+- Tests: vitest with coverage >= 95% statements/branches/functions/lines
+- Security & quality: semgrep ruleset, depcheck, ts-prune
+- Hygiene: forbid reserved words (TODO, FIXME, HACK, SIMPLE)
+- Bundle/size: size-limit thresholds respected

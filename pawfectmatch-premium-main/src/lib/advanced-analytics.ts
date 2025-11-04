@@ -314,8 +314,8 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
   const viewedPets = userEvents
     .filter(e => e.name === 'pet_viewed')
     .map(e => e.properties.petId)
-    .filter((petId): petId is string => typeof petId === 'string')
-  const mostViewedPets = Array.from(new Set(viewedPets)).slice(0, 10)
+    .filter((petId): petId is string => typeof petId === 'string') as string[]
+  const mostViewedPets: string[] = Array.from(new Set(viewedPets)).slice(0, 10)
 
   const matches = userEvents.filter(e => e.name === 'match_created').length
   const likes = userEvents.filter(e => e.name === 'pet_liked').length
