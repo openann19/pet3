@@ -79,7 +79,7 @@ export const getCurrentLocation = (): Promise<Location> => {
         });
       },
       (error) => {
-        reject(error);
+        reject(new Error(error.message));
       },
       {
         enableHighAccuracy: false,

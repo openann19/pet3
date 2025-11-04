@@ -126,7 +126,7 @@ export class WebSocketManager {
   private sendMessage(message: WebSocketMessage): void {
     logger.debug('Sending message', { messageId: message.id, event: message.event, namespace: message.namespace })
 
-    const timeoutTimer = setTimeout(() => {
+    const timeoutTimer = window.setTimeout(() => {
       logger.warn('Message timeout', { messageId: message.id, event: message.event })
       this.emit('message_timeout', { messageId: message.id, event: message.event })
       this.handleMessageFailure(message)
@@ -190,7 +190,7 @@ export class WebSocketManager {
 
   private startHeartbeat(): void {
     this.stopHeartbeat()
-    this.heartbeatTimer = setInterval(() => {
+    this.heartbeatTimer = window.setInterval(() => {
       if (this.state === 'connected') {
         logger.debug('Sending heartbeat')
         this.send('/notifications', 'heartbeat', { timestamp: Date.now() })
@@ -222,7 +222,7 @@ export class WebSocketManager {
 
     logger.info('Reconnecting', { backoffDelay, attempt: this.reconnectAttempts })
     
-    this.reconnectTimer = setTimeout(() => {
+    this.reconnectTimer = window.setTimeout(() => {
       logger.info('Attempting reconnection')
       this.connect('reconnect-token')
     }, backoffDelay)

@@ -70,7 +70,7 @@ export function EnhancedCarousel({
 
   useEffect(() => {
     if (autoPlay) {
-      autoPlayRef.current = setInterval(() => {
+      autoPlayRef.current = window.setInterval(() => {
         goToNext()
       }, autoPlayInterval)
 
@@ -86,7 +86,7 @@ export function EnhancedCarousel({
   const resetAutoPlay = () => {
     if (autoPlay && autoPlayRef.current) {
       clearInterval(autoPlayRef.current)
-      autoPlayRef.current = setInterval(() => {
+      autoPlayRef.current = window.setInterval(() => {
         goToNext()
       }, autoPlayInterval)
     }

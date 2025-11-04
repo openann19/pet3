@@ -90,7 +90,7 @@ export function useLongPress(
   const start = useCallback(() => {
     setIsPressed(true)
     onStart?.()
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       callback()
       setIsPressed(false)
     }, delay)
@@ -125,7 +125,7 @@ export function useIdleDetection(
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    timeoutRef.current = setTimeout(callback, timeout)
+    timeoutRef.current = window.setTimeout(callback, timeout)
   }, [callback, timeout])
 
   useEffect(() => {

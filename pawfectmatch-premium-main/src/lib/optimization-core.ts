@@ -231,7 +231,7 @@ export function batchSync<T>(
     }
 
     if (timeoutId === null) {
-      timeoutId = setTimeout(flush, maxWait)
+      timeoutId = window.setTimeout(flush, maxWait) as unknown as number
     }
   }
 }

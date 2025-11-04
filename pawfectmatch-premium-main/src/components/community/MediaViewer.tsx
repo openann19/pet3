@@ -94,7 +94,7 @@ export function MediaViewer({
       clearTimeout(controlsTimeoutRef.current)
     }
     setShowVideoControls(true)
-    controlsTimeoutRef.current = setTimeout(() => {
+    controlsTimeoutRef.current = window.setTimeout(() => {
       if (isPlaying) {
         setShowVideoControls(false)
       }

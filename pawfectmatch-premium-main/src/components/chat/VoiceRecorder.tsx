@@ -69,7 +69,7 @@ export default function VoiceRecorder({
       mediaRecorder.start()
       visualize()
 
-      timerRef.current = setInterval(() => {
+      timerRef.current = window.setInterval(() => {
         setDuration(prev => {
           if (prev >= maxDuration) {
             handleStopAndSend()

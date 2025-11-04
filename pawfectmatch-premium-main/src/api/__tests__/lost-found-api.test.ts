@@ -18,14 +18,16 @@ vi.mock('@/lib/notifications-service', () => ({
 const kvStore: KVStore = new Map()
 
 const kv = {
-  get: vi.fn(async <T>(key: string): Promise<T | undefined> => kvStore.get(key) as T | undefined),
-  set: vi.fn(async <T>(key: string, value: T): Promise<void> => {
+  get: vi.fn(<T>(key: string): Promise<T | undefined> => Promise.resolve(kvStore.get(key) as T | undefined)),
+  set: vi.fn(<T>(key: string, value: T): Promise<void> => {
     kvStore.set(key, value)
+    return Promise.resolve()
   }),
-  delete: vi.fn(async (key: string): Promise<void> => {
+  delete: vi.fn((key: string): Promise<void> => {
     kvStore.delete(key)
+    return Promise.resolve()
   }),
-  keys: vi.fn(async (): Promise<string[]> => Array.from(kvStore.keys())),
+  keys: vi.fn((): Promise<string[]> => Promise.resolve(Array.from(kvStore.keys()))),
 }
 
 beforeAll(() => {

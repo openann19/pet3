@@ -81,7 +81,6 @@ export function useBubbleCompressionOnSpeed(
     }
   }, [messageRate, enabled, compressionThreshold, maxCompression, scaleY, marginBottom])
 
-  // @ts-expect-error - react-native-reanimated types don't support web-specific transform properties
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scaleY: scaleY.value }],

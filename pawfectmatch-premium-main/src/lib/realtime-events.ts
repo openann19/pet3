@@ -57,7 +57,7 @@ export class RealtimeEvents {
     const messageId = this.wsManager.send(namespace, event, data)
     
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
+      const timeout = window.setTimeout(() => {
         this.pendingAcks.delete(messageId)
         reject(new Error(`Event acknowledgment timeout: ${event}`))
       }, this.ackTimeout)

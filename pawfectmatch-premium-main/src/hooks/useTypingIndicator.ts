@@ -19,7 +19,7 @@ export function useTypingIndicator({ timeout = 1000 }: UseTypingIndicatorOptions
       clearTimeout(typingTimeoutRef.current)
     }
 
-    typingTimeoutRef.current = setTimeout(() => {
+    typingTimeoutRef.current = window.setTimeout(() => {
       setIsTyping(false)
     }, timeout)
 

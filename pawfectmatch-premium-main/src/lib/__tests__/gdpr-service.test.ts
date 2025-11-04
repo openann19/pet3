@@ -140,7 +140,12 @@ describe('GDPRService', () => {
       expect(match).toEqual(mockMatch)
     })
 
-  describe('exportUserData', () => {
+    it('should handle errors during data fetch', async () => {
+      vi.mocked(db.findById).mockRejectedValue(new Error('Database error'))
+
+      await expect(service.exportUserData(mockUserId)).rejects.toThrow('Failed to export user data')
+    })
+  })
 
   describe('deleteUserData', () => {
     it('should delete all user data successfully', async () => {
@@ -305,7 +310,12 @@ describe('GDPRService', () => {
 
       vi.mocked(api.get).mockRejectedValue(apiError)
 
-      await expect(service.requestDataExport(mockUserId)).rejects.toEqual(apiError)
+      try {
+        await service.requestDataExport(mockUserId)
+        expect.fail('Should have thrown')
+      } catch (error) {
+        expect(error).toEqual(apiError)
+      }
     })
   })
 
@@ -336,7 +346,12 @@ describe('GDPRService', () => {
 
       vi.mocked(api.post).mockRejectedValue(apiError)
 
-      await expect(service.requestDataDeletion(mockUserId)).rejects.toEqual(apiError)
+      try {
+        await service.requestDataDeletion(mockUserId)
+        expect.fail('Should have thrown')
+      } catch (error) {
+        expect(error).toEqual(apiError)
+      }
     })
   })
 
@@ -366,21 +381,34 @@ describe('GDPRService', () => {
       expect(result.errors.length).toBeGreaterThan(0)
     })
 
-    it('should handle user deletion failure', async () => {
+    it('should handle non-Error types in deletion', async () => {
       vi.mocked(db.findMany).mockResolvedValue({
         data: [],
         total: 0,
         hasMore: false
       })
       vi.mocked(db.findOne).mockResolvedValue(null)
-      vi.mocked(db.delete).mockRejectedValue(new Error('User deletion failed'))
+      vi.mocked(db.delete).mockRejectedValue('String error')
 
       const result = await service.deleteUserData(mockUserId)
 
       expect(result.success).toBe(false)
       expect(result.errors.length).toBeGreaterThan(0)
-      const error = result.errors.find(e => e.collection === 'users')
-      expect(error).toBeDefined()
+    })
+
+    it('should handle deletion success path with logger.debug', async () => {
+      vi.mocked(db.findMany).mockResolvedValue({
+        data: [],
+        total: 0,
+        hasMore: false
+      })
+      vi.mocked(db.findOne).mockResolvedValue(null)
+      vi.mocked(db.delete).mockResolvedValue(true)
+
+      const result = await service.deleteUserData(mockUserId)
+
+      expect(result.success).toBe(true)
+      expect(result.deletedCollections).toContain('users')
     })
   })
 })

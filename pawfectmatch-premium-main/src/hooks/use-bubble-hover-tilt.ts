@@ -66,7 +66,6 @@ export function useBubbleHoverTilt(
     glowOpacity.value = withSpring(0, springConfigs.smooth)
   }, [enabled, tiltX, tiltY, lift, glowOpacity])
 
-  // @ts-expect-error - react-native-reanimated types don't support web-specific transform properties
   const animatedStyle = useAnimatedStyle(() => {
     const shadowRadius = interpolate(
       glowOpacity.value,
@@ -85,7 +84,6 @@ export function useBubbleHoverTilt(
     }
   })
 
-  // @ts-expect-error - react-native-reanimated types don't support web-specific transform properties
   const glowStyle = useAnimatedStyle(() => {
     return {
       opacity: glowOpacity.value,

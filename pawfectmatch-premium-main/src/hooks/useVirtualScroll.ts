@@ -66,7 +66,7 @@ export function useVirtualScroll<T>(
       clearTimeout(scrollTimeoutRef.current)
     }
 
-    scrollTimeoutRef.current = setTimeout(() => {
+    scrollTimeoutRef.current = window.setTimeout(() => {
       setIsScrolling(false)
     }, 150)
 

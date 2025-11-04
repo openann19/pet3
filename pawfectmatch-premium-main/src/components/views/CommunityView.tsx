@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Plus, Sparkle, Fire, TrendUp, Heart, PawPrint, ArrowsClockwise } from '@phosphor-icons/react'
+import { Plus, Sparkle, Fire, TrendUp, Heart, PawPrint, ArrowsClockwise, MapPin } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { PostCard } from '@/components/community/PostCard'
@@ -50,7 +50,7 @@ function mapEnergyLevel(energyLevel: string): 'low' | 'medium' | 'high' {
 
 export default function CommunityView() {
   const { t } = useApp()
-  const [activeTab, setActiveTab] = useState<'feed' | 'adoption'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'adoption' | 'lost-found'>('feed')
   const [feedTab, setFeedTab] = useState<'for-you' | 'following'>('for-you')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -474,14 +474,18 @@ export default function CommunityView() {
         transition={{ delay: 0.1 }}
       >
         <Tabs value={activeTab} onValueChange={handleMainTabChange}>
-          <TabsList className="grid w-full grid-cols-2 bg-card shadow-md">
+          <TabsList className="grid w-full grid-cols-3 bg-card shadow-md">
             <TabsTrigger value="feed" className="gap-2">
-              <Fire size={18} weight={activeTab === 'feed' ? 'fill' : 'regular'} />
+              <Fire size={18} weight={activeTab === 'feed' ? 'fill' : 'regular'} />                                                                             
               {t.community?.feed || 'Feed'}
             </TabsTrigger>
             <TabsTrigger value="adoption" className="gap-2">
-              <Heart size={18} weight={activeTab === 'adoption' ? 'fill' : 'regular'} />
+              <Heart size={18} weight={activeTab === 'adoption' ? 'fill' : 'regular'} />                                                                        
               {t.adoption?.title || 'Adoption'}
+            </TabsTrigger>
+            <TabsTrigger value="lost-found" className="gap-2">
+              <MapPin size={18} weight={activeTab === 'lost-found' ? 'fill' : 'regular'} />                                                                        
+              {t.map?.lostAndFound || 'Lost & Found'}
             </TabsTrigger>
           </TabsList>
 

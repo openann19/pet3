@@ -86,7 +86,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     await step('4. Create Pet Profile', async () => {
       const pet = {
         id: generateULID(),
-        ownerId: (await authService.getCurrentUser())?.id || '',
+        ownerId: authService.getCurrentUser()?.id || '',
         name: 'Demo Pet',
         species: 'dog' as const,
         breed: 'Golden Retriever',
@@ -114,7 +114,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('5. Discover Pets', async () => {
-      const currentUser = await authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser()
       if (!currentUser) {
         throw new Error('No current user')
       }
@@ -137,7 +137,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('6. Like a Pet', async () => {
-      const currentUser = await authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser()
       if (!currentUser) {
         throw new Error('No current user')
       }
