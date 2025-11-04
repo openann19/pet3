@@ -48,7 +48,7 @@ export function SmartToast({
   title,
   description,
   action,
-  duration = 5000,
+  duration: _duration = 5000,
   onDismiss,
   position = 'top',
 }: SmartToastProps) {
@@ -65,7 +65,7 @@ export function SmartToast({
         colors[type]
       )}
     >
-      <Icon className={cn('flex-shrink-0 mt-0.5', iconColors[type])} size={20} weight="fill" />
+      <Icon className={cn('shrink-0 mt-0.5', iconColors[type])} size={20} weight="fill" />
       
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-sm mb-1">{title}</div>
@@ -89,7 +89,7 @@ export function SmartToast({
 
       <button
         onClick={() => onDismiss(id)}
-        className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+        className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"
         aria-label="Dismiss notification"
       >
         <X size={16} />

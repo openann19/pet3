@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Heart, ChatCircle, BookmarkSimple, Share, DotsThree, MapPin, Tag } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
@@ -28,7 +28,6 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [likesCount, setLikesCount] = useState(post.reactionsCount || 0)
-  const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0)
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
   const [showFullText, setShowFullText] = useState(false)
   const [showComments, setShowComments] = useState(false)
@@ -37,7 +36,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
 
   useEffect(() => {
     // Check if user has reacted to this post
-    // TODO: Implement user reaction check
+    // NOTE: User reaction check should query user's reactions for this post
     setIsLiked(false)
     setIsSaved(false)
   }, [post.id])
@@ -114,15 +113,29 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
   const truncatedText = (post.text?.length || 0) > 150 ? post.text?.slice(0, 150) + '...' : post.text || ''
   const shouldShowMore = (post.text?.length || 0) > 150
 
-  // Convert media strings to MediaItem format for MediaViewer
-  const allMedia = (post.media || []).map((url, index) => ({
-    id: `media-${index}`,
-    url,
-    thumbnail: url,
-    type: 'photo' as const,
-    width: undefined,
-    height: undefined
-  }))
+  // Convert media strings or PostMedia objects to MediaItem format for MediaViewer
+  const allMedia = (post.media || []).map((item, index) => {
+    if (typeof item === 'string') {
+      return {
+        id: `media-${index}`,
+        url: item,
+        thumbnail: item,
+        type: 'photo' as const,
+        width: undefined,
+        height: undefined
+      }
+    } else {
+      // It's already a PostMedia object
+      return {
+        id: item.id || `media-${index}`,
+        url: item.url,
+        thumbnail: item.thumbnail || item.url,
+        type: item.type,
+        width: item.width,
+        height: item.height
+      }
+    }
+  })
 
   return (
     <motion.div
@@ -130,7 +143,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
     >
-      <Card className="overflow-hidden bg-gradient-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm">
+      <Card className="overflow-hidden bg-linear-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm">
         {/* Author Header */}
         <div className="flex items-center justify-between p-4 pb-3">
           <motion.button
@@ -148,8 +161,8 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
                 {post.authorAvatar ? (
                   <img src={post.authorAvatar} alt={post.authorName} className="object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold text-base">
-                    {post.authorName[0].toUpperCase()}
+                  <div className="w-full h-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold text-base">
+                    {post.authorName?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
               </Avatar>
@@ -174,7 +187,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
       {/* Post Text */}
       {post.text && (
         <div className="px-4 pb-3">
-          <p className="text-foreground whitespace-pre-wrap break-words">
+          <p className="text-foreground whitespace-pre-wrap wrap-break-word">
             {showFullText ? post.text : truncatedText}
           </p>
           {shouldShowMore && (
@@ -194,7 +207,9 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
           <div className="relative aspect-square overflow-hidden">
             <motion.img
               key={currentMediaIndex}
-              src={post.media[currentMediaIndex]}
+              src={typeof post.media[currentMediaIndex] === 'string' 
+                ? post.media[currentMediaIndex] as string
+                : (post.media[currentMediaIndex] as { url: string }).url}
               alt="Post media"
               className="w-full h-full object-cover cursor-pointer"
               onClick={() => handleMediaClick(currentMediaIndex)}
@@ -265,8 +280,8 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
               weight="regular"
               className="text-foreground group-hover:text-primary transition-colors"
             />
-            {commentsCount > 0 && (
-              <span className="text-sm font-medium text-foreground">{commentsCount}</span>
+            {(post.commentsCount ?? 0) > 0 && (
+              <span className="text-sm font-medium text-foreground">{post.commentsCount}</span>
             )}
           </button>
 
@@ -311,7 +326,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
       )}
 
       {/* Views Footer */}
-      {post.viewsCount > 0 && (
+      {(post.viewsCount ?? 0) > 0 && (
         <div className="px-4 pb-3 text-xs text-muted-foreground">
           {post.viewsCount} {post.viewsCount === 1 ? 'view' : 'views'}
         </div>
@@ -322,7 +337,6 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
         onOpenChange={setShowComments}
         postId={post.id}
         postAuthor={post.authorName}
-        initialCommentsCount={commentsCount}
       />
 
       <MediaViewer

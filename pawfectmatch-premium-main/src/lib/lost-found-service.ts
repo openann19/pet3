@@ -44,7 +44,7 @@ class LostFoundService {
       ownerName,
       petSummary: data.petSummary,
       lastSeen: data.lastSeen,
-      reward: data.reward,
+      ...(data.reward !== undefined ? { reward: data.reward } : {}),
       rewardCurrency: data.rewardCurrency || 'USD',
       contactMask: data.contactMask,
       photos: data.photos,

@@ -183,7 +183,7 @@ JSON format:
 
         {generatedCount > 0 && (
           <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
-            <Check size={20} weight="bold" className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <Check size={20} weight="bold" className="text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-green-900 dark:text-green-100">
                 Successfully Generated {generatedCount} Pets
@@ -196,7 +196,7 @@ JSON format:
         )}
 
         <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-3">
-          <Warning size={20} weight="fill" className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <Warning size={20} weight="fill" className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div className="text-sm text-blue-900 dark:text-blue-100">
             <p className="font-semibold mb-1">How it works:</p>
             <ul className="list-disc list-inside space-y-1 text-blue-700 dark:text-blue-300">

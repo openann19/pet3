@@ -229,7 +229,7 @@ export function ModerationQueue() {
                           onClick={() => handleTaskClick(task)}
                         >
                           <div className="flex gap-4">
-                            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden shrink-0">
                               {photo?.originalUrl ? (
                                 <img
                                   src={photo.originalUrl}

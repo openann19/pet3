@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import type { TypingUser } from '@/lib/chat-types'
 
 interface TypingIndicatorProps {
@@ -10,7 +10,6 @@ export default function TypingIndicator({ users }: TypingIndicatorProps) {
   if (users.length === 0) return null
 
   const displayUsers = users.slice(0, 3)
-  const remaining = users.length - 3
 
   return (
     <motion.div
@@ -20,11 +19,10 @@ export default function TypingIndicator({ users }: TypingIndicatorProps) {
       className="flex items-center gap-2"
     >
       <div className="flex -space-x-2">
-        {displayUsers.map((user, idx) => (
+        {displayUsers.map((user) => (
           <Avatar key={user.userId} className="w-4 h-4 ring-1 ring-background">
-            <AvatarImage src={user.userAvatar} alt={user.userName} />
             <AvatarFallback className="text-[8px]">
-              {user.userName[0]}
+              {user.userName?.[0] ?? '?'}
             </AvatarFallback>
           </Avatar>
         ))}
@@ -33,10 +31,10 @@ export default function TypingIndicator({ users }: TypingIndicatorProps) {
       <div className="flex items-center gap-1 text-xs text-primary">
         <span>
           {users.length === 1
-            ? `${users[0].userName} is typing`
+            ? `${users[0]?.userName ?? 'Someone'} is typing`
             : users.length === 2
-            ? `${users[0].userName} and ${users[1].userName} are typing`
-            : `${users[0].userName} and ${users.length - 1} others are typing`}
+            ? `${users[0]?.userName ?? 'Someone'} and ${users[1]?.userName ?? 'Someone'} are typing`
+            : `${users[0]?.userName ?? 'Someone'} and ${users.length - 1} others are typing`}
         </span>
         <motion.div className="flex gap-0.5">
           {[0, 1, 2].map((i) => (

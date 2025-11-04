@@ -60,10 +60,10 @@ class Logger {
     const entry: LogEntry = {
       level,
       message,
-      context: this.context || undefined,
-      data,
+      ...(this.context ? { context: this.context } : {}),
+      ...(data !== undefined ? { data } : {}),
       timestamp: new Date().toISOString(),
-      error
+      ...(error ? { error } : {}),
     }
 
     // Execute handlers in parallel

@@ -1,11 +1,10 @@
-import React from "react";
 import { NotificationTabs } from "./NotificationTabs";
 
 export default function NotificationPanel() {
   return (
     <NotificationTabs
       locale={"en"}
-      unread={{ matches: 3, messages: 1 }}
+      unread={{ all: 4, matches: 3, messages: 1 }}
       onTabChange={(from, to) => {
         // Telemetry (replace with your analytics client)
         window.dispatchEvent(new CustomEvent("analytics", { detail: { event: "notification.tab_changed", from, to } }));

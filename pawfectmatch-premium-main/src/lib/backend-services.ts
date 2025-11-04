@@ -6,7 +6,6 @@ const logger = createLogger('BackendServices')
 import type {
   PhotoRecord,
   PhotoStatus,
-  SafetyCheckResult,
   ModerationTask,
   ModerationDecision,
   ModerationAction,
@@ -259,7 +258,6 @@ Return as JSON: {
 
     const now = new Date()
     const today = now.toISOString().split('T')[0]
-    const hour = now.getHours()
 
     if (!quota || quota.resetAt.split('T')[0] !== today) {
       quota = {
@@ -355,7 +353,7 @@ Return as JSON: {
     return photos.filter(p => p.status === 'approved')
   }
 
-  private async notifyUser(userId: string, payload: NotificationPayload): Promise<void> {
+  private async notifyUser(_userId: string, payload: NotificationPayload): Promise<void> {
     const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
     notifications.push(payload)
     await window.spark.kv.set('user-notifications', notifications)
@@ -376,7 +374,6 @@ Return as JSON: {
 }
 
 export class ModerationService {
-  private photoService = new PhotoService()
 
   async getQueue(): Promise<ModerationQueue> {
     const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
@@ -536,6 +533,9 @@ export class ModerationService {
     if (userSessions.length === 0) return 'unverified'
 
     const latest = userSessions[0]
+    if (!latest) {
+      return 'unverified'
+    }
 
     if (latest.expiresAt && new Date(latest.expiresAt) < new Date()) {
       return 'expired'
@@ -562,7 +562,6 @@ export class ModerationService {
 
   private async notifyUserDecision(userId: string, photo: PhotoRecord, decision: ModerationDecision): Promise<void> {
     const isApproved = decision.action === 'approve' && photo.status === 'approved'
-    const isRejected = decision.action === 'reject'
 
     const notification: NotificationPayload = {
       userId,
@@ -656,7 +655,6 @@ export class ModerationService {
 }
 
 export class KYCService {
-  private moderationService = new ModerationService()
 
   async createSession(userId: string): Promise<KYCSession> {
     const session: KYCSession = {

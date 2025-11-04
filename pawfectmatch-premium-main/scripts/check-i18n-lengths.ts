@@ -10,6 +10,7 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
+import { scriptLogger } from '../src/lib/script-logger';
 
 interface LengthBucket {
   key: string;
@@ -44,7 +45,7 @@ function getStatus(length: number): LengthBucket['status'] {
   return 'CRITICAL';
 }
 
-function extractStrings(obj: Record<string, any>, prefix = ''): LengthBucket[] {
+function extractStrings(obj: Record<string, unknown>, prefix = ''): LengthBucket[] {
   const results: LengthBucket[] = [];
   
   for (const [key, value] of Object.entries(obj)) {
@@ -60,18 +61,26 @@ function extractStrings(obj: Record<string, any>, prefix = ''): LengthBucket[] {
         status: getStatus(length),
       });
     } else if (typeof value === 'object' && value !== null) {
-      results.push(...extractStrings(value, fullKey));
+      results.push(...extractStrings(value as Record<string, unknown>, fullKey));
     }
   }
   
   return results;
 }
 
+interface ComparisonBucket extends LengthBucket {
+  enLength: number;
+  bgLength: number;
+  enText: string;
+  bgText: string;
+  ratio: number;
+}
+
 function generateCSV(buckets: LengthBucket[]): string {
   const header = 'Key,EN Length,BG Length,Max Length,Bucket,Status,EN Text Preview,BG Text Preview,Ratio\n';
   const rows = buckets
     .map(b => {
-      const compBucket = b as any;
+      const compBucket = b as ComparisonBucket;
       const enText = compBucket.enText || '';
       const bgText = compBucket.bgText || '';
       const ratio = compBucket.ratio || 0;
@@ -86,10 +95,10 @@ function generateReport(buckets: LengthBucket[]): string {
   const warnings = buckets.filter(b => b.status === 'WARNING');
   const ok = buckets.filter(b => b.status === 'OK');
   
-  const compBuckets = buckets as any[];
+  const compBuckets = buckets as ComparisonBucket[];
   const avgEnLength = compBuckets.reduce((sum, b) => sum + (b.enLength || 0), 0) / buckets.length;
   const avgBgLength = compBuckets.reduce((sum, b) => sum + (b.bgLength || 0), 0) / buckets.length;
-  const avgRatio = avgBgLength / avgEnLength;
+  const avgRatio = avgEnLength > 0 ? avgBgLength / avgEnLength : 0;
 
   let report = '# i18n Length Check Report\n\n';
   report += `**Total strings checked:** ${buckets.length}\n\n`;
@@ -122,20 +131,24 @@ function generateReport(buckets: LengthBucket[]): string {
   return report;
 }
 
-async function main() {
+async function main(): Promise<void> {
   try {
     // Try to load translations from TypeScript file
     const i18nPath = resolve(process.cwd(), 'src/lib/i18n.ts');
-    let enTranslations: Record<string, any> = {};
-    let bgTranslations: Record<string, any> = {};
+    let enTranslations: Record<string, unknown> = {};
+    let bgTranslations: Record<string, unknown> = {};
     
-    try {
-      // Import the translations object dynamically
-      const i18nModule = await import(i18nPath);
-      if (i18nModule.translations) {
-        enTranslations = i18nModule.translations.en as Record<string, any>;
-        bgTranslations = i18nModule.translations.bg as Record<string, any>;
-      } else {
+      try {
+        // Import the translations object dynamically
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const i18nModule = await import(i18nPath);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (i18nModule.translations) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          enTranslations = (i18nModule.translations as { en: Record<string, unknown> }).en;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          bgTranslations = (i18nModule.translations as { bg: Record<string, unknown> }).bg;
+        } else {
         // Fallback: try to read and parse as JSON (if exported)
         const content = readFileSync(i18nPath, 'utf-8');
         // Simple extraction - look for the translations object
@@ -143,18 +156,18 @@ async function main() {
         const bgMatch = content.match(/bg:\s*\{([\s\S]*?)\n\s*\},/);
         if (enMatch && bgMatch) {
           // This is a simplified parser - for production, use a proper TS parser
-          console.warn('⚠️  Could not import TypeScript directly. Using fallback parser.');
-          console.warn('⚠️  For accurate results, export translations as JSON or use tsx to run this script.');
+          scriptLogger.warn('⚠️  Could not import TypeScript directly. Using fallback parser.');
+          scriptLogger.warn('⚠️  For accurate results, export translations as JSON or use tsx to run this script.');
         }
       }
-    } catch (error) {
+    } catch {
       // Try JSON fallback
       const bgPath = resolve(process.cwd(), 'src/lib/i18n/translations/bg.json');
       const enPath = resolve(process.cwd(), 'src/lib/i18n/translations/en.json');
       
       try {
         if (readFileSync(enPath, 'utf-8')) {
-          enTranslations = JSON.parse(readFileSync(enPath, 'utf-8'));
+          enTranslations = JSON.parse(readFileSync(enPath, 'utf-8')) as Record<string, unknown>;
         }
       } catch {
         // Ignore
@@ -162,10 +175,10 @@ async function main() {
       
       try {
         if (readFileSync(bgPath, 'utf-8')) {
-          bgTranslations = JSON.parse(readFileSync(bgPath, 'utf-8'));
+          bgTranslations = JSON.parse(readFileSync(bgPath, 'utf-8')) as Record<string, unknown>;
         }
       } catch {
-        console.log('ℹ️  No translations file found. Please ensure i18n.ts exports translations.');
+        scriptLogger.writeLine('ℹ️  No translations file found. Please ensure i18n.ts exports translations.');
         process.exit(1);
       }
     }
@@ -215,30 +228,30 @@ async function main() {
     const csv = generateCSV(buckets);
     const csvPath = resolve(process.cwd(), 'i18n-length-report.csv');
     writeFileSync(csvPath, csv);
-    console.log(`✅ CSV report saved to: ${csvPath}`);
+    scriptLogger.writeLine(`✅ CSV report saved to: ${csvPath}`);
 
     // Generate and display report
     const report = generateReport(buckets);
-    console.log('\n' + report);
+    scriptLogger.writeLine('\n' + report);
 
     // Write report to file
     const reportPath = resolve(process.cwd(), 'i18n-length-report.md');
     writeFileSync(reportPath, report);
-    console.log(`✅ Markdown report saved to: ${reportPath}`);
+    scriptLogger.writeLine(`✅ Markdown report saved to: ${reportPath}`);
 
     // Exit with error if critical issues found
     const critical = buckets.filter(b => b.status === 'CRITICAL');
     if (critical.length > 0) {
-      console.error(`\n❌ Found ${critical.length} critical length violations`);
+      scriptLogger.writeErrorLine(`\n❌ Found ${critical.length} critical length violations`);
       process.exit(1);
     }
 
-    console.log('\n✅ All i18n length checks passed');
+    scriptLogger.writeLine('\n✅ All i18n length checks passed');
     process.exit(0);
   } catch (error) {
-    console.error('Error running i18n length check:', error);
+    scriptLogger.error('Error running i18n length check', error instanceof Error ? error : new Error(String(error)));
     process.exit(1);
   }
 }
 
-main();
+void main();

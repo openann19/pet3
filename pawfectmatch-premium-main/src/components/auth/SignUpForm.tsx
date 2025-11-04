@@ -142,7 +142,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
     }
   }
 
-  const handleAgeVerified = async (country?: string) => {
+  const handleAgeVerified = async (_country?: string) => {
     setAgeVerified(true)
     setShowAgeGate(false)
     // Continue with sign-up

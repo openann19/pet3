@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -34,31 +34,7 @@ export function ProgressiveImage({
   const [error, setError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
-  useEffect(() => {
-    if (priority) {
-      loadImage()
-    } else {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              loadImage()
-              observer.disconnect()
-            }
-          })
-        },
-        { rootMargin: '50px' }
-      )
-
-      if (imgRef.current) {
-        observer.observe(imgRef.current)
-      }
-
-      return () => observer.disconnect()
-    }
-  }, [src, priority])
-
-  const loadImage = () => {
+  const loadImage = useCallback(() => {
     const img = new Image()
     
     img.onload = () => {
@@ -74,7 +50,34 @@ export function ProgressiveImage({
     }
     
     img.src = src
-  }
+  }, [src, onLoad, onError])
+
+  useEffect(() => {
+    if (priority) {
+      loadImage()
+      return
+    }
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            loadImage()
+            observer.disconnect()
+          }
+        })
+      },
+      { rootMargin: '50px' }
+    )
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current)
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [src, priority, loadImage])
 
   return (
     <div

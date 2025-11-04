@@ -48,6 +48,8 @@ export interface LostAlert {
   viewsCount: number
   sightingsCount: number
   notificationsSent?: number // Alias for compatibility
+  reviewedAt?: string
+  reviewedBy?: string
 }
 
 export interface Sighting {

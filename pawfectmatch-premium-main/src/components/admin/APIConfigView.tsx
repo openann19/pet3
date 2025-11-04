@@ -195,7 +195,7 @@ export default function APIConfigView() {
           <Card className="border-amber-500/50 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex gap-3">
-                <Warning size={24} className="text-amber-600 flex-shrink-0" weight="fill" />
+                <Warning size={24} className="text-amber-600 shrink-0" weight="fill" />
                 <div className="space-y-1">
                   <p className="font-medium text-amber-900 dark:text-amber-100">
                     Security Notice

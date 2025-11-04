@@ -31,7 +31,7 @@ export function PricingModal({ open, onOpenChange, onSuccess }: PricingModalProp
     try {
       const user = await spark.user()
       
-      const subscription = await PaymentsService.createSubscription(
+      await PaymentsService.createSubscription(
         user.id,
         plan.id,
         'web',

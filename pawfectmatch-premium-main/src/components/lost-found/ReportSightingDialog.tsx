@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { MapPin, Upload, Calendar, Clock } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { useApp } from '@/contexts/AppContext'
 import { lostFoundAPI } from '@/lib/api/lost-found-api'
 import { MapLocationPicker } from './MapLocationPicker'
 import type { LostAlert } from '@/lib/lost-found-types'
@@ -20,7 +19,6 @@ interface ReportSightingDialogProps {
 }
 
 export function ReportSightingDialog({ open, alert, onClose, onSuccess }: ReportSightingDialogProps) {
-  const { t } = useApp()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showMapPicker, setShowMapPicker] = useState(false)
 
@@ -40,7 +38,9 @@ export function ReportSightingDialog({ open, alert, onClose, onSuccess }: Report
   const maskContactInfo = (contact: string): string => {
     if (contact.includes('@')) {
       const [local, domain] = contact.split('@')
-      return `${local.substring(0, 2)}***@${domain}`
+      if (local && domain) {
+        return `${local.substring(0, 2)}***@${domain}`
+      }
     }
     if (contact.length > 4) {
       return `${contact.substring(0, 3)}***${contact.substring(contact.length - 2)}`
@@ -80,7 +80,10 @@ export function ReportSightingDialog({ open, alert, onClose, onSuccess }: Report
         radiusM,
         description: description.trim(),
         photos,
-        contactMask: maskContactInfo(contactInfo)
+        contactMask: maskContactInfo(contactInfo),
+        reporterId: user.id,
+        reporterName: user.login || 'Anonymous',
+        reporterAvatar: user.avatarUrl
       })
 
       toast.success('Sighting reported! The owner will be notified.')

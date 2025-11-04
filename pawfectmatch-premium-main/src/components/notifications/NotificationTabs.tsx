@@ -1,8 +1,8 @@
-import React, {useEffect, useId, useLayoutEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState} from "react";
 
 type Locale = "en" | "bg";
 
-type TabKey = "all" | "matches" | "messages" | (string & {});
+export type TabKey = "all" | "matches" | "messages" | (string & {});
 
 type UnreadCounts = Record<TabKey, number | undefined>;
 
@@ -12,9 +12,15 @@ type Segment = {
   badge?: number;
 };
 
+type SocketPayload = {
+  type?: string;
+  counts?: Record<string, number | undefined>;
+  [key: string]: unknown;
+};
+
 type SocketLike = {
-  on: (event: string, cb: (payload: any) => void) => void;
-  off: (event: string, cb: (payload: any) => void) => void;
+  on: (event: string, cb: (payload: SocketPayload) => void) => void;
+  off: (event: string, cb: (payload: SocketPayload) => void) => void;
 };
 
 export interface NotificationTabsProps {
@@ -143,7 +149,7 @@ export function NotificationTabs({
   // Live updates from socket
   useEffect(() => {
     if (!socket) return;
-    const handler = (payload: any) => {
+    const handler = (payload: SocketPayload) => {
       if (payload?.type === "unread:update" && payload?.counts && typeof payload.counts === "object") {
         setCounts(prev => ({ ...prev, ...payload.counts }));
       }
@@ -152,10 +158,15 @@ export function NotificationTabs({
     return () => socket.off("notifications", handler);
   }, [socket]);
 
-  const [selected, setSelected] = useLocalStorage<TabKey>(storageKey, segments[0].key);
+  const [selected, setSelected] = useLocalStorage<TabKey>(storageKey, segments[0]?.key ?? 'all');
   // Ensure selected is a valid key even if segments changed
   useEffect(() => {
-    if (!segments.find(s => s.key === selected)) setSelected(segments[0].key);
+    if (!segments.find(s => s.key === selected)) {
+      const firstSegment = segments[0]
+      if (firstSegment) {
+        setSelected(firstSegment.key)
+      }
+    }
   }, [segments, selected, setSelected]);
 
   // a11y ids
@@ -172,7 +183,34 @@ export function NotificationTabs({
   const indicatorRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
-  const updateIndicator = () => {
+  const labelFor = useCallback((key: TabKey) => {
+    const seg = segments.find(s => s.key === key);
+    if (!seg) return "";
+    return seg.label[locale] ?? seg.label.en;
+  }, [segments, locale]);
+
+  const activate = useCallback((key: TabKey) => {
+    if (key === selected) return;
+    const from = selected;
+    setSelected(key);
+    onTabChange?.(from, key);
+    // announce politely
+    const label = labelFor(key);
+    setAnnounceMsg(locale === "bg" ? `Преминахте към ${label}` : `Switched to ${label}`);
+  }, [selected, setSelected, onTabChange, locale, labelFor]);
+
+  const step = useCallback((delta: number) => {
+    const idx = segments.findIndex(s => s.key === selected);
+    const next = Math.min(segments.length - 1, Math.max(0, idx + delta));
+    if (next !== idx) {
+      const nextSegment = segments[next];
+      if (nextSegment) {
+        activate(nextSegment.key);
+      }
+    }
+  }, [segments, selected, activate]);
+
+  const updateIndicator = useCallback(() => {
     if (!tablistRef.current || !indicatorRef.current) return;
     const container = tablistRef.current;
     const active = container.querySelector<HTMLButtonElement>(`button[role="tab"][data-key="${selected}"]`);
@@ -185,56 +223,41 @@ export function NotificationTabs({
 
     indicatorRef.current.style.transform = `translateX(${x}px)`;
     indicatorRef.current.style.width = `${w}px`;
-  };
+  }, [selected]);
 
   useLayoutEffect(() => {
     updateIndicator();
-  }, [selected, segments.length]);
+  }, [updateIndicator, segments.length]);
 
   useEffect(() => {
     const c = tablistRef.current;
     if (!c) return;
-    const ResizeObserver = (window as any).ResizeObserver;
-    let ro: any = null;
-    if (ResizeObserver) {
-      ro = new ResizeObserver(() => updateIndicator());
+    const ResizeObserverConstructor = typeof window !== "undefined" && "ResizeObserver" in window
+      ? window.ResizeObserver
+      : null;
+    let ro: ResizeObserver | null = null;
+    if (ResizeObserverConstructor) {
+      ro = new ResizeObserverConstructor(() => updateIndicator());
       ro.observe(c);
     }
     const onScroll = () => updateIndicator();
     c.addEventListener("scroll", onScroll, { passive: true });
     return () => { 
-      ro?.disconnect?.(); 
+      ro?.disconnect(); 
       c.removeEventListener("scroll", onScroll); 
     };
-  }, []);
+  }, [updateIndicator]);
 
   // Swipe between tabs + down to close
   const shellRef = useRef<HTMLDivElement>(null);
+  const handleSwipeLeft = useCallback(() => step(1), [step]);
+  const handleSwipeRight = useCallback(() => step(-1), [step]);
+  const handleSwipeDown = useCallback(() => onRequestClose?.(), [onRequestClose]);
   useSwipe(shellRef as React.RefObject<HTMLElement>, {
-    onLeft: () => step(1),
-    onRight: () => step(-1),
-    onDown: () => onRequestClose?.(),
+    onLeft: handleSwipeLeft,
+    onRight: handleSwipeRight,
+    onDown: handleSwipeDown,
   });
-
-  function step(delta: number) {
-    const idx = segments.findIndex(s => s.key === selected);
-    const next = Math.min(segments.length - 1, Math.max(0, idx + delta));
-    if (next !== idx) activate(segments[next].key);
-  }
-
-  function activate(key: TabKey) {
-    if (key === selected) return;
-    const from = selected;
-    setSelected(key);
-    onTabChange?.(from, key);
-    // announce politely
-    setAnnounceMsg(locale === "bg" ? `Преминахте към ${labelFor(key)}` : `Switched to ${labelFor(key)}`);
-  }
-
-  function labelFor(key: TabKey) {
-    const seg = segments.find(s => s.key === key)!;
-    return seg.label[locale] ?? seg.label.en;
-  }
 
   // keyboard navigation
   const onKeyDownTab = (e: React.KeyboardEvent, index: number) => {
@@ -243,14 +266,25 @@ export function NotificationTabs({
     else if (e.key === "ArrowLeft") { e.preventDefault(); setFocusIndex(index === 0 ? last : index - 1); }
     else if (e.key === "Home") { e.preventDefault(); setFocusIndex(0); }
     else if (e.key === "End") { e.preventDefault(); setFocusIndex(last); }
-    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(segments[focusIndex].key); }
+    else if (e.key === "Enter" || e.key === " ") { 
+      e.preventDefault(); 
+      const focusSegment = segments[focusIndex]
+      if (focusSegment) {
+        activate(focusSegment.key)
+      }
+    }
   };
 
   useEffect(() => {
     // keep focused tab in view when roving
-    const el = tablistRef.current?.querySelectorAll<HTMLButtonElement>('button[role="tab"]')[focusIndex];
-    el?.focus();
-    el?.scrollIntoView({ inline: "center", block: "nearest" });
+    const tabs = tablistRef.current?.querySelectorAll<HTMLButtonElement>('button[role="tab"]');
+    if (!tabs || focusIndex < 0 || focusIndex >= tabs.length) return;
+    const el = tabs[focusIndex];
+    if (!el) return;
+    el.focus();
+    if (typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ inline: "center", block: "nearest" });
+    }
   }, [focusIndex]);
 
   // Announcement live region
@@ -263,25 +297,21 @@ export function NotificationTabs({
     if (!el) return;
     const calc = () => setOverflowing(el.scrollWidth > el.clientWidth + 2);
     calc();
-    const ResizeObserver = (window as any).ResizeObserver;
-    let ro: any = null;
-    if (ResizeObserver) {
-      ro = new ResizeObserver(calc);
+    const ResizeObserverConstructor = typeof window !== "undefined" && "ResizeObserver" in window
+      ? window.ResizeObserver
+      : null;
+    let ro: ResizeObserver | null = null;
+    if (ResizeObserverConstructor) {
+      ro = new ResizeObserverConstructor(calc);
       ro.observe(el);
     }
     const onScroll = () => calc();
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => { 
-      ro?.disconnect?.(); 
+      ro?.disconnect(); 
       el.removeEventListener("scroll", onScroll); 
     };
   }, [segments.length]);
-
-  const t = {
-    all: { en: "All", bg: "Всички" },
-    matches: { en: "Matches", bg: "Съвпадения" },
-    messages: { en: "Messages", bg: "Съобщения" },
-  } as const;
 
   return (
     <div ref={shellRef} className={cx("w-full flex flex-col", className)} data-testid="notification-tabs">
@@ -290,8 +320,8 @@ export function NotificationTabs({
         {/* gradient fades */}
         {edgeFade && overflowing && (
           <>
-            <div className="pointer-events-none absolute left-0 top-0 h-12 w-6 bg-gradient-to-r from-[--tablist-fade] to-transparent rounded-s-2xl" aria-hidden />
-            <div className="pointer-events-none absolute right-0 top-0 h-12 w-6 bg-gradient-to-l from-[--tablist-fade] to-transparent rounded-e-2xl" aria-hidden />
+            <div className="pointer-events-none absolute left-0 top-0 h-12 w-6 bg-linear-to-r from-[--tablist-fade] to-transparent rounded-s-2xl" aria-hidden />
+            <div className="pointer-events-none absolute right-0 top-0 h-12 w-6 bg-linear-to-l from-[--tablist-fade] to-transparent rounded-e-2xl" aria-hidden />
           </>
         )}
         <div
@@ -301,14 +331,14 @@ export function NotificationTabs({
           className={cx(
             "relative flex gap-1 overflow-x-auto no-scrollbar px-1 py-1 rounded-2xl",
             "min-h-[3rem] items-center",
-            "bg-[--tabs-bg,theme(colors.gray.100/0.5)] dark:bg-[--tabs-bg,theme(colors.gray.800/0.5)]",
-            "backdrop-blur supports-[backdrop-filter]:backdrop-blur-md"
+            "bg-[--tabs-bg,--theme(--color-gray-100/0.5)] dark:bg-[--tabs-bg,--theme(--color-gray-800/0.5)]",
+            "backdrop-blur supports-backdrop-filter:backdrop-blur-md"
           )}
           style={
             {
               // Themeable tokens with safe fallbacks
-              ["--tablist-fade" as any]: "rgb(0 0 0 / 0.12)",
-            } as React.CSSProperties
+              "--tablist-fade": "rgb(0 0 0 / 0.12)",
+            } as React.CSSProperties & { "--tablist-fade"?: string }
           }
         >
           {/* indicator bar */}
@@ -318,7 +348,7 @@ export function NotificationTabs({
             className={cx(
               "absolute bottom-0 h-[2px] rounded-full",
               reducedMotion ? "transition-none" : "transition-transform duration-200",
-              "bg-[--tabs-indicator,theme(colors.blue.500)]"
+              "bg-[--tabs-indicator,var(--color-blue-500)]"
             )}
             style={{ width: 0, transform: "translateX(0px)" }}
           />
@@ -343,10 +373,10 @@ export function NotificationTabs({
                   "px-3 h-10 min-w-[44px] min-h-[44px]",
                   "rounded-full border",
                   selectedBool
-                    ? "bg-[--tab-active-bg,theme(colors.gray.900)] text-[--tab-active-fg,theme(colors.white)] dark:bg-[--tab-active-bg,theme(colors.gray.100)] dark:text-[--tab-active-fg,theme(colors.black)] border-transparent"
-                    : "bg-[--tab-bg,theme(colors.white/0.6)] dark:bg-[--tab-bg,theme(colors.gray.900/0.6)] text-[--tab-fg,theme(colors.gray.700)] dark:text-[--tab-fg,theme(colors.gray.200)] border-[--tab-border,theme(colors.black/0.05)]",
+                    ? "bg-[--tab-active-bg,var(--color-gray-900)] text-[--tab-active-fg,var(--color-white)] dark:bg-[--tab-active-bg,var(--color-gray-100)] dark:text-[--tab-active-fg,var(--color-black)] border-transparent"
+                    : "bg-[--tab-bg,--theme(--color-white/0.6)] dark:bg-[--tab-bg,--theme(--color-gray-900/0.6)] text-[--tab-fg,var(--color-gray-700)] dark:text-[--tab-fg,var(--color-gray-200)] border-[--tab-border,--theme(--color-black/0.05)]",
                   "hover:brightness-105",
-                  "focus:outline-none focus-visible:ring-2 ring-offset-2 ring-[--focus-ring,theme(colors.blue.500)] ring-offset-[--tabs-bg,transparent]",
+                  "focus:outline-none focus-visible:ring-2 ring-offset-2 ring-[--focus-ring,var(--color-blue-500)] ring-offset-[--tabs-bg,transparent]",
                   reducedMotion ? "transition-none" : "transition-[transform,filter] duration-150",
                   "will-change-transform",
                   "shadow-[inset_0_0_0_1px_rgb(255_255_255_/0.04)] dark:shadow-[inset_0_0_0_1px_rgb(0_0_0_/0.2)]"
@@ -361,8 +391,8 @@ export function NotificationTabs({
                         "inline-flex items-center justify-center text-xs leading-none",
                         "min-w-5 h-5 px-1 rounded-full",
                         selectedBool
-                          ? "bg-[--badge-active-bg,theme(colors.white)] text-[--badge-active-fg,theme(colors.black)]"
-                          : "bg-[--badge-bg,theme(colors.gray.200)] dark:bg-[--badge-bg,theme(colors.gray.700)] text-[--badge-fg,theme(colors.gray.900)] dark:text-[--badge-fg,theme(colors.gray.100)]"
+                          ? "bg-[--badge-active-bg,var(--color-white)] text-[--badge-active-fg,var(--color-black)]"
+                          : "bg-[--badge-bg,var(--color-gray-200)] dark:bg-[--badge-bg,var(--color-gray-700)] text-[--badge-fg,var(--color-gray-900)] dark:text-[--badge-fg,var(--color-gray-100)]"
                       )}
                       title={badgeData.title}
                       aria-label={locale === "bg" ? `непрочетени ${badgeData.title}` : `unread ${badgeData.title}`}

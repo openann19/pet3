@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Microphone, X, Check, Stop } from '@phosphor-icons/react'
+import { Microphone, X, Check } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
@@ -15,7 +15,6 @@ export default function VoiceRecorder({
   onCancel,
   maxDuration = 120 
 }: VoiceRecorderProps) {
-  const [isRecording, setIsRecording] = useState(true)
   const [duration, setDuration] = useState(0)
   const [waveform, setWaveform] = useState<number[]>([])
   
@@ -122,7 +121,6 @@ export default function VoiceRecorder({
   }
 
   const handleStopAndSend = () => {
-    setIsRecording(false)
     stopRecording()
 
     if (mediaRecorderRef.current) {
@@ -154,7 +152,7 @@ export default function VoiceRecorder({
       <motion.div
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ duration: 1.5, repeat: Infinity }}
-        className="flex-shrink-0"
+        className="shrink-0"
       >
         <Microphone size={24} weight="fill" className="text-red-500" />
       </motion.div>
@@ -187,7 +185,7 @@ export default function VoiceRecorder({
         size="icon"
         variant="ghost"
         onClick={handleCancel}
-        className="flex-shrink-0"
+        className="shrink-0"
       >
         <X size={20} />
       </Button>
@@ -195,7 +193,7 @@ export default function VoiceRecorder({
       <Button
         size="icon"
         onClick={handleStopAndSend}
-        className="flex-shrink-0 bg-gradient-to-br from-primary to-accent"
+        className="shrink-0 bg-gradient-to-br from-primary to-accent"
       >
         <Check size={20} weight="bold" />
       </Button>

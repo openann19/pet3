@@ -79,7 +79,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
 
   return (
     <div className="relative h-[calc(100vh-14rem)] max-h-[700px] bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
-      <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30">
+      <div className="absolute inset-0 bg-linear-to-br from-muted/50 via-background to-muted/30">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center space-y-4 p-8">
             <MapPin size={64} className="mx-auto text-primary/30" weight="duotone" />
@@ -123,7 +123,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
                   alt={pet.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent" />
               </motion.div>
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-md" />
               <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
@@ -167,7 +167,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
                   variant="ghost"
                   size="icon"
                   onClick={() => setSelectedPet(null)}
-                  className="flex-shrink-0"
+                  className="shrink-0"
                 >
                   <X size={20} />
                 </Button>
@@ -207,7 +207,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
                 </Button>
                 <Button
                   size="lg"
-                  className="flex-1 h-14 text-lg bg-gradient-to-r from-primary to-accent"
+                  className="flex-1 h-14 text-lg bg-linear-to-r from-primary to-accent"
                   onClick={handleLike}
                 >
                   <Heart size={24} className="mr-2" weight="fill" />

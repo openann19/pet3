@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Heart, Plus, ClipboardText, MagnifyingGlass, Funnel, Check, X } from '@phosphor-icons/react'
+import { Heart, Plus, MagnifyingGlass, Funnel, Check, X } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service'
 import type { AdoptionListing, AdoptionListingFilters } from '@/lib/adoption-marketplace-types'
@@ -14,14 +14,12 @@ import { AdoptionFiltersSheet } from '@/components/adoption/AdoptionFiltersSheet
 import { MyAdoptionApplications } from '@/components/adoption/MyAdoptionApplications'
 import { MyAdoptionListings } from '@/components/adoption/MyAdoptionListings'
 import { toast } from 'sonner'
-import { useApp } from '@/contexts/AppContext'
 import { haptics } from '@/lib/haptics'
 import { logger } from '@/lib/logger'
 
 type ViewTab = 'browse' | 'my-listings' | 'my-applications'
 
 export default function AdoptionMarketplaceView() {
-  const { t } = useApp()
   const [activeTab, setActiveTab] = useState<ViewTab>('browse')
   const [listings, setListings] = useState<AdoptionListing[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,7 +30,6 @@ export default function AdoptionMarketplaceView() {
   const [selectedListing, setSelectedListing] = useState<AdoptionListing | null>(null)
   const [showDetailDialog, setShowDetailDialog] = useState(false)
   const [hasMore, setHasMore] = useState(false)
-  const [cursor, setCursor] = useState<string | undefined>()
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string } | null>(null)
 
   useEffect(() => {
@@ -50,13 +47,12 @@ export default function AdoptionMarketplaceView() {
     }
   }
 
-  const loadListings = async (reset = true) => {
+  const loadListings = async (_reset = true) => {
     try {
       setLoading(true)
       const response = await adoptionMarketplaceService.getActiveListings(filters)
       setListings(response)
       setHasMore(false)
-      setCursor(undefined)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       logger.error('Failed to load listings', err, { action: 'loadListings' })
@@ -254,7 +250,7 @@ export default function AdoptionMarketplaceView() {
                   >
                     <AdoptionListingCard
                       listing={listing}
-                      onClick={() => handleSelectListing(listing)}
+                      onSelect={() => handleSelectListing(listing)}
                     />
                   </motion.div>
                 ))}

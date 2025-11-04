@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, MapPin, Sparkle, ChartBar, ChatCircle, Calendar, VideoCamera, Phone } from '@phosphor-icons/react'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Heart, MapPin, Sparkle, ChartBar, ChatCircle, Calendar, VideoCamera } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import type { Pet, Match } from '@/lib/types'
@@ -191,7 +189,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
                       {pet.location}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation()

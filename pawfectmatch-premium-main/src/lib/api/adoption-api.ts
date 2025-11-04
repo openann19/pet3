@@ -288,6 +288,9 @@ export class AdoptionAPI {
     }
 
     const listing = listings[index]
+    if (!listing) {
+      throw new Error('Listing not found')
+    }
     
     // Only owner can edit, and only if active or pending
     if (listing.ownerId !== ownerId) {
@@ -358,6 +361,9 @@ export class AdoptionAPI {
     }
 
     const listing = listings[index]
+    if (!listing) {
+      throw new Error('Listing not found')
+    }
 
     // Owner can withdraw/reactivate
     if (listing.ownerId === userId) {
@@ -435,8 +441,11 @@ export class AdoptionAPI {
     // Increment listing applications count
     const listingIndex = listings.findIndex(l => l.id === data.listingId)
     if (listingIndex !== -1) {
-      listings[listingIndex].applicationsCount++
-      await this.setListings(listings)
+      const foundListing = listings[listingIndex]
+      if (foundListing) {
+        foundListing.applicationsCount++
+        await this.setListings(listings)
+      }
     }
 
     return application
@@ -479,6 +488,10 @@ export class AdoptionAPI {
     }
 
     const application = applications[index]
+    if (!application) {
+      throw new Error('Application not found')
+    }
+
     const listing = listings.find(l => l.id === application.listingId)
 
     // Owner can accept/reject applications to their listings
@@ -528,8 +541,11 @@ export class AdoptionAPI {
     const index = listings.findIndex(l => l.id === listingId)
     
     if (index !== -1) {
-      listings[index].viewsCount++
-      await this.setListings(listings)
+      const listing = listings[index]
+      if (listing) {
+        listing.viewsCount++
+        await this.setListings(listings)
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { haptics } from '@/lib/haptics'
 
 interface UseDialogOptions {
@@ -38,8 +38,8 @@ export function useDialog({
     }
   }, [isOpen, open, close])
 
-  const setOpen = useCallback((open: boolean) => {
-    if (open) {
+  const setOpen = useCallback((shouldOpen: boolean) => {
+    if (shouldOpen) {
       open()
     } else {
       close()

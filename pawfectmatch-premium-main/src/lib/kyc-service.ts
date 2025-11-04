@@ -118,7 +118,7 @@ export async function handleKYCWebhook(
     action: status === 'verified' ? 'verified' : 'rejected',
     userId: submission.userId,
     kycSubmissionId: submissionId,
-    reason: data.reason,
+    ...(data.reason ? { reason: data.reason } : {}),
   })
 }
 
@@ -192,8 +192,8 @@ export async function manualKYCReview(
     action: decision === 'verified' ? 'manual_override' : 'manual_reject',
     userId: submission.userId,
     kycSubmissionId: submissionId,
-    actorUserId,
-    reason,
+    ...(actorUserId ? { actorUserId } : {}),
+    ...(reason ? { reason } : {}),
   })
 }
 
@@ -209,7 +209,7 @@ export async function recordAgeVerification(
     userId,
     ageVerified,
     verifiedAt: new Date().toISOString(),
-    country,
+    ...(country ? { country } : {}),
   }
 
   const key = `${KV_PREFIX.AGE_VERIFY}${userId}`
@@ -247,8 +247,8 @@ export async function recordConsent(
     version,
     accepted,
     acceptedAt: new Date().toISOString(),
-    ipAddress,
-    userAgent,
+    ...(ipAddress ? { ipAddress } : {}),
+    ...(userAgent ? { userAgent } : {}),
   }
 
   const key = `${KV_PREFIX.CONSENT}${userId}:${type}:${version}`
@@ -296,9 +296,8 @@ async function logKYCAudit(entry: {
     kycSubmissionId: entry.kycSubmissionId || '',
     userId: entry.userId,
     action: entry.action as any,
-    actorUserId: entry.actorUserId,
-    actorRole: entry.actorUserId ? 'admin' : undefined,
-    reason: entry.reason,
+    ...(entry.actorUserId ? { actorUserId: entry.actorUserId, actorRole: 'admin' as const } : {}),
+    ...(entry.reason ? { reason: entry.reason } : {}),
     timestamp: new Date().toISOString(),
   }
 

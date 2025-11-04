@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, ReactNode } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useStorage } from '@/hooks/useStorage'
 import { applyTheme, type ThemeMode } from './themes'
 
 interface ThemeContextType {
@@ -11,7 +11,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useKV<ThemeMode>('theme-mode-v2', 'light')
+  const [mode, setMode] = useStorage<ThemeMode>('theme-mode-v2', 'light')
 
   useEffect(() => {
     applyTheme(mode)

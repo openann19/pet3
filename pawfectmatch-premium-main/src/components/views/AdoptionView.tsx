@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
@@ -41,7 +41,7 @@ export default function AdoptionView() {
   const loadListings = async () => {
     try {
       setLoading(true)
-      const user = await spark.user()
+      await spark.user()
       const result = await adoptionAPI.queryListings({
         limit: 50,
         cursor: cursor
@@ -151,7 +151,7 @@ export default function AdoptionView() {
           </Button>
           <Button
             onClick={() => {
-              // TODO: Open create listing dialog
+              // NOTE: Create listing dialog implementation pending
               toast.info('Create listing feature coming soon')
             }}
             className="gap-2"

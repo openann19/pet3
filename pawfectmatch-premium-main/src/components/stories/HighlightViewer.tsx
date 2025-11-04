@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { X, Trash, PushPin, PushPinSlash } from '@phosphor-icons/react'
 import { useStorage } from '@/hooks/useStorage'
 import { Button } from '@/components/ui/button'
-import type { StoryHighlight, Story } from '@/lib/stories-types'
+import type { StoryHighlight } from '@/lib/stories-types'
 import StoryViewer from './StoryViewer'
 import { haptics } from '@/lib/haptics'
 import { toast } from 'sonner'
@@ -23,7 +23,7 @@ export default function HighlightViewer({
   currentUserAvatar,
   onClose
 }: HighlightViewerProps) {
-  const [highlights, setHighlights] = useStorage<StoryHighlight[]>('story-highlights', [])
+  const [, setHighlights] = useStorage<StoryHighlight[]>('story-highlights', [])
   const [showStoryViewer, setShowStoryViewer] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
 
@@ -102,7 +102,7 @@ export default function HighlightViewer({
                   variant="ghost"
                   size="icon"
                   onClick={handleTogglePin}
-                  className="flex-shrink-0"
+                  className="shrink-0"
                 >
                   {highlight.isPinned ? (
                     <PushPinSlash size={20} weight="fill" />
@@ -115,7 +115,7 @@ export default function HighlightViewer({
                   variant="ghost"
                   size="icon"
                   onClick={handleDelete}
-                  className="flex-shrink-0 text-destructive hover:text-destructive"
+                  className="shrink-0 text-destructive hover:text-destructive"
                 >
                   <Trash size={20} weight="bold" />
                 </Button>
@@ -126,7 +126,7 @@ export default function HighlightViewer({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="flex-shrink-0"
+              className="shrink-0"
             >
               <X size={24} weight="bold" />
             </Button>

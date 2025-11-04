@@ -176,7 +176,7 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
                   transition={{ duration: 0.4, delay: 0.3 + idx * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <CheckCircle size={20} weight="fill" className="text-primary flex-shrink-0" aria-hidden />
+                  <CheckCircle size={20} weight="fill" className="text-primary shrink-0" aria-hidden />
                   <span className="text-foreground/80 text-sm">{text}</span>
                 </motion.div>
               ))}

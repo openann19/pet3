@@ -36,7 +36,6 @@ export default function SaveToHighlightDialog({
 }: SaveToHighlightDialogProps) {
   const [highlights, setHighlights] = useStorage<StoryHighlight[]>('story-highlights', [])
   const [userPets] = useStorage<Pet[]>('user-pets', [])
-  const [currentUser] = useStorage<{ id: string; name: string }>('current-user', { id: 'user-1', name: 'User' })
   
   const [showNewHighlight, setShowNewHighlight] = useState(false)
   const [newHighlightTitle, setNewHighlightTitle] = useState('')
@@ -205,14 +204,14 @@ export default function SaveToHighlightDialog({
                         <Avatar className="w-16 h-16 ring-2 ring-border">
                           <AvatarImage src={highlight.coverImage} alt={highlight.title} />
                           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
-                            {highlight.title[0].toUpperCase()}
+                            {highlight.title?.[0]?.toUpperCase() ?? '?'}
                           </AvatarFallback>
                         </Avatar>
 
                         <div className="flex-1 text-left min-w-0">
                           <p className="font-semibold truncate">{highlight.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {highlight.stories.length} {highlight.stories.length === 1 ? 'story' : 'stories'}
+                            {highlight.stories?.length ?? 0} {highlight.stories?.length === 1 ? 'story' : 'stories'}
                           </p>
                           {alreadyInHighlight && (
                             <p className="text-xs text-muted-foreground mt-1">
@@ -222,13 +221,13 @@ export default function SaveToHighlightDialog({
                         </div>
 
                         {isSelected && !alreadyInHighlight && (
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                          <div className="shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                             <Check size={18} weight="bold" className="text-white" />
                           </div>
                         )}
 
                         {highlight.isPinned && (
-                          <div className="flex-shrink-0 text-lg" aria-label="Pinned">
+                          <div className="shrink-0 text-lg" aria-label="Pinned">
                             📌
                           </div>
                         )}

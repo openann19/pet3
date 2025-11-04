@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { Plus } from '@phosphor-icons/react'
 import { useStorage } from '@/hooks/useStorage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import type { StoryHighlight } from '@/lib/stories-types'
 import HighlightViewer from './HighlightViewer'
 import CreateHighlightDialog from './CreateHighlightDialog'
@@ -47,7 +46,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                 haptics.trigger('selection')
                 setShowCreateDialog(true)
               }}
-              className="flex flex-col items-center gap-2 flex-shrink-0 group"
+              className="flex flex-col items-center gap-2 shrink-0 group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -69,7 +68,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                 haptics.trigger('light')
                 setSelectedHighlight(highlight)
               }}
-              className="flex flex-col items-center gap-2 flex-shrink-0 group"
+              className="flex flex-col items-center gap-2 shrink-0 group"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -88,7 +87,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                     className="object-cover"
                   />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold text-xl">
-                    {highlight.title[0].toUpperCase()}
+                    {highlight.title?.[0]?.toUpperCase() ?? 'H'}
                   </AvatarFallback>
                 </Avatar>
 

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import type {
-  GroupCall,
   CallType,
   CallParticipant,
   GroupCallSession,
@@ -16,7 +15,6 @@ import {
   createFakeParticipantStream
 } from '@/lib/call-utils'
 import { toast } from 'sonner'
-import { generateULID } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('useGroupCall')
@@ -280,12 +278,14 @@ export function useGroupCall(
   const toggleLayout = () => {
     setActiveGroupCall(prev => {
       if (!prev) return null
-      const layouts: Array<'grid' | 'spotlight' | 'sidebar'> = ['grid', 'spotlight', 'sidebar']
+      const layouts: Array<'grid' | 'spotlight' | 'sidebar'> = ['grid', 'spotlight', 'sidebar']                                                                 
       const currentIndex = layouts.indexOf(prev.layout)
       const nextIndex = (currentIndex + 1) % layouts.length
+      const nextLayout = layouts[nextIndex]
+      if (!nextLayout) return prev
       return {
         ...prev,
-        layout: layouts[nextIndex]
+        layout: nextLayout
       }
     })
   }

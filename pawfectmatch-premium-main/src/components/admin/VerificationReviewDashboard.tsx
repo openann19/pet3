@@ -53,9 +53,9 @@ export function VerificationReviewDashboard() {
 
   const getLevelColor = (level: VerificationLevel) => {
     switch (level) {
-      case 'premium': return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'
-      case 'standard': return 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-      default: return 'bg-gradient-to-r from-green-500 to-teal-500 text-white'
+      case 'premium': return 'bg-linear-to-r from-yellow-500 to-orange-500 text-white'
+      case 'standard': return 'bg-linear-to-r from-blue-500 to-purple-500 text-white'
+      default: return 'bg-linear-to-r from-green-500 to-teal-500 text-white'
     }
   }
 
@@ -194,8 +194,8 @@ export function VerificationReviewDashboard() {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 flex-wrap">
-            <ShieldCheck size={28} weight="fill" className="text-primary flex-shrink-0" />
-            <span className="break-words">KYC Verification Review Dashboard</span>
+            <ShieldCheck size={28} weight="fill" className="text-primary shrink-0" />
+            <span className="wrap-break-word">KYC Verification Review Dashboard</span>
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Review and approve pet owner verification requests
@@ -204,11 +204,11 @@ export function VerificationReviewDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-background to-muted/20">
+        <Card className="p-4 bg-linear-to-br from-background to-muted/20">
           <div className="text-sm text-muted-foreground">Total Requests</div>
           <div className="text-3xl font-bold mt-1">{stats.total}</div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
+        <Card className="p-4 bg-linear-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
           <div className="text-sm text-muted-foreground flex items-center gap-1">
             <Clock size={14} />
             Pending Review
@@ -217,7 +217,7 @@ export function VerificationReviewDashboard() {
             {stats.pending}
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+        <Card className="p-4 bg-linear-to-br from-green-500/10 to-green-500/5 border-green-500/20">
           <div className="text-sm text-muted-foreground flex items-center gap-1">
             <CheckCircle size={14} />
             Verified
@@ -226,7 +226,7 @@ export function VerificationReviewDashboard() {
             {stats.verified}
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-red-500/10 to-red-500/5 border-red-500/20">
+        <Card className="p-4 bg-linear-to-br from-red-500/10 to-red-500/5 border-red-500/20">
           <div className="text-sm text-muted-foreground flex items-center gap-1">
             <XCircle size={14} />
             Rejected
@@ -235,15 +235,15 @@ export function VerificationReviewDashboard() {
             {stats.rejected}
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+        <Card className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-primary/20">
           <div className="text-sm text-muted-foreground">Approval Rate</div>
-          <div className="text-3xl font-bold mt-1 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="text-3xl font-bold mt-1 bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
             {stats.approvalRate}%
           </div>
         </Card>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)} className="w-full">
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as VerificationStatus | 'all')} className="w-full">
         <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
           <TabsTrigger value="all" className="text-xs sm:text-sm">
             All ({requests.length})
@@ -301,7 +301,7 @@ export function VerificationReviewDashboard() {
                           }}
                         >
                           <div className="flex items-start gap-3 sm:gap-4">
-                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-border flex-shrink-0">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-border shrink-0">
                               <AvatarImage src={pet?.photo} />
                               <AvatarFallback className="text-base sm:text-lg">
                                 {pet?.name?.[0] || '?'}
@@ -327,7 +327,7 @@ export function VerificationReviewDashboard() {
                                   {getLevelIcon(request.verificationLevel)} {request.verificationLevel.toUpperCase()}
                                 </Badge>
                                 {request.trustScore && (
-                                  <Badge variant="outline" className="bg-gradient-to-r from-primary/10 to-accent/10">
+                                  <Badge variant="outline" className="bg-linear-to-r from-primary/10 to-accent/10">
                                     Trust Score: {request.trustScore}
                                   </Badge>
                                 )}
@@ -361,7 +361,7 @@ export function VerificationReviewDashboard() {
                               )}
                             </div>
 
-                            <ArrowRight size={20} className="text-muted-foreground flex-shrink-0 mt-4" />
+                            <ArrowRight size={20} className="text-muted-foreground shrink-0 mt-4" />
                           </div>
                         </Card>
                       </motion.div>
@@ -380,9 +380,9 @@ export function VerificationReviewDashboard() {
         setRejectionReason('')
       }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2">
-              <ShieldCheck size={24} weight="fill" className="text-primary flex-shrink-0" />
+              <ShieldCheck size={24} weight="fill" className="text-primary shrink-0" />
               <span className="truncate">Verification Request Review</span>
             </DialogTitle>
           </DialogHeader>
@@ -390,7 +390,7 @@ export function VerificationReviewDashboard() {
           {selectedRequest && (
             <ScrollArea className="flex-1 pr-2 sm:pr-4">
               <div className="space-y-4 sm:space-y-6 pb-2">
-                <Card className="p-5 bg-gradient-to-br from-primary/5 to-accent/5">
+                <Card className="p-5 bg-linear-to-br from-primary/5 to-accent/5">
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar className="h-20 w-20 border-2 border-primary">
                       <AvatarImage src={getPet(selectedRequest.petId)?.photo} />
@@ -522,7 +522,7 @@ export function VerificationReviewDashboard() {
                       <Button 
                         onClick={handleApprove} 
                         disabled={loading}
-                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+                        className="bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
                         size="lg"
                       >
                         <CheckCircle size={20} weight="fill" className="mr-2" />

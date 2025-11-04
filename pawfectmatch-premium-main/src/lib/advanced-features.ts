@@ -26,14 +26,14 @@ interface WakeLockSentinel extends EventTarget {
   type: 'screen'
 }
 
-interface NavigatorWithBattery extends Navigator {
+interface NavigatorWithBattery {
   getBattery?(): Promise<BatteryManager>
   connection?: NetworkInformation
   wakeLock?: WakeLockManager
 }
 
-interface WindowWithNavigator extends Window {
-  navigator: NavigatorWithBattery
+interface WindowWithNavigator {
+  navigator: Navigator & NavigatorWithBattery
 }
 
 export function useIntersectionObserver(

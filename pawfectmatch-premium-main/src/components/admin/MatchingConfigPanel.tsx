@@ -6,9 +6,10 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import type { MatchingConfig } from '@/lib/domain/matching-config'
-import { DEFAULT_MATCHING_WEIGHTS, WEIGHT_SAFE_RANGES, DEFAULT_HARD_GATES } from '@/lib/domain/matching-config'
-import { matchingAPI } from '@/lib/api/matching-api'
+import type { MatchingConfig } from '@/core/domain/matching-config'
+import { DEFAULT_MATCHING_WEIGHTS, WEIGHT_SAFE_RANGES, DEFAULT_HARD_GATES } from '@/core/domain/matching-config'
+import { matchingAPI } from '@/api/matching-api'
+import type { UpdateMatchingConfigData } from '@/api/types'
 import { toast } from 'sonner'
 import { FloppyDisk, ArrowsClockwise } from '@phosphor-icons/react'
 import { createLogger } from '@/lib/logger'
@@ -60,11 +61,15 @@ export function MatchingConfigPanel() {
 
     try {
       setSaving(true)
-      const user = await window.spark.user()
-      config.updatedBy = user?.login || 'admin'
-      config.updatedAt = new Date().toISOString()
       
-      await matchingAPI.updateConfig(config)
+      const updateData: UpdateMatchingConfigData = {
+        weights: config.weights,
+        hardGates: config.hardGates,
+        featureFlags: config.featureFlags
+      }
+      
+      const updatedConfig = await matchingAPI.updateConfig(updateData)
+      setConfig(updatedConfig)
       toast.success('Configuration saved successfully')
     } catch (error) {
       toast.error('Failed to save configuration')

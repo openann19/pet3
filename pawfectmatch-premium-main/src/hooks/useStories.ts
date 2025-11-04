@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import type { Story } from '@/lib/stories-types'
 
@@ -9,7 +9,7 @@ interface UseStoriesOptions {
 }
 
 export function useStories({
-  currentUserId,
+  currentUserId: _currentUserId,
   currentPetId,
   filterByUser = false,
 }: UseStoriesOptions = {}) {

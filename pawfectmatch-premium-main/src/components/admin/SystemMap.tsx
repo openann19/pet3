@@ -8,7 +8,7 @@ import {
   Cpu, 
   Cloud, 
   Lock, 
-  Activity,
+  Pulse,
   Stack,
   Network,
   Shield,
@@ -256,7 +256,7 @@ export default function SystemMap() {
               <h3 className="text-xl font-bold mb-4">Swipe → Match → Chat Flow</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div>
@@ -267,7 +267,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div>
@@ -278,7 +278,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div>
@@ -289,7 +289,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">4</span>
                   </div>
                   <div>
@@ -300,7 +300,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">5</span>
                   </div>
                   <div>
@@ -317,7 +317,7 @@ export default function SystemMap() {
               <h3 className="text-xl font-bold mb-4">Real-Time Message Flow</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div>
@@ -328,7 +328,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div>
@@ -339,7 +339,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div>
@@ -350,7 +350,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">4</span>
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">5</span>
                   </div>
                   <div>
@@ -378,7 +378,7 @@ export default function SystemMap() {
               <h3 className="text-xl font-bold mb-4">Story Publishing Flow</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div>
@@ -389,7 +389,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div>
@@ -400,7 +400,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div>
@@ -411,7 +411,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">4</span>
                   </div>
                   <div>
@@ -428,7 +428,7 @@ export default function SystemMap() {
               <h3 className="text-xl font-bold mb-4">Admin Moderation Flow</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div>
@@ -439,7 +439,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div>
@@ -450,7 +450,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div>
@@ -461,7 +461,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">4</span>
                   </div>
                   <div>
@@ -472,7 +472,7 @@ export default function SystemMap() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">5</span>
                   </div>
                   <div>
@@ -533,7 +533,7 @@ export default function SystemMap() {
 
               <div>
                 <h4 className="font-bold mb-3 flex items-center gap-2">
-                  <Activity size={20} />
+                  <Pulse size={20} />
                   /presence Namespace
                 </h4>
                 <div className="space-y-2">
@@ -558,7 +558,7 @@ export default function SystemMap() {
 
               <div>
                 <h4 className="font-bold mb-3 flex items-center gap-2">
-                  <Activity size={20} />
+                  <Pulse size={20} />
                   /notifications Namespace
                 </h4>
                 <div className="space-y-2">

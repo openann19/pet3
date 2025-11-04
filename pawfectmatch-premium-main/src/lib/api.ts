@@ -21,10 +21,10 @@ export class APIClient {
     const correlationId = generateCorrelationId()
     const url = `${this.baseURL}${endpoint}`
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Correlation-ID': correlationId,
-      ...options.headers
+      ...(options.headers as Record<string, string>)
     }
 
     if (this.accessToken) {

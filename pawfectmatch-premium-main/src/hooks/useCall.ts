@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStorage } from '@/hooks/useStorage'
-import type { Call, CallType, CallParticipant, CallSession, CallHistoryItem, VideoQuality } from '@/lib/call-types'
+import type { Call, CallType, CallSession, CallHistoryItem, VideoQuality } from '@/lib/call-types'
 import { 
   createCall, 
   requestMediaPermissions, 

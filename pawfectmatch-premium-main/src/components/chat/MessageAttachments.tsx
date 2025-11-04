@@ -49,7 +49,7 @@ function VoiceAttachment({ attachment }: { attachment: MessageAttachment }) {
         size="icon"
         variant="ghost"
         onClick={togglePlayback}
-        className="flex-shrink-0 w-8 h-8"
+        className="shrink-0 w-8 h-8"
       >
         {isPlaying ? (
           <Pause size={16} weight="fill" />

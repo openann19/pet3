@@ -144,14 +144,14 @@ export function AdvancedFilterPanel({
                     {category.min} {category.unit}
                   </span>
                   <span className="font-semibold text-primary">
-                    {localValues[category.id] || category.min} {category.unit}
+                    {(localValues[category.id] as number | undefined) || category.min || 0} {category.unit}
                   </span>
                   <span className="text-muted-foreground">
                     {category.max} {category.unit}
                   </span>
                 </div>
                 <Slider
-                  value={[localValues[category.id] || category.min || 0]}
+                  value={[(localValues[category.id] as number | undefined) || category.min || 0]}
                   onValueChange={(value) => handleRangeChange(category.id, value)}
                   min={category.min || 0}
                   max={category.max || 100}

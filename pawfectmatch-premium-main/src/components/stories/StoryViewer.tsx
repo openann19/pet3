@@ -408,7 +408,7 @@ export default function StoryViewer({
                 onClick={handleReply}
                 disabled={!replyText.trim()}
                 size="icon"
-                className="flex-shrink-0 bg-white text-black hover:bg-white/90"
+                className="shrink-0 bg-white text-black hover:bg-white/90"
               >
                 <PaperPlaneRight size={20} weight="fill" />
               </Button>

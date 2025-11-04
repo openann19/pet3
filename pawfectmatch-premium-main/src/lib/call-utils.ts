@@ -1,4 +1,4 @@
-import type { Call, CallType, CallParticipant, GroupCall } from './call-types'
+import type { Call, CallType, GroupCall } from './call-types'
 import { logger } from './logger'
 import { FixerError } from './fixer-error'
 

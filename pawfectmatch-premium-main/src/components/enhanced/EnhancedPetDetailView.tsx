@@ -210,7 +210,7 @@ export function EnhancedPetDetailView({
                           transition={{ delay: idx * 0.1 }}
                           className="text-sm flex items-start gap-2"
                         >
-                          <Heart size={14} className="text-primary mt-0.5 flex-shrink-0" weight="fill" />
+                          <Heart size={14} className="text-primary mt-0.5 shrink-0" weight="fill" />
                           <span>{reason}</span>
                         </motion.li>
                       ))}

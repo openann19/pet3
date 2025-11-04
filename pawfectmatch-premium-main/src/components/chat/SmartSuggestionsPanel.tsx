@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Sparkle, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import type { SmartSuggestion } from '@/lib/chat-types'
@@ -13,10 +13,10 @@ export default function SmartSuggestionsPanel({
   onSelect, 
   onDismiss 
 }: SmartSuggestionsPanelProps) {
-  const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([
-    { id: '1', type: 'conversation-starter', text: 'Tell me more about your pet!', icon: '🐾' },
-    { id: '2', type: 'meetup', text: 'Want to set up a playdate?', icon: '🎾' },
-    { id: '3', type: 'question', text: 'What does your pet love to do?', icon: '❓' }
+  const [suggestions] = useState<SmartSuggestion[]>([
+    { id: '1', category: 'suggestion', text: 'Tell me more about your pet!', icon: '🐾' },                                                                
+    { id: '2', category: 'suggestion', text: 'Want to set up a playdate?', icon: '🎾' },
+    { id: '3', category: 'question', text: 'What does your pet love to do?', icon: '❓' }                                                                           
   ])
 
   return (
@@ -51,7 +51,7 @@ export default function SmartSuggestionsPanel({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <span>{suggestion.icon}</span>
+              {suggestion.icon && <span>{suggestion.icon}</span>}
               <span>{suggestion.text}</span>
             </motion.button>
           ))}

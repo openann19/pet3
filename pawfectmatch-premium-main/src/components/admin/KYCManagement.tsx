@@ -231,7 +231,7 @@ export function KYCManagement() {
                             </div>
                           </div>
 
-                          <ArrowRight size={20} className="text-muted-foreground flex-shrink-0" />
+                          <ArrowRight size={20} className="text-muted-foreground shrink-0" />
                         </div>
                       </Card>
                     </motion.div>

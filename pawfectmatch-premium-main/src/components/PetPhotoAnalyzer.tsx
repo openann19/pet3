@@ -138,10 +138,10 @@ Return ONLY valid JSON with this exact structure, nothing else:
         animate={{ opacity: 1, y: 0 }}
         className="relative"
       >
-        <Card className="p-6 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 border-2 border-dashed border-primary/20">
+        <Card className="p-6 bg-linear-to-br from-primary/5 via-accent/5 to-secondary/5 border-2 border-dashed border-primary/20">
           <div className="flex items-start gap-4">
             <motion.div
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0"
+              className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0"
               animate={{ 
                 boxShadow: [
                   '0 0 20px rgba(245,158,11,0.3)',
@@ -248,7 +248,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                     type="button"
                     onClick={analyzePhoto}
                     disabled={!photo || analyzing}
-                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                    className="bg-linear-to-r from-primary to-accent hover:opacity-90"
                   >
                     {analyzing ? (
                       <>
@@ -283,7 +283,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                     type="button"
                     onClick={analyzePhoto}
                     disabled={analyzing}
-                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                    className="bg-linear-to-r from-primary to-accent hover:opacity-90"
                   >
                     {analyzing ? (
                       <>
@@ -329,7 +329,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <Card className="p-6 bg-gradient-to-br from-background to-muted/30">
+            <Card className="p-6 bg-linear-to-br from-background to-muted/30">
               <div className="flex items-center gap-3 mb-4">
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -373,13 +373,13 @@ Return ONLY valid JSON with this exact structure, nothing else:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
           >
-            <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+            <Card className="p-6 bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
               <div className="flex items-start gap-4 mb-4">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                  className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                  className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0"
                 >
                   <Check size={24} weight="bold" className="text-white" />
                 </motion.div>
@@ -478,7 +478,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                   whileTap={{ scale: 0.98 }}
                 >
                   <Button
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90"
+                    className="w-full bg-linear-to-r from-green-500 to-emerald-500 hover:opacity-90"
                     onClick={handleAccept}
                   >
                     <Check size={18} weight="bold" />

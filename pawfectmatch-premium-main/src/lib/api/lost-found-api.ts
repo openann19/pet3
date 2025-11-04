@@ -7,6 +7,7 @@ import type {
   LostAlertStatus
 } from '../lost-found-types'
 import { generateULID } from '../utils'
+import { notificationsService } from '../notifications-service'
 
 /**
  * Lost & Found Alerts API Service
@@ -220,17 +221,43 @@ export class LostFoundAPI {
     sightings.push(sighting)
     await this.setSightings(sightings)
 
-    // Increment alert sightings count
+    // Increment alert sightings count and send notification
     const alertIndex = alerts.findIndex(a => a.id === data.alertId)
     if (alertIndex !== -1) {
       const alertToUpdate = alerts[alertIndex]
       if (alertToUpdate) {
         alertToUpdate.sightingsCount = (alertToUpdate.sightingsCount ?? 0) + 1
         await this.setAlerts(alerts)
+        
+        // Send notification to alert owner
+        try {
+          await notificationsService.notifyNewSighting(sighting, alertToUpdate)
+          const logger = await import('../logger').then(m => m.createLogger('LostFoundAPI'))
+          logger.info('Sighting notification sent', {
+            sightingId: sighting.id,
+            alertId: alertToUpdate.id,
+            alertOwnerId: alertToUpdate.ownerId
+          })
+        } catch (error) {
+          // Log error but don't fail sighting creation
+          // Use logger instead of console.error for consistency
+          const logger = await import('../logger').then(m => m.createLogger('LostFoundAPI'))
+          logger.error('Failed to send sighting notification', {
+            sightingId: sighting.id,
+            alertId: alertToUpdate.id,
+            error: error instanceof Error ? error : new Error(String(error))
+          })
+        }
       }
     }
 
-    // TODO: Send notification to alert owner
+    // Log sighting creation
+    const logger = await import('../logger').then(m => m.createLogger('LostFoundAPI'))
+    logger.info('Sighting created', {
+      sightingId: sighting.id,
+      alertId: data.alertId,
+      reporterId: data.reporterId
+    })
 
     return sighting
   }
@@ -253,6 +280,39 @@ export class LostFoundAPI {
     return alerts
       .filter(a => a.ownerId === userId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
+
+  /**
+   * Update alert review status (for moderation)
+   */
+  async updateAlertReviewStatus(id: string, reviewerId: string): Promise<LostAlert> {
+    const alerts = await this.getAlerts()
+    const index = alerts.findIndex(a => a.id === id)
+    
+    if (index === -1) {
+      throw new Error('Alert not found')
+    }
+
+    const alert = alerts[index]
+    if (!alert) {
+      throw new Error('Alert not found')
+    }
+
+    alert.reviewedAt = new Date().toISOString()
+    alert.reviewedBy = reviewerId
+    alert.updatedAt = new Date().toISOString()
+
+    await this.setAlerts(alerts)
+    
+    // Log review action
+    const logger = await import('../logger').then(m => m.createLogger('LostFoundAPI'))
+    logger.info('Alert review status updated', {
+      alertId: id,
+      reviewerId,
+      reviewedAt: alert.reviewedAt
+    })
+    
+    return alert
   }
 
   // Helper methods

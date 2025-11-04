@@ -1,26 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import {
   Bell,
   BellRinging,
   Heart,
   ChatCircle,
   CheckCircle,
-  Warning,
   Info,
-  X,
   Check,
   Trash,
   DotsThreeVertical,
-  Star,
   Camera,
-  ShieldCheck,
-  Sparkle
+  ShieldCheck
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
@@ -211,7 +206,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                       setSelectedCategory(cat.value)
                     }}
                     className={cn(
-                      'rounded-full flex-shrink-0 h-9',
+                      'rounded-full shrink-0 h-9',
                       selectedCategory === cat.value && 'shadow-lg'
                     )}
                   >
@@ -357,7 +352,7 @@ function NotificationItem({
         <div className="flex items-start gap-3">
           <motion.div
             className={cn(
-              'flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center',
+              'shrink-0 w-12 h-12 rounded-xl flex items-center justify-center',
               notification.priority === 'urgent' && 'bg-destructive/10',
               notification.priority === 'high' && 'bg-accent/10',
               notification.priority === 'normal' && 'bg-primary/10',
@@ -399,7 +394,7 @@ function NotificationItem({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
+                  className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
                 />
               )}
             </div>

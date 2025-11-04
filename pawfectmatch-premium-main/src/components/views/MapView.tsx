@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
-  FunnelSimple,
   MagnifyingGlass,
   NavigationArrow,
   Heart,
@@ -16,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
 import { DEFAULT_LOCATION } from '@/lib/maps/config';
@@ -30,17 +28,17 @@ import { logger } from '@/lib/logger';
 type MapViewMode = 'discover' | 'places' | 'playdate' | 'lost-pet' | 'matches';
 
 export default function MapView() {
-  const { t, theme } = useApp();
+  const { t } = useApp();
   const { mapSettings, PLACE_CATEGORIES } = useMapConfig();
   
-  const [mode, setMode] = useState<MapViewMode>('discover');
+  const [_mode, _setMode] = useState<MapViewMode>('discover');
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [coarseLocation, setCoarseLocation] = useState<Location | null>(null);
   const [preciseSharingEnabled, setPreciseSharingEnabled] = useStorage<boolean>('map-precise-sharing', false);
   const [preciseSharingUntil, setPreciseSharingUntil] = useStorage<number | null>('map-precise-until', null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [radiusKm, setRadiusKm] = useState(mapSettings.DEFAULT_RADIUS_KM);
+  const [radiusKm, _setRadiusKm] = useState(mapSettings.DEFAULT_RADIUS_KM);
   const [showList, setShowList] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
@@ -119,6 +117,7 @@ export default function MapView() {
     
     for (let i = 0; i < 20; i++) {
       const category = categories[Math.floor(Math.random() * categories.length)];
+      if (!category) continue
       const angle = (Math.PI * 2 * i) / 20;
       const dist = Math.random() * radiusKm;
       const deltaLat = (dist / 111) * Math.cos(angle);
@@ -331,7 +330,7 @@ export default function MapView() {
             className="backdrop-blur-xl bg-primary/10 rounded-xl border border-primary/20 p-3"
           >
             <div className="flex items-start gap-3">
-              <Warning size={20} className="text-primary flex-shrink-0 mt-0.5" weight="fill" />
+              <Warning size={20} className="text-primary shrink-0 mt-0.5" weight="fill" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
                   {t.map?.approximateLocation || 'Using approximate location'}
@@ -344,7 +343,7 @@ export default function MapView() {
               <Button
                 size="sm"
                 onClick={handleEnablePreciseSharing}
-                className="flex-shrink-0 h-8 text-xs"
+                className="shrink-0 h-8 text-xs"
               >
                 {t.map?.enable || 'Enable'}
               </Button>
@@ -359,7 +358,7 @@ export default function MapView() {
             className="backdrop-blur-xl bg-green-500/10 rounded-xl border border-green-500/20 p-3"
           >
             <div className="flex items-center gap-3">
-              <CheckCircle size={20} className="text-green-500 flex-shrink-0" weight="fill" />
+              <CheckCircle size={20} className="text-green-500 shrink-0" weight="fill" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
                   {t.map?.preciseEnabled || 'Precise location active'}
@@ -372,7 +371,7 @@ export default function MapView() {
                 size="sm"
                 variant="ghost"
                 onClick={handleDisablePreciseSharing}
-                className="flex-shrink-0 h-8 text-xs"
+                className="shrink-0 h-8 text-xs"
               >
                 {t.map?.disable || 'Disable'}
               </Button>
@@ -417,7 +416,7 @@ export default function MapView() {
                   >
                     <div className="flex gap-3">
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ backgroundColor: `${category?.color}20` }}
                       >
                         {category?.icon}
@@ -428,7 +427,7 @@ export default function MapView() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 flex-shrink-0"
+                            className="h-8 w-8 shrink-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSavePlace(place.id);
@@ -483,7 +482,7 @@ export default function MapView() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
                         style={{ backgroundColor: `${category?.color}20` }}
                       >
                         {category?.icon}

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { MagnifyingGlass, Plus, MapPin, Eye, Heart, Calendar } from '@phosphor-icons/react'
+import { MagnifyingGlass, Plus, MapPin } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { LostAlert } from '@/lib/lost-found-types'
 import { LostAlertCard } from '@/components/lost-found/LostAlertCard'
@@ -65,7 +64,7 @@ export default function LostFoundView() {
   const loadAlerts = async () => {
     try {
       setLoading(true)
-      const filters: LostAlertFilters = {
+      const filters: LostAlertFilters & { cursor?: string; limit?: number } = {
         limit: 50,
         cursor: cursor
       }

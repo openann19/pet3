@@ -263,9 +263,9 @@ function App() {
         transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.1 }}
         className="backdrop-blur-2xl bg-card/90 border-b border-border/50 sticky top-0 z-40 shadow-2xl shadow-primary/20"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
+          className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
           animate={{
             x: ['-100%', '100%'],
             opacity: [0, 0.5, 0],
@@ -297,7 +297,7 @@ function App() {
                 }}
               >
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
+                  className="absolute inset-0 bg-linear-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
                   animate={{
                     scale: [1, 1.5, 1],
                     opacity: [0.7, 1, 0.7],
@@ -310,7 +310,7 @@ function App() {
                 />
                 <Heart className="text-primary drop-shadow-2xl relative z-10 group-hover:scale-125 transition-transform duration-300" size={24} weight="fill" />
               </motion.div>
-              <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-x drop-shadow-sm">
+              <h1 className="text-base sm:text-xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent bg-size-[200%_auto] animate-gradient-x drop-shadow-sm">
                 {t.app.title}
               </h1>
             </motion.div>
@@ -494,9 +494,9 @@ function App() {
               }}
         className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/50 z-40 shadow-2xl shadow-primary/20 safe-area-inset-bottom"
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/8 via-accent/4 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-t from-primary/8 via-accent/4 to-transparent pointer-events-none" />
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent pointer-events-none"
+          className="absolute inset-0 bg-linear-to-r from-transparent via-accent/5 to-transparent pointer-events-none"
           animate={{
             x: ['-100%', '100%'],
             opacity: [0, 0.4, 0],
@@ -520,7 +520,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'discover'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -551,7 +551,7 @@ function App() {
               {currentView === 'discover' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}
@@ -569,7 +569,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'matches'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -591,7 +591,7 @@ function App() {
               {currentView === 'matches' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}
@@ -609,7 +609,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'chat'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -631,7 +631,7 @@ function App() {
               {currentView === 'chat' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}
@@ -649,7 +649,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'community'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -671,7 +671,7 @@ function App() {
               {currentView === 'community' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}
@@ -689,7 +689,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'adoption'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -711,7 +711,7 @@ function App() {
               {currentView === 'adoption' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}
@@ -729,7 +729,7 @@ function App() {
               whileTap={{ scale: 0.92 }}
               className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] ${
                 currentView === 'profile'
-                  ? 'text-primary bg-gradient-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
@@ -751,7 +751,7 @@ function App() {
               {currentView === 'profile' && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
                   initial={{ width: 0 }}
                   animate={{ width: '2rem' }}
                   transition={butterySmoothTransition}

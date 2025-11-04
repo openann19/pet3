@@ -1,4 +1,3 @@
-import { useStorage } from '@/hooks/useStorage'
 import { useEffect } from 'react'
 import { generateCorrelationId } from './utils'
 import { createLogger } from './logger'
@@ -169,7 +168,7 @@ class AnalyticsService {
         language: navigator.language,
         screenSize: `${window.innerWidth}x${window.innerHeight}`
       },
-      entryPoint: this.events[0]?.properties?.pathname || '/',
+      entryPoint: (this.events[0]?.properties?.pathname as string | undefined) || '/',
       exitPoint: window.location.pathname
     }
 
@@ -315,6 +314,7 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
   const viewedPets = userEvents
     .filter(e => e.name === 'pet_viewed')
     .map(e => e.properties.petId)
+    .filter((petId): petId is string => typeof petId === 'string')
   const mostViewedPets = Array.from(new Set(viewedPets)).slice(0, 10)
 
   const matches = userEvents.filter(e => e.name === 'match_created').length
@@ -330,8 +330,8 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
   const likedPets = userEvents
     .filter(e => e.name === 'pet_liked')
     .map(e => e.properties.breed)
-    .filter(Boolean)
-  const preferredPetTypes = Array.from(new Set(likedPets)).slice(0, 5)
+    .filter((breed): breed is string => typeof breed === 'string')
+  const preferredPetTypes: string[] = Array.from(new Set(likedPets)).slice(0, 5)
 
   const activityByHour = userEvents.reduce((acc, event) => {
     const hour = new Date(event.timestamp).getHours()
@@ -339,10 +339,10 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
     return acc
   }, {} as Record<number, number>)
 
-  const peakActivityHours = Object.entries(activityByHour)
+  const peakActivityHours: number[] = Object.entries(activityByHour)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([hour]) => parseInt(hour))
+    .map(([hour]) => parseInt(hour, 10))
 
   const messagesSent = userEvents.filter(e => e.name === 'message_sent').length
   const averageMessagesPerMatch = matches > 0 ? messagesSent / matches : 0

@@ -203,7 +203,7 @@ export default function ChatWindow({
           
           <Avatar className="w-10 h-10 ring-2 ring-white/30">
             <AvatarImage src={room.matchedPetPhoto} alt={room.matchedPetName || 'Chat'} />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
+            <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
               {(room.matchedPetName || 'C')[0]}
             </AvatarFallback>
           </Avatar>
@@ -232,7 +232,7 @@ export default function ChatWindow({
             )}
           </div>
 
-          <Button variant="ghost" size="icon" className="flex-shrink-0">
+          <Button variant="ghost" size="icon" className="shrink-0">
             <DotsThree size={24} weight="bold" />
           </Button>
         </div>
@@ -272,9 +272,9 @@ export default function ChatWindow({
                   className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {!isCurrentUser && (
-                    <Avatar className="w-8 h-8 ring-2 ring-white/20 flex-shrink-0">
+                    <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                       <AvatarImage src={message.senderAvatar} alt={message.senderName || 'User'} />
-                      <AvatarFallback className="bg-gradient-to-br from-secondary to-primary text-white text-xs font-bold">
+                      <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
                         {(message.senderName || 'U')[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -287,12 +287,12 @@ export default function ChatWindow({
                         message.type === 'sticker' ? 'p-0' : 'p-3'
                       } rounded-2xl shadow-lg ${
                         isCurrentUser
-                          ? 'bg-gradient-to-br from-primary to-accent text-white'
+                          ? 'bg-linear-to-br from-primary to-accent text-white'
                           : 'glass-strong backdrop-blur-xl border border-white/20'
                       }`}
                     >
                       {message.type === 'text' && (
-                        <p className="text-sm break-words">{message.content}</p>
+                        <p className="text-sm wrap-break-word">{message.content}</p>
                       )}
                       
                       {message.type === 'sticker' && message.metadata?.sticker && (
@@ -483,7 +483,7 @@ export default function ChatWindow({
               variant="ghost"
               size="icon"
               onClick={() => setShowTemplates(!showTemplates)}
-              className="flex-shrink-0"
+              className="shrink-0"
             >
               <ChatCentered size={24} weight={showTemplates ? 'fill' : 'regular'} />
             </Button>
@@ -495,7 +495,7 @@ export default function ChatWindow({
                 haptics.impact('light')
                 setShowStickers(!showStickers)
               }}
-              className="flex-shrink-0"
+              className="shrink-0"
             >
               <Smiley size={24} weight={showStickers ? 'fill' : 'regular'} />
             </Button>
@@ -523,7 +523,7 @@ export default function ChatWindow({
               }}
               size="icon"
               variant="ghost"
-              className="flex-shrink-0"
+              className="shrink-0"
             >
               <Microphone size={20} weight="regular" />
             </Button>
@@ -532,7 +532,7 @@ export default function ChatWindow({
               onClick={() => handleSendMessage(inputValue, 'text')}
               disabled={!inputValue.trim()}
               size="icon"
-              className="flex-shrink-0 bg-gradient-to-br from-primary to-accent hover:shadow-lg transition-all disabled:opacity-50"
+              className="shrink-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all disabled:opacity-50"
             >
               <motion.div
                 whileHover={{ x: 5 }}

@@ -34,7 +34,7 @@ export default function CreateHighlightDialog({
   const [stories] = useStorage<Story[]>('stories', [])
   const [userPets] = useStorage<Pet[]>('user-pets', [])
   const [currentUser] = useStorage<{ id: string; name: string }>('current-user', { id: 'user-1', name: 'User' })
-  const [highlights, setHighlights] = useStorage<StoryHighlight[]>('story-highlights', [])
+  const [, setHighlights] = useStorage<StoryHighlight[]>('story-highlights', [])
 
   const [title, setTitle] = useState(existingHighlight?.title || '')
   const [selectedStories, setSelectedStories] = useState<Set<string>>(

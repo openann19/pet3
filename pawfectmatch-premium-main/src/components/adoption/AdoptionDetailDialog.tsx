@@ -16,7 +16,6 @@ import {
   Heart,
   Phone,
   Envelope,
-  Globe,
   Calendar,
   PawPrint,
   Siren,
@@ -116,7 +115,7 @@ export function AdoptionDetailDialog({ profile, open, onOpenChange }: AdoptionDe
               </>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
           </div>
 
           <div className="p-6 space-y-6">

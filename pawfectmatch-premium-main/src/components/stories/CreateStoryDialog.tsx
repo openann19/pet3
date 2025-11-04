@@ -214,7 +214,7 @@ export default function CreateStoryDialog({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
                         <Camera size={32} weight="fill" className="text-white" />
                       </div>
                       <div className="text-center">
@@ -229,7 +229,7 @@ export default function CreateStoryDialog({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-linear-to-br from-secondary to-primary flex items-center justify-center">
                         <ImageIcon size={32} weight="fill" className="text-white" />
                       </div>
                       <div className="text-center">
@@ -241,7 +241,7 @@ export default function CreateStoryDialog({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="relative aspect-[9/16] max-h-96 bg-black rounded-2xl overflow-hidden">
+                  <div className="relative aspect-9/16 max-h-96 bg-black rounded-2xl overflow-hidden">
                     {mediaType === 'photo' ? (
                       <img
                         src={mediaPreview}
@@ -353,7 +353,7 @@ export default function CreateStoryDialog({
             <Button
               onClick={handleCreate}
               disabled={!mediaPreview || isProcessing}
-              className="bg-gradient-to-r from-primary to-accent"
+              className="bg-linear-to-r from-primary to-accent"
             >
               {isProcessing ? 'Creating...' : 'Share Story'}
             </Button>

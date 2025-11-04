@@ -28,7 +28,7 @@ export class NotificationsService {
         title: `Lost Pet Alert: ${alert.petSummary.name}`,
         body: `${alert.petSummary.species} • Last seen ${new Date(alert.lastSeen.whenISO).toLocaleDateString()}`,
         icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
-        image: alert.photos && alert.photos.length > 0 ? alert.photos[0] : undefined,
+        ...(alert.photos && alert.photos.length > 0 ? { image: alert.photos[0] } : {}),
         tag: 'lost-alert',
         data: {
           type: 'lost-alert',
@@ -67,7 +67,7 @@ export class NotificationsService {
         title: `New Sighting Reported!`,
         body: `Someone reported seeing ${alert.petSummary.name}`,
         icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
-        image: sighting.photos && sighting.photos.length > 0 ? sighting.photos[0] : undefined,
+        ...(sighting.photos && sighting.photos.length > 0 ? { image: sighting.photos[0] } : {}),
         tag: 'sighting',
         data: {
           type: 'sighting',
@@ -94,19 +94,25 @@ export class NotificationsService {
   /**
    * Send notification when a new community post is created by followed users
    */
-  async notifyNewCommunityPost(post: Post, _userId: string): Promise<void> {
+  async notifyNewCommunityPost(post: Post, userId: string): Promise<void> {
     try {
-      // Only notify if user follows the author (TODO: implement following)
-      // For now, notify for trending posts
+      // Only notify if user follows the author
+      const { shouldNotifyForPost } = await import('@/core/services/follow-graph')
+      const shouldNotify = await shouldNotifyForPost(post.authorId, userId)
       
+      if (!shouldNotify) {
+        return // Don't notify if user doesn't follow the author
+      }
+      
+      const imageUrl = post.media && post.media.length > 0 && post.media[0]
+        ? (typeof post.media[0] === 'string' ? post.media[0] : (post.media[0] as { url?: string }).url)
+        : undefined
       await pushNotificationManager.showNotification({
         id: `community-post-${post.id}`,
         title: `New Post by ${post.authorName}`,
         body: post.text ? post.text.slice(0, 100) : 'New post',
         icon: post.authorAvatar || '/icon-192.png',
-        image: post.media && post.media.length > 0 && post.media[0]
-          ? (typeof post.media[0] === 'string' ? post.media[0] : (post.media[0] as { url?: string }).url || undefined)
-          : undefined,
+        ...(imageUrl ? { image: imageUrl } : {}),
         tag: 'community-post',
         data: {
           type: 'community-post',
@@ -137,10 +143,15 @@ export class NotificationsService {
   /**
    * Send notification when a user goes live
    */
-  async notifyGoLive(stream: LiveStream, _userId: string): Promise<void> {
+  async notifyGoLive(stream: LiveStream, userId: string): Promise<void> {
     try {
-      // Only notify if user follows the host (TODO: implement following)
-      // For now, notify for popular hosts
+      // Only notify if user follows the host
+      const { shouldNotifyForStream } = await import('@/core/services/follow-graph')
+      const shouldNotify = await shouldNotifyForStream(stream.hostId, userId)
+      
+      if (!shouldNotify) {
+        return // Don't notify if user doesn't follow the host
+      }
       
       await pushNotificationManager.showNotification({
         id: `live-stream-${stream.id}`,
@@ -179,11 +190,12 @@ export class NotificationsService {
         const alert = await lostFoundAPI.getAlertById(alertId)
         if (!alert) return
 
+        const iconUrl = alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png'
         await pushNotificationManager.showNotification({
           id: `alert-view-${alertId}-${viewCount}`,
           title: `${viewCount} People Viewed Your Alert`,
           body: `${alert.petSummary.name}'s alert has been seen by ${viewCount} people`,
-          icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
+          icon: iconUrl,
           tag: 'alert-view',
           data: {
             type: 'alert-view',

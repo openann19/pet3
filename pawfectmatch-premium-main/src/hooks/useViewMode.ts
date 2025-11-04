@@ -33,7 +33,10 @@ export function useViewMode({
   const toggleMode = useCallback(() => {
     const currentIndex = availableModes.indexOf(viewMode)
     const nextIndex = (currentIndex + 1) % availableModes.length
-    setMode(availableModes[nextIndex])
+    const nextMode = availableModes[nextIndex]
+    if (nextMode) {
+      setMode(nextMode)
+    }
   }, [viewMode, availableModes, setMode])
 
   const isMode = useCallback((mode: ViewMode) => {

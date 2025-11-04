@@ -8,7 +8,6 @@ import type { Playdate } from '@/lib/playdate-types'
 import type { Location } from '@/lib/maps/types'
 import { getCurrentLocation, calculateDistance, formatDistance } from '@/lib/maps/utils'
 import { format } from 'date-fns'
-import { toast } from 'sonner'
 
 interface PlaydateMapProps {
   playdates: Playdate[]
@@ -194,7 +193,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                     onClick={() => handleSelectPlaydate(playdate)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">
                         <MapPin size={24} weight="fill" className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -206,7 +205,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                           {playdate.startTime}
                         </div>
                         <div className="flex items-start gap-2 mb-3">
-                          <MapPin size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <MapPin size={16} className="text-muted-foreground mt-0.5 shrink-0" />
                           <div>
                             <p className="font-medium text-sm">{playdate.location.name}</p>
                             <p className="text-sm text-muted-foreground">{playdate.location.address}</p>

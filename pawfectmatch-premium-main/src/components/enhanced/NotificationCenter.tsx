@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Bell, X, Check, CheckCircle } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -62,18 +62,6 @@ export function NotificationCenter() {
 
   const clearAll = () => {
     setNotifications([])
-  }
-
-  const getNotificationIcon = (type: Notification['type']) => {
-    const iconMap = {
-      match: '💕',
-      message: '💬',
-      like: '❤️',
-      comment: '💭',
-      playdate: '🎾',
-      system: '🔔'
-    }
-    return iconMap[type] || '🔔'
   }
 
   return (
@@ -205,7 +193,7 @@ function NotificationItem({
       )}
     >
       <div className="flex gap-3">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {notification.imageUrl ? (
             <img
               src={notification.imageUrl}
@@ -232,7 +220,7 @@ function NotificationItem({
             </div>
 
             {!notification.read && (
-              <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary" />
+              <div className="shrink-0 w-2 h-2 rounded-full bg-primary" />
             )}
           </div>
         </div>

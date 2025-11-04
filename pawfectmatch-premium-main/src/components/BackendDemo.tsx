@@ -141,7 +141,7 @@ export default function BackendDemo() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-3 bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
           Backend Integration Demo
         </h1>
         <p className="text-muted-foreground text-lg">
@@ -323,7 +323,7 @@ export default function BackendDemo() {
                       onClick={() => handleDelete(record.id)}
                       variant="ghost"
                       size="icon"
-                      className="flex-shrink-0"
+                      className="shrink-0"
                     >
                       <Trash size={18} />
                     </Button>

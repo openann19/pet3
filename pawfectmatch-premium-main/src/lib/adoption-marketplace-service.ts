@@ -1,4 +1,3 @@
-import { useStorage } from '@/hooks/useStorage'
 import type {
   AdoptionListing,
   AdoptionApplication,
@@ -210,15 +209,20 @@ class AdoptionMarketplaceService {
       throw new Error('Listing not found')
     }
 
-    listings[index].status = status
-    listings[index].updatedAt = new Date().toISOString()
+    const listing = listings[index]
+    if (!listing) {
+      throw new Error('Listing not found')
+    }
+
+    listing.status = status
+    listing.updatedAt = new Date().toISOString()
 
     if (status === 'active') {
-      listings[index].approvedAt = new Date().toISOString()
-      listings[index].approvedBy = adminId
+      listing.approvedAt = new Date().toISOString()
+      listing.approvedBy = adminId
     } else if (status === 'withdrawn') {
-      listings[index].rejectedAt = new Date().toISOString()
-      listings[index].rejectionReason = reason
+      listing.rejectedAt = new Date().toISOString()
+      listing.rejectionReason = reason
     }
 
     await this.setListings(listings)
@@ -229,8 +233,11 @@ class AdoptionMarketplaceService {
     const index = listings.findIndex(l => l.id === listingId)
     
     if (index !== -1) {
-      listings[index].viewsCount++
-      await this.setListings(listings)
+      const listing = listings[index]
+      if (listing) {
+        listing.viewsCount++
+        await this.setListings(listings)
+      }
     }
   }
 
@@ -251,8 +258,11 @@ class AdoptionMarketplaceService {
     const listings = await this.getListings()
     const listingIndex = listings.findIndex(l => l.id === data.listingId)
     if (listingIndex !== -1) {
-      listings[listingIndex].applicationsCount++
-      await this.setListings(listings)
+      const listing = listings[listingIndex]
+      if (listing) {
+        listing.applicationsCount++
+        await this.setListings(listings)
+      }
     }
 
     return application
@@ -286,17 +296,22 @@ class AdoptionMarketplaceService {
       throw new Error('Application not found')
     }
 
-    applications[index].status = status
-    applications[index].updatedAt = new Date().toISOString()
-    applications[index].reviewedAt = new Date().toISOString()
-    applications[index].reviewedBy = reviewerId
-    applications[index].reviewNotes = notes
+    const application = applications[index]
+    if (!application) {
+      throw new Error('Application not found')
+    }
+
+    application.status = status
+    application.updatedAt = new Date().toISOString()
+    application.reviewedAt = new Date().toISOString()
+    application.reviewedBy = reviewerId
+    application.reviewNotes = notes
 
     await this.setApplications(applications)
 
     if (status === 'accepted') {
       const listings = await this.getListings()
-      const listing = listings.find(l => l.id === applications[index].listingId)
+      const listing = listings.find(l => l.id === application.listingId)
       if (listing) {
         await this.updateListingStatus(listing.id, 'adopted')
       }

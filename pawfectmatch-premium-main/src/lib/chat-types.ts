@@ -177,6 +177,7 @@ export interface SmartSuggestion {
   text: string
   category: 'greeting' | 'question' | 'suggestion' | 'closing'
   confidence?: number
+  icon?: string
 }
 
 // Sticker type

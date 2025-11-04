@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
-  ADVANCED_STORY_TEMPLATES, 
   TEMPLATE_CATEGORIES,
   getTemplatesByCategory,
   type AdvancedTemplate 

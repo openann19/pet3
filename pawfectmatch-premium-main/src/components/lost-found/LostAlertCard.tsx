@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MapPin, Eye, Heart, Calendar, Clock, CurrencyDollar } from '@phosphor-icons/react'
-import { useApp } from '@/contexts/AppContext'
 import type { LostAlert } from '@/lib/lost-found-types'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -23,7 +22,6 @@ export function LostAlertCard({
   isFavorited = false,
   onToggleFavorite 
 }: LostAlertCardProps) {
-  const { t } = useApp()
   const [imageError, setImageError] = useState(false)
 
   const timeAgo = formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })
@@ -113,7 +111,7 @@ export function LostAlertCard({
 
           <div className="space-y-2 text-sm">
             <div className="flex items-start gap-2 text-muted-foreground">
-              <MapPin size={16} className="mt-0.5 flex-shrink-0" />
+              <MapPin size={16} className="mt-0.5 shrink-0" />
               <div>
                 <p>Last seen {lastSeenTime}</p>
                 {alert.lastSeen.description && (

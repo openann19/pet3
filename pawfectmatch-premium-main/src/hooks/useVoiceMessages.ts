@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { generateMessageId } from '@/lib/chat-utils'
-import { toast } from 'sonner'
 
 interface VoiceMessageData {
   blob: string

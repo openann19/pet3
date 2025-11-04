@@ -1,7 +1,6 @@
 import type { AdoptionProfile } from './adoption-types'
 import { parseLLMError } from './llm-utils'
 import { logger } from './logger'
-import { FixerError } from './fixer-error'
 
 export async function generateAdoptionProfiles(count: number = 12): Promise<AdoptionProfile[]> {
   const prompt = spark.llmPrompt`Generate exactly ${count} diverse pet adoption profiles. 
@@ -80,7 +79,7 @@ export async function generateAdoptionProfiles(count: number = 12): Promise<Adop
       goodWithKids: data.goodWithKids,
       goodWithPets: data.goodWithPets,
       energyLevel: data.energyLevel,
-      specialNeeds: data.specialNeeds,
+      specialNeeds: data.specialNeeds ?? undefined,
       adoptionFee: data.adoptionFee,
       postedDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
       personality: data.personality,

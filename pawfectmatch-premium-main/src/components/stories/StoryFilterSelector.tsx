@@ -48,7 +48,7 @@ export default function StoryFilterSelector({
   }, [])
 
   const handleIntensityChange = (value: number[]) => {
-    const newIntensity = value[0]
+    const newIntensity = value[0] ?? 1
     setLocalIntensity(newIntensity)
     onIntensityChange?.(newIntensity)
   }

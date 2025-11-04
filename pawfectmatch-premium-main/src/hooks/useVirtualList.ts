@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 
 interface VirtualListOptions {
   itemHeight: number
@@ -29,11 +29,14 @@ export function useVirtualList<T>(
 
     const visibleItems: VirtualItem<T>[] = []
     for (let i = startIndex; i <= endIndex; i++) {
-      visibleItems.push({
-        index: i,
-        item: items[i],
-        offsetTop: i * itemHeight,
-      })
+      const item = items[i]
+      if (item !== undefined) {
+        visibleItems.push({
+          index: i,
+          item,
+          offsetTop: i * itemHeight,
+        })
+      }
     }
 
     return {

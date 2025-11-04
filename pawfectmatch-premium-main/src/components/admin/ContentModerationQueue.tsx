@@ -16,7 +16,8 @@ import { toast } from 'sonner'
 import { lostFoundAPI } from '@/lib/api/lost-found-api'
 import { communityAPI } from '@/lib/api/community-api'
 import { liveStreamingAPI } from '@/lib/api/live-streaming-api'
-import type { LostAlert, LostAlertStatus } from '@/lib/lost-found-types'
+import type { LostAlert } from '@/lib/lost-found-types'
+import type { LostAlertStatus } from '@/core/domain/lost-found'
 import type { Post } from '@/lib/community-types'
 import type { LiveStream } from '@/lib/live-streaming-types'
 import { formatDistanceToNow } from 'date-fns'
@@ -85,8 +86,40 @@ export function ContentModerationQueue() {
           })
         })
 
-        // Also get reported posts
-        // TODO: Implement report query
+        // Also get reported posts - fetch all posts to find reported ones
+        const allPosts = await communityAPI.getAllPosts()
+        const reports = await communityAPI.getReportsForModeration({
+          status: ['pending'],
+          entityType: ['pet', 'message'], // Check all possible entity types (posts map to 'pet')
+          limit: 50
+        })
+        
+        // Add reported posts to moderation queue
+        for (const report of reports) {
+          // Find the post that matches the reported entity ID
+          const reportedPost = allPosts.find(p => p.id === report.reportedEntityId)
+          if (reportedPost) {
+            const existingItem = newItems.find(item => item.id === reportedPost.id)
+            if (!existingItem) {
+              newItems.push({
+                id: reportedPost.id,
+                type: 'community',
+                status: reportedPost.status === 'pending_review' ? 'pending' : reportedPost.status === 'active' ? 'approved' : 'rejected',
+                content: reportedPost,
+                reportedBy: report.reporterId,
+                reportedAt: report.createdAt,
+                reason: report.reason
+              })
+            } else {
+              // Update existing item with report info if not already reported
+              if (!existingItem.reportedBy) {
+                existingItem.reportedBy = report.reporterId
+                existingItem.reportedAt = report.createdAt
+                existingItem.reason = report.reason
+              }
+            }
+          }
+        }
       } else if (selectedType === 'live-stream') {
         const allStreams = await liveStreamingAPI.getAllStreams()
         
@@ -130,12 +163,24 @@ export function ContentModerationQueue() {
       if (selectedItem.type === 'community') {
         const post = selectedItem.content as Post
         await communityAPI.updatePostStatus(post.id, 'active', user.id, 'Approved by moderator')
+        logger.info('Content approved', {
+          type: 'community',
+          contentId: post.id,
+          moderatorId: user.id,
+          action: 'approve'
+        })
       } else if (selectedItem.type === 'lost-found') {
         // Lost & Found alerts are auto-approved, but we can mark as reviewed
-        // TODO: Add review status
+        const alert = selectedItem.content as LostAlert
+        await lostFoundAPI.updateAlertReviewStatus(alert.id, user.id)
+        logger.info('Lost & Found alert reviewed', {
+          alertId: alert.id,
+          reviewerId: user.id,
+          status: 'approved'
+        })
       } else if (selectedItem.type === 'live-stream') {
         // Live streams are auto-approved
-        // TODO: Add review status
+        // NOTE: Review status tracking should be added for live streams
       }
 
       toast.success('Content approved')
@@ -160,6 +205,14 @@ export function ContentModerationQueue() {
       if (selectedItem.type === 'community') {
         const post = selectedItem.content as Post
         await communityAPI.updatePostStatus(post.id, 'rejected', user.id, decisionText)
+        logger.info('Content rejected', {
+          type: 'community',
+          contentId: post.id,
+          moderatorId: user.id,
+          action: 'reject',
+          reason: decisionReason,
+          details: decisionText
+        })
       } else if (selectedItem.type === 'lost-found') {
         const alert = selectedItem.content as LostAlert
         await lostFoundAPI.updateAlertStatus(alert.id, 'archived', user.id)

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useStorage } from '@/hooks/useStorage'
 import {
   Dialog,
@@ -278,7 +278,7 @@ export function VerificationDialog({
                         transition={{ delay: index * 0.05 }}
                         className="flex items-start gap-2 text-sm text-muted-foreground"
                       >
-                        <CheckCircle size={16} weight="fill" className="text-primary mt-0.5 flex-shrink-0" />
+                        <CheckCircle size={16} weight="fill" className="text-primary mt-0.5 shrink-0" />
                         <span>{benefit}</span>
                       </motion.li>
                     ))}
@@ -348,7 +348,7 @@ export function VerificationDialog({
                     className="p-4 rounded-xl bg-destructive/10 border border-destructive/30"
                   >
                     <div className="flex items-start gap-3">
-                      <XCircle size={24} weight="fill" className="text-destructive flex-shrink-0 mt-0.5" />
+                      <XCircle size={24} weight="fill" className="text-destructive shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-semibold mb-1">Verification Requires Attention</h4>
                         <p className="text-sm text-muted-foreground">

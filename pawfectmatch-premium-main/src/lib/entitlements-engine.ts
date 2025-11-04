@@ -1,64 +1,16 @@
 /**
  * Entitlements Engine
  * 
- * Deterministic feature gating system that gates features based on plan tier.
- * Single source of truth for all entitlement checks.
+ * Infrastructure layer for entitlement checks with storage access.
+ * Uses domain logic from src/core/domain/business.ts for pure calculations.
  */
 
-import { Plan, Entitlements } from './business-types'
+import type { Plan, Entitlements, UsageCounter } from '@/core/domain/business'
+import { getEntitlementsForPlan, checkUsageWithinLimits, isFeatureEnabled } from '@/core/domain/business'
 
 const KV_PREFIX = {
   ENTITLEMENTS: 'entitlements:',
   USAGE: 'usage:',
-}
-
-/**
- * Get entitlements for a plan tier
- */
-export function getEntitlementsForPlan(plan: Plan): Entitlements {
-  switch (plan) {
-    case 'free':
-      return {
-        swipeDailyCap: 5,
-        superLikesPerDay: 0,
-        boostsPerWeek: 0,
-        canSeeWhoLikedYou: false,
-        videoCalls: false,
-        advancedFilters: false,
-        readReceipts: false,
-        priorityRanking: false,
-        profileReviewFastLane: false,
-        adoptionListingLimit: 1,
-      }
-    case 'premium':
-      return {
-        swipeDailyCap: 'unlimited',
-        superLikesPerDay: 0,
-        boostsPerWeek: 1,
-        canSeeWhoLikedYou: true,
-        videoCalls: true,
-        advancedFilters: true,
-        readReceipts: true,
-        priorityRanking: false,
-        profileReviewFastLane: false,
-        adoptionListingLimit: 1,
-      }
-    case 'elite':
-      return {
-        swipeDailyCap: 'unlimited',
-        superLikesPerDay: 10,
-        boostsPerWeek: 2,
-        canSeeWhoLikedYou: true,
-        videoCalls: true,
-        advancedFilters: true,
-        readReceipts: true,
-        priorityRanking: true,
-        profileReviewFastLane: true,
-        adoptionListingLimit: 1,
-      }
-    default:
-      return getEntitlementsForPlan('free')
-  }
 }
 
 /**
@@ -84,63 +36,34 @@ export async function getUserEntitlements(userId: string): Promise<Entitlements>
 
 /**
  * Check if user can perform an action
+ * 
+ * Uses domain logic from src/core/domain/business.ts for pure calculations.
  */
 export async function canPerformAction(
   userId: string,
-  action: 'swipe' | 'super_like' | 'boost' | 'see_who_liked' | 'video_call' | 'advanced_filter' | 'read_receipt' | 'adoption_listing'
-): Promise<{ allowed: boolean; reason?: string; limit?: number; remaining?: number }> {
+  action: 'swipe' | 'super_like' | 'boost' | 'see_who_liked' | 'video_call' | 'advanced_filter' | 'read_receipt' | 'adoption_listing'                           
+): Promise<{ allowed: boolean; reason?: string; limit?: number; remaining?: number }> {                                                                         
   const entitlements = await getUserEntitlements(userId)
   const usage = await getUsageCounter(userId)
 
+  // Use domain logic for usage-based actions
   switch (action) {
     case 'swipe':
-      if (entitlements.swipeDailyCap === 'unlimited') {
-        return { allowed: true }
-      }
-      const swipesRemaining = entitlements.swipeDailyCap - usage.swipes
-      if (swipesRemaining <= 0) {
-        return {
-          allowed: false,
-          reason: 'Daily swipe limit reached',
-          limit: entitlements.swipeDailyCap,
-          remaining: 0,
-        }
-      }
-      return { allowed: true, remaining: swipesRemaining }
-
     case 'super_like':
-      if (usage.superLikes >= entitlements.superLikesPerDay) {
-        return {
-          allowed: false,
-          reason: 'Daily super like limit reached',
-          limit: entitlements.superLikesPerDay,
-          remaining: 0,
-        }
-      }
-      return { allowed: true, remaining: entitlements.superLikesPerDay - usage.superLikes }
-
     case 'boost':
-      if (usage.boostsThisWeek >= entitlements.boostsPerWeek) {
-        return {
-          allowed: false,
-          reason: 'Weekly boost limit reached',
-          limit: entitlements.boostsPerWeek,
-          remaining: 0,
-        }
-      }
-      return { allowed: true, remaining: entitlements.boostsPerWeek - usage.boostsThisWeek }
+      return checkUsageWithinLimits(entitlements, usage, action)
 
     case 'see_who_liked':
-      return { allowed: entitlements.canSeeWhoLikedYou }
+      return { allowed: isFeatureEnabled(entitlements, 'see_who_liked_you') }
 
     case 'video_call':
-      return { allowed: entitlements.videoCalls }
+      return { allowed: isFeatureEnabled(entitlements, 'video_call') }
 
     case 'advanced_filter':
-      return { allowed: entitlements.advancedFilters }
+      return { allowed: isFeatureEnabled(entitlements, 'advanced_filter') }
 
     case 'read_receipt':
-      return { allowed: entitlements.readReceipts }
+      return { allowed: isFeatureEnabled(entitlements, 'read_receipt') }
 
     case 'adoption_listing':
       // Check active adoption listings count
@@ -163,11 +86,7 @@ export async function canPerformAction(
 /**
  * Get usage counter for user (today)
  */
-export async function getUsageCounter(userId: string): Promise<{
-  swipes: number
-  superLikes: number
-  boostsThisWeek: number
-}> {
+export async function getUsageCounter(userId: string): Promise<UsageCounter> {
   const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
   if (!today) {
     throw new Error('Failed to get today date')
@@ -185,9 +104,13 @@ export async function getUsageCounter(userId: string): Promise<{
 
     if (usage && usage.week === weekStart) {
       return {
+        userId,
+        day: today,
+        week: weekStart,
         swipes: usage.swipes || 0,
         superLikes: usage.superLikes || 0,
         boostsThisWeek: usage.boostsThisWeek || 0,
+        updatedAt: new Date().toISOString(),
       }
     }
   } catch {
@@ -195,9 +118,13 @@ export async function getUsageCounter(userId: string): Promise<{
   }
 
   return {
+    userId,
+    day: today,
+    week: weekStart,
     swipes: 0,
     superLikes: 0,
     boostsThisWeek: 0,
+    updatedAt: new Date().toISOString(),
   }
 }
 

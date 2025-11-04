@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  Phone,
   PhoneDisconnect,
   Microphone,
   MicrophoneSlash,
@@ -15,7 +14,6 @@ import {
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import type { CallSession } from '@/lib/call-types'
 import { formatCallDuration } from '@/lib/call-utils'
 import { haptics } from '@/lib/haptics'
@@ -35,7 +33,7 @@ export default function CallInterface({
   onToggleMute,
   onToggleVideo,
   onToggleSpeaker,
-  onMinimize
+  onMinimize: _onMinimize
 }: CallInterfaceProps) {
   const [duration, setDuration] = useState(0)
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
@@ -133,7 +131,7 @@ export default function CallInterface({
       <motion.div
         className={`relative w-full ${
           isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]'
-        } bg-gradient-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
+        } bg-linear-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
         layout
       >
         {isVideoCall && session.remoteParticipant.isVideoEnabled ? (
@@ -144,7 +142,7 @@ export default function CallInterface({
               playsInline
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+            <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/60" />
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -160,7 +158,7 @@ export default function CallInterface({
                   src={session.remoteParticipant.avatar}
                   alt={session.remoteParticipant.name}
                 />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-5xl font-bold">
+                <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-5xl font-bold">
                   {session.remoteParticipant.name[0]}
                 </AvatarFallback>
               </Avatar>

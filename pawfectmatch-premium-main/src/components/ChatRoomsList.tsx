@@ -88,7 +88,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
               )}
               
               <div className="flex items-start gap-3 relative z-10">
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                   <motion.div
                     animate={hasUnread ? { scale: [1, 1.05, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -124,7 +124,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                       {room.matchedPetName || 'Unknown Pet'}
                     </h3>
                     {room.lastMessage && (
-                      <span className={`text-xs flex-shrink-0 ml-2 ${hasUnread ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs shrink-0 ml-2 ${hasUnread ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                         {formatMessageTime(room.lastMessage.timestamp || room.lastMessage.createdAt)}
                       </span>
                     )}
@@ -134,7 +134,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                     {room.lastMessage ? (
                       <div className="flex-1 min-w-0 flex items-center gap-1">
                         {room.lastMessage.status && ['sent', 'delivered', 'read'].includes(room.lastMessage.status) && (
-                          <span className="flex-shrink-0">
+                          <span className="shrink-0">
                             {room.lastMessage.status === 'read' ? (
                               <Checks size={14} weight="bold" className="text-primary" />
                             ) : (

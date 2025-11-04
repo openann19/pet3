@@ -249,7 +249,7 @@ export class AuthService {
     return this.currentUser?.roles.includes(role) ?? false
   }
 
-  hasPermission(action: string, resource: string): boolean {
+  hasPermission(_action: string, _resource: string): boolean {
     if (!this.currentUser) return false
 
     const hasAdminRole = this.currentUser.roles.includes('admin')

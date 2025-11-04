@@ -75,21 +75,25 @@ export function useStorage<T>(key: string, defaultValue: T): [T, (value: T | ((p
   const setValue = useCallback(async (newValue: T | ((prev: T) => T)) => {
     try {
       // Use functional update to get current state, avoiding stale closures
+      let computedValue: T
       setValueState((currentState) => {
         // Compute new value using current state
-        const computedValue = typeof newValue === 'function' 
+        computedValue = typeof newValue === 'function' 
           ? (newValue as (prev: T) => T)(currentState)
           : newValue
 
-        // Persist to storage asynchronously (don't await here to avoid blocking)
-        storage.set(key, computedValue).catch((error) => {
-          logger.error(`Failed to persist value for key ${key}`, error instanceof Error ? error : new Error(String(error)))
-        })
-
         return computedValue
       })
+
+      // Await persistence to ensure write succeeds
+      // For critical keys like is-authenticated, this ensures state consistency
+      await storage.set(key, computedValue!)
+      
+      // Update state after successful persistence
+      setValueState(computedValue!)
     } catch (error) {
       logger.error(`Failed to set value for key ${key}`, error instanceof Error ? error : new Error(String(error)))
+      
       // Revert on error by loading current value from storage
       try {
         const current = await storage.get<T>(key)
@@ -97,6 +101,9 @@ export function useStorage<T>(key: string, defaultValue: T): [T, (value: T | ((p
       } catch (revertError) {
         logger.error(`Failed to revert value for key ${key}`, revertError instanceof Error ? revertError : new Error(String(revertError)))
       }
+      
+      // Re-throw error so caller can handle it
+      throw error
     }
   }, [key])
 

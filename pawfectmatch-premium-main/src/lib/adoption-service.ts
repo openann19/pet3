@@ -1,4 +1,3 @@
-import { useStorage } from '@/hooks/useStorage'
 import type { AdoptionProfile, AdoptionApplication, Shelter } from './adoption-types'
 import { safeParseAdoptionProfiles, safeParseAdoptionApplications, isShelterArray } from './type-guards'
 
@@ -98,8 +97,11 @@ export const adoptionService = {
     const profiles = await this.getAllProfiles()
     const index = profiles.findIndex(p => p._id === profileId)
     if (index !== -1) {
-      profiles[index].status = status
-      await spark.kv.set('adoption-profiles', profiles)
+      const profile = profiles[index]
+      if (profile) {
+        profile.status = status
+        await spark.kv.set('adoption-profiles', profiles)
+      }
     }
   },
 
@@ -116,12 +118,15 @@ export const adoptionService = {
     const applications = await this.getAllApplications()
     const index = applications.findIndex(app => app._id === applicationId)
     if (index !== -1) {
-      applications[index].status = status
-      applications[index].reviewedAt = new Date().toISOString()
-      if (reviewNotes) {
-        applications[index].reviewNotes = reviewNotes
+      const application = applications[index]
+      if (application) {
+        application.status = status
+        application.reviewedAt = new Date().toISOString()
+        if (reviewNotes) {
+          application.reviewNotes = reviewNotes
+        }
+        await spark.kv.set('adoption-applications', applications)
       }
-      await spark.kv.set('adoption-applications', applications)
     }
   },
 

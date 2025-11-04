@@ -101,7 +101,7 @@ export default function PetProfileTemplatesDialog({ open, onOpenChange, onSelect
         )}
         
         <div className="relative z-10 flex items-start gap-4">
-          <span className="text-4xl flex-shrink-0 select-none" role="img" aria-label={template.type}>
+          <span className="text-4xl shrink-0 select-none" role="img" aria-label={template.type}>
             {template.emoji}
           </span>
           <div className="flex-1 min-w-0">
@@ -113,7 +113,7 @@ export default function PetProfileTemplatesDialog({ open, onOpenChange, onSelect
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="bg-primary text-primary-foreground rounded-full p-1.5 flex-shrink-0 shadow-lg"
+                  className="bg-primary text-primary-foreground rounded-full p-1.5 shrink-0 shadow-lg"
                 >
                   <Check size={16} weight="bold" />
                 </motion.div>

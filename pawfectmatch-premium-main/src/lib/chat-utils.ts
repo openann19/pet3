@@ -142,9 +142,9 @@ export function createChatRoom(
   matchId: string,
   petId1: string,
   petId2: string,
-  petName1: string,
+  _petName1: string,
   petName2: string,
-  petPhoto1?: string,
+  _petPhoto1: string | undefined,
   petPhoto2?: string
 ): ChatRoom {
   const now = new Date().toISOString()

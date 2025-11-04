@@ -9,10 +9,8 @@ import type {
   FeedOptions,
   FeedResponse,
   PostDraft,
-  TrendingTag,
   CommunityNotification,
-  ReportReason,
-  PostLocation
+  ReportReason
 } from './community-types'
 import {
   safeParseCommunityPosts,
@@ -216,7 +214,7 @@ export const communityService = {
     return reactions.some(r => r.postId === postId && r.userId === user.id)
   },
 
-  async getComments(postId: string, cursor?: string): Promise<Comment[]> {
+  async getComments(postId: string, _cursor?: string): Promise<Comment[]> {
     const comments = safeParseComments(await spark.kv.get<unknown>(COMMENTS_KEY))
     const postComments = comments
       .filter(c => c.postId === postId && c.status === 'active')
@@ -461,7 +459,7 @@ export const communityService = {
   async saveDraft(draft: Partial<PostDraft>): Promise<PostDraft> {
     const draftsData = await spark.kv.get<unknown>(DRAFTS_KEY)
     const drafts = isPostDraftArray(draftsData) ? draftsData : []
-    const user = await spark.user()
+    const _user = await spark.user()
     
     const existingIndex = drafts.findIndex(d => d.id === draft.id)
     
@@ -548,7 +546,7 @@ export const communityService = {
 
 async function rankFeedPosts(
   posts: CommunityPost[],
-  userId: string,
+  _userId: string,
   lat?: number,
   lng?: number
 ): Promise<CommunityPost[]> {

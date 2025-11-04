@@ -57,6 +57,7 @@ export class CommunityAPI {
   /**
    * POST /community/posts
    * Create a new post (pre-upload NSFW filter, profanity check)
+   * Content moderation must be performed before calling this method
    */
   async createPost(
     data: CreatePostData & {
@@ -65,13 +66,30 @@ export class CommunityAPI {
       authorAvatar?: string
       nsfwScore?: number
       contentFingerprint?: string
+      requiresReview?: boolean
     }
   ): Promise<Post> {
     const posts = await this.getPosts()
     
-    // TODO: Pre-upload NSFW filter and profanity check
-    // If nsfwScore > threshold, status = 'pending_review'
-    // Otherwise, status = 'active'
+    // Check for duplicate content using fingerprint
+    if (data.contentFingerprint) {
+      const existingFingerprints = new Set(
+        posts
+          .filter(p => p.contentFingerprint)
+          .map(p => p.contentFingerprint!)
+      )
+      
+      if (existingFingerprints.has(data.contentFingerprint)) {
+        throw new Error('Duplicate content detected. This post appears to be identical to an existing post.')
+      }
+    }
+    
+    // Determine status based on moderation results
+    // If content requires review or has high NSFW score, set to pending_review
+    const status: Post['status'] = 
+      data.requiresReview || (data.nsfwScore !== undefined && data.nsfwScore > 0.7)
+        ? 'pending_review'
+        : 'active'
     
     const post: Post = {
       id: generateULID(),
@@ -84,7 +102,7 @@ export class CommunityAPI {
       tags: data.tags,
       location: data.location,
       visibility: data.visibility,
-      status: (data.nsfwScore && data.nsfwScore > 0.7) ? 'pending_review' : 'active',
+      status,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: new Date().toISOString(),
@@ -100,7 +118,38 @@ export class CommunityAPI {
     posts.push(post)
     await this.setPosts(posts)
     
+    // Log content creation with moderation results
+    const logger = await import('../logger').then(m => m.createLogger('CommunityAPI'))
+    logger.info('Post created', {
+      postId: post.id,
+      authorId: post.authorId,
+      status: post.status,
+      nsfwScore: post.nsfwScore,
+      requiresReview: post.status === 'pending_review',
+      contentFingerprint: post.contentFingerprint
+    })
+    
     return post
+  }
+
+  /**
+   * Get all content fingerprints for duplicate detection
+   */
+  async getContentFingerprints(): Promise<Set<string>> {
+    const posts = await this.getPosts()
+    return new Set(
+      posts
+        .filter(p => p.contentFingerprint)
+        .map(p => p.contentFingerprint!)
+    )
+  }
+
+  /**
+   * Get all posts (for moderation queue)
+   * Public method to access posts
+   */
+  async getAllPosts(): Promise<Post[]> {
+    return await this.getPosts()
   }
 
   /**
@@ -307,7 +356,7 @@ export class CommunityAPI {
       throw new Error('Cannot comment on inactive post')
     }
 
-    // TODO: Rate limit check (max 50 comments per hour)
+    // NOTE: Rate limiting should be implemented server-side (max 50 comments per hour)
     
     const comment: Comment = {
       id: generateULID(),
@@ -372,8 +421,42 @@ export class CommunityAPI {
 
     reports.push(report)
     await this.setReports(reports)
-
-    // TODO: Route to admin review queue
+    
+    // Report is now available in moderation queue via getReportsForModeration()
+  }
+  
+  /**
+   * Get reports for moderation queue
+   */
+  async getReportsForModeration(
+    filters?: {
+      status?: Report['status'][]
+      entityType?: Report['reportedEntityType'][]
+      limit?: number
+    }
+  ): Promise<Report[]> {
+    const reports = await this.getReports()
+    
+    let filtered = reports
+    
+    if (filters) {
+      if (filters.status && filters.status.length > 0) {
+        filtered = filtered.filter(r => filters.status!.includes(r.status))
+      }
+      
+      if (filters.entityType && filters.entityType.length > 0) {
+        filtered = filtered.filter(r => filters.entityType!.includes(r.reportedEntityType))
+      }
+    }
+    
+    // Sort by creation date (newest first)
+    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    
+    if (filters?.limit) {
+      filtered = filtered.slice(0, filters.limit)
+    }
+    
+    return filtered
   }
 
   /**
@@ -421,6 +504,16 @@ export class CommunityAPI {
     }
 
     await this.setPosts(posts)
+    
+    // Log moderation action
+    const logger = await import('../logger').then(m => m.createLogger('CommunityAPI'))
+    logger.info('Post status updated', {
+      postId,
+      oldStatus: post.status,
+      newStatus: status,
+      adminId,
+      reason
+    })
     
     return post
   }

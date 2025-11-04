@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  Activity,
   ChartLine,
   Clock,
   CloudArrowUp,
@@ -88,7 +87,7 @@ export default function PerformanceMonitoring() {
         value: wsStatus === 'connected' ? 'Connected' : wsStatus === 'connecting' ? 'Connecting' : 'Disconnected',
         change: 0,
         status: wsStatus === 'connected' ? 'good' : wsStatus === 'connecting' ? 'warning' : 'critical',
-        icon: <Activity size={20} weight="fill" />
+        icon: <ChartLine size={20} weight="fill" />
       },
       {
         label: 'Memory Usage',
@@ -130,7 +129,7 @@ export default function PerformanceMonitoring() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <Activity className="animate-spin mx-auto mb-4 text-primary" size={32} />
+          <ChartLine className="animate-spin mx-auto mb-4 text-primary" size={32} />
           <p className="text-muted-foreground">Loading performance metrics...</p>
         </div>
       </div>
@@ -145,7 +144,7 @@ export default function PerformanceMonitoring() {
           <p className="text-muted-foreground">Real-time system health and metrics</p>
         </div>
         <Button onClick={updateMetrics} variant="outline" size="sm">
-          <Activity size={16} className="mr-2" />
+          <ChartLine size={16} className="mr-2" />
           Refresh
         </Button>
       </div>

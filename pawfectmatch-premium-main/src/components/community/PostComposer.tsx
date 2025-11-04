@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Image, MapPin, Tag, Lock, Globe, Users, Camera, VideoCamera, Crop, Sparkle, Play, Pause, FilmSlate, CheckCircle, WarningCircle } from '@phosphor-icons/react'
+import { X, Tag, Lock, Globe, Users, Camera, VideoCamera, Sparkle, Play, Pause, FilmSlate, CheckCircle, WarningCircle } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,6 +18,7 @@ import type { Pet } from '@/lib/types'
 import { VideoCompressor, type VideoMetadata, type CompressionProgress } from '@/lib/video-compression'
 import { createLogger } from '@/lib/logger'
 import type { Icon } from '@phosphor-icons/react'
+import { moderatePost, checkDuplicateContent } from '@/core/services/content-moderation'
 
 const logger = createLogger('PostComposer')
 
@@ -250,36 +251,56 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
       setIsSubmitting(true)
       haptics.impact()
 
-      const postData = {
-        text: text.trim(),
-        media: videoState.file ? [] : images.map((url, index) => ({
-          id: `img-${Date.now()}-${index}`,
-          type: 'image' as const,
-          url,
-          thumbUrl: url,
-          mediumUrl: url,
-          fullUrl: url
-        })),
-        video: videoState.compressedBlob && videoState.metadata ? { 
-          id: `vid-${Date.now()}`,
-          hlsUrl: URL.createObjectURL(videoState.compressedBlob), 
-          posterUrl: videoState.thumbnailUrl || '',
-          duration: videoState.metadata.duration,
-          width: videoState.metadata.width,
-          height: videoState.metadata.height
-        } : undefined,
-        petIds: selectedPets,
-        location: location ? {
-          lat: location.lat,
-          lng: location.lng,
-          placeId: '',
-          placeName: location.placeName || ''
-        } : undefined,
-        tags,
-        visibility
+      const user = await spark.user()
+      
+      // Prepare media URLs for moderation
+      const mediaUrls: string[] = []
+      if (videoState.file) {
+        // For video, use the compressed blob URL if available, otherwise preview URL
+        if (videoState.compressedBlob) {
+          const videoUrl = URL.createObjectURL(videoState.compressedBlob)
+          mediaUrls.push(videoUrl)
+        } else if (videoState.previewUrl) {
+          mediaUrls.push(videoState.previewUrl)
+        }
+      } else {
+        mediaUrls.push(...images)
       }
 
-      const user = await spark.user()
+      // Run content moderation before creating post
+      const moderationResult = await moderatePost(text.trim(), mediaUrls)
+      
+      // Check for duplicate content
+      const existingFingerprints = await communityAPI.getContentFingerprints()
+      const isDuplicate = await checkDuplicateContent(
+        moderationResult.contentFingerprint,
+        existingFingerprints
+      )
+      
+      if (isDuplicate) {
+        haptics.error()
+        toast.error('This content appears to be a duplicate. Please create original content.')
+        return
+      }
+
+      // Block submission if content failed moderation
+      if (!moderationResult.passed) {
+        haptics.error()
+        const reasons = moderationResult.blockedReasons.join(', ')
+        toast.error(`Content blocked: ${reasons}`, { duration: 5000 })
+        logger.warn('Post blocked by content moderation', {
+          nsfwScore: moderationResult.nsfwScore,
+          profanityScore: moderationResult.profanityScore,
+          blockedReasons: moderationResult.blockedReasons,
+          fingerprint: moderationResult.contentFingerprint
+        })
+        return
+      }
+
+      // Show warning if content requires review
+      if (moderationResult.requiresReview) {
+        toast.info('Your post is under review and will be visible once approved.')
+      }
       
       await communityAPI.createPost({
         authorId: user.id,
@@ -296,8 +317,9 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
           lon: location.lng
         } : undefined,
         visibility,
-        nsfwScore: 0, // TODO: Add NSFW detection
-        contentFingerprint: undefined // TODO: Add content fingerprinting
+        nsfwScore: moderationResult.nsfwScore,
+        contentFingerprint: moderationResult.contentFingerprint,
+        requiresReview: moderationResult.requiresReview
       })
       
       haptics.success()
@@ -456,7 +478,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2"
                   >
-                    <WarningCircle size={20} weight="fill" className="text-destructive flex-shrink-0 mt-0.5" />
+                    <WarningCircle size={20} weight="fill" className="text-destructive shrink-0 mt-0.5" />
                     <div className="text-sm text-destructive">
                       {videoState.error}
                     </div>
@@ -587,7 +609,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                   <TabsContent value="video" className="space-y-4 mt-4">
                     <div className="bg-accent/10 border border-accent/20 rounded-lg p-3">
                       <div className="flex items-start gap-2">
-                        <Sparkle size={16} weight="duotone" className="text-accent flex-shrink-0 mt-0.5" />
+                        <Sparkle size={16} weight="duotone" className="text-accent shrink-0 mt-0.5" />
                         <div className="text-xs">
                           <div className="font-medium mb-1">Video Guidelines</div>
                           <ul className="text-muted-foreground space-y-0.5">

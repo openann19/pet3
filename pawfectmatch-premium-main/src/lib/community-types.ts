@@ -234,9 +234,14 @@ export interface CommunityNotification {
 
 export interface FeedOptions {
   mode: 'for-you' | 'following'
+  lat?: number
+  lng?: number
+  limit?: number
+  cursor?: string
 }
 
 export interface FeedResponse {
   posts: Post[]
   hasMore: boolean
+  nextCursor?: string
 }

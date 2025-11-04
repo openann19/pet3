@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
-import { useStorage } from '@/hooks/useStorage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
-  X, Heart, Eye, ChatCircle, PaperPlaneTilt, Warning, VideoCamera,
-  MicrophoneSlash, Microphone, Phone, CameraRotate, DotsThree
+  X, Eye, ChatCircle, PaperPlaneTilt, VideoCamera,
+  MicrophoneSlash, Microphone, Phone, CameraRotate
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { liveStreamingAPI } from '@/lib/api/live-streaming-api'
 import type { LiveStream, LiveStreamChatMessage } from '@/lib/live-streaming-types'
-import { streamingService } from '@/lib/streaming-service'
 import { haptics } from '@/lib/haptics'
 import { logger } from '@/lib/logger'
 
@@ -130,7 +127,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
       await loadStream()
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to send reaction', err, { action: 'sendReaction', streamId, reaction })
+      logger.error('Failed to send reaction', err, { action: 'sendReaction', streamId, reaction: emoji })
     }
   }
 
@@ -307,7 +304,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
               <div className="space-y-3">
                 {chatMessages.map(msg => (
                   <div key={msg.id} className="flex items-start gap-2">
-                    <Avatar className="w-6 h-6 flex-shrink-0">
+                    <Avatar className="w-6 h-6 shrink-0">
                       <AvatarImage src={msg.userAvatar} />
                       <AvatarFallback className="text-xs">{msg.userName[0]}</AvatarFallback>
                     </Avatar>
@@ -318,7 +315,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-white/90 text-sm break-words">{msg.text}</p>
+                      <p className="text-white/90 text-sm wrap-break-word">{msg.text}</p>
                     </div>
                   </div>
                 ))}

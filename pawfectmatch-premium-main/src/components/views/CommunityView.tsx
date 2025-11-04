@@ -18,6 +18,7 @@ import { haptics } from '@/lib/haptics'
 import { useStorage } from '@/hooks/useStorage'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
+import { filterPostsByFollows } from '@/core/services/follow-graph'
 
 const logger = createLogger('CommunityView')
 
@@ -53,14 +54,14 @@ export default function CommunityView() {
   const adoptionObserverTarget = useRef<HTMLDivElement>(null)
 
   const handleTouchStart = useCallback((e: globalThis.TouchEvent) => {
-    if (containerRef.current && containerRef.current.scrollTop === 0 && activeTab === 'feed') {
+    if (containerRef.current && containerRef.current.scrollTop === 0 && activeTab === 'feed' && e.touches?.[0]) {
       startY.current = e.touches[0].clientY
       isPulling.current = true
     }
   }, [activeTab])
 
   const handleTouchMove = useCallback((e: globalThis.TouchEvent) => {
-    if (!isPulling.current || !containerRef.current) return
+    if (!isPulling.current || !containerRef.current || !e.touches?.[0]) return
 
     const currentY = e.touches[0].clientY
     const diff = currentY - startY.current
@@ -127,7 +128,8 @@ export default function CommunityView() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingRef.current && activeTab === 'feed') {
+        const entry = entries[0]
+        if (entry?.isIntersecting && hasMore && !loading && !loadingRef.current && activeTab === 'feed') {
           loadFeed(true)
         }
       },
@@ -144,7 +146,8 @@ export default function CommunityView() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && adoptionHasMore && !adoptionLoading && !adoptionLoadingRef.current && activeTab === 'adoption') {
+        const entry = entries[0]
+        if (entry?.isIntersecting && adoptionHasMore && !adoptionLoading && !adoptionLoadingRef.current && activeTab === 'adoption') {
           loadAdoptionProfiles(true)
         }
       },
@@ -171,17 +174,18 @@ export default function CommunityView() {
         cursor: loadMore ? cursor : undefined
       }
 
-      if (feedTab === 'following') {
-        // TODO: Implement following filter
-        // For now, show all posts
-      }
-
       const response = await communityAPI.queryFeed(filters, user?.id)
       
+      // Filter posts by follow relationships if "following" tab is selected
+      let filteredPosts = response.posts
+      if (feedTab === 'following') {
+        filteredPosts = await filterPostsByFollows(response.posts, user.id)
+      }
+      
       if (loadMore) {
-        setPosts((currentPosts) => [...(Array.isArray(currentPosts) ? currentPosts : []), ...(Array.isArray(response.posts) ? response.posts : [])])
+        setPosts((currentPosts) => [...(Array.isArray(currentPosts) ? currentPosts : []), ...filteredPosts])
       } else {
-        setPosts(Array.isArray(response.posts) ? response.posts : [])
+        setPosts(filteredPosts)
       }
       
       setHasMore(!!response.nextCursor)

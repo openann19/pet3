@@ -60,7 +60,7 @@ export default function VisualAnalysisDemo() {
     <Card className="p-6 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
       <div className="flex items-start gap-4 mb-6">
         <motion.div
-          className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0"
+          className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0"
           animate={{
             boxShadow: [
               '0 0 20px rgba(245,158,11,0.3)',

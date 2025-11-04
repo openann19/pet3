@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { Pet } from '@/lib/types'
 import { calculateCompatibility, getCompatibilityFactors, generateMatchReasoning } from '@/lib/matching'
 

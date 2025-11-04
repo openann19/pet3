@@ -294,7 +294,7 @@ export default function DiscoverView() {
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
+          className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
         >
           <motion.div
             animate={{ rotate: [0, 360] }}
@@ -303,7 +303,7 @@ export default function DiscoverView() {
             <Sparkle size={48} className="text-primary" />
           </motion.div>
           <motion.div
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
             animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
@@ -335,7 +335,7 @@ export default function DiscoverView() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
+          className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
         >
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
@@ -344,7 +344,7 @@ export default function DiscoverView() {
             <Heart size={48} className="text-primary" />
           </motion.div>
           <motion.div
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
             animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
@@ -541,14 +541,14 @@ export default function DiscoverView() {
               className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
             >
               <motion.div
-                className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-gradient-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
+                className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-linear-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
                 style={{ opacity: likeOpacity, scale: likeOpacity }}
               >
                 <Heart size={24} weight="fill" className="inline mr-2" />
                 LIKE
               </motion.div>
               <motion.div
-                className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
+                className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-linear-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
                 style={{ opacity: passOpacity, scale: passOpacity }}
               >
                 PASS
@@ -586,10 +586,10 @@ export default function DiscoverView() {
                 </motion.div>
               )}
               <div className="h-full overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl">
-                <div className="relative h-full flex flex-col bg-gradient-to-br from-white/50 to-white/30">
+                <div className="relative h-full flex flex-col bg-linear-to-br from-white/50 to-white/30">
                   <div className="relative h-96 overflow-hidden group">
                     <motion.div 
-                      className="absolute inset-0 bg-gradient-to-br from-primary/25 via-accent/15 to-secondary/20 z-10 pointer-events-none"
+                      className="absolute inset-0 bg-linear-to-br from-primary/25 via-accent/15 to-secondary/20 z-10 pointer-events-none"
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 1 }}
                       transition={{ duration: 0.4 }}
@@ -602,7 +602,7 @@ export default function DiscoverView() {
                       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                     />
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
+                      className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent"
                     />
                     <motion.div
                       initial={{ scale: 0, rotate: -180, y: -20, opacity: 0 }}
@@ -623,7 +623,7 @@ export default function DiscoverView() {
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.span
-                        className="bg-gradient-to-r from-accent via-primary to-secondary bg-clip-text text-transparent"
+                        className="bg-linear-to-r from-accent via-primary to-secondary bg-clip-text text-transparent"
                         animate={{ 
                           backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                         }}
@@ -697,7 +697,7 @@ export default function DiscoverView() {
                             >
                               <Badge 
                                 variant="secondary" 
-                                className="gap-1 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 text-foreground font-semibold px-2 py-0.5"
+                                className="gap-1 bg-linear-to-r from-primary/10 to-accent/10 border border-primary/20 text-foreground font-semibold px-2 py-0.5"
                               >
                                 <NavigationArrow size={12} weight="fill" className="text-primary" />
                                 {formatDistance(currentPet.distance)}
@@ -775,14 +775,14 @@ export default function DiscoverView() {
                     <motion.div className="flex-1" whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
                       <Button
                         size="lg"
-                        className="w-full h-14 bg-gradient-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-2xl hover:shadow-accent/50 transition-all group relative overflow-hidden neon-glow"
+                        className="w-full h-14 bg-linear-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-2xl hover:shadow-accent/50 transition-all group relative overflow-hidden neon-glow"
                         onClick={() => {
                           haptics.trigger('success')
                           handleSwipe('like')
                         }}
                       >
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                          className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
                           animate={{
                             x: ['-100%', '200%'],
                           }}

@@ -221,7 +221,7 @@ export default function DiscoveryFilters() {
         </motion.div>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md overflow-hidden flex flex-col">
-        <SheetHeader className="flex-shrink-0">
+        <SheetHeader className="shrink-0">
           <SheetTitle className="text-2xl flex items-center gap-2">
             <motion.span
               animate={{ rotate: [0, 10, -10, 0] }}
@@ -234,7 +234,7 @@ export default function DiscoveryFilters() {
         </SheetHeader>
 
         <Tabs defaultValue="basic" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-3 shrink-0">
             <TabsTrigger value="basic">Basic</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
@@ -412,7 +412,7 @@ export default function DiscoveryFilters() {
               <ScrollArea className="h-full -mx-6 px-6">
                 <div className="space-y-6 py-2">
                   <div>
-                    <Label className="text-base mb-4 block font-semibold flex items-center gap-2">
+                    <Label className="text-base mb-4 font-semibold flex items-center gap-2">
                       <Camera size={18} weight="bold" />
                       Photo Crop Size
                     </Label>
@@ -445,7 +445,7 @@ export default function DiscoveryFilters() {
                   <Separator />
 
                   <div>
-                    <Label className="text-base mb-4 block font-semibold flex items-center gap-2">
+                    <Label className="text-base mb-4 font-semibold flex items-center gap-2">
                       <Sparkle size={18} weight="bold" />
                       Photo Quality
                     </Label>
@@ -480,7 +480,7 @@ export default function DiscoveryFilters() {
                   <Separator />
 
                   <div>
-                    <Label className="text-base mb-4 block font-semibold flex items-center gap-2">
+                    <Label className="text-base mb-4 font-semibold flex items-center gap-2">
                       <VideoCamera size={18} weight="bold" />
                       Video Content
                     </Label>
@@ -499,7 +499,7 @@ export default function DiscoveryFilters() {
                   <Separator />
 
                   <div>
-                    <Label className="text-base mb-4 block font-semibold flex items-center gap-2">
+                    <Label className="text-base mb-4 font-semibold flex items-center gap-2">
                       <Camera size={18} weight="bold" />
                       Minimum Photos
                     </Label>
@@ -525,7 +525,7 @@ export default function DiscoveryFilters() {
               <ScrollArea className="h-full -mx-6 px-6">
                 <div className="space-y-4 py-2">
                   <div>
-                    <Label className="text-base mb-4 block font-semibold flex items-center gap-2">
+                    <Label className="text-base mb-4 font-semibold flex items-center gap-2">
                       <Lightning size={18} weight="bold" />
                       Enhanced Filters
                     </Label>
@@ -608,7 +608,7 @@ export default function DiscoveryFilters() {
 
                   <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <Sparkle size={20} weight="duotone" className="text-accent flex-shrink-0 mt-0.5" />
+                      <Sparkle size={20} weight="duotone" className="text-accent shrink-0 mt-0.5" />
                       <div>
                         <div className="font-medium text-sm mb-1">Premium Filters Active</div>
                         <div className="text-xs text-muted-foreground">
@@ -622,7 +622,7 @@ export default function DiscoveryFilters() {
             </TabsContent>
           </Tabs>
 
-        <div className="flex gap-3 pt-4 border-t flex-shrink-0">
+        <div className="flex gap-3 pt-4 border-t shrink-0">
           <Button
             type="button"
             variant="outline"

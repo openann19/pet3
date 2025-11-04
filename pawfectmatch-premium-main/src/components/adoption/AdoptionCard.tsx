@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, MapPin, CheckCircle, Clock, PawPrint, Phone, Envelope } from '@phosphor-icons/react'
+import { Heart, MapPin, CheckCircle, PawPrint } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,7 +46,7 @@ export function AdoptionCard({ profile, onSelect, onFavorite, isFavorited }: Ado
             alt={profile.petName}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
           
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
             <Badge className={`${statusColors[profile.status]} border backdrop-blur-sm`}>

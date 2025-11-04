@@ -194,14 +194,13 @@ class OfflineSyncManager {
   }
 
   getStatus(): SyncStatus {
-    const failedActions = this.syncQueue.filter(a => a.status === 'failed').length
+    const failedActions = this.syncQueue.filter(a => a.status === 'failed').length                                                                              
     
     return {
       isOnline: this.isOnline,
       isSyncing: this.isSyncing,
       pendingActions: this.syncQueue.length,
       failedActions,
-      lastSyncTime: undefined
     }
   }
 
@@ -232,7 +231,7 @@ class OfflineSyncManager {
     failedActions.forEach(action => {
       action.status = 'pending'
       action.retries = 0
-      action.error = undefined
+      delete action.error
     })
 
     await this.saveQueueToStorage()

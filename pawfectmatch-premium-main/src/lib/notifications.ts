@@ -62,19 +62,23 @@ class NotificationManager {
     }
 
     const toastOptions: ToastOptions = {
-      duration,
-      onDismiss,
-      onAutoClose,
-      closeButton,
-      action: action ? {
-        label: action.label,
-        onClick: action.onClick
-      } : undefined,
-      cancel: cancel ? {
-        label: cancel.label,
-        onClick: cancel.onClick
-      } : undefined,
-      important
+      ...(duration !== undefined ? { duration } : {}),
+      ...(onDismiss ? { onDismiss } : {}),
+      ...(onAutoClose ? { onAutoClose } : {}),
+      ...(closeButton !== undefined ? { closeButton } : {}),
+      ...(action ? {
+        action: {
+          label: action.label,
+          ...(action.onClick ? { onClick: action.onClick } : {}),
+        },
+      } : {}),
+      ...(cancel ? {
+        cancel: {
+          label: cancel.label,
+          ...(cancel.onClick ? { onClick: cancel.onClick } : {}),
+        },
+      } : {}),
+      ...(important !== undefined ? { important } : {}),
     }
 
     switch (type) {
@@ -128,7 +132,7 @@ class NotificationManager {
           reject(error)
           return message
         },
-        duration: options.duration
+        ...(options.duration !== undefined ? { duration: options.duration } : {}),
       })
     })
   }
@@ -151,9 +155,9 @@ class NotificationManager {
 
   custom(component: React.ReactNode, options?: NotificationOptions) {
     return toast(component as string, {
-      duration: options?.duration,
-      onDismiss: options?.onDismiss,
-      onAutoClose: options?.onAutoClose
+      ...(options?.duration !== undefined ? { duration: options.duration } : {}),
+      ...(options?.onDismiss ? { onDismiss: options.onDismiss } : {}),
+      ...(options?.onAutoClose ? { onAutoClose: options.onAutoClose } : {}),
     })
   }
 
@@ -244,11 +248,11 @@ export function confirmAction(
     duration: Infinity,
     action: {
       label: 'Confirm',
-      onClick: onConfirm
+      ...(onConfirm ? { onClick: onConfirm } : {}),
     },
     cancel: {
       label: 'Cancel',
-      onClick: onCancel
+      ...(onCancel ? { onClick: onCancel } : {}),
     }
   })
 }

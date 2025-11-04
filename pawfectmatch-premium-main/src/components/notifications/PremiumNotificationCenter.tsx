@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -14,32 +14,24 @@ import {
   Heart,
   ChatCircle,
   CheckCircle,
-  Warning,
   Info,
-  X,
   Check,
   Trash,
   DotsThreeVertical,
-  Star,
   Camera,
   ShieldCheck,
-  Sparkle,
   MoonStars,
-  ClockCounterClockwise,
   Archive,
   SlidersHorizontal,
   Users,
-  Play,
-  ImageSquare,
-  MapPin,
   Confetti,
   Fire,
   Crown,
-  Lightning
+  Sparkle
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
-import { formatDistanceToNow, format, isToday, isYesterday, isSameWeek } from 'date-fns'
+import { formatDistanceToNow, isToday, isYesterday, isSameWeek } from 'date-fns'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,7 +43,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { NotificationTabs } from './NotificationTabs'
+import { NotificationTabs, type TabKey } from './NotificationTabs'
 import { useLanguage } from '@/hooks/useLanguage'
 import { analytics } from '@/lib/analytics'
 
@@ -166,6 +158,9 @@ export function PremiumNotificationCenter({ isOpen, onClose }: PremiumNotificati
     return Array.from(groups.entries())
       .map(([key, notifs]): NotificationGroup => {
         const latest = notifs[0]
+        if (!latest) {
+          throw new Error('Notification group is empty')
+        }
         const allRead = notifs.every(n => n.read)
         
         return {
@@ -312,39 +307,21 @@ export function PremiumNotificationCenter({ isOpen, onClose }: PremiumNotificati
     return 'Earlier'
   }
 
-  const notificationsByTime = useMemo(() => {
-    const groups: Record<string, PremiumNotification[]> = {
-      'Today': [],
-      'Yesterday': [],
-      'This Week': [],
-      'Earlier': []
-    }
-
-    filteredNotifications.forEach(notification => {
-      const group = getTimeGroup(notification.timestamp)
-      groups[group].push(notification)
-    })
-
-    return Object.entries(groups).filter(([_, notifs]) => notifs.length > 0)
-  }, [filteredNotifications])
 
   // Handle tab change with analytics
-  const handleTabChange = (from: 'all' | 'matches' | 'messages', to: 'all' | 'matches' | 'messages') => {
+  const handleTabChange = (from: TabKey, to: TabKey): void => {
     analytics.track('notification.tab_changed', { from, to })
   }
 
   // Handle optimistic unread count updates
   const handleMarkAllAsRead = () => {
-    haptics.trigger('medium')
-    setNotifications(current =>
-      (current || []).map(n => ({ ...n, read: true }))
-    )
+    markAllAsRead()
   }
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-hidden flex flex-col">
-        <SheetHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-br from-background via-primary/5 to-accent/5 flex-shrink-0">
+        <SheetHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-br from-background via-primary/5 to-accent/5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.div
@@ -477,7 +454,7 @@ export function PremiumNotificationCenter({ isOpen, onClose }: PremiumNotificati
         </SheetHeader>
 
         <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between gap-2 px-6 py-3 bg-muted/30 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 px-6 py-3 bg-muted/30 shrink-0">
             <TabsList className="grid w-full grid-cols-3 h-10">
               <TabsTrigger value="all" className="rounded-full">
                 All
@@ -540,16 +517,19 @@ export function PremiumNotificationCenter({ isOpen, onClose }: PremiumNotificati
                   return Array.from(groups.entries())
                     .map(([key, notifs]): NotificationGroup => {
                       const latest = notifs[0]
+                      if (!latest) {
+                        throw new Error('Notification group is empty')
+                      }
                       const allRead = notifs.every(n => n.read)
                       
                       return {
                         id: key,
                         type: latest.type,
                         notifications: notifs,
-                        title: notifs.length === 1 ? latest.title : `${latest.title} and ${notifs.length - 1} more`,
+                        title: notifs.length === 1 ? latest.title : `${latest.title} and ${notifs.length - 1} more`,                                            
                         summary: notifs.length === 1 
                           ? latest.message 
-                          : `${notifs.length} notifications from ${latest.metadata?.userName || latest.metadata?.petName || 'various users'}`,
+                          : `${notifs.length} notifications from ${latest.metadata?.userName || latest.metadata?.petName || 'various users'}`,                  
                         timestamp: latest.timestamp,
                         read: allRead
                       }
@@ -568,7 +548,10 @@ export function PremiumNotificationCenter({ isOpen, onClose }: PremiumNotificati
 
                   tabFilteredNotifications.forEach(notification => {
                     const group = getTimeGroup(notification.timestamp)
-                    groups[group].push(notification)
+                    const groupArray = groups[group]
+                    if (groupArray) {
+                      groupArray.push(notification)
+                    }
                   })
 
                   return Object.entries(groups).filter(([_, notifs]) => notifs.length > 0)
@@ -709,20 +692,22 @@ function NotificationGroupItem({
 }: NotificationGroupItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const latestNotification = group.notifications[0]
+  if (!latestNotification) return null
 
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
       <motion.div
         className={cn(
           'relative rounded-xl overflow-hidden transition-all bg-card border border-border/50',
-          !group.read && 'ring-2 ring-primary/20'
+          !group.read && 'ring-2 ring-primary/20',
+          getPriorityStyles(latestNotification.priority)
         )}
         whileHover={{ scale: 1.005 }}
       >
         <div className="p-4">
           <div className="flex items-start gap-3">
             <motion.div
-              className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 relative"
+              className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 relative"
               whileHover={{ scale: 1.05 }}
             >
               {getIcon(group.type as any, latestNotification.priority)}
@@ -742,16 +727,18 @@ function NotificationGroupItem({
                   <h4 className="font-semibold text-sm leading-tight">
                     {group.title}
                   </h4>
-                  <p className="text-sm mt-1 text-muted-foreground leading-relaxed">
-                    {group.summary}
-                  </p>
+                  {preferences?.showPreviews && (
+                    <p className="text-sm mt-1 text-muted-foreground leading-relaxed">
+                      {group.summary}
+                    </p>
+                  )}
                 </div>
 
                 {!group.read && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
+                    className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
                   />
                 )}
               </div>
@@ -780,6 +767,15 @@ function NotificationGroupItem({
                     onClick={() => onArchive(group.id)}
                   >
                     <Archive size={16} />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => onDelete(group.id)}
+                  >
+                    <Trash size={16} />
                   </Button>
 
                   {group.notifications.length > 1 && (
@@ -854,7 +850,7 @@ function PremiumNotificationItem({
         <div className="flex items-start gap-3">
           <motion.div
             className={cn(
-              'flex-shrink-0 rounded-xl overflow-hidden',
+              'shrink-0 rounded-xl overflow-hidden',
               notification.avatarUrl ? 'w-12 h-12' : 'w-12 h-12 flex items-center justify-center',
               !notification.avatarUrl && notification.priority === 'urgent' && 'bg-destructive/10',
               !notification.avatarUrl && notification.priority === 'high' && 'bg-accent/10',
@@ -906,7 +902,7 @@ function PremiumNotificationItem({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
+                  className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
                 />
               )}
             </div>

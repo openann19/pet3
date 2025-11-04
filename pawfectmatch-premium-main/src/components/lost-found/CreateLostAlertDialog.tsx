@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Upload, CurrencyDollar, X, Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { useApp } from '@/contexts/AppContext'
 import { lostFoundAPI } from '@/lib/api/lost-found-api'
 import { MapLocationPicker } from './MapLocationPicker'
 import { createLogger } from '@/lib/logger'
@@ -21,7 +19,6 @@ interface CreateLostAlertDialogProps {
 }
 
 export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAlertDialogProps) {
-  const { t } = useApp()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showMapPicker, setShowMapPicker] = useState(false)
 
@@ -43,7 +40,7 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
   
   const [reward, setReward] = useState<number | undefined>()
   const [contactInfo, setContactInfo] = useState('')
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photos] = useState<string[]>([])
 
   const addFeature = () => {
     if (featureInput.trim()) {
@@ -63,8 +60,12 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
 
   const maskContactInfo = (contact: string): string => {
     if (contact.includes('@')) {
-      const [local, domain] = contact.split('@')
-      return `${local.substring(0, 2)}***@${domain}`
+      const parts = contact.split('@')
+      const local = parts[0]
+      const domain = parts[1]
+      if (local && domain) {
+        return `${local.substring(0, 2)}***@${domain}`
+      }
     }
     if (contact.length > 4) {
       return `${contact.substring(0, 3)}***${contact.substring(contact.length - 2)}`
@@ -338,7 +339,7 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
               <div className="space-y-2">
                 <Label htmlFor="reward">Reward Amount (Optional)</Label>
                 <div className="flex gap-2">
-                  <div className="flex-shrink-0 bg-muted rounded-md px-3 flex items-center">
+                  <div className="shrink-0 bg-muted rounded-md px-3 flex items-center">
                     <CurrencyDollar size={18} className="text-muted-foreground" />
                   </div>
                   <Input

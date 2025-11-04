@@ -25,7 +25,7 @@ import type {
   VetReminder,
   PetHealthSummary
 } from '@/lib/health-types'
-import { format, differenceInDays, isPast, isFuture } from 'date-fns'
+import { format, differenceInDays, isPast } from 'date-fns'
 import { toast } from 'sonner'
 
 interface PetHealthDashboardProps {
@@ -50,10 +50,14 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
   }, [vaccinations, healthRecords, reminders])
 
   const generateHealthSummary = () => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date()
     const upcomingVaccinations = (vaccinations || []).filter(v => {
       if (!v.nextDueDate) return false
-      const daysUntil = differenceInDays(new Date(v.nextDueDate), new Date(today))
+      const nextDate = new Date(v.nextDueDate)
+      if (isNaN(nextDate.getTime())) return false
+      const todayDate = new Date(today)
+      if (isNaN(todayDate.getTime())) return false
+      const daysUntil = differenceInDays(nextDate, todayDate)
       return daysUntil >= 0 && daysUntil <= 90
     })
 
@@ -63,7 +67,8 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
       .slice(0, 5)
 
     const checkups = (healthRecords || []).filter(r => r.type === 'checkup')
-    const lastCheckup = checkups.length > 0 ? checkups[0].date : undefined
+    const firstCheckup = checkups[0]
+    const lastCheckup = firstCheckup?.date
 
     const overdueVaccinations = upcomingVaccinations.filter(v =>
       v.nextDueDate && isPast(new Date(v.nextDueDate))
@@ -130,10 +135,10 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
       petId: pet.id,
       type: 'rabies',
       name: 'Rabies Vaccination',
-      date: new Date().toISOString().split('T')[0],
-      veterinarian: 'Dr. Smith',
-      clinic: 'Happy Paws Veterinary',
-      createdAt: new Date().toISOString()
+      date: new Date().toISOString().split('T')[0] ?? '',
+      veterinarian: 'Dr. Smith' as string,
+      clinic: 'Happy Paws Veterinary' as string,
+      createdAt: new Date().toISOString() as string
     }
     setVaccinations(current => [...(current || []), newVaccination])
     toast.success('Vaccination added', { description: 'Vaccination record created successfully' })
@@ -145,10 +150,10 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
       petId: pet.id,
       type: 'checkup',
       title: 'Annual Checkup',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split('T')[0] ?? '',
       description: 'Routine annual health examination',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: new Date().toISOString() as string,
+      updatedAt: new Date().toISOString() as string
     }
     setHealthRecords(current => [...(current || []), newRecord])
     toast.success('Health record added', {
@@ -162,10 +167,10 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
       petId: pet.id,
       type: 'vaccination',
       title: 'Vaccination Due',
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '',
       completed: false,
       notificationsSent: 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString() as string
     }
     setReminders(current => [...(current || []), newReminder])
     toast.success('Reminder added', { description: 'Reminder created successfully' })
@@ -310,7 +315,7 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
                               transition={{ delay: index * 0.05 }}
                               className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
                             >
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                 <Syringe size={20} className="text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -437,7 +442,7 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
                                 }`}
                               >
                                 <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                                     reminder.completed
                                       ? 'bg-green-100 dark:bg-green-900/20'
                                       : isOverdue

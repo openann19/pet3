@@ -1,27 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   PaperPlaneRight, 
   Smiley, 
   ArrowLeft,
   DotsThree,
-  Heart,
   Microphone,
-  Image as ImageIcon,
   MapPin,
-  PawPrint,
-  Paperclip,
   X,
-  Play,
-  Pause,
   Translate as TranslateIcon,
   Sparkle
 } from '@phosphor-icons/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Popover, 
   PopoverContent, 
@@ -31,13 +24,6 @@ import { parseLLMError } from '@/lib/llm-utils'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('AdvancedChatWindow')
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
-} from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import type { ChatRoom, ChatMessage, MessageTemplate, SmartSuggestion, ReactionType } from '@/lib/chat-types'
@@ -76,12 +62,9 @@ export default function AdvancedChatWindow({
   const [isTyping, setIsTyping] = useState(false)
   const [showStickers, setShowStickers] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
-  const [showAttachments, setShowAttachments] = useState(false)
   const [isRecordingVoice, setIsRecordingVoice] = useState(false)
   const [showSmartSuggestions, setShowSmartSuggestions] = useState(true)
-  const [selectedMessage, setSelectedMessage] = useState<string | null>(null)
   const [awayMode, setAwayMode] = useStorage<boolean>(`away-mode-${currentUserId}`, false)
-  const [awayMessage, setAwayMessage] = useStorage<string>(`away-message-${currentUserId}`, 'Thanks for your message! I\'ll get back to you soon.')
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -105,23 +88,6 @@ export default function AdvancedChatWindow({
     }
   }
 
-  const generateSmartSuggestions = async (): Promise<SmartSuggestion[]> => {
-    const recentMessages = (messages || []).slice(-3)
-    
-    if (recentMessages.length === 0) {
-      return [
-        { id: '1', category: 'greeting', text: `Hi! ${room.matchedPetName || 'there'} looks adorable!` },
-        { id: '2', category: 'question', text: 'I\'d love to learn more about your pet!' },
-        { id: '3', category: 'question', text: 'What does your pet love to do for fun?' }
-      ]
-    }
-
-    return [
-      { id: '1', category: 'suggestion', text: 'That sounds great! 😊' },
-      { id: '2', category: 'suggestion', text: 'I\'d love to arrange a playdate! 🎾' },
-      { id: '3', category: 'suggestion', text: 'Want to meet at the dog park this weekend? 🌳' }
-    ]
-  }
 
   const handleSendMessage = async (
     content: string, 
@@ -342,7 +308,7 @@ export default function AdvancedChatWindow({
           
           <Avatar className="w-10 h-10 ring-2 ring-white/30">
             <AvatarImage src={room.matchedPetPhoto} alt={room.matchedPetName} />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
+            <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
               {room.matchedPetName?.[0] || '?'}
             </AvatarFallback>
           </Avatar>
@@ -356,7 +322,7 @@ export default function AdvancedChatWindow({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" className="shrink-0">
                 <DotsThree size={24} weight="bold" />
               </Button>
             </PopoverTrigger>
@@ -415,9 +381,9 @@ export default function AdvancedChatWindow({
                   className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {!isCurrentUser && (
-                    <Avatar className="w-8 h-8 ring-2 ring-white/20 flex-shrink-0">
+                    <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                       <AvatarImage src={message.senderAvatar} alt={message.senderName} />
-                      <AvatarFallback className="bg-gradient-to-br from-secondary to-primary text-white text-xs font-bold">
+                      <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
                         {message.senderName?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
@@ -430,13 +396,13 @@ export default function AdvancedChatWindow({
                         message.type === 'sticker' ? 'p-0' : 'p-3'
                       } rounded-2xl shadow-lg ${
                         isCurrentUser
-                          ? 'bg-gradient-to-br from-primary to-accent text-white'
+                          ? 'bg-linear-to-br from-primary to-accent text-white'
                           : 'glass-strong backdrop-blur-xl border border-white/20'
                       }`}
                     >
                       {message.type === 'text' && (
                         <>
-                          <p className="text-sm break-words">{message.content}</p>
+                          <p className="text-sm wrap-break-word">{message.content}</p>
                           {message.metadata?.translation?.translatedText && (
                             <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-80">
                               <div className="flex items-center gap-1 mb-1">
@@ -534,7 +500,7 @@ export default function AdvancedChatWindow({
             variant="ghost"
             size="sm"
             onClick={() => setShowTemplates(!showTemplates)}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             <Sparkle size={16} weight="fill" className="mr-1" />
             Templates
@@ -543,7 +509,7 @@ export default function AdvancedChatWindow({
             variant="ghost"
             size="sm"
             onClick={handleShareLocation}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             <MapPin size={16} className="mr-1" />
             Location
@@ -595,7 +561,7 @@ export default function AdvancedChatWindow({
               <Button
                 variant="ghost"
                 size="icon"
-                className="flex-shrink-0"
+                className="shrink-0"
               >
                 <Smiley size={24} weight={showStickers ? 'fill' : 'regular'} />
               </Button>
@@ -664,7 +630,7 @@ export default function AdvancedChatWindow({
                 onMouseDown={() => setIsRecordingVoice(true)}
                 size="icon"
                 variant="ghost"
-                className="flex-shrink-0"
+                className="shrink-0"
               >
                 <Microphone size={24} />
               </Button>
@@ -673,7 +639,7 @@ export default function AdvancedChatWindow({
                 onClick={() => handleSendMessage(inputValue, 'text')}
                 disabled={!inputValue.trim()}
                 size="icon"
-                className="flex-shrink-0 bg-gradient-to-br from-primary to-accent hover:shadow-lg transition-all"
+                className="shrink-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all"
               >
                 <motion.div
                   whileHover={{ x: 5 }}

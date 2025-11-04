@@ -24,11 +24,10 @@ import {
   Flag,
   Trash,
   Image as ImageIcon,
-  Video,
   MapPin,
   Waveform
 } from '@phosphor-icons/react'
-import { Message, MessageType, MessageStatus, ReactionType } from '@/lib/chat-types'
+import { Message, ReactionType } from '@/lib/chat-types'
 import { cn } from '@/lib/utils'
 import { useApp } from '@/contexts/AppContext'
 
@@ -152,9 +151,9 @@ function MessageBubble({
 
   const bubbleClasses = cn(
     'relative group px-3 py-2 rounded-2xl shadow-sm max-w-[78%]',
-    'text-sm leading-relaxed break-words',
+    'text-sm leading-relaxed wrap-break-word',
     isOwn
-      ? 'bg-gradient-to-br from-primary to-accent text-white rounded-br-sm'
+      ? 'bg-linear-to-br from-primary to-accent text-white rounded-br-sm'
       : 'bg-card border border-border text-foreground rounded-bl-sm',
     isClusterEnd && (isOwn ? 'rounded-br-sm' : 'rounded-bl-sm'),
     message.status === 'failed' && 'opacity-75',
@@ -183,7 +182,7 @@ function MessageBubble({
       >
         {/* Message Content */}
         {message.type === 'text' && (
-          <div className="break-words whitespace-pre-wrap">
+          <div className="wrap-break-word whitespace-pre-wrap">
             {message.content}
           </div>
         )}
@@ -208,7 +207,7 @@ function MessageBubble({
               />
             )}
             {message.content && (
-              <p className="mt-2 break-words whitespace-pre-wrap">{message.content}</p>
+              <p className="mt-2 wrap-break-word whitespace-pre-wrap">{message.content}</p>
             )}
           </div>
         )}
@@ -223,7 +222,7 @@ function MessageBubble({
               preload="metadata"
             />
             {message.content && (
-              <p className="mt-2 break-words whitespace-pre-wrap">{message.content}</p>
+              <p className="mt-2 wrap-break-word whitespace-pre-wrap">{message.content}</p>
             )}
           </div>
         )}
@@ -302,31 +301,64 @@ function MessageBubble({
         </div>
 
         {/* Reactions */}
-        {message.reactions && message.reactions.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {Object.entries(
-              message.reactions.reduce((acc, reaction) => {
-                if (!acc[reaction.emoji]) {
-                  acc[reaction.emoji] = []
-                }
-                acc[reaction.emoji].push(reaction)
-                return acc
-              }, {} as Record<string, typeof message.reactions>)
-            ).map(([reaction, reactions]) => (
-              <button
-                key={reaction}
-                className={cn(
-                  'px-2 py-0.5 rounded-full text-xs flex items-center gap-1',
-                  isOwn ? 'bg-white/20' : 'bg-muted'
-                )}
-                onClick={() => handleReact(reaction as ReactionType)}
-              >
-                <span>{reaction}</span>
-                {reactions.length > 1 && <span>{reactions.length}</span>}
-              </button>
-            ))}
-          </div>
-        )}
+        {message.reactions && (() => {
+          // Handle both MessageReaction[] and Record<ReactionType, string[]>
+          if (Array.isArray(message.reactions)) {
+            if (message.reactions.length === 0) return null
+            
+            const groupedReactions = message.reactions.reduce((acc, reaction) => {
+              const emoji = reaction.emoji
+              if (!acc[emoji]) {
+                acc[emoji] = []
+              }
+              const emojiArray = acc[emoji]
+              if (emojiArray) {
+                emojiArray.push(reaction)
+              }
+              return acc
+            }, {} as Record<string, typeof message.reactions>)
+            
+            return (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {Object.entries(groupedReactions).map(([reaction, reactions]) => (
+                  <button
+                    key={reaction}
+                    className={cn(
+                      'px-2 py-0.5 rounded-full text-xs flex items-center gap-1',
+                      isOwn ? 'bg-white/20' : 'bg-muted'
+                    )}
+                    onClick={() => handleReact(reaction as ReactionType)}
+                  >
+                    <span>{reaction}</span>
+                    {reactions.length > 1 && <span>{reactions.length}</span>}
+                  </button>
+                ))}
+              </div>
+            )
+          } else {
+            // Record<ReactionType, string[]>
+            const entries = Object.entries(message.reactions)
+            if (entries.length === 0) return null
+            
+            return (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {entries.map(([emoji, userIds]) => (
+                  <button
+                    key={emoji}
+                    className={cn(
+                      'px-2 py-0.5 rounded-full text-xs flex items-center gap-1',
+                      isOwn ? 'bg-white/20' : 'bg-muted'
+                    )}
+                    onClick={() => handleReact(emoji as ReactionType)}
+                  >
+                    <span>{emoji}</span>
+                    {userIds.length > 1 && <span>{userIds.length}</span>}
+                  </button>
+                ))}
+              </div>
+            )
+          }
+        })()}
       </motion.div>
 
       {/* Context Menu */}
@@ -404,7 +436,7 @@ function MessageBubble({
               '-top-12'
             )}
           >
-            {REACTIONS.map(({ type, icon: Icon, label }) => (
+            {REACTIONS.map(({ type, label }) => (
               <button
                 key={type}
                 onClick={() => handleReact(type)}
@@ -426,13 +458,17 @@ export default memo(MessageBubble, (prev, next) => {
   // Check if reactions have changed (compare length and reference)
   const prevReactions = prev.message.reactions
   const nextReactions = next.message.reactions
+  const prevArray = Array.isArray(prevReactions) ? prevReactions : []
+  const nextArray = Array.isArray(nextReactions) ? nextReactions : []
   const reactionsChanged = prevReactions !== nextReactions && (
     !prevReactions || !nextReactions ||
-    prevReactions.length !== nextReactions.length ||
-    prevReactions.some((r, i) => 
-      r.emoji !== nextReactions[i]?.emoji ||
-      r.userId !== nextReactions[i]?.userId
-    )
+    prevArray.length !== nextArray.length ||
+    prevArray.some((r, i) => {
+      const prevEmoji = 'emoji' in r ? r.emoji : String(r)
+      const nextR = nextArray[i]
+      const nextEmoji = nextR && ('emoji' in nextR ? nextR.emoji : String(nextR))
+      return prevEmoji !== nextEmoji
+    })
   )
   
   return (

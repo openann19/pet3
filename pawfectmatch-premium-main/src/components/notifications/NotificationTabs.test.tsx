@@ -3,7 +3,8 @@
  */
 import React from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { screen } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { NotificationTabs } from "./NotificationTabs";
 
@@ -12,7 +13,7 @@ function setup(opts?: Partial<React.ComponentProps<typeof NotificationTabs>>) {
   const ui = render(
     <NotificationTabs
       locale="en"
-      unread={{ matches: 12, messages: 1 }}
+      unread={{ all: 13, matches: 12, messages: 1 }}
       onTabChange={onTabChange}
       storageKey="test-notif:lastTab"
       renderPanel={(k) => <div>panel-{k}</div>}
@@ -40,16 +41,18 @@ describe("NotificationTabs", () => {
   it("renders default tab and panels", () => {
     setup();
     expect(screen.getByRole("tab", { name: /All/i })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tabpanel", { name: "" })).toBeInTheDocument();
+    const tabpanel = screen.getByRole("tabpanel");
+    expect(tabpanel).toBeInTheDocument();
+    expect(tabpanel).toHaveAttribute("aria-labelledby");
   });
 
   it("unread badge caps at 9+ and is localized", () => {
     setup();
     const matches = screen.getByRole("tab", { name: /Matches/ });
     expect(matches).toBeInTheDocument();
-    const badge = screen.getByText("9+");
+    const badge = matches.querySelector('[title="12"]');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveAttribute("title", "12");
+    expect(badge).toHaveTextContent("9+");
   });
 
   it("keyboard navigation and activation", async () => {
@@ -65,10 +68,11 @@ describe("NotificationTabs", () => {
 
   it("persists last tab to localStorage and restores", async () => {
     const user = userEvent.setup();
-    setup();
+    const { unmount } = setup();
     await user.click(screen.getByRole("tab", { name: /Messages/ }));
     expect(localStorage.getItem("test-notif:lastTab")).toContain("messages");
     // re-render
+    unmount();
     const onTabChange = vi.fn();
     render(
       <NotificationTabs
@@ -84,11 +88,15 @@ describe("NotificationTabs", () => {
   it("a11y roles and attributes are present", () => {
     setup();
     expect(screen.getByRole("tablist")).toBeInTheDocument();
-    for (const name of ["All", "Matches", "Messages"]) {
-      const tab = screen.getByRole("tab", { name });
-      expect(tab).toHaveAttribute("aria-controls");
-      expect(tab.id).toMatch(/tab-/);
-    }
+    const allTab = screen.getByRole("tab", { name: /All/i });
+    expect(allTab).toHaveAttribute("aria-controls");
+    expect(allTab.id).toMatch(/tab-/);
+    const matchesTab = screen.getByRole("tab", { name: /Matches/i });
+    expect(matchesTab).toHaveAttribute("aria-controls");
+    expect(matchesTab.id).toMatch(/tab-/);
+    const messagesTab = screen.getByRole("tab", { name: /Messages/i });
+    expect(messagesTab).toHaveAttribute("aria-controls");
+    expect(messagesTab.id).toMatch(/tab-/);
   });
 });
 

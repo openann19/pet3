@@ -116,7 +116,7 @@ export default function AuditLogView() {
                             )}
                           </div>
 
-                          <div className="text-right flex-shrink-0">
+                          <div className="text-right shrink-0">
                             <div className="text-sm font-medium">
                               {new Date(entry.timestamp).toLocaleDateString()}
                             </div>

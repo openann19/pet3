@@ -28,17 +28,22 @@ export default function MessageReactions({
     if (!acc[reaction.emoji]) {
       acc[reaction.emoji] = []
     }
-    acc[reaction.emoji].push(reaction)
+    const group = acc[reaction.emoji]
+    if (group !== undefined) {
+      group.push(reaction)
+    }
     return acc
   }, {} as Record<string, MessageReaction[]>)
 
-  const hasUserReacted = reactions.some(r => r.userId === currentUserId)
+  const hasUserReacted = (reactionList: MessageReaction[]): boolean => {
+    return reactionList.some(r => r.userId === currentUserId)
+  }
 
   return (
     <div className="flex items-center gap-1 mt-2 flex-wrap">
       <AnimatePresence>
         {Object.entries(reactionGroups).map(([emoji, reactionList]) => {
-          const userReacted = reactionList.some(r => r.userId === currentUserId)
+          const userReacted = hasUserReacted(reactionList)
           
           return (
             <Popover key={emoji}>
@@ -67,10 +72,10 @@ export default function MessageReactions({
                       <Avatar className="w-6 h-6">
                         <AvatarImage src={reaction.userAvatar} />
                         <AvatarFallback className="text-[10px]">
-                          {reaction.userName[0]}
+                          {reaction.userName?.[0] ?? '?'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs">{reaction.userName}</span>
+                      <span className="text-xs">{reaction.userName ?? 'Unknown'}</span>
                       <span className="ml-auto text-sm">{emoji}</span>
                     </div>
                   ))}

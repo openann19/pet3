@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Bell, BellRinging, BellSlash } from '@phosphor-icons/react'
+import { Bell, BellRinging } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { haptics } from '@/lib/haptics'
 import { PremiumNotificationCenter, type PremiumNotification } from './PremiumNotificationCenter'
@@ -30,6 +30,7 @@ export function PremiumNotificationBell() {
       const timer = setTimeout(() => setHasNewNotification(false), 3000)
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [allNotifications.length, lastCheckTime, isOpen])
 
   const handleClick = () => {
@@ -45,7 +46,7 @@ export function PremiumNotificationBell() {
         variant="ghost"
         size="icon"
         onClick={handleClick}
-        className="relative rounded-full w-11 h-11 hover:bg-primary/10 active:bg-primary/20 transition-colors flex-shrink-0 touch-manipulation"
+        className="relative rounded-full w-11 h-11 hover:bg-primary/10 active:bg-primary/20 transition-colors shrink-0 touch-manipulation"
         aria-label={`Notifications${unreadCount > 0 ? ` - ${unreadCount} unread` : ''}${urgentCount > 0 ? ` - ${urgentCount} urgent` : ''}`}
       >
         <AnimatePresence mode="wait">

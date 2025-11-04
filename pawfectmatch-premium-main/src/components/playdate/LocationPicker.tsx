@@ -88,7 +88,7 @@ const MOCK_NEARBY_PLACES: NearbyPlace[] = [
 export default function LocationPicker({ value, onChange, onClose }: LocationPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
-  const [userLocation, setUserLocation] = useState<Location | null>(null)
+  const [, setUserLocation] = useState<Location | null>(null)
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>(MOCK_NEARBY_PLACES)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null)
@@ -259,14 +259,14 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                           onClick={() => handleSelectPlace(place)}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted flex items-center justify-center flex-shrink-0 border">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted flex items-center justify-center shrink-0 border">
                               {getPlaceIcon(place.type)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <h4 className="font-semibold text-base">{place.name}</h4>
                                 {place.rating && (
-                                  <Badge variant="secondary" className="flex items-center gap-1 flex-shrink-0">
+                                  <Badge variant="secondary" className="flex items-center gap-1 shrink-0">
                                     <Star size={12} weight="fill" className="text-yellow-500" />
                                     {place.rating}
                                   </Badge>
@@ -289,7 +289,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0"
+                                className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
                               >
                                 <MapPin size={14} weight="fill" className="text-white" />
                               </motion.div>

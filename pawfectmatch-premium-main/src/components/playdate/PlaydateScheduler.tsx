@@ -5,13 +5,11 @@ import {
   Calendar,
   Clock,
   MapPin,
-  User,
   PawPrint,
   X,
   Plus,
   Check,
   Park,
-  Coffee,
   Umbrella,
   MapTrifold,
   NavigationArrow,
@@ -36,7 +34,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Match, Pet } from '@/lib/types'
 import type { Playdate, PlaydateType, PlaydateStatus, PlaydateLocation } from '@/lib/playdate-types'
-import { format, isPast, isFuture, differenceInDays } from 'date-fns'
+import { format, isPast, differenceInDays } from 'date-fns'
 import { toast } from 'sonner'
 import { haptics } from '@/lib/haptics'
 
@@ -56,10 +54,18 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<PlaydateLocation | null>(null)
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    type: PlaydateType
+    date: string
+    startTime: string
+    endTime: string
+    description: string
+    notes: string
+  }>({
     title: 'Playdate at the Park',
-    type: 'park' as PlaydateType,
-    date: new Date().toISOString().split('T')[0],
+    type: 'park',
+    date: new Date().toISOString().split('T')[0] as string,
     startTime: '10:00',
     endTime: '11:30',
     description: 'Let\'s meet up for some fun!',
@@ -100,16 +106,17 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
       return
     }
 
+    const playdateDate = formData.date ?? new Date().toISOString().split('T')[0]
     const newPlaydate: Playdate = {
       id: `playdate-${Date.now()}`,
       matchId: match.id,
       petIds: [userPet.id, match.matchedPetId],
-      ownerIds: [userPet.ownerId || 'user', match.matchedPetId],
+      ownerIds: [userPet.ownerId ?? 'user', match.matchedPetId],
       title: formData.title,
       type: formData.type,
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
+      date: playdateDate,
+      startTime: formData.startTime ?? '10:00',
+      endTime: formData.endTime ?? '11:30',
       location: selectedLocation,
       description: formData.description,
       status: 'pending',
@@ -123,7 +130,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
     setPlaydates(current => [...(current || []), newPlaydate])
     haptics.success()
     toast.success('Playdate scheduled!', {
-      description: `Invitation sent for ${format(new Date(formData.date), 'MMM dd, yyyy')}`
+      description: `Invitation sent for ${format(new Date(playdateDate), 'MMM dd, yyyy')}`
     })
     setShowCreateForm(false)
     setSelectedLocation(null)
@@ -440,7 +447,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                               >
                                 <div className="flex items-start justify-between mb-3">
                                   <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                       {getPlaydateIcon(playdate.type)}
                                     </div>
                                     <div>
@@ -467,7 +474,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                                 </div>
 
                                 <div className="flex items-start gap-2 text-sm mb-3">
-                                  <MapPin size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <MapPin size={16} className="text-muted-foreground mt-0.5 shrink-0" />
                                   <div>
                                     <p className="font-medium">{playdate.location.name}</p>
                                     <p className="text-muted-foreground">
@@ -567,7 +574,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                           >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
                                   {getPlaydateIcon(playdate.type)}
                                 </div>
                                 <div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MagnifyingGlass, X, Clock, TrendUp, Sparkle } from '@phosphor-icons/react'
 import { Input } from '@/components/ui/input'

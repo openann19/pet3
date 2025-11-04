@@ -27,15 +27,19 @@ export function ParticleEffect({
   useEffect(() => {
     if (triggerKey === 0) return
 
-    const newParticles: Particle[] = Array.from({ length: count }, (_, i) => ({
-      id: i + triggerKey * 1000,
-      x: Math.random() * 100 - 50,
-      y: Math.random() * -100 - 50,
-      size: Math.random() * 12 + 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      duration: Math.random() * 1.5 + 1,
-      delay: Math.random() * 0.3
-    }))
+    const newParticles: Particle[] = Array.from({ length: count }, (_, i) => {
+      const colorIndex = Math.floor(Math.random() * colors.length)
+      const selectedColor = colors[colorIndex]
+      return {
+        id: i + triggerKey * 1000,
+        x: Math.random() * 100 - 50,
+        y: Math.random() * -100 - 50,
+        size: Math.random() * 12 + 4,
+        color: selectedColor ?? '#F97316',
+        duration: Math.random() * 1.5 + 1,
+        delay: Math.random() * 0.3
+      }
+    })
 
     setParticles(newParticles)
 

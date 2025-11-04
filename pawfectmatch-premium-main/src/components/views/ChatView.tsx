@@ -78,7 +78,7 @@ export default function ChatView() {
                 ...room,
                 lastMessage,
                 unreadCount,
-                updatedAt: lastMessage.timestamp
+                updatedAt: lastMessage?.timestamp ?? room.updatedAt
               }
             }
           } catch (error) {
@@ -89,10 +89,12 @@ export default function ChatView() {
         })
       )
 
-      setChatRooms((current) => {
-        const sorted = updatedRooms.sort((a, b) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        )
+      setChatRooms(() => {
+        const sorted = updatedRooms.sort((a, b) => {
+          const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+          const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+          return bTime - aTime
+        })
         return sorted
       })
     }

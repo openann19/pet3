@@ -1,4 +1,5 @@
 import { translations } from './src/lib/i18n'
+import { scriptLogger } from './src/lib/script-logger'
 
 type StringEntry = {
   key: string
@@ -9,7 +10,7 @@ type StringEntry = {
   bucket: '0-30' | '31-60' | '61-120' | '120+'
 }
 
-function flattenObject(obj: any, prefix = ''): Record<string, string> {
+function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
   const result: Record<string, string> = {}
   
   for (const key in obj) {
@@ -17,7 +18,7 @@ function flattenObject(obj: any, prefix = ''): Record<string, string> {
     const newKey = prefix ? `${prefix}.${key}` : key
     
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      Object.assign(result, flattenObject(value, newKey))
+      Object.assign(result, flattenObject(value as Record<string, unknown>, newKey))
     } else if (typeof value === 'string') {
       result[newKey] = value
     }
@@ -40,8 +41,8 @@ function auditI18nStrings() {
   const entries: StringEntry[] = []
   
   for (const key in enFlat) {
-    const enText = enFlat[key]
-    const bgText = bgFlat[key] || ''
+    const enText = enFlat[key] ?? ''
+    const bgText = bgFlat[key] ?? ''
     const enLength = enText.length
     const bgLength = bgText.length
     const maxLength = Math.max(enLength, bgLength)
@@ -62,12 +63,12 @@ function auditI18nStrings() {
     return maxB - maxA
   })
   
-  console.log('\n=== i18n String Length Audit ===\n')
-  console.log('Key,EN Length,BG Length,Max Length,Bucket,EN Text,BG Text')
+  scriptLogger.writeLine('\n=== i18n String Length Audit ===\n')
+  scriptLogger.writeLine('Key,EN Length,BG Length,Max Length,Bucket,EN Text,BG Text')
   
   for (const entry of entries) {
     const maxLength = Math.max(entry.enLength, entry.bgLength)
-    console.log(
+    scriptLogger.writeLine(
       `"${entry.key}",${entry.enLength},${entry.bgLength},${maxLength},"${entry.bucket}","${entry.enText.replace(/"/g, '""')}","${entry.bgText.replace(/"/g, '""')}"`
     )
   }
@@ -77,22 +78,22 @@ function auditI18nStrings() {
     return acc
   }, {} as Record<string, number>)
   
-  console.log('\n=== Summary ===')
-  console.log(`Total strings: ${entries.length}`)
-  console.log(`0-30 chars: ${bucketCounts['0-30'] || 0}`)
-  console.log(`31-60 chars: ${bucketCounts['31-60'] || 0}`)
-  console.log(`61-120 chars: ${bucketCounts['61-120'] || 0}`)
-  console.log(`120+ chars: ${bucketCounts['120+'] || 0}`)
+  scriptLogger.writeLine('\n=== Summary ===')
+  scriptLogger.writeLine(`Total strings: ${entries.length}`)
+  scriptLogger.writeLine(`0-30 chars: ${bucketCounts['0-30'] || 0}`)
+  scriptLogger.writeLine(`31-60 chars: ${bucketCounts['31-60'] || 0}`)
+  scriptLogger.writeLine(`61-120 chars: ${bucketCounts['61-120'] || 0}`)
+  scriptLogger.writeLine(`120+ chars: ${bucketCounts['120+'] || 0}`)
   
   const longStrings = entries.filter(e => Math.max(e.enLength, e.bgLength) > 60)
   if (longStrings.length > 0) {
-    console.log(`\n⚠️  ${longStrings.length} strings exceed 60 characters and may cause UI overflow`)
+    scriptLogger.warn(`\n⚠️  ${longStrings.length} strings exceed 60 characters and may cause UI overflow`)
   }
   
   const missingBg = entries.filter(e => !e.bgText)
   if (missingBg.length > 0) {
-    console.log(`\n⚠️  ${missingBg.length} strings missing BG translation:`)
-    missingBg.forEach(e => console.log(`  - ${e.key}`))
+    scriptLogger.warn(`\n⚠️  ${missingBg.length} strings missing BG translation:`)
+    missingBg.forEach(e => scriptLogger.writeLine(`  - ${e.key}`))
   }
 }
 

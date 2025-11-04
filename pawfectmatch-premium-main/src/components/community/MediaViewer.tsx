@@ -8,7 +8,6 @@ import type { PostMedia, PostVideo } from '@/lib/community-types'
 import { haptics } from '@/lib/haptics'
 import { toast } from 'sonner'
 import { useApp } from '@/contexts/AppContext'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('MediaViewer')
@@ -34,7 +33,6 @@ export function MediaViewer({
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [isZoomed, setIsZoomed] = useState(false)
   const [direction, setDirection] = useState(0)
-  const [showControls, setShowControls] = useState(true)
   const dragX = useMotionValue(0)
   const opacity = useTransform(dragX, [-200, 0, 200], [0.5, 1, 0.5])
   
@@ -66,7 +64,11 @@ export function MediaViewer({
     if (!video) return
 
     const handleTimeUpdate = () => setCurrentTime(video.currentTime)
-    const handleLoadedMetadata = () => setDuration(video.duration)
+    const handleLoadedMetadata = () => {
+      if (video.duration && !isNaN(video.duration)) {
+        setDuration(video.duration)
+      }
+    }
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
     const handleEnded = () => setIsPlaying(false)
@@ -131,7 +133,7 @@ export function MediaViewer({
     }
   }
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeThreshold = 50
     const swipeVelocity = 500
 
@@ -171,9 +173,10 @@ export function MediaViewer({
   }
 
   const handleSeek = (value: number[]) => {
-    if (!videoRef.current) return
-    videoRef.current.currentTime = value[0]
-    setCurrentTime(value[0])
+    if (!videoRef.current || value[0] === undefined) return
+    const seekTime = value[0]
+    videoRef.current.currentTime = seekTime
+    setCurrentTime(seekTime)
     resetControlsTimeout()
   }
 
@@ -191,8 +194,8 @@ export function MediaViewer({
         toast.error(t.community?.mediaNotAvailable || 'Media not available')
         return
       }
-      const isVideo = 'hlsUrl' in currentMedia
-      const url = isVideo ? currentMedia.hlsUrl : currentMedia.fullUrl
+      const isVideo = currentMedia.type === 'video'
+      const url = isVideo ? (currentMedia as PostVideo).url : currentMedia.url
       
       const response = await fetch(url)
       const blob = await response.blob()
@@ -218,8 +221,8 @@ export function MediaViewer({
       toast.error(t.community?.mediaNotAvailable || 'Media not available')
       return
     }
-    const isVideo = 'hlsUrl' in currentMedia
-    const url = isVideo ? currentMedia.hlsUrl : currentMedia.fullUrl
+      const isVideo = currentMedia.type === 'video'
+      const url = isVideo ? (currentMedia as PostVideo).url : currentMedia.url
     
     if (navigator.share) {
       try {
@@ -243,7 +246,7 @@ export function MediaViewer({
     return null
   }
   
-  const isVideo = 'hlsUrl' in currentMedia
+    const isVideo = currentMedia.type === 'video'
 
   const variants = {
     enter: (direction: number) => ({
@@ -274,7 +277,7 @@ export function MediaViewer({
         >
           <div className="relative w-full h-full flex items-center justify-center">
             <AnimatePresence>
-              {(showControls || !isVideo || showVideoControls) && (
+              {(!isVideo || showVideoControls) && (
                 <motion.div 
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -361,8 +364,8 @@ export function MediaViewer({
                     <div className="relative w-full h-full flex items-center justify-center">
                       <video
                         ref={videoRef}
-                        src={currentMedia.hlsUrl}
-                        poster={currentMedia.posterUrl}
+                        src={(currentMedia as PostVideo).url}
+                        poster={(currentMedia as PostVideo).thumbnail}
                         className="max-w-full max-h-full object-contain"
                         playsInline
                         onClick={handleVideoClick}
@@ -394,7 +397,7 @@ export function MediaViewer({
                       </AnimatePresence>
 
                       <AnimatePresence>
-                        {showVideoControls && duration > 0 && (
+                        {showVideoControls && duration > 0 && !isNaN(duration) && (
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -407,7 +410,7 @@ export function MediaViewer({
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleVideoClick}
-                                className="h-10 w-10 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm flex-shrink-0"
+                                className="h-10 w-10 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm shrink-0"
                               >
                                 {isPlaying ? (
                                   <Pause size={20} weight="fill" />
@@ -422,21 +425,21 @@ export function MediaViewer({
 
                               <Slider
                                 value={[currentTime]}
-                                max={duration}
+                                max={duration || 0}
                                 step={0.1}
                                 onValueChange={handleSeek}
                                 className="flex-1"
                               />
 
                               <span className="text-white/60 text-sm min-w-[45px] text-right">
-                                {formatTime(duration)}
+                                {formatTime(duration || 0)}
                               </span>
 
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={toggleMute}
-                                className="h-10 w-10 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm flex-shrink-0"
+                                className="h-10 w-10 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm shrink-0"
                               >
                                 {isMuted ? (
                                   <SpeakerSlash size={20} weight="fill" />
@@ -451,8 +454,8 @@ export function MediaViewer({
                     </div>
                   ) : (
                     <motion.img
-                      src={currentMedia.fullUrl}
-                      alt={currentMedia.alt || 'Post media'}
+                      src={currentMedia.url}
+                      alt={`Post media ${currentIndex + 1}`}
                       onClick={handleImageClick}
                       animate={{
                         scale: isZoomed ? 2 : 1
@@ -473,7 +476,7 @@ export function MediaViewer({
             {media.length > 1 && (
               <>
                 <AnimatePresence>
-                  {currentIndex > 0 && (showControls || showVideoControls) && (
+                  {currentIndex > 0 && showVideoControls && (
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -493,7 +496,7 @@ export function MediaViewer({
                 </AnimatePresence>
 
                 <AnimatePresence>
-                  {currentIndex < media.length - 1 && (showControls || showVideoControls) && (
+                  {currentIndex < media.length - 1 && showVideoControls && (
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}

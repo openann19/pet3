@@ -5,7 +5,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Comment } from '@/lib/community-types'
@@ -23,15 +22,13 @@ interface CommentsSheetProps {
   onOpenChange: (open: boolean) => void
   postId: string
   postAuthor: string
-  initialCommentsCount?: number
 }
 
 export function CommentsSheet({ 
   open, 
   onOpenChange, 
   postId, 
-  postAuthor,
-  initialCommentsCount = 0 
+  postAuthor
 }: CommentsSheetProps) {
   const { t } = useApp()
   const [comments, setComments] = useState<Comment[]>([])
@@ -73,7 +70,7 @@ export function CommentsSheet({
     try {
       const newComment = await communityService.addComment(postId, {
         text: commentText.trim(),
-        parentId: replyingTo?._id
+        parentId: replyingTo?._id ?? replyingTo?.id
       })
 
       setComments((currentComments) => replyingTo 
@@ -190,10 +187,12 @@ export function CommentsSheet({
             ) : (
               <AnimatePresence>
                 {topLevelComments.map((comment, index) => {
-                  const replies = getReplies(comment._id)
+                  const commentId = comment._id ?? comment.id
+                  if (!commentId) return null
+                  const replies = getReplies(commentId)
                   return (
                     <motion.div
-                      key={comment._id}
+                      key={commentId}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -206,15 +205,18 @@ export function CommentsSheet({
                       
                       {replies.length > 0 && (
                         <div className="ml-12 mt-4 space-y-4 pl-4 border-l-2 border-border/50">
-                          {replies.map(reply => (
-                            <CommentItem
-                              key={reply._id}
-                              comment={reply}
-                              onReply={handleReply}
-                              isReply
-                              isAuthor={reply.authorName === postAuthor}
-                            />
-                          ))}
+                          {replies.map(reply => {
+                            const replyId = reply._id ?? reply.id
+                            return (
+                              <CommentItem
+                                key={replyId}
+                                comment={reply}
+                                onReply={handleReply}
+                                isReply
+                                isAuthor={reply.authorName === postAuthor}
+                              />
+                            )
+                          })}
                         </div>
                       )}
                     </motion.div>
@@ -316,17 +318,17 @@ interface CommentItemProps {
 function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: CommentItemProps) {
   const { t } = useApp()
   const [isLiked, setIsLiked] = useState(false)
-  const [likesCount, setLikesCount] = useState(comment.metrics.likes)
+  const [likesCount, setLikesCount] = useState(comment.reactionsCount ?? 0)
 
   const handleLike = async () => {
     haptics.selection()
     
     if (isLiked) {
       setIsLiked(false)
-      setLikesCount(prev => Math.max(0, prev - 1))
+      setLikesCount((prev: number) => Math.max(0, prev - 1))
     } else {
       setIsLiked(true)
-      setLikesCount(prev => prev + 1)
+      setLikesCount((prev: number) => prev + 1)
       haptics.success()
     }
   }
@@ -337,8 +339,8 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt={comment.authorName} className="object-cover" />
         ) : (
-          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-            {comment.authorName[0].toUpperCase()}
+          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">                                     
+            {comment.authorName?.[0]?.toUpperCase() ?? '?'}
           </div>
         )}
       </Avatar>
@@ -358,7 +360,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
             </span>
           </div>
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words">
+          <p className="text-sm text-foreground whitespace-pre-wrap wrap-break-word">
             {comment.text}
           </p>
         </div>

@@ -35,14 +35,16 @@ interface StorageItem<T = unknown> {
 class StorageService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
-  private inMemoryCache: Map<string, { value: unknown; timestamp: number }> = new Map()
+  private inMemoryCache: Map<string, { value: unknown; timestamp: number }> = new Map()                                                                         
   private cacheTTL = 5000 // 5 seconds
+  private broadcastChannel: BroadcastChannel | null = null
+  private isInitialized = false
 
   /**
-   * Initialize IndexedDB
+   * Initialize IndexedDB with resilience features
    */
   async initDB(): Promise<void> {
-    if (this.db) return
+    if (this.db && this.isInitialized) return
 
     if (this.initPromise) {
       return this.initPromise
@@ -53,12 +55,44 @@ class StorageService {
 
       request.onerror = () => {
         const error = request.error || new Error('Failed to open IndexedDB')
-        logger.error('Failed to open IndexedDB', error instanceof Error ? error : new Error(String(error)))
+        logger.error('Failed to open IndexedDB', error instanceof Error ? error : new Error(String(error)))                                                     
         reject(error)
       }
 
       request.onsuccess = () => {
         this.db = request.result
+        
+        // Listen for database close events
+        this.db.onclose = () => {
+          logger.warn('IndexedDB connection closed unexpectedly', {
+            dbName: DB_NAME,
+            version: DB_VERSION
+          })
+          this.db = null
+          this.isInitialized = false
+          this.initPromise = null
+          // Re-initialize on next access
+        }
+        
+        // Listen for version change events (database upgrade in another tab)
+        this.db.onversionchange = () => {
+          logger.warn('IndexedDB version change detected, closing connection', {
+            dbName: DB_NAME,
+            oldVersion: this.db?.version
+          })
+          this.db?.close()
+          this.db = null
+          this.isInitialized = false
+          this.initPromise = null
+          // Clear cache on version change
+          this.inMemoryCache.clear()
+          // Broadcast invalidation to other tabs
+          this.broadcastInvalidation()
+          // Re-initialize on next access
+        }
+        
+        this.isInitialized = true
+        this.setupBroadcastChannel()
         resolve()
       }
 
@@ -71,6 +105,74 @@ class StorageService {
     })
 
     return this.initPromise
+  }
+
+  /**
+   * Setup broadcast channel for multi-tab cache invalidation
+   */
+  private setupBroadcastChannel(): void {
+    if (typeof BroadcastChannel === 'undefined') {
+      logger.warn('BroadcastChannel not supported, cache invalidation disabled')
+      return
+    }
+
+    try {
+      this.broadcastChannel = new BroadcastChannel('petspark-storage')
+      
+      this.broadcastChannel.onmessage = (event) => {
+        const { type, key } = event.data as { type: string; key?: string }
+        
+        if (type === 'invalidate') {
+          if (key) {
+            // Invalidate specific key
+            this.inMemoryCache.delete(key)
+            logger.debug(`Cache invalidated for key: ${key}`)
+          } else {
+            // Invalidate all cache
+            this.inMemoryCache.clear()
+            logger.debug('Cache invalidated (all keys)')
+          }
+        } else if (type === 'update') {
+          // Another tab updated a value, invalidate our cache immediately
+          if (key) {
+            this.inMemoryCache.delete(key)
+            logger.debug(`Cache invalidated for key: ${key} (external update)`)
+          } else {
+            // If no key specified, clear all cache
+            this.inMemoryCache.clear()
+            logger.debug('Cache invalidated (all keys, external update)')
+          }
+        }
+      }
+    } catch (error) {
+      logger.warn('Failed to setup broadcast channel', { error: error instanceof Error ? error.message : String(error) })
+    }
+  }
+
+  /**
+   * Broadcast cache invalidation to other tabs
+   */
+  private broadcastInvalidation(key?: string): void {
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({ type: 'invalidate', key })
+      } catch (error) {
+        logger.warn('Failed to broadcast cache invalidation', { error: error instanceof Error ? error.message : String(error) })
+      }
+    }
+  }
+
+  /**
+   * Broadcast update to other tabs
+   */
+  private broadcastUpdate(key: string): void {
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({ type: 'update', key })
+      } catch (error) {
+        logger.warn('Failed to broadcast update', { error: error instanceof Error ? error.message : String(error) })
+      }
+    }
   }
 
   /**
@@ -128,10 +230,10 @@ class StorageService {
   }
 
   /**
-   * Get value from IndexedDB
+   * Get value from IndexedDB with error recovery
    */
   private async getFromIndexedDB<T>(key: string): Promise<T | null> {
-    if (!this.db) {
+    if (!this.db || !this.isInitialized) {
       await this.initDB()
     }
 
@@ -146,7 +248,18 @@ class StorageService {
       const request = store.get(key)
 
       request.onerror = () => {
-        reject(request.error)
+        const error = request.error || new Error('Failed to read from IndexedDB')
+        logger.error(`Failed to read from IndexedDB for key ${key}`, error instanceof Error ? error : new Error(String(error)))
+        
+        // Attempt to recover by re-initializing
+        if (this.db) {
+          this.db.close()
+          this.db = null
+          this.isInitialized = false
+          this.initPromise = null
+        }
+        
+        reject(error)
       }
 
       request.onsuccess = () => {
@@ -157,10 +270,10 @@ class StorageService {
   }
 
   /**
-   * Set value in IndexedDB
+   * Set value in IndexedDB with error recovery
    */
   private async setToIndexedDB<T>(key: string, value: T): Promise<void> {
-    if (!this.db) {
+    if (!this.db || !this.isInitialized) {
       await this.initDB()
     }
 
@@ -180,10 +293,23 @@ class StorageService {
       const request = store.put(item)
 
       request.onerror = () => {
-        reject(request.error)
+        const error = request.error || new Error('Failed to write to IndexedDB')
+        logger.error(`Failed to write to IndexedDB for key ${key}`, error instanceof Error ? error : new Error(String(error)))
+        
+        // Attempt to recover by re-initializing
+        if (this.db) {
+          this.db.close()
+          this.db = null
+          this.isInitialized = false
+          this.initPromise = null
+        }
+        
+        reject(error)
       }
 
       request.onsuccess = () => {
+        // Broadcast update to other tabs
+        this.broadcastUpdate(key)
         resolve()
       }
     })
@@ -295,6 +421,7 @@ class StorageService {
 
   /**
    * Set a value in storage
+   * Returns a promise that resolves when the value is persisted
    */
   async set<T = unknown>(key: string, value: T): Promise<void> {
     // Update in-memory cache
@@ -309,15 +436,21 @@ class StorageService {
         try {
           await this.setToIndexedDB(key, value)
         } catch (error) {
-          logger.warn(`Failed to write to IndexedDB for key ${key}`, { error: error instanceof Error ? error.message : String(error) })
+          logger.warn(`Failed to write to IndexedDB for key ${key}`, { error: error instanceof Error ? error.message : String(error) })                         
         }
       }
+      // Broadcast invalidation to other tabs
+      this.broadcastInvalidation(key)
     } else {
       try {
         await this.setToIndexedDB(key, value)
+        // Broadcast invalidation to other tabs
+        this.broadcastInvalidation(key)
       } catch (error) {
-        logger.warn(`Failed to write to IndexedDB for key ${key}, falling back to localStorage`, { error: error instanceof Error ? error.message : String(error) })
+        logger.warn(`Failed to write to IndexedDB for key ${key}, falling back to localStorage`, { error: error instanceof Error ? error.message : String(error) })                                                                             
         this.setToLocalStorage(key, value)
+        // Broadcast invalidation to other tabs
+        this.broadcastInvalidation(key)
       }
     }
   }
@@ -334,8 +467,11 @@ class StorageService {
     try {
       await this.deleteFromIndexedDB(key)
     } catch (error) {
-      logger.warn(`Failed to delete from IndexedDB for key ${key}`, { error: error instanceof Error ? error.message : String(error) })
+      logger.warn(`Failed to delete from IndexedDB for key ${key}`, { error: error instanceof Error ? error.message : String(error) })                          
     }
+    
+    // Broadcast invalidation to other tabs
+    this.broadcastInvalidation(key)
   }
 
   /**

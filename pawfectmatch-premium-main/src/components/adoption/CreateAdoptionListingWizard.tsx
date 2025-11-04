@@ -681,15 +681,15 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                       <h4 className="font-semibold text-sm mb-2">What happens next?</h4>
                       <ul className="text-sm space-y-2 text-muted-foreground">
                         <li className="flex items-start gap-2">
-                          <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                          <Check size={16} className="text-primary mt-0.5 shrink-0" />
                           <span>Your listing will be reviewed by our team (usually within 24 hours)</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                          <Check size={16} className="text-primary mt-0.5 shrink-0" />
                           <span>Once approved, it will be visible to potential adopters</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                          <Check size={16} className="text-primary mt-0.5 shrink-0" />
                           <span>You'll receive applications and can choose the best match</span>
                         </li>
                       </ul>

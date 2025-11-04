@@ -27,7 +27,7 @@ export default function StoryRing({
   return (
     <motion.button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 flex-shrink-0"
+      className="flex flex-col items-center gap-2 shrink-0"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >

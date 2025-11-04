@@ -55,7 +55,7 @@ export function EnhancedCarousel({
     }
   }
 
-  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeThreshold = 50
     
     if (Math.abs(info.offset.x) > swipeThreshold) {
@@ -79,6 +79,7 @@ export function EnhancedCarousel({
         }
       }
     }
+    return undefined
   }, [autoPlay, autoPlayInterval, currentIndex])
 
   const resetAutoPlay = () => {

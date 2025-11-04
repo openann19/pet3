@@ -160,10 +160,10 @@ export class AdvancedPerformance {
       const key = JSON.stringify(args)
       
       if (cache.has(key)) {
-        return cache.get(key)
+        return cache.get(key) as ReturnType<T>
       }
 
-      const result = fn(...args)
+      const result = fn(...args) as ReturnType<T>
       cache.set(key, result)
       return result
     }) as T
@@ -264,7 +264,9 @@ export class AdvancedPerformance {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1]
-        lcpValue = lastEntry.startTime
+        if (lastEntry) {
+          lcpValue = lastEntry.startTime
+        }
       })
 
       observer.observe({ type: 'largest-contentful-paint', buffered: true })
@@ -310,7 +312,7 @@ export function useVirtualList<T>(
   }
 }
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 export function usePrefetch(url: string, condition: boolean = true) {
   useEffect(() => {
@@ -342,9 +344,11 @@ export function useIntersectionObserver(
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsIntersecting(entry.isIntersecting)
-        if (entry.isIntersecting && !hasIntersected) {
-          setHasIntersected(true)
+        if (entry) {
+          setIsIntersecting(entry.isIntersecting)
+          if (entry.isIntersecting && !hasIntersected) {
+            setHasIntersected(true)
+          }
         }
       },
       options

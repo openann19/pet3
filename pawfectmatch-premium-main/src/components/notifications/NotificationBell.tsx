@@ -20,6 +20,7 @@ export function NotificationBell() {
       const timer = setTimeout(() => setHasNewNotification(false), 2000)
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [unreadCount])
 
   const handleClick = () => {
@@ -33,7 +34,7 @@ export function NotificationBell() {
         variant="ghost"
         size="icon"
         onClick={handleClick}
-        className="relative rounded-full w-11 h-11 hover:bg-primary/10 active:bg-primary/20 transition-colors flex-shrink-0 touch-manipulation"
+        className="relative rounded-full w-11 h-11 hover:bg-primary/10 active:bg-primary/20 transition-colors shrink-0 touch-manipulation"
         aria-label={`Notifications${unreadCount > 0 ? ` - ${unreadCount} unread` : ''}`}
       >
         <AnimatePresence mode="wait">

@@ -310,7 +310,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-3xl flex-shrink-0">{template.emoji}</span>
+                    <span className="text-3xl shrink-0">{template.emoji}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-base">{template.name}</h4>
@@ -318,7 +318,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="bg-primary text-primary-foreground rounded-full p-1 flex-shrink-0"
+                            className="bg-primary text-primary-foreground rounded-full p-1 shrink-0"
                           >
                             <Check size={14} weight="bold" />
                           </motion.div>

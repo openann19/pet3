@@ -97,7 +97,7 @@ export function DetailedPetAnalytics({
                         transition={{ delay: idx * 0.1 }}
                         className="flex items-start gap-2 text-sm"
                       >
-                        <Star size={16} className="text-accent mt-0.5 flex-shrink-0" weight="fill" />
+                        <Star size={16} className="text-accent mt-0.5 shrink-0" weight="fill" />
                         <span>{reason}</span>
                       </motion.li>
                     ))}
