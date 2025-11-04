@@ -1,0 +1,294 @@
+import { pushNotifications as pushNotificationManager, deepLinks as deepLinkManager } from './push-notifications'
+import { lostFoundAPI } from './api/lost-found-api'
+import type { LostAlert, Sighting } from './lost-found-types'
+import type { Post } from './community-types'
+import type { LiveStream } from './live-streaming-types'
+import { createLogger } from './logger'
+
+const logger = createLogger('NotificationsService')
+
+interface ServiceWorkerNotificationEvent extends Event {
+  notification: Notification
+  action?: string
+}
+
+/**
+ * Notification Service for Lost & Found, Community, and Go Live features
+ * Handles push notifications and deep links for new content
+ */
+
+export class NotificationsService {
+  /**
+   * Send notification when a new lost alert is created nearby
+   */
+  async notifyNewLostAlert(alert: LostAlert, _userId: string): Promise<void> {
+    try {
+      await pushNotificationManager.showNotification({
+        id: `lost-alert-${alert.id}`,
+        title: `Lost Pet Alert: ${alert.petSummary.name}`,
+        body: `${alert.petSummary.species} • Last seen ${new Date(alert.lastSeen.whenISO).toLocaleDateString()}`,
+        icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
+        image: alert.photos && alert.photos.length > 0 ? alert.photos[0] : undefined,
+        tag: 'lost-alert',
+        data: {
+          type: 'lost-alert',
+          alertId: alert.id,
+          deepLink: `/lost-found/alert/${alert.id}`
+        },
+        actions: [
+          {
+            action: 'view',
+            title: 'View Alert',
+            icon: '/icon-192.png'
+          },
+          {
+            action: 'report-sighting',
+            title: 'Report Sighting',
+            icon: '/icon-192.png'
+          }
+        ],
+        requireInteraction: false
+      })
+
+      // Handle deep link - register route for navigation
+      // Routes are registered in the main app router
+    } catch (error) {
+      logger.error('Failed to send lost alert notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Send notification when a sighting is reported for user's lost pet
+   */
+  async notifyNewSighting(sighting: Sighting, alert: LostAlert): Promise<void> {
+    try {
+      await pushNotificationManager.showNotification({
+        id: `sighting-${sighting.id}`,
+        title: `New Sighting Reported!`,
+        body: `Someone reported seeing ${alert.petSummary.name}`,
+        icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
+        image: sighting.photos && sighting.photos.length > 0 ? sighting.photos[0] : undefined,
+        tag: 'sighting',
+        data: {
+          type: 'sighting',
+          sightingId: sighting.id,
+          alertId: alert.id,
+          deepLink: `/lost-found/alert/${alert.id}/sighting/${sighting.id}`
+        },
+        actions: [
+          {
+            action: 'view',
+            title: 'View Sighting',
+            icon: '/icon-192.png'
+          }
+        ],
+        requireInteraction: true
+      })
+
+      // Handle deep link - register route for navigation
+    } catch (error) {
+      logger.error('Failed to send sighting notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Send notification when a new community post is created by followed users
+   */
+  async notifyNewCommunityPost(post: Post, _userId: string): Promise<void> {
+    try {
+      // Only notify if user follows the author (TODO: implement following)
+      // For now, notify for trending posts
+      
+      await pushNotificationManager.showNotification({
+        id: `community-post-${post.id}`,
+        title: `New Post by ${post.authorName}`,
+        body: post.text ? post.text.slice(0, 100) : 'New post',
+        icon: post.authorAvatar || '/icon-192.png',
+        image: post.media && post.media.length > 0 && post.media[0]
+          ? (typeof post.media[0] === 'string' ? post.media[0] : (post.media[0] as { url?: string }).url || undefined)
+          : undefined,
+        tag: 'community-post',
+        data: {
+          type: 'community-post',
+          postId: post.id,
+          deepLink: `/community/post/${post.id}`
+        },
+        actions: [
+          {
+            action: 'view',
+            title: 'View Post',
+            icon: '/icon-192.png'
+          },
+          {
+            action: 'react',
+            title: 'React',
+            icon: '/icon-192.png'
+          }
+        ],
+        requireInteraction: false
+      })
+
+      // Handle deep link - register route for navigation
+    } catch (error) {
+      logger.error('Failed to send community post notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Send notification when a user goes live
+   */
+  async notifyGoLive(stream: LiveStream, _userId: string): Promise<void> {
+    try {
+      // Only notify if user follows the host (TODO: implement following)
+      // For now, notify for popular hosts
+      
+      await pushNotificationManager.showNotification({
+        id: `live-stream-${stream.id}`,
+        title: `${stream.hostName} is Live!`,
+        body: stream.title,
+        icon: stream.hostAvatar || '/icon-192.png',
+        tag: 'live-stream',
+        data: {
+          type: 'live-stream',
+          streamId: stream.id,
+          deepLink: `/live/${stream.id}`
+        },
+        actions: [
+          {
+            action: 'join',
+            title: 'Join Stream',
+            icon: '/icon-192.png'
+          }
+        ],
+        requireInteraction: false
+      })
+
+      // Handle deep link - register route for navigation
+    } catch (error) {
+      logger.error('Failed to send go live notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Send notification when user's lost pet alert gets a new view
+   */
+  async notifyAlertView(alertId: string, viewCount: number): Promise<void> {
+    try {
+      // Only notify for significant milestones (e.g., 10, 50, 100 views)
+      if (viewCount === 10 || viewCount === 50 || viewCount === 100) {
+        const alert = await lostFoundAPI.getAlertById(alertId)
+        if (!alert) return
+
+        await pushNotificationManager.showNotification({
+          id: `alert-view-${alertId}-${viewCount}`,
+          title: `${viewCount} People Viewed Your Alert`,
+          body: `${alert.petSummary.name}'s alert has been seen by ${viewCount} people`,
+          icon: alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png',
+          tag: 'alert-view',
+          data: {
+            type: 'alert-view',
+            alertId: alert.id,
+            deepLink: `/lost-found/alert/${alert.id}`
+          },
+          requireInteraction: false
+        })
+      }
+    } catch (error) {
+      logger.error('Failed to send alert view notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Send notification when a post gets popular
+   */
+  async notifyPostPopular(post: Post, reactionCount: number): Promise<void> {
+    try {
+      // Notify when post reaches certain milestones
+      if (reactionCount === 10 || reactionCount === 50 || reactionCount === 100) {
+        await pushNotificationManager.showNotification({
+          id: `post-popular-${post.id}-${reactionCount}`,
+          title: `Your Post is Getting Popular!`,
+          body: `Your post has ${reactionCount} reactions`,
+          icon: post.authorAvatar || '/icon-192.png',
+          tag: 'post-popular',
+          data: {
+            type: 'post-popular',
+            postId: post.id,
+            deepLink: `/community/post/${post.id}`
+          },
+          requireInteraction: false
+        })
+      }
+    } catch (error) {
+      logger.error('Failed to send post popular notification', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Initialize notification listeners for API events
+   */
+  async initialize(): Promise<void> {
+    // Initialize push notification manager
+    await pushNotificationManager.initialize()
+
+    // Listen for notification clicks
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('notificationclick', (event: Event) => {
+        const notificationEvent = event as ServiceWorkerNotificationEvent
+        notificationEvent.notification.close()
+
+        const data = notificationEvent.notification.data
+        if (data && data.deepLink) {
+          // Navigate to deep link
+          deepLinkManager.navigate(data.deepLink, data.params || {})
+        }
+
+        // Handle action clicks
+        if (notificationEvent.action === 'view') {
+          if (data?.deepLink) {
+            deepLinkManager.navigate(data.deepLink, data.params || {})
+          }
+        } else if (notificationEvent.action === 'report-sighting') {
+          if (data?.alertId) {
+            deepLinkManager.navigate(`/lost-found/alert/${data.alertId}/report-sighting`, {})
+          }
+        } else if (notificationEvent.action === 'join') {
+          if (data?.streamId) {
+            deepLinkManager.navigate(`/live/${data.streamId}`, {})
+          }
+        }
+      })
+    }
+  }
+
+  /**
+   * Request notification permission from user
+   */
+  async requestPermission(): Promise<boolean> {
+    return await pushNotificationManager.requestPermission()
+  }
+
+  /**
+   * Check if notifications are supported
+   */
+  isSupported(): boolean {
+    return pushNotificationManager.isSupported()
+  }
+
+  /**
+   * Check if user has granted permission
+   */
+  hasPermission(): boolean {
+    return pushNotificationManager.hasPermission()
+  }
+}
+
+export const notificationsService = new NotificationsService()
+
+// Initialize on module load
+if (typeof window !== 'undefined') {
+  notificationsService.initialize().catch((error) => {
+    logger.error('Failed to initialize notifications service', error instanceof Error ? error : new Error(String(error)))
+  })
+}
+

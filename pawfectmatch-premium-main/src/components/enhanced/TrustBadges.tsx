@@ -1,0 +1,209 @@
+import { motion } from 'framer-motion'
+import { CheckCircle, Heart, Star, Lightning, Trophy, Sparkle } from '@phosphor-icons/react'
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
+
+interface TrustBadge {
+  type: 'verified' | 'health' | 'responsive' | 'experienced' | 'top-rated' | 'favorite'
+  label: string
+  description: string
+}
+
+interface TrustBadgesProps {
+  badges: TrustBadge[]
+  size?: 'sm' | 'md' | 'lg'
+  animated?: boolean
+}
+
+const BADGE_CONFIG = {
+  verified: {
+    icon: CheckCircle,
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/30'
+  },
+  health: {
+    icon: Heart,
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/30'
+  },
+  responsive: {
+    icon: Lightning,
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
+    borderColor: 'border-accent/30'
+  },
+  experienced: {
+    icon: Star,
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/10',
+    borderColor: 'border-secondary/30'
+  },
+  'top-rated': {
+    icon: Trophy,
+    color: 'text-[oklch(0.68_0.18_45)]',
+    bgColor: 'bg-[oklch(0.68_0.18_45)]/10',
+    borderColor: 'border-[oklch(0.68_0.18_45)]/30'
+  },
+  favorite: {
+    icon: Sparkle,
+    color: 'text-primary',
+    bgColor: 'bg-gradient-to-br from-primary/10 to-accent/10',
+    borderColor: 'border-primary/30'
+  }
+}
+
+const SIZE_CONFIG = {
+  sm: {
+    iconSize: 14,
+    containerClass: 'w-7 h-7',
+    gap: 'gap-1'
+  },
+  md: {
+    iconSize: 18,
+    containerClass: 'w-9 h-9',
+    gap: 'gap-2'
+  },
+  lg: {
+    iconSize: 22,
+    containerClass: 'w-11 h-11',
+    gap: 'gap-2.5'
+  }
+}
+
+export function TrustBadges({ badges, size = 'md', animated = true }: TrustBadgesProps) {
+  if (!badges || !Array.isArray(badges) || badges.length === 0) {
+    return null
+  }
+
+  const sizeConfig = SIZE_CONFIG[size]
+
+  return (
+    <TooltipProvider>
+      <div className={`flex flex-wrap items-center ${sizeConfig.gap}`}>
+        {badges.map((badge, index) => {
+          const config = BADGE_CONFIG[badge.type]
+          const Icon = config.icon
+
+          const content = (
+            <motion.div
+              key={badge.type}
+              initial={animated ? { scale: 0, opacity: 0 } : undefined}
+              animate={animated ? { scale: 1, opacity: 1 } : undefined}
+              transition={animated ? {
+                type: 'spring',
+                stiffness: 500,
+                damping: 30,
+                delay: index * 0.05
+              } : undefined}
+              whileHover={{ scale: 1.1, y: -2 }}
+              className={`
+                ${sizeConfig.containerClass}
+                ${config.bgColor}
+                ${config.borderColor}
+                border-2
+                rounded-full
+                flex items-center justify-center
+                cursor-help
+                transition-all duration-200
+                shadow-sm hover:shadow-md
+              `}
+            >
+              <Icon 
+                size={sizeConfig.iconSize} 
+                weight="fill" 
+                className={config.color}
+              />
+            </motion.div>
+          )
+
+          return (
+            <Tooltip key={badge.type}>
+              <TooltipTrigger asChild>
+                {content}
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="text-center">
+                  <p className="font-semibold text-sm">{badge.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{badge.description}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )
+        })}
+      </div>
+    </TooltipProvider>
+  )
+}
+
+interface TrustScoreProps {
+  score: number
+  size?: 'sm' | 'md' | 'lg'
+  showLabel?: boolean
+}
+
+export function TrustScore({ score, size = 'md', showLabel = true }: TrustScoreProps) {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-500'
+    if (score >= 60) return 'text-accent'
+    if (score >= 40) return 'text-yellow-500'
+    return 'text-muted-foreground'
+  }
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 80) return 'Highly Trusted'
+    if (score >= 60) return 'Trusted'
+    if (score >= 40) return 'Established'
+    return 'New'
+  }
+
+  const sizeClasses = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-base'
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative">
+        <svg className="w-12 h-12 transform -rotate-90">
+          <circle
+            cx="24"
+            cy="24"
+            r="20"
+            stroke="currentColor"
+            strokeWidth="3"
+            fill="none"
+            className="text-muted/20"
+          />
+          <motion.circle
+            cx="24"
+            cy="24"
+            r="20"
+            stroke="currentColor"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            className={getScoreColor(score)}
+            initial={{ strokeDasharray: '0 126' }}
+            animate={{ strokeDasharray: `${(score / 100) * 126} 126` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={`font-bold ${sizeClasses[size]} ${getScoreColor(score)}`}>
+            {score}
+          </span>
+        </div>
+      </div>
+      {showLabel && (
+        <div className="flex flex-col">
+          <span className={`font-semibold ${sizeClasses[size]}`}>
+            {getScoreLabel(score)}
+          </span>
+          <span className="text-xs text-muted-foreground">Trust Score</span>
+        </div>
+      )}
+    </div>
+  )
+}
