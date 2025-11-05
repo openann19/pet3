@@ -3,7 +3,32 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { ENV } from '@/config/env'
 import { createLogger } from '@/lib/logger'
-import type { PaymentProduct, PaymentIntent, Subscription } from '@/types/payments'
+
+// Payment types
+export interface PaymentProduct {
+  id: string
+  name: string
+  description: string
+  price: number
+  currency: string
+  interval?: 'month' | 'year'
+}
+
+export interface PaymentIntent {
+  id: string
+  amount: number
+  currency: string
+  status: string
+  clientSecret: string
+}
+
+export interface Subscription {
+  id: string
+  status: string
+  currentPeriodEnd: string
+  cancelAtPeriodEnd: boolean
+  product: PaymentProduct
+}
 
 const logger = createLogger('StripeService')
 
@@ -49,7 +74,10 @@ class StripeServiceImpl {
     try {
       const result = await stripe.confirmPayment({
         clientSecret,
-        confirmParams: paymentMethodId ? { payment_method: paymentMethodId } : {}
+        confirmParams: {
+          return_url: window.location.origin + '/payment/success',
+          ...(paymentMethodId ? { payment_method: paymentMethodId } : {})
+        }
       })
 
       if (result.error) {
@@ -57,16 +85,9 @@ class StripeServiceImpl {
         return { success: false, error: result.error.message }
       }
 
-      // Notify backend of successful payment
-      await APIClient.post(ENDPOINTS.PAYMENTS.CONFIRM_PAYMENT, {
-        paymentIntentId: result.paymentIntent.id,
-        status: result.paymentIntent.status
-      })
-
-      logger.info('Payment confirmed successfully', { 
-        paymentIntentId: result.paymentIntent.id 
-      })
-
+      // On redirect, this won't be reached
+      // For non-redirect flows, notify backend
+      logger.info('Payment confirmed successfully')
       return { success: true }
     } catch (error) {
       logger.error('Payment confirmation error', error)

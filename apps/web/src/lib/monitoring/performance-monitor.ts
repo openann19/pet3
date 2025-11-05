@@ -198,7 +198,7 @@ class PerformanceMonitorImpl {
       timestamp: Date.now(),
       tags: {
         method,
-        endpoint: endpoint.split('?')[0], // Remove query params
+        endpoint: endpoint.split('?')[0] ?? endpoint, // Remove query params
         status: status.toString(),
         status_class: `${Math.floor(status / 100)}xx`
       }
@@ -213,7 +213,7 @@ class PerformanceMonitorImpl {
         timestamp: Date.now(),
         tags: {
           method,
-          endpoint: endpoint.split('?')[0],
+          endpoint: endpoint.split('?')[0] ?? endpoint,
           status: status.toString()
         }
       })
@@ -314,7 +314,10 @@ class PerformanceMonitorImpl {
       if (!groups[metric.name]) {
         groups[metric.name] = []
       }
-      groups[metric.name].push(metric.value)
+      const group = groups[metric.name]
+      if (group) {
+        group.push(metric.value)
+      }
       return groups
     }, {} as Record<string, number[]>)
 

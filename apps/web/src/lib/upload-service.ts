@@ -1,7 +1,6 @@
 import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
-import { retry } from '@/lib/retry'
 
 const logger = createLogger('UploadService')
 
@@ -153,6 +152,7 @@ class UploadServiceImpl {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
+      if (!file) continue
       
       const result = await this.uploadFile(file, {
         type,

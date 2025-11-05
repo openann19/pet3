@@ -24,6 +24,11 @@ const envSchema = z.object({
   VITE_MAPBOX_TOKEN: z.string().startsWith('pk.', 'Invalid Mapbox token'),
   VITE_STRIPE_PUBLIC_KEY: z.string().startsWith('pk_', 'Invalid Stripe public key'),
   VITE_SENTRY_DSN: z.string().url('Invalid Sentry DSN').optional(),
+  VITE_SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0.1),
+
+  // Security
+  VITE_CORS_ORIGIN: z.string().optional(),
+  VITE_CSP_ENABLED: z.coerce.boolean().default(true),
 
   // Optional
   VITE_APP_VERSION: z.string().default('1.0.0'),
