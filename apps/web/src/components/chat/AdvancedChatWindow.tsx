@@ -343,7 +343,7 @@ export default function AdvancedChatWindow({
                     if (!room || !currentUserId) return
                     
                     try {
-                      const otherUserId = room.participants.find(p => p.id !== currentUserId)?.id
+                      const otherUserId = room.participantIds.find(id => id !== currentUserId)
                       if (!otherUserId) return
                       
                       // Show confirmation dialog

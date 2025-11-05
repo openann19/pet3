@@ -8,7 +8,7 @@ class SecurityConfigImpl {
   setupCORS(): void {
     // This would be configured in the backend, but we can validate origins
     const allowedOrigins = [
-      ENV.VITE_CORS_ORIGIN,
+      ENV.VITE_CORS_ORIGIN ?? 'https://pawfectmatch.com',
       'https://pawfectmatch.com',
       'https://*.pawfectmatch.com'
     ].filter(Boolean)

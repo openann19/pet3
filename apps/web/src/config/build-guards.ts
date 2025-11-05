@@ -2,12 +2,8 @@
  * Build-time guards to prevent mock code from reaching production
  */
 
-// Compile-time check for production builds
-declare global {
-    interface Window {
-      spark?: never // ❌ Banned in production builds
-    }
-  }
+// Note: spark type is declared in vite-env.d.ts
+// Production builds should not use spark.kv - this is enforced via runtime guards below
 
   // Feature flag validation
   const VITE_USE_MOCKS = import.meta.env.VITE_USE_MOCKS

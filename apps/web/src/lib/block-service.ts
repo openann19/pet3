@@ -1,7 +1,6 @@
 import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
-import type { PetProfile } from '@/core/domain/pet-model'
 
 const logger = createLogger('BlockService')
 

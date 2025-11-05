@@ -153,8 +153,11 @@ class AuditLoggerImpl {
     try {
       const token = localStorage.getItem('access_token')
       if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        return payload.sub || payload.userId
+        const parts = token.split('.')
+        if (parts[1]) {
+          const payload = JSON.parse(atob(parts[1]))
+          return payload.sub || payload.userId
+        }
       }
     } catch (error) {
       logger.error('Failed to extract user ID from token', error)
