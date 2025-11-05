@@ -13,6 +13,8 @@ import { useStorage } from '../hooks/useStorage';
 import { useNavigation } from '@react-navigation/native';
 import { PricingModal, SubscriptionStatusCard, BillingIssueBanner } from '../components/payments';
 import { useSubscription } from '../hooks/payments/useSubscription';
+import { StoryHighlights, CreateHighlightDialog, type Highlight } from '../components/stories';
+import { useHighlights } from '../hooks/stories/useHighlights';
 
 export default function ProfileScreen(): React.JSX.Element {
   const navigation = useNavigation();
@@ -37,6 +39,27 @@ export default function ProfileScreen(): React.JSX.Element {
     dismissBillingIssue,
   } = useSubscription();
   const [showPricingModal, setShowPricingModal] = useState(false);
+
+  // Highlights management
+  const { highlights, createHighlight } = useHighlights(userProfile.id);
+  const [showCreateHighlight, setShowCreateHighlight] = useState(false);
+
+  const handleCreateHighlight = async (
+    title: string,
+    storyIds: string[],
+    coverImage: string
+  ) => {
+    const result = await createHighlight(title, storyIds, coverImage);
+    if (result.success) {
+      Alert.alert('Success', 'Highlight created successfully!');
+    } else {
+      Alert.alert('Error', result.error || 'Failed to create highlight');
+    }
+  };
+
+  const handleHighlightPress = (highlight: Highlight) => {
+    Alert.alert(highlight.title, `${highlight.storyIds.length} stories in this highlight`);
+  };
 
   const handleSelectPlan = async (planId: string) => {
     if (planId === 'free') {
@@ -109,6 +132,14 @@ export default function ProfileScreen(): React.JSX.Element {
         <Text style={styles.location}>📍 {userProfile.location}</Text>
         {userProfile.bio && <Text style={styles.bio}>{userProfile.bio}</Text>}
       </View>
+
+      {/* Story Highlights */}
+      <StoryHighlights
+        highlights={highlights}
+        onHighlightPress={handleHighlightPress}
+        onAddHighlight={() => setShowCreateHighlight(true)}
+        isOwner={true}
+      />
 
       {/* Billing Issue Banner */}
       {billingIssue && (
@@ -210,6 +241,14 @@ export default function ProfileScreen(): React.JSX.Element {
         onClose={() => setShowPricingModal(false)}
         onSelectPlan={handleSelectPlan}
         currentPlan={subscription.plan}
+      />
+
+      {/* Create Highlight Dialog */}
+      <CreateHighlightDialog
+        visible={showCreateHighlight}
+        onClose={() => setShowCreateHighlight(false)}
+        onCreateHighlight={handleCreateHighlight}
+        availableStories={[]}
       />
     </ScrollView>
   );
