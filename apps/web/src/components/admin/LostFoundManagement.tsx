@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { MapPin, Eye, XCircle, Warning } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { lostFoundService } from '@/lib/lost-found-service'
+import { lostFoundAPI } from '@/api/lost-found-api'
 import type { LostAlert } from '@/lib/lost-found-types'
 import { logger } from '@/lib/logger'
 
@@ -19,8 +20,9 @@ export function LostFoundManagement() {
 
   const loadAlerts = async () => {
     try {
-      const allAlerts = await spark.kv.get<LostAlert[]>('lost-found-alerts') || []
-      setAlerts(allAlerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+      // Get all alerts (admin endpoint)
+      const result = await lostFoundAPI.queryAlerts({ limit: 1000 })
+      setAlerts(result.alerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       logger.error('Failed to load alerts', err, { action: 'loadAlerts' })

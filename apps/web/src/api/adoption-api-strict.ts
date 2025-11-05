@@ -16,6 +16,11 @@
 
 import type { UpdateAdoptionListingData } from '@/api/types'
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
+import { APIClient } from '@/lib/api-client'
+import { ENDPOINTS } from '@/lib/endpoints'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('AdoptionAPIStrict')
 
 /**
  * Adoption API with strict optional semantics
@@ -25,14 +30,6 @@ import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
  * - Undefined value: field is explicitly cleared
  */
 export class AdoptionAPIStrict {
-  private async getListings(): Promise<AdoptionListing[]> {
-    return await spark.kv.get<AdoptionListing[]>('adoption-listings') || []
-  }
-
-  private async setListings(listings: AdoptionListing[]): Promise<void> {
-    await spark.kv.set('adoption-listings', listings)
-  }
-
   /**
    * PUT /adoption/listings/:id
    * Update listing with strict optional handling
@@ -46,33 +43,20 @@ export class AdoptionAPIStrict {
     data: UpdateAdoptionListingData,
     ownerId: string
   ): Promise<AdoptionListing> {
-    const listings = await this.getListings()
-    const listing = listings.find(l => l.id === id)
-
-    if (!listing) {
-      throw new Error(`Listing ${id} not found`)
+    try {
+      const response = await APIClient.put<{ listing: AdoptionListing }>(
+        ENDPOINTS.ADOPTION.UPDATE_LISTING(id),
+        {
+          ...data,
+          ownerId
+        }
+      )
+      return response.data.listing
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to update listing', err, { id, ownerId })
+      throw err
     }
-
-    if (listing.ownerId !== ownerId) {
-      throw new Error('Unauthorized: Only owner can update listing')
-    }
-
-    // Update fields - undefined explicitly means "clear this field"
-    if (data.petName !== undefined) {
-      listing.petName = data.petName ?? undefined
-    }
-    if (data.fee !== undefined) {
-      listing.fee = data.fee ?? undefined
-    }
-    if (data.petDescription !== undefined) {
-      listing.petDescription = data.petDescription ?? undefined
-    }
-    // ... other fields
-
-    listing.updatedAt = new Date().toISOString()
-
-    await this.setListings(listings)
-    return listing
   }
 }
 

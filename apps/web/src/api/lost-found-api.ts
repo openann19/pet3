@@ -1,17 +1,56 @@
+import type { LostAlertStatus } from '@/core/domain/lost-found'
+import { canReceiveSightings, isValidLostAlertStatusTransition } from '@/core/domain/lost-found'
+import { APIClient } from '@/lib/api-client'
+import { ENDPOINTS } from '@/lib/endpoints'
+import { createLogger } from '@/lib/logger'
 import type {
-  LostAlert,
-  Sighting,
-  LostAlertFilters,
   CreateLostAlertData,
   CreateSightingData,
+  LostAlert,
+  LostAlertFilters,
+  Sighting,
 } from '@/lib/lost-found-types'
-import type { LostAlertStatus } from '@/core/domain/lost-found'
-import { isValidLostAlertStatusTransition, canReceiveSightings } from '@/core/domain/lost-found'                                                  
-import { generateULID } from '@/lib/utils'
 import { notificationsService } from '@/lib/notifications-service'
-import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('LostFoundAPI')
+
+export interface CreateAlertRequest extends CreateLostAlertData {
+  ownerId: string
+  ownerName: string
+  ownerAvatar?: string
+}
+
+export interface CreateAlertResponse {
+  alert: LostAlert
+}
+
+export interface QueryAlertsResponse {
+  alerts: LostAlert[]
+  nextCursor?: string
+  total: number
+}
+
+export interface UpdateStatusRequest {
+  status: LostAlertStatus
+}
+
+export interface UpdateStatusResponse {
+  alert: LostAlert
+}
+
+export interface CreateSightingRequest extends CreateSightingData {
+  reporterId: string
+  reporterName: string
+  reporterAvatar?: string
+}
+
+export interface CreateSightingResponse {
+  sighting: Sighting
+}
+
+export interface QuerySightingsResponse {
+  sightings: Sighting[]
+}
 
 /**
  * Lost & Found Alerts API Service
@@ -22,21 +61,6 @@ const logger = createLogger('LostFoundAPI')
  * POST   /alerts/sightings                 // nearby users report sightings
  */
 export class LostFoundAPI {
-  private async getAlerts(): Promise<LostAlert[]> {
-    return await spark.kv.get<LostAlert[]>('lost-found-alerts') || []
-  }
-
-  private async setAlerts(alerts: LostAlert[]): Promise<void> {
-    await spark.kv.set('lost-found-alerts', alerts)
-  }
-
-  private async getSightings(): Promise<Sighting[]> {
-    return await spark.kv.get<Sighting[]>('lost-found-sightings') || []
-  }
-
-  private async setSightings(sightings: Sighting[]): Promise<void> {
-    await spark.kv.set('lost-found-sightings', sightings)
-  }
 
   /**
    * POST /alerts/lost
@@ -45,45 +69,42 @@ export class LostFoundAPI {
   async createAlert(
     data: CreateLostAlertData & { ownerId: string; ownerName: string; ownerAvatar?: string }
   ): Promise<LostAlert> {
-    const alerts = await this.getAlerts()
-    
-    const alert: LostAlert = {
-      id: generateULID(),
-      ownerId: data.ownerId,
-      ownerName: data.ownerName,
-      ownerAvatar: data.ownerAvatar,
-      petSummary: data.petSummary,
-      lastSeen: data.lastSeen,
-      reward: data.reward,
-      contactMask: data.contactMask,
-      photos: data.photos, // Should be stripped of EXIF before storage
-      status: 'active',
-      description: data.description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      viewsCount: 0,
-      sightingsCount: 0
-    }
-
-    alerts.push(alert)
-    await this.setAlerts(alerts)
-
-    // Trigger geofenced push notifications to nearby users
     try {
-      const radiusKm = alert.lastSeen.radiusM / 1000 || 10 // Convert meters to km, default 10km
-      await notificationsService.triggerGeofencedNotifications(alert, radiusKm)
-      logger.info('Geofenced notifications triggered', {
-        alertId: alert.id,
-        radiusKm
-      })
-    } catch (error) {
-      logger.error('Failed to trigger geofenced notifications', error instanceof Error ? error : new Error(String(error)), {
-        alertId: alert.id
-      })
-      // Don't fail alert creation if notification fails
-    }
+      const request: CreateAlertRequest = {
+        ...data,
+        ownerId: data.ownerId,
+        ownerName: data.ownerName,
+        ownerAvatar: data.ownerAvatar
+      }
 
-    return alert
+      const response = await APIClient.post<CreateAlertResponse>(
+        ENDPOINTS.LOST_FOUND.CREATE_ALERT,
+        request
+      )
+
+      const alert = response.data.alert
+
+      // Trigger geofenced push notifications to nearby users
+      try {
+        const radiusKm = alert.lastSeen.radiusM / 1000 || 10 // Convert meters to km, default 10km
+        await notificationsService.triggerGeofencedNotifications(alert, radiusKm)
+        logger.info('Geofenced notifications triggered', {
+          alertId: alert.id,
+          radiusKm
+        })
+      } catch (error) {
+        logger.error('Failed to trigger geofenced notifications', error instanceof Error ? error : new Error(String(error)), {
+          alertId: alert.id
+        })
+        // Don't fail alert creation if notification fails
+      }
+
+      return alert
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to create alert', err, { ownerId: data.ownerId })
+      throw err
+    }
   }
 
   /**
@@ -93,60 +114,54 @@ export class LostFoundAPI {
   async queryAlerts(
     filters?: LostAlertFilters & { cursor?: string; limit?: number }
   ): Promise<{ alerts: LostAlert[]; nextCursor?: string; total: number }> {
-    let alerts = await this.getAlerts()
-    
-    // Filter by status - only show active by default
-    if (!filters?.status || filters.status.length === 0) {
-      alerts = alerts.filter(a => a.status === 'active')
-    } else {
-      alerts = alerts.filter(a => filters.status!.includes(a.status))
-    }
-
-    if (filters) {
-      if (filters.species && filters.species.length > 0) {
-        alerts = alerts.filter(a => filters.species!.includes(a.petSummary.species))
+    try {
+      const queryParams: Record<string, unknown> = {}
+      
+      if (filters?.status && filters.status.length > 0) {
+        queryParams['status'] = filters.status
+      }
+      
+      if (filters?.species && filters.species.length > 0) {
+        queryParams.species = filters.species
       }
 
-      if (filters.location) {
-        alerts = alerts.filter(a => {
-          if (!a.lastSeen.lat || !a.lastSeen.lon) return false
-          const distance = this.calculateDistance(
-            filters.location!.lat,
-            filters.location!.lon,
-            a.lastSeen.lat,
-            a.lastSeen.lon
-          )
-          return distance <= filters.location!.radiusKm
-        })
+      if (filters?.location) {
+        queryParams.near = `${filters.location.lat},${filters.location.lon}`
+        queryParams.radius = filters.location.radiusKm
       }
 
-      if (filters.minReward !== undefined) {
-        alerts = alerts.filter(a => a.reward && a.reward >= filters.minReward!)
+      if (filters?.minReward !== undefined) {
+        queryParams.minReward = filters.minReward
       }
 
-      if (filters.dateFrom) {
-        alerts = alerts.filter(a => new Date(a.createdAt) >= new Date(filters.dateFrom!))
+      if (filters?.dateFrom) {
+        queryParams.dateFrom = filters.dateFrom
       }
 
-      if (filters.dateTo) {
-        alerts = alerts.filter(a => new Date(a.createdAt) <= new Date(filters.dateTo!))
+      if (filters?.dateTo) {
+        queryParams.dateTo = filters.dateTo
       }
-    }
 
-    // Sort by most recent first
-    alerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      if (filters?.cursor) {
+        queryParams.cursor = filters.cursor
+      }
 
-    const total = alerts.length
-    const limit = filters?.limit || 20
-    const startIndex = filters?.cursor ? parseInt(filters.cursor, 10) : 0
-    const endIndex = startIndex + limit
-    const paginated = alerts.slice(startIndex, endIndex)
-    const nextCursor = endIndex < total ? endIndex.toString() : undefined
+      if (filters?.limit) {
+        queryParams.limit = filters.limit
+      }
 
-    return {
-      alerts: paginated,
-      nextCursor,
-      total
+      const url = ENDPOINTS.LOST_FOUND.QUERY_ALERTS + (Object.keys(queryParams).length > 0 
+        ? '?' + new URLSearchParams(
+            Object.entries(queryParams).map(([k, v]) => [k, String(v)])
+          ).toString()
+        : '')
+
+      const response = await APIClient.get<QueryAlertsResponse>(url)
+      return response.data
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to query alerts', err, { filters })
+      throw err
     }
   }
 
@@ -154,15 +169,33 @@ export class LostFoundAPI {
    * GET /alerts/lost/:id
    */
   async getAlertById(id: string): Promise<LostAlert | null> {
-    const alerts = await this.getAlerts()
-    const alert = alerts.find(a => a.id === id)
-    
-    if (alert) {
-      // Increment view count
-      await this.incrementViewCount(id)
+    try {
+      const response = await APIClient.get<{ alert: LostAlert }>(
+        ENDPOINTS.LOST_FOUND.GET_ALERT(id)
+      )
+      
+      const alert = response.data.alert
+      
+      // Increment view count (fire and forget)
+      try {
+        await APIClient.post(ENDPOINTS.LOST_FOUND.INCREMENT_VIEW(id))
+      } catch (error) {
+        logger.warn('Failed to increment view count', { 
+          alertId: id, 
+          error: error instanceof Error ? error : new Error(String(error)) 
+        })
+      }
+      
+      return alert
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      // If 404, return null instead of throwing
+      if (err.message.includes('404') || err.message.includes('not found')) {
+        return null
+      }
+      logger.error('Failed to get alert by ID', err, { id })
+      throw err
     }
-    
-    return alert || null
   }
 
   /**
@@ -174,35 +207,36 @@ export class LostFoundAPI {
     status: LostAlertStatus,
     userId: string
   ): Promise<LostAlert> {
-    const alerts = await this.getAlerts()
-    const alert = alerts.find(a => a.id === id)
-    
-    if (!alert) {
-      throw new Error('Alert not found')
+    try {
+      // First get the alert to validate transition
+      const currentAlert = await this.getAlertById(id)
+      if (!currentAlert) {
+        throw new Error('Alert not found')
+      }
+
+      // Only owner can update status
+      if (currentAlert.ownerId !== userId) {
+        throw new Error('Unauthorized: Only alert owner can update status')
+      }
+
+      // Validate status transition using domain logic
+      if (!isValidLostAlertStatusTransition(currentAlert.status, status)) {
+        throw new Error(`Invalid status transition from ${currentAlert.status} to ${status}`)
+      }
+
+      const request: UpdateStatusRequest = { status }
+
+      const response = await APIClient.patch<UpdateStatusResponse>(
+        ENDPOINTS.LOST_FOUND.UPDATE_STATUS(id),
+        request
+      )
+
+      return response.data.alert
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to update alert status', err, { id, status, userId })
+      throw err
     }
-
-    // Only owner can update status
-    if (alert.ownerId !== userId) {
-      throw new Error('Unauthorized: Only alert owner can update status')
-    }
-
-    // Validate status transition using domain logic
-    if (!isValidLostAlertStatusTransition(alert.status, status)) {
-      throw new Error(`Invalid status transition from ${alert.status} to ${status}`)
-    }
-
-    alert.status = status
-    alert.updatedAt = new Date().toISOString()
-
-    if (status === 'found') {
-      alert.foundAt = new Date().toISOString()
-    } else if (status === 'archived') {
-      alert.archivedAt = new Date().toISOString()
-    }
-
-    await this.setAlerts(alerts)
-    
-    return alert
   }
 
   /**
@@ -212,101 +246,101 @@ export class LostFoundAPI {
   async createSighting(
     data: CreateSightingData & { reporterId: string; reporterName: string; reporterAvatar?: string }
   ): Promise<Sighting> {
-    const sightings = await this.getSightings()
-    const alerts = await this.getAlerts()
-    
-    // Verify alert exists and can receive sightings
-    const alert = alerts.find(a => a.id === data.alertId)
-    if (!alert) {
-      throw new Error('Alert not found')
-    }
-    if (!canReceiveSightings(alert.status)) {
-      throw new Error('Cannot report sighting for inactive alert')
-    }
-    
-    const sighting: Sighting = {
-      ...data,
-      id: generateULID(),
-      reporterId: data.reporterId,
-      reporterName: data.reporterName,
-      reporterAvatar: data.reporterAvatar,
-      verified: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    try {
+      // Verify alert exists and can receive sightings
+      const alert = await this.getAlertById(data.alertId)
+      if (!alert) {
+        throw new Error('Alert not found')
+      }
+      if (!canReceiveSightings(alert.status)) {
+        throw new Error('Cannot report sighting for inactive alert')
+      }
 
-    sightings.push(sighting)
-    await this.setSightings(sightings)
+      const request: CreateSightingRequest = {
+        ...data,
+        reporterId: data.reporterId,
+        reporterName: data.reporterName,
+        reporterAvatar: data.reporterAvatar
+      }
 
-    // Increment alert sightings count
-    const alertToUpdate = alerts.find(a => a.id === data.alertId)
-    if (alertToUpdate) {
-      alertToUpdate.sightingsCount = (alertToUpdate.sightingsCount ?? 0) + 1
-      await this.setAlerts(alerts)
-      
+      const response = await APIClient.post<CreateSightingResponse>(
+        ENDPOINTS.LOST_FOUND.CREATE_SIGHTING,
+        request
+      )
+
+      const sighting = response.data.sighting
+
       // Send notification to alert owner
       try {
-        await notificationsService.notifyNewSighting(sighting, alertToUpdate)
+        await notificationsService.notifyNewSighting(sighting, alert)
         logger.info('Sighting notification sent', {
           sightingId: sighting.id,
-          alertId: alertToUpdate.id,
-          ownerId: alertToUpdate.ownerId
+          alertId: alert.id,
+          ownerId: alert.ownerId
         })
       } catch (error) {
         logger.error('Failed to send sighting notification', error instanceof Error ? error : new Error(String(error)))
         // Don't fail the sighting creation if notification fails
       }
-    }
 
-    return sighting
+      return sighting
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to create sighting', err, { alertId: data.alertId })
+      throw err
+    }
   }
 
   /**
    * GET /alerts/sightings?alertId=:id
    */
   async querySightings(alertId: string): Promise<Sighting[]> {
-    const sightings = await this.getSightings()
-    return sightings
-      .filter(s => s.alertId === alertId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    try {
+      const url = `${ENDPOINTS.LOST_FOUND.GET_SIGHTINGS}?alertId=${alertId}`
+      const response = await APIClient.get<QuerySightingsResponse>(url)
+      return response.data.sightings
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to query sightings', err, { alertId })
+      throw err
+    }
   }
 
   /**
    * GET /alerts/lost?mine=1
    */
   async getUserAlerts(userId: string): Promise<LostAlert[]> {
-    const alerts = await this.getAlerts()
-    return alerts
-      .filter(a => a.ownerId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  }
-
-  // Helper methods
-
-  private async incrementViewCount(alertId: string): Promise<void> {
-    const alerts = await this.getAlerts()
-    const alert = alerts.find(a => a.id === alertId)
-    
-    if (alert) {
-      alert.viewsCount = (alert.viewsCount ?? 0) + 1
-      await this.setAlerts(alerts)
+    try {
+      const url = `${ENDPOINTS.LOST_FOUND.QUERY_ALERTS}?mine=1&ownerId=${userId}`
+      const response = await APIClient.get<QueryAlertsResponse>(url)
+      return response.data.alerts
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get user alerts', err, { userId })
+      throw err
     }
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371 // Earth radius in km
-    const dLat = this.toRad(lat2 - lat1)
-    const dLon = this.toRad(lon2 - lon1)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
-
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180)
+  /**
+   * POST /alerts/sightings/:id/verify
+   * Verify or reject a sighting
+   */
+  async verifySighting(
+    sightingId: string,
+    verified: boolean,
+    userId: string
+  ): Promise<Sighting> {
+    try {
+      const response = await APIClient.post<CreateSightingResponse>(
+        `/alerts/sightings/${sightingId}/verify`,
+        { verified, userId }
+      )
+      return response.data.sighting
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to verify sighting', err, { sightingId, verified })
+      throw err
+    }
   }
 }
 

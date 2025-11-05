@@ -1,5 +1,6 @@
 import { pushNotifications as pushNotificationManager, deepLinks as deepLinkManager } from './push-notifications'
 import { lostFoundAPI } from '@/api/lost-found-api'
+import { notificationsApi } from '@/api/notifications-api'
 import type { LostAlert, Sighting } from './lost-found-types'
 import type { Post } from './community-types'
 import type { LiveStream } from './live-streaming-types'
@@ -304,30 +305,7 @@ export class NotificationsService {
     radiusKm: number
   ): Promise<string[]> {
     try {
-      // Get all user locations from KV storage
-      const userLocations = await spark.kv.get<Array<{
-        userId: string
-        lat: number
-        lon: number
-        lastUpdated: string
-      }>>('user-locations') || []
-
-      const nearbyUsers: string[] = []
-
-      for (const userLoc of userLocations) {
-        const distance = this.calculateDistance(
-          centerLat,
-          centerLon,
-          userLoc.lat,
-          userLoc.lon
-        )
-
-        if (distance <= radiusKm) {
-          nearbyUsers.push(userLoc.userId)
-        }
-      }
-
-      return nearbyUsers
+      return await notificationsApi.queryNearbyUsers(centerLat, centerLon, radiusKm)
     } catch (error) {
       logger.error('Failed to query users in radius', error instanceof Error ? error : new Error(String(error)), {
         centerLat,
@@ -373,56 +351,16 @@ export class NotificationsService {
         return
       }
 
-      // Check if notifications were already sent for this alert
-      const notificationKey = `geofence-notifications:${alert.id}`
-      const alreadySent = await spark.kv.get<boolean>(notificationKey)
-
-      if (alreadySent) {
-        logger.debug('Geofenced notifications already sent for this alert', {
-          alertId: alert.id
-        })
-        return
-      }
-
-      // Query users within radius
-      const nearbyUserIds = await this.queryUsersInRadius(
+      // Use API to trigger geofenced notifications
+      await notificationsApi.triggerGeofence(
+        alert.id,
         alert.lastSeen.lat,
         alert.lastSeen.lon,
         radiusKm
       )
 
-      if (nearbyUserIds.length === 0) {
-        logger.debug('No users found within radius', {
-          alertId: alert.id,
-          radiusKm
-        })
-        return
-      }
-
-      // Send notifications to nearby users (excluding alert owner)
-      const userIdsToNotify = nearbyUserIds.filter(userId => userId !== alert.ownerId)
-      
-      let notificationsSent = 0
-      for (const userId of userIdsToNotify) {
-        try {
-          await this.notifyNewLostAlert(alert, userId)
-          notificationsSent++
-        } catch (error) {
-          logger.error('Failed to send notification to user', error instanceof Error ? error : new Error(String(error)), {
-            userId,
-            alertId: alert.id
-          })
-          // Continue with other users even if one fails
-        }
-      }
-
-      // Mark notifications as sent
-      await spark.kv.set(notificationKey, true)
-
-      logger.info('Geofenced notifications sent', {
+      logger.info('Geofenced notifications triggered', {
         alertId: alert.id,
-        notificationsSent,
-        totalUsers: userIdsToNotify.length,
         radiusKm
       })
     } catch (error) {

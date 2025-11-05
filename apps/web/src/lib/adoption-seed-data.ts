@@ -1,9 +1,12 @@
 import type { AdoptionProfile } from './adoption-types'
+import { buildLLMPrompt } from './llm-prompt'
+import { llmService } from './llm-service'
 import { parseLLMError } from './llm-utils'
 import { logger } from './logger'
+import { storage } from './storage'
 
 export async function generateAdoptionProfiles(count: number = 12): Promise<AdoptionProfile[]> {
-  const prompt = spark.llmPrompt`Generate exactly ${count} diverse pet adoption profiles. 
+  const prompt = buildLLMPrompt`Generate exactly ${count} diverse pet adoption profiles. 
   
   Return ONLY a valid JSON array of objects, no additional text or explanation.
   
@@ -56,7 +59,7 @@ export async function generateAdoptionProfiles(count: number = 12): Promise<Adop
   }
 
   try {
-    const response = await spark.llm(prompt, 'gpt-4o', true)
+  const response = await llmService.llm(prompt, 'gpt-4o', true)
     const profilesData = JSON.parse(response) as LLMProfileData[]
     
     const profiles: AdoptionProfile[] = profilesData.map((data: LLMProfileData, index: number) => ({
@@ -209,13 +212,16 @@ function getFallbackProfiles(): AdoptionProfile[] {
 
 export async function initializeAdoptionProfiles(): Promise<void> {
   try {
-    const existing = await (window as Window & { spark?: { kv?: { get: <T>(key: string) => Promise<T | null> } } }).spark?.kv?.get<AdoptionProfile[]>('adoption-profiles')
-    
+    const existing = await storage.get<AdoptionProfile[]>('adoption-profiles')
+
     if (!existing || existing.length === 0) {
       logger.info('Generating adoption profiles', { action: 'initializeAdoptionProfiles' })
       const profiles = await generateAdoptionProfiles(12)
-      await (window as Window & { spark?: { kv?: { set: <T>(key: string, value: T) => Promise<void> } } }).spark?.kv?.set('adoption-profiles', profiles)
-      logger.info('Generated adoption profiles', { profilesCount: profiles.length, action: 'initializeAdoptionProfiles' })
+      await storage.set('adoption-profiles', profiles)
+      logger.info('Generated adoption profiles', {
+        profilesCount: profiles.length,
+        action: 'initializeAdoptionProfiles',
+      })
     }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))

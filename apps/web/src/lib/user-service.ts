@@ -5,8 +5,8 @@
  * Manages current user authentication and profile.
  */
 
-import { storage } from './storage'
 import { log } from './logger'
+import { storage } from './storage'
 
 export interface User {
   id: string
@@ -155,6 +155,4 @@ class UserService {
 
 // Export singleton instance
 export const userService = new UserService()
-
-// Compatibility layer is now handled in spark-compat.ts
 

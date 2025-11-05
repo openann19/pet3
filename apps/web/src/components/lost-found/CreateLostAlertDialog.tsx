@@ -82,13 +82,19 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
     try {
       setIsSubmitting(true)
 
-      const user = await spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
+      if (!user) {
+        toast.error('Please log in to create a lost alert')
+        return
+      }
+
       const whenISO = new Date(`${lastSeenDate}T${lastSeenTime}`).toISOString()
 
       await lostFoundAPI.createAlert({
         ownerId: user.id,
-        ownerName: user.login || 'Unknown',
-        ownerAvatar: user.avatarUrl,
+        ownerName: user.name || 'Unknown',
+        ownerAvatar: user.avatarUrl || undefined,
         petSummary: {
           name: petName,
           species,

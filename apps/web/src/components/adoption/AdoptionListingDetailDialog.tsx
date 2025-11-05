@@ -22,8 +22,7 @@ import {
   PaperPlaneRight
 } from '@phosphor-icons/react'
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
-import { adoptionAPI } from '@/api/adoption-api'
-import { useApp } from '@/contexts/AppContext'
+import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service'
 import { haptics } from '@/lib/haptics'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
@@ -43,7 +42,6 @@ export function AdoptionListingDetailDialog({
   onOpenChange,
   onApplicationSubmitted 
 }: AdoptionListingDetailDialogProps) {
-  const { t } = useApp()
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showApplicationForm, setShowApplicationForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -80,7 +78,7 @@ export function AdoptionListingDetailDialog({
 
   const handleApply = async () => {
     if (!applicationData.message || !applicationData.homeCheckConsent) {
-      toast.error(t.adoption?.fillRequired || 'Please fill in all required fields')
+      toast.error('Please fill in all required fields')
       haptics.trigger('error')
       return
     }
@@ -99,7 +97,7 @@ export function AdoptionListingDetailDialog({
         return
       }
       
-      await adoptionAPI.createApplication({
+      await adoptionMarketplaceService.createApplication({
         listingId: listing.id,
         applicantId: String(user.id),
         applicantName: user.login || 'Anonymous',
@@ -122,9 +120,9 @@ export function AdoptionListingDetailDialog({
 
       haptics.trigger('success')
       toast.success(
-        t.adoption?.applySuccess || 'Application submitted successfully!',
+        'Application submitted successfully!',
         {
-          description: t.adoption?.applySuccessDesc || 'The owner will review your application and contact you.'
+          description: 'The owner will review your application and contact you.'
         }
       )
 
@@ -151,7 +149,7 @@ export function AdoptionListingDetailDialog({
       const errorMessage = error instanceof Error ? error.message : undefined
       logger.error('Failed to submit application', error instanceof Error ? error : new Error(String(error)))
       haptics.trigger('error')
-      toast.error(errorMessage || t.adoption?.applicationFailed || 'Failed to submit application. Please try again.')
+      toast.error(errorMessage || 'Failed to submit application. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -211,12 +209,12 @@ export function AdoptionListingDetailDialog({
           <div className="absolute top-4 right-4 z-10">
             {listing.status === 'active' && (
               <Badge className="bg-green-500/90 text-white backdrop-blur-sm">
-                {t.adoption?.available || 'Available'}
+                {'Available'}
               </Badge>
             )}
             {listing.status === 'pending_review' && (
               <Badge className="bg-yellow-500/90 text-white backdrop-blur-sm">
-                {t.adoption?.pendingReview || 'Pending Review'}
+                {'Pending Review'}
               </Badge>
             )}
           </div>
@@ -239,15 +237,15 @@ export function AdoptionListingDetailDialog({
               <p className="font-semibold">{listing.petBreed}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t.adoption?.age || 'Age'}</p>
-              <p className="font-semibold">{listing.petAge} {listing.petAge === 1 ? t.common?.year_singular || 'year' : t.common?.years || 'years'}</p>
+              <p className="text-sm text-muted-foreground">{'Age'}</p>
+              <p className="font-semibold">{listing.petAge} {listing.petAge === 1 ? 'year' : 'years'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t.adoption?.gender || 'Gender'}</p>
+              <p className="text-sm text-muted-foreground">{'Gender'}</p>
               <p className="font-semibold capitalize">{listing.petGender}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t.adoption?.size || 'Size'}</p>
+              <p className="text-sm text-muted-foreground">{'Size'}</p>
               <p className="font-semibold capitalize">{listing.petSize}</p>
             </div>
           </div>
@@ -255,7 +253,7 @@ export function AdoptionListingDetailDialog({
           <Separator />
 
           <div>
-            <h3 className="font-semibold mb-3">{t.adoption?.about || 'About'}</h3>
+            <h3 className="font-semibold mb-3">{'About'}</h3>
             <p className="text-muted-foreground">{listing.petDescription}</p>
           </div>
 
@@ -263,32 +261,32 @@ export function AdoptionListingDetailDialog({
             {listing.vaccinated && (
               <Badge variant="secondary" className="gap-1">
                 <CheckCircle size={14} weight="fill" />
-                {t.adoption?.vaccinated || 'Vaccinated'}
+                {'Vaccinated'}
               </Badge>
             )}
             {listing.spayedNeutered && (
               <Badge variant="secondary" className="gap-1">
                 <CheckCircle size={14} weight="fill" />
-                {t.adoption?.spayedNeutered || 'Spayed/Neutered'}
+                {'Spayed/Neutered'}
               </Badge>
             )}
             {listing.microchipped && (
               <Badge variant="secondary" className="gap-1">
                 <CheckCircle size={14} weight="fill" />
-                {t.adoption?.microchipped || 'Microchipped'}
+                {'Microchipped'}
               </Badge>
             )}
             {listing.goodWithKids && (
-              <Badge variant="secondary">{t.adoption?.goodWithKids || 'Good with kids'}</Badge>
+              <Badge variant="secondary">{'Good with kids'}</Badge>
             )}
             {listing.goodWithPets && (
-              <Badge variant="secondary">{t.adoption?.goodWithPets || 'Good with pets'}</Badge>
+              <Badge variant="secondary">{'Good with pets'}</Badge>
             )}
           </div>
 
           {listing.requirements && listing.requirements.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2">{t.adoption?.requirements || 'Requirements'}</h3>
+              <h3 className="font-semibold mb-2">{'Requirements'}</h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                 {listing.requirements.map((req, idx) => (
                   <li key={idx}>{req}</li>
@@ -299,7 +297,7 @@ export function AdoptionListingDetailDialog({
 
           {listing.fee && listing.fee.amount > 0 && (
             <div>
-              <p className="text-sm text-muted-foreground">{t.adoption?.adoptionFee || 'Adoption Fee'}</p>
+              <p className="text-sm text-muted-foreground">{'Adoption Fee'}</p>
               <p className="text-xl font-bold">{listing.fee.currency} {listing.fee.amount.toLocaleString()}</p>
             </div>
           )}
@@ -312,7 +310,7 @@ export function AdoptionListingDetailDialog({
                 size="lg"
               >
                 <Heart size={20} weight="fill" />
-                {t.adoption?.apply || 'Apply to Adopt'}
+                {'Apply to Adopt'}
               </Button>
             </div>
           )}
@@ -324,7 +322,7 @@ export function AdoptionListingDetailDialog({
               className="space-y-4 p-4 border rounded-lg bg-muted/50"
             >
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">{t.adoption?.applyToAdopt || 'Apply to Adopt'}</h3>
+                <h3 className="font-semibold">{'Apply to Adopt'}</h3>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -336,9 +334,9 @@ export function AdoptionListingDetailDialog({
 
               <div className="space-y-4">
                 <div>
-                  <Label>{t.adoption?.message || 'Message'}</Label>
+                  <Label>{'Message'}</Label>
                   <Textarea
-                    placeholder={t.adoption?.messagePlaceholder || 'Tell the owner why you want to adopt...'}
+                    placeholder={'Tell the owner why you want to adopt...'}
                     value={applicationData.message}
                     onChange={(e) => setApplicationData({ ...applicationData, message: e.target.value })}
                     rows={4}
@@ -354,17 +352,19 @@ export function AdoptionListingDetailDialog({
                     }
                   />
                   <Label htmlFor="homeCheckConsent" className="text-sm">
-                    {t.adoption?.homeCheckConsent || 'I consent to a home visit'}
+                    {'I consent to a home visit'}
                   </Label>
                 </div>
 
                 <Button
-                  onClick={handleApply}
+                  onClick={() => {
+                    void handleApply()
+                  }}
                   disabled={isSubmitting || !applicationData.message || !applicationData.homeCheckConsent}
                   className="w-full gap-2"
                 >
                   <PaperPlaneRight size={20} weight="fill" />
-                  {isSubmitting ? t.common?.submitting || 'Submitting...' : t.adoption?.submitApplication || 'Submit Application'}
+                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </Button>
               </div>
             </motion.div>

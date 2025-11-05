@@ -1,9 +1,18 @@
-import { generateULID } from './utils'
 import type { PremiumNotification } from '@/components/notifications/PremiumNotificationCenter'
+import { storage } from './storage'
+import { generateULID } from './utils'
+
+const STORAGE_KEY = 'premium-notifications'
+
+async function readNotifications(): Promise<PremiumNotification[]> {
+  return (await storage.get<PremiumNotification[]>(STORAGE_KEY)) ?? []
+}
+
+async function writeNotifications(notifications: PremiumNotification[]): Promise<void> {
+  await storage.set(STORAGE_KEY, notifications)
+}
 
 export async function createPremiumNotification(notification: Omit<PremiumNotification, 'id' | 'timestamp' | 'read' | 'archived'>) {
-  const { kv } = window.spark
-  
   const newNotification: PremiumNotification = {
     id: generateULID(),
     timestamp: Date.now(),
@@ -12,8 +21,8 @@ export async function createPremiumNotification(notification: Omit<PremiumNotifi
     ...notification
   }
 
-  const existing = await kv.get<PremiumNotification[]>('premium-notifications') || []
-  await kv.set('premium-notifications', [newNotification, ...existing])
+  const existing = await readNotifications()
+  await writeNotifications([newNotification, ...existing])
 
   return newNotification
 }
@@ -227,50 +236,41 @@ export async function createSystemNotification(
 }
 
 export async function markNotificationAsRead(id: string) {
-  const { kv } = window.spark
-  const notifications = await kv.get<PremiumNotification[]>('premium-notifications') || []
-  
+  const notifications = await readNotifications()
   const updated = notifications.map(n => 
     n.id === id ? { ...n, read: true } : n
   )
   
-  await kv.set('premium-notifications', updated)
+  await writeNotifications(updated)
 }
 
 export async function archiveNotification(id: string) {
-  const { kv } = window.spark
-  const notifications = await kv.get<PremiumNotification[]>('premium-notifications') || []
-  
+  const notifications = await readNotifications()
   const updated = notifications.map(n => 
     n.id === id ? { ...n, archived: true, read: true } : n
   )
   
-  await kv.set('premium-notifications', updated)
+  await writeNotifications(updated)
 }
 
 export async function deleteNotification(id: string) {
-  const { kv } = window.spark
-  const notifications = await kv.get<PremiumNotification[]>('premium-notifications') || []
-  
+  const notifications = await readNotifications()
   const updated = notifications.filter(n => n.id !== id)
   
-  await kv.set('premium-notifications', updated)
+  await writeNotifications(updated)
 }
 
 export async function clearAllNotifications() {
-  const { kv } = window.spark
-  await kv.set('premium-notifications', [])
+  await writeNotifications([])
 }
 
 export async function getUnreadCount() {
-  const { kv } = window.spark
-  const notifications = await kv.get<PremiumNotification[]>('premium-notifications') || []
+  const notifications = await readNotifications()
   return notifications.filter(n => !n.read && !n.archived).length
 }
 
 export async function getUrgentNotifications() {
-  const { kv } = window.spark
-  const notifications = await kv.get<PremiumNotification[]>('premium-notifications') || []
+  const notifications = await readNotifications()
   return notifications.filter(n => 
     !n.read && 
     !n.archived && 
@@ -284,7 +284,6 @@ export async function createGroupedNotifications(
   baseMessage: string
 ) {
   const groupId = generateULID()
-  const { kv } = window.spark
   
   const notifications = items.map((item, index) => ({
     id: generateULID(),
@@ -302,8 +301,8 @@ export async function createGroupedNotifications(
     }
   }))
 
-  const existing = await kv.get<PremiumNotification[]>('premium-notifications') || []
-  await kv.set('premium-notifications', [...notifications, ...existing])
+  const existing = await readNotifications()
+  await writeNotifications([...notifications, ...existing])
 
   return notifications
 }

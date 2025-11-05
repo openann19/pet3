@@ -1,27 +1,33 @@
-import { generateULID } from './utils'
+import { APIClient } from './api-client'
+import { adminAPI, kycAPI } from './api-services'
+import type {
+    AuditLog,
+    EventPayload,
+    KYCRejectReason,
+    KYCSession,
+    KYCStatus,
+    ModerationAction,
+    ModerationDecision,
+    ModerationMetrics,
+    ModerationQueue,
+    ModerationReason,
+    ModerationTask,
+    NotificationPayload,
+    PhotoRecord,
+    PhotoStatus,
+    PolicyConfig,
+    UploadSession,
+    UserQuota
+} from './backend-types'
+import { ENDPOINTS, buildUrl } from './endpoints'
+import { buildLLMPrompt } from './llm-prompt'
+import { llmService } from './llm-service'
 import { parseLLMError } from './llm-utils'
 import { createLogger } from './logger'
+import { storage } from './storage'
+import { generateULID } from './utils'
 
 const logger = createLogger('BackendServices')
-import type {
-  PhotoRecord,
-  PhotoStatus,
-  ModerationTask,
-  ModerationDecision,
-  ModerationAction,
-  ModerationReason,
-  KYCSession,
-  KYCStatus,
-  KYCRejectReason,
-  UploadSession,
-  PolicyConfig,
-  AuditLog,
-  UserQuota,
-  NotificationPayload,
-  EventPayload,
-  ModerationMetrics,
-  ModerationQueue
-} from './backend-types'
 
 const DEFAULT_POLICY: PolicyConfig = {
   requireKYCToPublish: false,
@@ -39,8 +45,17 @@ const DEFAULT_POLICY: PolicyConfig = {
 }
 
 export class PhotoService {
-  private async getPolicy(): Promise<PolicyConfig> {
-    const stored = await window.spark.kv.get<PolicyConfig>('moderation-policy')
+    private async getPolicy(): Promise<PolicyConfig> {
+    try {
+      const response = await APIClient.get<PolicyConfig>(ENDPOINTS.MODERATION.POLICY)
+      if (response.data) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to load moderation policy from API, using defaults', { error: apiError })
+    }
+    
+    const stored = await storage.get<PolicyConfig>('moderation-policy')
     return stored || DEFAULT_POLICY
   }
 
@@ -59,15 +74,16 @@ export class PhotoService {
       createdAt: new Date().toISOString()
     }
 
-    const sessions = await window.spark.kv.get<UploadSession[]>('upload-sessions') || []
+    // Store upload session locally (temporary client-side storage)
+    const sessions = await storage.get<UploadSession[]>('upload-sessions') || []
     sessions.push(session)
-    await window.spark.kv.set('upload-sessions', sessions)
+    await storage.set('upload-sessions', sessions)
 
     return session
   }
 
   async processUpload(sessionId: string, file: { size: number; type: string; data: string }): Promise<PhotoRecord> {
-    const sessions = await window.spark.kv.get<UploadSession[]>('upload-sessions') || []
+    const sessions = await storage.get<UploadSession[]>('upload-sessions') || []
     const session = sessions.find(s => s.id === sessionId)
 
     if (!session || session.status !== 'pending') {
@@ -76,7 +92,7 @@ export class PhotoService {
 
     if (new Date(session.expiresAt) < new Date()) {
       session.status = 'expired'
-      await window.spark.kv.set('upload-sessions', sessions)
+      await storage.set('upload-sessions', sessions)
       throw new Error('Upload session expired')
     }
 
@@ -116,14 +132,21 @@ export class PhotoService {
       uploadedAt: new Date().toISOString()
     }
 
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+    try {
+      await APIClient.post(ENDPOINTS.PHOTOS.CREATE, photo)
+      logger.debug('Photo record created via API', { photoId: photo.id })
+    } catch (apiError) {
+      logger.warn('Failed to create photo record via API, storing locally', { error: apiError, photoId: photo.id })
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     photos.push(photo)
-    await window.spark.kv.set('photo-records', photos)
+    await storage.set('photo-records', photos)
 
     session.status = 'completed'
     session.photoId = photo.id
     session.completedAt = new Date().toISOString()
-    await window.spark.kv.set('upload-sessions', sessions)
+    await storage.set('upload-sessions', sessions)
 
     await this.updateQuota(session.userId, file.size)
     
@@ -134,12 +157,12 @@ export class PhotoService {
 
   private async processPhotoAsync(photoId: string) {
     setTimeout(async () => {
-      const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+      const photos = await storage.get<PhotoRecord[]>('photo-records') || []
       const photo = photos.find(p => p.id === photoId)
       if (!photo) return
 
       photo.status = 'processing'
-      await window.spark.kv.set('photo-records', photos)
+      await storage.set('photo-records', photos)
 
       await this.runSafetyChecks(photo)
 
@@ -158,7 +181,7 @@ export class PhotoService {
       }
 
       photo.processedAt = new Date().toISOString()
-      await window.spark.kv.set('photo-records', photos)
+      await storage.set('photo-records', photos)
 
       await this.notifyUser(photo.ownerId, {
         userId: photo.ownerId,
@@ -171,7 +194,7 @@ export class PhotoService {
   }
 
   private async runSafetyChecks(photo: PhotoRecord): Promise<void> {
-    const prompt = window.spark.llmPrompt`Analyze this pet photo and determine:
+  const prompt = buildLLMPrompt`Analyze this pet photo and determine:
 1. Is there any NSFW or inappropriate content? (yes/no)
 2. Is there violent content? (yes/no)
 3. Are there human faces visible? (yes/no)
@@ -195,7 +218,7 @@ Return as JSON: {
 }`
 
     try {
-      const result = await window.spark.llm(prompt, 'gpt-4o-mini', true)
+  const result = await llmService.llm(prompt, 'gpt-4o-mini', true)
       const analysis = JSON.parse(result)
 
       photo.safetyCheck = {
@@ -243,17 +266,51 @@ Return as JSON: {
     return score >= policy.autoApproveThreshold
   }
 
-  private async checkDuplicate(fileHash: string): Promise<boolean> {
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
-    return photos.some(p => p.metadata.fileHash === fileHash && p.status === 'approved')
+      private async checkDuplicate(fileHash: string): Promise<boolean> {
+    try {
+      const url = buildUrl(ENDPOINTS.PHOTOS.CHECK_DUPLICATE, { hash: fileHash })
+      const response = await APIClient.get<{ isDuplicate: boolean }>(url)
+      if (response.data?.isDuplicate !== undefined) {
+        return response.data.isDuplicate
+      }
+    } catch (apiError) {
+      logger.warn('Failed to check duplicate via API, checking locally', { error: apiError })
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
+    return photos.some(p => p.metadata.fileHash === fileHash && p.status === 'approved')                                                                        
   }
 
   private async hashFile(data: string): Promise<string> {
     return `hash_${data.substring(0, 32)}_${Date.now()}`
   }
 
-  private async checkUserQuota(userId: string): Promise<void> {
-    const quotas = await window.spark.kv.get<UserQuota[]>('user-quotas') || []
+    private async checkUserQuota(userId: string): Promise<void> {
+    try {
+      const response = await APIClient.get<UserQuota>(ENDPOINTS.QUOTAS.GET(userId))                                                                             
+      if (response.data) {
+        const quota = response.data
+        const policy = await this.getPolicy()
+
+        if (quota.uploadsToday >= policy.maxUploadsPerDay) {
+          throw new Error('Daily upload limit reached')
+        }
+
+        if (quota.uploadsThisHour >= policy.maxUploadsPerHour) {
+          throw new Error('Hourly upload limit reached')
+        }
+
+        if (quota.totalStorage >= policy.maxStoragePerUser) {
+          throw new Error('Storage limit reached')
+        }
+        
+        return
+      }
+    } catch (apiError) {
+      logger.warn('Failed to check quota via API, checking locally', { error: apiError })
+    }
+    
+    const quotas = await storage.get<UserQuota[]>('user-quotas') || []
     let quota = quotas.find(q => q.userId === userId)
 
     const now = new Date()
@@ -285,7 +342,14 @@ Return as JSON: {
   }
 
   private async updateQuota(userId: string, fileSize: number): Promise<void> {
-    const quotas = await window.spark.kv.get<UserQuota[]>('user-quotas') || []
+    try {
+      await APIClient.post(ENDPOINTS.QUOTAS.INCREMENT(userId), { fileSize })
+      logger.debug('Quota updated via API', { userId, fileSize })
+    } catch (apiError) {
+      logger.warn('Failed to update quota via API, updating locally', { error: apiError, userId })
+    }
+    
+    const quotas = await storage.get<UserQuota[]>('user-quotas') || []
     let quota = quotas.find(q => q.userId === userId)
 
     if (!quota) {
@@ -304,7 +368,7 @@ Return as JSON: {
     quota.totalStorage += fileSize
     quota.lastUploadAt = new Date().toISOString()
 
-    await window.spark.kv.set('user-quotas', quotas)
+    await storage.set('user-quotas', quotas)
   }
 
   async createModerationTask(photo: PhotoRecord): Promise<ModerationTask> {
@@ -318,9 +382,16 @@ Return as JSON: {
       createdAt: new Date().toISOString()
     }
 
-    const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
+    try {
+      await APIClient.post(ENDPOINTS.MODERATION.TASKS, task)
+      logger.debug('Moderation task created via API', { taskId: task.id })
+    } catch (apiError) {
+      logger.warn('Failed to create moderation task via API, storing locally', { error: apiError, taskId: task.id })
+    }
+    
+    const tasks = await storage.get<ModerationTask[]>('moderation-tasks') || []
     tasks.push(task)
-    await window.spark.kv.set('moderation-tasks', tasks)
+    await storage.set('moderation-tasks', tasks)
 
     return task
   }
@@ -334,32 +405,76 @@ Return as JSON: {
     return 'low'
   }
 
-  async getPhotosByStatus(status: PhotoStatus): Promise<PhotoRecord[]> {
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+      async getPhotosByStatus(status: PhotoStatus): Promise<PhotoRecord[]> {
+    try {
+      const url = buildUrl(ENDPOINTS.PHOTOS.BY_STATUS, { status })
+      const response = await APIClient.get<PhotoRecord[]>(url)                                                               
+      if (response.data && Array.isArray(response.data)) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to get photos by status via API, using local storage', { error: apiError, status })                                                   
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     return photos.filter(p => p.status === status)
   }
 
-  async getPhotosByOwner(ownerId: string, includeAll: boolean = false): Promise<PhotoRecord[]> {
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+      async getPhotosByOwner(ownerId: string, includeAll: boolean = false): Promise<PhotoRecord[]> {                                                                
+    try {
+      const url = buildUrl(ENDPOINTS.PHOTOS.BY_OWNER, {
+        ownerId,
+        includeAll
+      })
+      const response = await APIClient.get<PhotoRecord[]>(url)
+      if (response.data && Array.isArray(response.data)) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to get photos by owner via API, using local storage', { error: apiError, ownerId })                                                   
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     const userPhotos = photos.filter(p => p.ownerId === ownerId)
     
     if (includeAll) return userPhotos
     
-    return userPhotos.filter(p => ['approved', 'pending_upload', 'processing', 'awaiting_review'].includes(p.status))
+    return userPhotos.filter(p => ['approved', 'pending_upload', 'processing', 'awaiting_review'].includes(p.status))                                           
   }
 
   async getPublicPhotos(): Promise<PhotoRecord[]> {
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+    try {
+      const response = await APIClient.get<PhotoRecord[]>(ENDPOINTS.PHOTOS.PUBLIC)
+      if (response.data && Array.isArray(response.data)) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to get public photos via API, using local storage', { error: apiError })
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     return photos.filter(p => p.status === 'approved')
   }
 
   private async notifyUser(_userId: string, payload: NotificationPayload): Promise<void> {
-    const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
-    notifications.push(payload)
-    await window.spark.kv.set('user-notifications', notifications)
+    // Use notifications API
+    await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+      notificationId: generateULID(),
+      userId: payload.userId,
+      type: payload.type,
+      title: payload.title,
+      body: payload.message,
+      data: payload.data || {},
+      read: false,
+      createdAt: payload.timestamp
+    })
   }
 
   private async emitEvent(event: string, data: Record<string, unknown>): Promise<void> {
+    // Note: Backend API endpoint for system events not yet implemented.
+    // Currently falls back to local storage. When backend is available, uncomment:
+    // await APIClient.post('/events', { event, data, correlationId: generateULID(), timestamp: new Date().toISOString() })
+    
     const eventPayload: EventPayload = {
       event,
       data,
@@ -367,43 +482,69 @@ Return as JSON: {
       timestamp: new Date().toISOString()
     }
 
-    const events = await window.spark.kv.get<EventPayload[]>('system-events') || []
+    const events = await storage.get<EventPayload[]>('system-events') || []
     events.push(eventPayload)
-    await window.spark.kv.set('system-events', events)
+    await storage.set('system-events', events)
   }
 }
 
 export class ModerationService {
 
   async getQueue(): Promise<ModerationQueue> {
-    const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
-    
-    const pending = tasks.filter(t => t.status === 'pending').sort((a, b) => {
-      const priorityOrder = { high: 0, medium: 1, low: 2 }
-      return priorityOrder[a.priority] - priorityOrder[b.priority]
-    })
-    
-    const inProgress = tasks.filter(t => t.status === 'in_progress')
-    const completed = tasks.filter(t => t.status === 'completed')
+    // Use admin API for moderation queue
+    try {
+      const response = await adminAPI.getModerationQueue()
+      return {
+        pending: (response.pending as unknown) as ModerationTask[],
+        inProgress: (response.inProgress as unknown) as ModerationTask[],
+        completed: [], // API may not return completed tasks
+        totalCount: response.totalCount,
+        averageReviewTime: 0
+      }
+    } catch (error) {
+      // Fallback to local storage
+      logger.warn('Failed to get moderation queue from API, using local storage', { error })
+      const tasks = await storage.get<ModerationTask[]>('moderation-tasks') || []
+      
+      const pending = tasks.filter(t => t.status === 'pending').sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 }
+        return priorityOrder[a.priority] - priorityOrder[b.priority]
+      })
+      
+      const inProgress = tasks.filter(t => t.status === 'in_progress')
+      const completed = tasks.filter(t => t.status === 'completed')
 
-    const completedWithTimes = completed.filter(t => t.startedAt && t.completedAt)
-    const totalReviewTime = completedWithTimes.reduce((sum, t) => {
-      const start = new Date(t.startedAt!).getTime()
-      const end = new Date(t.completedAt!).getTime()
-      return sum + (end - start)
-    }, 0)
+      const completedWithTimes = completed.filter(t => t.startedAt && t.completedAt)
+      const totalReviewTime = completedWithTimes.reduce((sum, t) => {
+        const start = new Date(t.startedAt!).getTime()
+        const end = new Date(t.completedAt!).getTime()
+        return sum + (end - start)
+      }, 0)
 
-    return {
-      pending,
-      inProgress,
-      completed,
-      totalCount: tasks.length,
-      averageReviewTime: completedWithTimes.length > 0 ? totalReviewTime / completedWithTimes.length : 0
+      return {
+        pending,
+        inProgress,
+        completed,
+        totalCount: tasks.length,
+        averageReviewTime: completedWithTimes.length > 0 ? totalReviewTime / completedWithTimes.length : 0
+      }
     }
   }
 
-  async takeTask(taskId: string, reviewerId: string): Promise<ModerationTask> {
-    const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
+    async takeTask(taskId: string, reviewerId: string): Promise<ModerationTask> {
+    try {
+      const response = await APIClient.post<ModerationTask>(
+        ENDPOINTS.MODERATION.TAKE_TASK(taskId),
+        { reviewerId }
+      )
+      if (response.data) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to take task via API, using local storage', { error: apiError, taskId })
+    }
+    
+    const tasks = await storage.get<ModerationTask[]>('moderation-tasks') || []
     const task = tasks.find(t => t.id === taskId)
 
     if (!task) throw new Error('Task not found')
@@ -413,7 +554,7 @@ export class ModerationService {
     task.assignedTo = reviewerId
     task.startedAt = new Date().toISOString()
 
-    await window.spark.kv.set('moderation-tasks', tasks)
+    await storage.set('moderation-tasks', tasks)
 
     return task
   }
@@ -426,17 +567,31 @@ export class ModerationService {
     reviewerId: string,
     reviewerName: string
   ): Promise<void> {
-    const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
+    // Use admin API for moderation decisions
+    try {
+      const reasonValue = reasonText || (reason ? String(reason) : undefined)
+      if (reasonValue) {
+        await adminAPI.moderatePhoto(taskId, action, reasonValue)
+      } else {
+        await adminAPI.moderatePhoto(taskId, action)
+      }
+      return
+    } catch (error) {
+      logger.warn('Failed to make moderation decision via API, using local storage', { error, taskId })
+    }
+    
+    // Fallback to local storage
+    const tasks = await storage.get<ModerationTask[]>('moderation-tasks') || []
     const task = tasks.find(t => t.id === taskId)
 
     if (!task) throw new Error('Task not found')
 
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     const photo = photos.find(p => p.id === task.photoId)
 
     if (!photo) throw new Error('Photo not found')
 
-    const policy = await window.spark.kv.get<PolicyConfig>('moderation-policy') || DEFAULT_POLICY
+    const policy = await storage.get<PolicyConfig>('moderation-policy') || DEFAULT_POLICY
 
     const decision: ModerationDecision = {
       action,
@@ -492,8 +647,8 @@ export class ModerationService {
 
     photo.reviewedAt = new Date().toISOString()
 
-    await window.spark.kv.set('moderation-tasks', tasks)
-    await window.spark.kv.set('photo-records', photos)
+    await storage.set('moderation-tasks', tasks)
+    await storage.set('photo-records', photos)
 
     await this.logAudit({
       id: generateULID(),
@@ -524,9 +679,20 @@ export class ModerationService {
     })
   }
 
-  private async checkUserKYC(userId: string): Promise<KYCStatus> {
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
-    const userSessions = sessions.filter(s => s.userId === userId).sort((a, b) => 
+    private async checkUserKYC(userId: string): Promise<KYCStatus> {
+    // Use KYC API
+    try {
+      const url = buildUrl(ENDPOINTS.KYC.STATUS, { userId })
+      const response = await APIClient.get<{ status: KYCStatus }>(url)
+      if (response.data?.status) {
+        return response.data.status
+      }
+    } catch (error) {
+      logger.warn('Failed to check KYC status via API, using local storage', { error, userId })                                                                 
+    }
+    
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
+    const userSessions = sessions.filter(s => s.userId === userId).sort((a, b) =>                                                                             
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
 
@@ -555,9 +721,17 @@ export class ModerationService {
       timestamp: new Date().toISOString()
     }
 
-    const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
-    notifications.push(notification)
-    await window.spark.kv.set('user-notifications', notifications)
+    // Use notifications API
+    await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+      notificationId: generateULID(),
+      userId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      body: notification.message,
+      data: notification.data || {},
+      read: false,
+      createdAt: notification.timestamp
+    })
   }
 
   private async notifyUserDecision(userId: string, photo: PhotoRecord, decision: ModerationDecision): Promise<void> {
@@ -575,13 +749,30 @@ export class ModerationService {
       timestamp: new Date().toISOString()
     }
 
-    const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
-    notifications.push(notification)
-    await window.spark.kv.set('user-notifications', notifications)
+    // Use notifications API
+    await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+      notificationId: generateULID(),
+      userId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      body: notification.message,
+      data: notification.data || {},
+      read: false,
+      createdAt: notification.timestamp
+    })
   }
 
-  async getMetrics(): Promise<ModerationMetrics> {
-    const tasks = await window.spark.kv.get<ModerationTask[]>('moderation-tasks') || []
+    async getMetrics(): Promise<ModerationMetrics> {
+    try {
+      const response = await APIClient.get<ModerationMetrics>(ENDPOINTS.MODERATION.METRICS)
+      if (response.data) {
+        return response.data
+      }
+    } catch (apiError) {
+      logger.warn('Failed to get moderation metrics via API, calculating from local storage', { error: apiError })
+    }
+    
+    const tasks = await storage.get<ModerationTask[]>('moderation-tasks') || []
     const completed = tasks.filter(t => t.status === 'completed')
     
     const approved = completed.filter(t => t.decision?.action === 'approve').length
@@ -608,11 +799,11 @@ export class ModerationService {
       }
     })
 
-    const kycSessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    const kycSessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     const verifiedKYC = kycSessions.filter(s => s.status === 'verified').length
     const kycPassRate = kycSessions.length > 0 ? verifiedKYC / kycSessions.length : 0
 
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     const duplicates = photos.filter(p => p.safetyCheck.isDuplicate).length
     const duplicateRate = photos.length > 0 ? duplicates / photos.length : 0
 
@@ -635,12 +826,20 @@ export class ModerationService {
   }
 
   private async logAudit(log: AuditLog): Promise<void> {
-    const logs = await window.spark.kv.get<AuditLog[]>('audit-logs') || []
+    // Note: Backend API endpoint for audit logs not yet implemented.
+    // Currently falls back to local storage. When backend is available, uncomment:
+    // await APIClient.post('/admin/audit-logs', log)
+    
+    const logs = await storage.get<AuditLog[]>('audit-logs') || []
     logs.push(log)
-    await window.spark.kv.set('audit-logs', logs)
+    await storage.set('audit-logs', logs)
   }
 
   private async emitEvent(event: string, data: Record<string, unknown>): Promise<void> {
+    // Note: Backend API endpoint for system events not yet implemented.
+    // Currently falls back to local storage. When backend is available, uncomment:
+    // await APIClient.post('/events', { event, data, correlationId: generateULID(), timestamp: new Date().toISOString() })
+    
     const eventPayload: EventPayload = {
       event,
       data,
@@ -648,15 +847,23 @@ export class ModerationService {
       timestamp: new Date().toISOString()
     }
 
-    const events = await window.spark.kv.get<EventPayload[]>('system-events') || []
+    const events = await storage.get<EventPayload[]>('system-events') || []
     events.push(eventPayload)
-    await window.spark.kv.set('system-events', events)
+    await storage.set('system-events', events)
   }
 }
 
 export class KYCService {
 
   async createSession(userId: string): Promise<KYCSession> {
+    // Use KYC API
+    try {
+      const response = await kycAPI.createSession()
+      return response as unknown as KYCSession
+    } catch (error) {
+      logger.warn('Failed to create KYC session via API, using local storage', { error, userId })
+    }
+    
     const session: KYCSession = {
       id: generateULID(),
       userId,
@@ -669,15 +876,23 @@ export class KYCService {
       retryCount: 0
     }
 
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     sessions.push(session)
-    await window.spark.kv.set('kyc-sessions', sessions)
+    await storage.set('kyc-sessions', sessions)
 
     return session
   }
 
   async getUserSession(userId: string): Promise<KYCSession | null> {
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    // Use KYC API
+    try {
+      const response = await kycAPI.getSession(userId)
+      return response as unknown as KYCSession | null
+    } catch (error) {
+      logger.warn('Failed to get KYC session via API, using local storage', { error, userId })
+    }
+    
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     const userSessions = sessions.filter(s => s.userId === userId).sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
@@ -685,8 +900,15 @@ export class KYCService {
     return userSessions[0] || null
   }
 
-  async updateSession(sessionId: string, updates: Partial<KYCSession>): Promise<void> {
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    async updateSession(sessionId: string, updates: Partial<KYCSession>): Promise<void> {                                                                         
+    try {
+      await APIClient.patch(ENDPOINTS.KYC.GET_VERIFICATION(sessionId), updates)
+      logger.debug('KYC session updated via API', { sessionId })
+    } catch (apiError) {
+      logger.warn('Failed to update KYC session via API, updating locally', { error: apiError, sessionId })
+    }
+    
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     const session = sessions.find(s => s.id === sessionId)
 
     if (!session) throw new Error('Session not found')
@@ -694,11 +916,19 @@ export class KYCService {
     Object.assign(session, updates)
     session.updatedAt = new Date().toISOString()
 
-    await window.spark.kv.set('kyc-sessions', sessions)
+    await storage.set('kyc-sessions', sessions)
   }
 
   async verifySession(sessionId: string, reviewerId: string): Promise<void> {
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    // Use admin API for KYC verification
+    try {
+      await adminAPI.reviewKYC(sessionId, 'approve')
+      return
+    } catch (error) {
+      logger.warn('Failed to verify KYC session via API, using local storage', { error, sessionId })
+    }
+    
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     const session = sessions.find(s => s.id === sessionId)
 
     if (!session) throw new Error('Session not found')
@@ -708,7 +938,7 @@ export class KYCService {
     session.verifiedAt = new Date().toISOString()
     session.updatedAt = new Date().toISOString()
 
-    await window.spark.kv.set('kyc-sessions', sessions)
+    await storage.set('kyc-sessions', sessions)
 
     await this.logAudit({
       id: generateULID(),
@@ -733,13 +963,29 @@ export class KYCService {
       timestamp: new Date().toISOString()
     }
 
-    const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
-    notifications.push(notification)
-    await window.spark.kv.set('user-notifications', notifications)
+    // Use notifications API
+    await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+      notificationId: generateULID(),
+      userId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      body: notification.message,
+      data: {},
+      read: false,
+      createdAt: notification.timestamp
+    })
   }
 
   async rejectSession(sessionId: string, reason: KYCRejectReason, reasonText: string, reviewerId: string): Promise<void> {
-    const sessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
+    // Use admin API for KYC rejection
+    try {
+      await adminAPI.reviewKYC(sessionId, 'reject', reasonText)
+      return
+    } catch (error) {
+      logger.warn('Failed to reject KYC session via API, using local storage', { error, sessionId })
+    }
+    
+    const sessions = await storage.get<KYCSession[]>('kyc-sessions') || []
     const session = sessions.find(s => s.id === sessionId)
 
     if (!session) throw new Error('Session not found')
@@ -752,7 +998,7 @@ export class KYCService {
     session.retryCount++
     session.updatedAt = new Date().toISOString()
 
-    await window.spark.kv.set('kyc-sessions', sessions)
+    await storage.set('kyc-sessions', sessions)
 
     await this.logAudit({
       id: generateULID(),
@@ -776,13 +1022,28 @@ export class KYCService {
       timestamp: new Date().toISOString()
     }
 
-    const notifications = await window.spark.kv.get<NotificationPayload[]>('user-notifications') || []
-    notifications.push(notification)
-    await window.spark.kv.set('user-notifications', notifications)
+    // Use notifications API
+    await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+      notificationId: generateULID(),
+      userId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      body: notification.message,
+      data: {},
+      read: false,
+      createdAt: notification.timestamp
+    })
   }
 
   private async releaseHeldPhotos(userId: string): Promise<void> {
-    const photos = await window.spark.kv.get<PhotoRecord[]>('photo-records') || []
+    try {
+      await APIClient.post(ENDPOINTS.PHOTOS.RELEASE_HELD, { userId })
+      logger.debug('Held photos released via API', { userId })
+    } catch (apiError) {
+      logger.warn('Failed to release held photos via API, releasing locally', { error: apiError, userId })
+    }
+    
+    const photos = await storage.get<PhotoRecord[]>('photo-records') || []
     const heldPhotos = photos.filter(p => p.ownerId === userId && p.status === 'held_for_kyc')
 
     for (const photo of heldPhotos) {
@@ -797,16 +1058,24 @@ export class KYCService {
       })
     }
 
-    await window.spark.kv.set('photo-records', photos)
+    await storage.set('photo-records', photos)
   }
 
   private async logAudit(log: AuditLog): Promise<void> {
-    const logs = await window.spark.kv.get<AuditLog[]>('audit-logs') || []
+    // Note: Backend API endpoint for audit logs not yet implemented.
+    // Currently falls back to local storage. When backend is available, uncomment:
+    // await APIClient.post('/admin/audit-logs', log)
+    
+    const logs = await storage.get<AuditLog[]>('audit-logs') || []
     logs.push(log)
-    await window.spark.kv.set('audit-logs', logs)
+    await storage.set('audit-logs', logs)
   }
 
   private async emitEvent(event: string, data: Record<string, unknown>): Promise<void> {
+    // Note: Backend API endpoint for system events not yet implemented.
+    // Currently falls back to local storage. When backend is available, uncomment:
+    // await APIClient.post('/events', { event, data, correlationId: generateULID(), timestamp: new Date().toISOString() })
+    
     const eventPayload: EventPayload = {
       event,
       data,
@@ -814,9 +1083,9 @@ export class KYCService {
       timestamp: new Date().toISOString()
     }
 
-    const events = await window.spark.kv.get<EventPayload[]>('system-events') || []
+    const events = await storage.get<EventPayload[]>('system-events') || []
     events.push(eventPayload)
-    await window.spark.kv.set('system-events', events)
+    await storage.set('system-events', events)
   }
 }
 

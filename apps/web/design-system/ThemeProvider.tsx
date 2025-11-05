@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import { useStorage } from '@/hooks/useStorage'
+import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import { applyTheme, type ThemeMode } from './themes'
 
 /* eslint-disable react-refresh/only-export-components */
@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [mode])
 
   const toggle = () => {
-    setMode((current) => (current === 'light' ? 'dark' : 'light'))
+    setMode((current: 'light' | 'dark') => (current === 'light' ? 'dark' : 'light'))
   }
 
   return (

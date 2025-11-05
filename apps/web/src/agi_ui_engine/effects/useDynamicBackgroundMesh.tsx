@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing
-} from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useUIConfig } from '@/hooks/useUIConfig'
+import { useEffect } from 'react'
+import {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming
+} from 'react-native-reanimated'
 
 export interface UseDynamicBackgroundMeshOptions {
   enabled?: boolean
@@ -57,15 +57,15 @@ export function useDynamicBackgroundMesh(
 
   const animatedStyle = useAnimatedStyle(() => {
     if (!enabled || !theme.dynamicBackground) {
-      return {}
+      return {} as Record<string, unknown>
     }
 
     const angle = meshProgress.value * 360
 
     return {
-      background: `linear-gradient(${angle}deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))`,
+      background: `linear-gradient(${angle}deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))`,                                                             
       backgroundSize: '200% 200%',
-      backgroundPosition: `${meshProgress.value * 100}% ${meshProgress.value * 100}%`
+      backgroundPosition: `${meshProgress.value * 100}% ${meshProgress.value * 100}%`                                                                           
     }
   }) as AnimatedStyle
 

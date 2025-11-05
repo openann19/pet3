@@ -1,29 +1,30 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Plus, Sparkle, Fire, TrendUp, Heart, PawPrint, ArrowsClockwise, MapPin } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { adoptionApi } from '@/api/adoption-api'
+import { communityAPI } from '@/api/community-api'
+import { lostFoundAPI } from '@/api/lost-found-api'
+import { AdoptionCard } from '@/components/adoption/AdoptionCard'
+import { AdoptionDetailDialog } from '@/components/adoption/AdoptionDetailDialog'
 import { PostCard } from '@/components/community/PostCard'
 import { PostComposer } from '@/components/community/PostComposer'
 import { RankingSkeleton } from '@/components/community/RankingSkeleton'
-import { AdoptionCard } from '@/components/adoption/AdoptionCard'
-import { AdoptionDetailDialog } from '@/components/adoption/AdoptionDetailDialog'
-import { communityAPI } from '@/api/community-api'
-import { adoptionAPI } from '@/api/adoption-api'
-import type { Post } from '@/lib/community-types'
-import type { AdoptionProfile } from '@/lib/adoption-types'
-import { useApp } from '@/contexts/AppContext'
-import { Skeleton } from '@/components/ui/skeleton'
+import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog'
+import LostFoundMap from '@/components/maps/LostFoundMap'
 import { Badge } from '@/components/ui/badge'
-import { haptics } from '@/lib/haptics'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useApp } from '@/contexts/AppContext'
+import { filterPostsByFollows } from '@/core/services/follow-graph'
 import { useStorage } from '@/hooks/useStorage'
-import { toast } from 'sonner'
+import type { AdoptionProfile } from '@/lib/adoption-types'
+import type { Post } from '@/lib/community-types'
+import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
-import LostFoundMap from '@/components/maps/LostFoundMap';
-import { lostFoundAPI } from '@/api/lost-found-api';
-import type { LostAlert } from '@/lib/lost-found-types';
-import type { LostPetAlert } from '@/lib/maps/types';
-import { filterPostsByFollows } from '@/core/services/follow-graph';
+import type { LostAlert } from '@/lib/lost-found-types'
+import type { LostPetAlert } from '@/lib/maps/types'
+import { ArrowsClockwise, Fire, Heart, MapPin, PawPrint, Plus, Sparkle, TrendUp } from '@phosphor-icons/react'
+import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('CommunityView')
 
@@ -49,30 +50,6 @@ function convertLostAlertToLostPetAlert(alert: LostAlert): LostPetAlert {
   }
 }
 
-function mapSizeToAdoptionSize(petSize: string): 'small' | 'medium' | 'large' | 'extra-large' {
-  if (petSize === 'tiny') return 'small'
-  if (petSize === 'small') return 'small'
-  if (petSize === 'medium') return 'medium'
-  if (petSize === 'large') return 'large'
-  if (petSize === 'extra-large') return 'extra-large'
-  return 'small'
-}
-
-function mapStatusToAdoptionStatus(status: string): AdoptionProfile['status'] {
-  if (status === 'active') return 'available'
-  if (status === 'adopted') return 'adopted'
-  if (status === 'pending_review') return 'pending'
-  if (status === 'on-hold') return 'on-hold'
-  return 'available'
-}
-
-function mapEnergyLevel(energyLevel: string): 'low' | 'medium' | 'high' {
-  if (energyLevel === 'very-high') return 'high'
-  if (energyLevel === 'low') return 'low'
-  if (energyLevel === 'medium') return 'medium'
-  if (energyLevel === 'high') return 'high'
-  return 'medium'
-}
 
 export default function CommunityView() {
   const { t } = useApp()
@@ -99,7 +76,7 @@ export default function CommunityView() {
   const [adoptionProfiles, setAdoptionProfiles] = useState<AdoptionProfile[]>([])
   const [adoptionLoading, setAdoptionLoading] = useState(true)
   const [adoptionHasMore, setAdoptionHasMore] = useState(true)
-  const [adoptionCursor, setAdoptionCursor] = useState<string | undefined>()
+  const [_adoptionCursor, setAdoptionCursor] = useState<string | undefined>()
   const [selectedAdoptionProfile, setSelectedAdoptionProfile] = useState<AdoptionProfile | null>(null)                                                          
   const [favoritedProfiles, setFavoritedProfiles] = useStorage<string[]>('favorited-adoption-profiles', [])
   const adoptionLoadingRef = useRef(false)
@@ -107,25 +84,26 @@ export default function CommunityView() {
 
   const [lostFoundAlerts, setLostFoundAlerts] = useState<LostPetAlert[]>([])
   const [lostFoundLoading, setLostFoundLoading] = useState(false)
+  const [showLostAlertDialog, setShowLostAlertDialog] = useState(false)
+
+  const loadLostFoundAlerts = useCallback(async () => {
+    if (activeTab !== 'lost-found' || lostFoundLoading) return;
+    
+    setLostFoundLoading(true);
+    try {
+      const result = await lostFoundAPI.queryAlerts({ status: ['active'] });
+      setLostFoundAlerts(result.alerts.map(convertLostAlertToLostPetAlert));
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load lost found alerts', err);
+    } finally {
+      setLostFoundLoading(false);
+    }
+  }, [activeTab, lostFoundLoading]);
 
   useEffect(() => {
-    const loadLostFoundAlerts = async () => {
-      if (activeTab !== 'lost-found' || lostFoundLoading) return;
-      
-      setLostFoundLoading(true);
-      try {
-        const result = await lostFoundAPI.queryAlerts({ status: ['active'] });
-        setLostFoundAlerts(result.alerts.map(convertLostAlertToLostPetAlert));
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        logger.error('Failed to load lost found alerts', err);
-      } finally {
-        setLostFoundLoading(false);
-      }
-    };
-    
     loadLostFoundAlerts();
-  }, [activeTab]);
+  }, [loadLostFoundAlerts]);
 
   const handleTouchStart = useCallback((e: globalThis.TouchEvent) => {
     if (containerRef.current && containerRef.current.scrollTop === 0 && activeTab === 'feed' && e.touches?.[0]) {
@@ -242,7 +220,8 @@ export default function CommunityView() {
       loadingRef.current = true
       setLoading(true)
       
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       const filters: any = {
         limit: 20,
         cursor: loadMore ? cursor : undefined
@@ -282,72 +261,69 @@ export default function CommunityView() {
       adoptionLoadingRef.current = true
       setAdoptionLoading(true)
       
-      const response = await adoptionAPI.queryListings({
-        limit: 12,
-        cursor: loadMore ? adoptionCursor : undefined
-      })
+      const response = await adoptionApi.getAdoptionProfiles({ limit: 12 })
       
-            if (loadMore) {
-        setAdoptionProfiles((currentProfiles) => [...(Array.isArray(currentProfiles) ? currentProfiles : []), ...(Array.isArray(response.listings) ? response.listings.map(l => ({                                                              
-          _id: l.id,
+      if (loadMore) {
+        setAdoptionProfiles((currentProfiles) => [...(Array.isArray(currentProfiles) ? currentProfiles : []), ...(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile) => ({
+          _id: l._id,
           petId: l.petId,
           petName: l.petName,
-          petPhoto: l.petPhotos?.[0] || '',
-          breed: l.petBreed,
-          age: l.petAge,
-          gender: l.petGender,
-          size: mapSizeToAdoptionSize(l.petSize),
-          location: l.location?.city || 'Unknown',
-          shelterId: l.ownerId,
-          shelterName: l.ownerName,
-          status: mapStatusToAdoptionStatus(l.status),
-          description: l.petDescription,
-          healthStatus: 'Good',
+          petPhoto: l.petPhoto,
+          breed: l.breed,
+          age: l.age,
+          gender: l.gender,
+          size: l.size,
+          location: l.location,
+          shelterId: l.shelterId,
+          shelterName: l.shelterName,
+          status: l.status,
+          description: l.description,
+          healthStatus: l.healthStatus,
           vaccinated: l.vaccinated,
           spayedNeutered: l.spayedNeutered,
           goodWithKids: l.goodWithKids,
           goodWithPets: l.goodWithPets,
-          energyLevel: mapEnergyLevel(l.energyLevel),
+          energyLevel: l.energyLevel,
           specialNeeds: l.specialNeeds,
-          adoptionFee: l.fee?.amount || 0,
-          postedDate: l.createdAt,
-          personality: l.temperament || [],
-          photos: l.petPhotos || [],
-          videoUrl: undefined,
-          contactEmail: '',
-          contactPhone: undefined,
-          applicationUrl: undefined
+          adoptionFee: l.adoptionFee,
+          postedDate: l.postedDate,
+          personality: l.personality,
+          photos: l.photos,
+          videoUrl: l.videoUrl,
+          contactEmail: l.contactEmail,
+          contactPhone: l.contactPhone,
+          applicationUrl: l.applicationUrl
         })) : [])])
-            } else {
-        setAdoptionProfiles(Array.isArray(response.listings) ? response.listings.map(l => ({                                                                    
-          _id: l.id,
+      } else {
+        setAdoptionProfiles(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile) => ({
+          _id: l._id,
           petId: l.petId,
           petName: l.petName,
-          petPhoto: l.petPhotos?.[0] || '',
-          breed: l.petBreed,
-          age: l.petAge,
-          gender: l.petGender,
-          size: mapSizeToAdoptionSize(l.petSize),
-          location: l.location?.city || 'Unknown',
-          shelterId: l.ownerId,
-          shelterName: l.ownerName,
-          status: mapStatusToAdoptionStatus(l.status),
-          description: l.petDescription,
-          healthStatus: 'Good',
+          petPhoto: l.petPhoto,
+          breed: l.breed,
+          age: l.age,
+          gender: l.gender,
+          size: l.size,
+          location: l.location,
+          shelterId: l.shelterId,
+          shelterName: l.shelterName,
+          status: l.status,
+          description: l.description,
+          healthStatus: l.healthStatus,
           vaccinated: l.vaccinated,
           spayedNeutered: l.spayedNeutered,
           goodWithKids: l.goodWithKids,
           goodWithPets: l.goodWithPets,
-          energyLevel: mapEnergyLevel(l.energyLevel),
+          energyLevel: l.energyLevel,
           specialNeeds: l.specialNeeds,
-          adoptionFee: l.fee?.amount || 0,
-          postedDate: l.createdAt,
-          personality: l.temperament || [],
-          photos: l.petPhotos || [],
-          videoUrl: undefined,
-          contactEmail: '',
-          contactPhone: undefined,
-          applicationUrl: undefined
+          adoptionFee: l.adoptionFee,
+          postedDate: l.postedDate,
+          personality: l.personality,
+          photos: l.photos,
+          videoUrl: l.videoUrl,
+          contactEmail: l.contactEmail,
+          contactPhone: l.contactPhone,
+          applicationUrl: l.applicationUrl
         })) : [])
       }
       
@@ -764,7 +740,8 @@ export default function CommunityView() {
               alerts={lostFoundAlerts}
               onReportSighting={async (alertId, location) => {
                 try {
-                  const currentUser = await window.spark.user();
+                  const { userService } = await import('@/lib/user-service')
+                  const currentUser = await userService.user()
                   if (!currentUser) {
                     toast.error('You must be logged in to report sightings');
                     return;
@@ -778,9 +755,9 @@ export default function CommunityView() {
                     description: '',
                     photos: [],
                     contactMask: '',
-                    reporterId: currentUser.id,
-                    reporterName: currentUser.login || 'Anonymous',
-                    reporterAvatar: currentUser.avatarUrl,
+                    reporterId: typeof currentUser.id === 'string' ? currentUser.id : '',
+                    reporterName: typeof currentUser.name === 'string' ? currentUser.name : 'Anonymous',
+                    reporterAvatar: currentUser.avatarUrl ?? undefined,
                   });
                   toast.success(t.lostFound?.sightingSubmitted || 'Sighting reported');
                 } catch (error) {
@@ -790,7 +767,8 @@ export default function CommunityView() {
                 }
               }}
               onReportLost={() => {
-                toast.info(t.lostFound?.reportLost || 'Report Lost Pet feature coming soon');
+                setShowLostAlertDialog(true)
+                haptics.impact('light')
               }}
             />
           </TabsContent>
@@ -807,6 +785,16 @@ export default function CommunityView() {
         profile={selectedAdoptionProfile}
         open={!!selectedAdoptionProfile}
         onOpenChange={(open) => !open && setSelectedAdoptionProfile(null)}
+      />
+
+      {/* Lost Alert Dialog */}
+      <CreateLostAlertDialog
+        open={showLostAlertDialog}
+        onClose={() => setShowLostAlertDialog(false)}
+        onSuccess={async () => {
+          // Reload lost & found alerts
+          await loadLostFoundAlerts()
+        }}
       />
     </div>
   )

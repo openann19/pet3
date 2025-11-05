@@ -1,27 +1,32 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  CheckCircle, XCircle, Clock,
-  MapPin, ChatCircle, VideoCamera
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { lostFoundAPI } from '@/api/lost-found-api'
 import { communityAPI } from '@/api/community-api'
 import { liveStreamingAPI } from '@/api/live-streaming-api'
-import type { LostAlert } from '@/lib/lost-found-types'
+import { lostFoundAPI } from '@/api/lost-found-api'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import type { LostAlertStatus } from '@/core/domain/lost-found'
 import type { Post } from '@/lib/community-types'
 import type { LiveStream } from '@/lib/live-streaming-types'
-import { formatDistanceToNow } from 'date-fns'
 import { createLogger } from '@/lib/logger'
+import type { LostAlert } from '@/lib/lost-found-types'
+import { userService } from '@/lib/user-service'
+import {
+    ChatCircle,
+    CheckCircle,
+    Clock,
+    MapPin,
+    VideoCamera,
+    XCircle
+} from '@phosphor-icons/react'
+import { formatDistanceToNow } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
+import React, { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('ContentModerationQueue')
 
@@ -158,7 +163,10 @@ export function ContentModerationQueue() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       if (selectedItem.type === 'community') {
         const post = selectedItem.content as Post
@@ -201,7 +209,10 @@ export function ContentModerationQueue() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       if (selectedItem.type === 'community') {
         const post = selectedItem.content as Post

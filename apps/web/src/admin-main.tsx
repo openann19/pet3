@@ -1,24 +1,15 @@
-import { createRoot } from 'react-dom/client'
+import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from "react-error-boundary";
 
-// Conditionally import Spark if available (non-blocking)
- 
-import("@github/spark/spark" as string).catch(() => {
-  // Spark not available, continue without it
-});
+import './lib/theme-init';
 
-// Patch Spark APIs to handle auth errors gracefully
-import './lib/spark-patch'
+import AdminConsole from './components/AdminConsole';
+import { AppProvider } from './contexts/AppContext';
+import { ErrorFallback } from './ErrorFallback';
 
-import './lib/theme-init'
-
-import AdminConsole from './components/AdminConsole'
-import { ErrorFallback } from './ErrorFallback.tsx'
-import { AppProvider } from './contexts/AppContext.tsx'
-
-import "./main.css"
-import "./styles/theme.css"
-import "./index.css"
+import "./index.css";
+import "./main.css";
+import "./styles/theme.css";
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>

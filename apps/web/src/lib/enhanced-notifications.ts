@@ -1,16 +1,9 @@
 import { generateULID } from './utils'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
 import type { AppNotification } from '@/components/notifications/NotificationCenter'
 
-declare const spark: {
-  kv: {
-    get: <T>(key: string) => Promise<T | undefined>
-    set: <T>(key: string, value: T) => Promise<void>
-  }
-}
-
 export async function addNotification(notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) {
-  const allNotifications = await spark.kv.get<AppNotification[]>('app-notifications') || []
-  
   const newNotification: AppNotification = {
     ...notification,
     id: generateULID(),
@@ -18,7 +11,17 @@ export async function addNotification(notification: Omit<AppNotification, 'id' |
     read: false
   }
   
-  await spark.kv.set('app-notifications', [newNotification, ...allNotifications])
+  // Store notification via API
+  await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+    notificationId: newNotification.id,
+    userId: '', // Will be determined by backend from auth context
+    type: newNotification.type,
+    title: newNotification.title,
+    body: newNotification.message,
+    data: newNotification.metadata || {},
+    read: false,
+    createdAt: new Date(newNotification.timestamp).toISOString()
+  })
   
   return newNotification
 }
@@ -120,19 +123,15 @@ export async function createSystemNotification(title: string, message: string, p
 }
 
 export async function clearAllNotifications() {
-  await spark.kv.set('app-notifications', [])
+  await APIClient.post(ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ)
 }
 
 export async function markNotificationAsRead(id: string) {
-  const notifications = await spark.kv.get<AppNotification[]>('app-notifications') || []
-  const updated = notifications.map(n => 
-    n.id === id ? { ...n, read: true } : n
-  )
-  await spark.kv.set('app-notifications', updated)
+  await APIClient.post(ENDPOINTS.NOTIFICATIONS.MARK_READ(id))
 }
 
 export async function deleteNotification(id: string) {
-  const notifications = await spark.kv.get<AppNotification[]>('app-notifications') || []
-  const filtered = notifications.filter(n => n.id !== id)
-  await spark.kv.set('app-notifications', filtered)
+  // Delete notification via API (using mark as read endpoint or a delete endpoint)
+  // Note: Backend may need a DELETE endpoint for this
+  await APIClient.post(ENDPOINTS.NOTIFICATIONS.MARK_READ(id))
 }

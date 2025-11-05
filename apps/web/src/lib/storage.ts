@@ -14,6 +14,7 @@ const DB_VERSION = 1
 const STORE_NAME = 'kv-store'
 const LOCAL_STORAGE_PREFIX = 'petspark:'
 const MAX_LOCALSTORAGE_SIZE = 5 * 1024 * 1024 // 5MB threshold
+const hasIndexedDBSupport = typeof indexedDB !== 'undefined'
 
 // Keys that should always use localStorage (small config values)
 const LOCALSTORAGE_KEYS = new Set([
@@ -39,11 +40,27 @@ class StorageService {
   private cacheTTL = 5000 // 5 seconds
   private broadcastChannel: BroadcastChannel | null = null
   private isInitialized = false
+  private indexedDBUnavailableLogged = false
 
   /**
    * Initialize IndexedDB with resilience features
    */
   async initDB(): Promise<void> {
+    if (!hasIndexedDBSupport) {
+      if (!this.indexedDBUnavailableLogged) {
+        logger.debug('IndexedDB not available; falling back to localStorage-only mode')
+        this.indexedDBUnavailableLogged = true
+      }
+
+      if (!this.initPromise) {
+        this.initPromise = Promise.resolve()
+      }
+
+      this.isInitialized = true
+      this.db = null
+      return
+    }
+
     if (this.db && this.isInitialized) return
 
     if (this.initPromise) {
@@ -234,6 +251,10 @@ class StorageService {
    * Get value from IndexedDB with error recovery
    */
   private async getFromIndexedDB<T>(key: string): Promise<T | null> {
+    if (!hasIndexedDBSupport) {
+      return null
+    }
+
     if (!this.db || !this.isInitialized) {
       await this.initDB()
     }
@@ -275,6 +296,10 @@ class StorageService {
    * Set value in IndexedDB with error recovery
    */
   private async setToIndexedDB<T>(key: string, value: T): Promise<void> {
+    if (!hasIndexedDBSupport) {
+      return
+    }
+
     if (!this.db || !this.isInitialized) {
       await this.initDB()
     }
@@ -322,6 +347,10 @@ class StorageService {
    * Delete value from IndexedDB
    */
   private async deleteFromIndexedDB(key: string): Promise<void> {
+    if (!hasIndexedDBSupport) {
+      return
+    }
+
     if (!this.db) {
       await this.initDB()
     }
@@ -362,27 +391,29 @@ class StorageService {
 
     // Get keys from IndexedDB
     try {
-      if (!this.db) {
-        await this.initDB()
-      }
+      if (hasIndexedDBSupport) {
+        if (!this.db) {
+          await this.initDB()
+        }
 
-      if (this.db) {
-        const transaction = this.db.transaction([STORE_NAME], 'readonly')
-        const store = transaction.objectStore(STORE_NAME)
-        const request = store.openCursor()
+        if (this.db) {
+          const transaction = this.db.transaction([STORE_NAME], 'readonly')
+          const store = transaction.objectStore(STORE_NAME)
+          const request = store.openCursor()
 
-        await new Promise<void>((resolve, reject) => {
-          request.onerror = () => reject(request.error)
-          request.onsuccess = (event) => {
-            const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result
-            if (cursor) {
-              keys.push(cursor.value.key)
-              cursor.continue()
-            } else {
-              resolve()
+          await new Promise<void>((resolve, reject) => {
+            request.onerror = () => reject(request.error)
+            request.onsuccess = (event) => {
+              const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result
+              if (cursor) {
+                keys.push(cursor.value.key)
+                cursor.continue()
+              } else {
+                resolve()
+              }
             }
-          }
-        })
+          })
+        }
       }
     } catch (error) {
       logger.warn('Failed to get keys from IndexedDB', { error: error instanceof Error ? error.message : String(error) })
@@ -496,14 +527,16 @@ class StorageService {
 
     // Clear IndexedDB
     try {
-      if (!this.db) {
-        await this.initDB()
-      }
+      if (hasIndexedDBSupport) {
+        if (!this.db) {
+          await this.initDB()
+        }
 
-      if (this.db) {
-        const transaction = this.db.transaction([STORE_NAME], 'readwrite')
-        const store = transaction.objectStore(STORE_NAME)
-        await store.clear()
+        if (this.db) {
+          const transaction = this.db.transaction([STORE_NAME], 'readwrite')
+          const store = transaction.objectStore(STORE_NAME)
+          await store.clear()
+        }
       }
     } catch (error) {
       logger.warn('Failed to clear IndexedDB', { error: error instanceof Error ? error.message : String(error) })

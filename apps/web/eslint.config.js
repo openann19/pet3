@@ -1,13 +1,13 @@
 import js from '@eslint/js';
-import globals from 'globals';
+import importPlugin from 'eslint-plugin-import';
+import promise from 'eslint-plugin-promise';
+import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import react from 'eslint-plugin-react';
-import unicorn from 'eslint-plugin-unicorn';
-import sonarjs from 'eslint-plugin-sonarjs';
-import promise from 'eslint-plugin-promise';
 import security from 'eslint-plugin-security';
-import importPlugin from 'eslint-plugin-import';
+import sonarjs from 'eslint-plugin-sonarjs';
+import unicorn from 'eslint-plugin-unicorn';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -46,6 +46,45 @@ export default [
       'sonarjs/no-duplicate-string': ['error', { threshold: 5 }],
       'promise/catch-or-return': 'error',
       'security/detect-object-injection': 'off',
+      // ❌ PRODUCTION BLOCKER: Ban spark.kv usage
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'spark',
+          message: '❌ PRODUCTION BLOCKER: spark.kv mocks are banned in production. Use real API endpoints instead.'
+        }
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'window',
+          property: 'spark',
+          message: '❌ PRODUCTION BLOCKER: window.spark.kv mocks are banned. Use APIClient with real endpoints instead.'
+        }
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[object.name="window"][property.name="spark"]',
+          message: '❌ PRODUCTION BLOCKER: window.spark usage detected. Migrate to real API endpoints.'
+        },
+        {
+          selector: 'MemberExpression[property.name="kv"]',
+          message: '❌ PRODUCTION BLOCKER: .kv usage detected. Use real database/API storage instead.'
+        },
+        {
+          selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="get"][callee.object.property.name="kv"]',
+          message: '❌ PRODUCTION BLOCKER: spark.kv.get() calls are banned. Use APIClient.get() instead.'
+        },
+        {
+          selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="set"][callee.object.property.name="kv"]',
+          message: '❌ PRODUCTION BLOCKER: spark.kv.set() calls are banned. Use APIClient.post/put() instead.'
+        },
+        {
+          selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="delete"][callee.object.property.name="kv"]',
+          message: '❌ PRODUCTION BLOCKER: spark.kv.delete() calls are banned. Use APIClient.delete() instead.'
+        }
+      ]
     },
     settings: { react: { version: 'detect' } },
   },
@@ -100,10 +139,10 @@ export default [
       'no-undef': 'off',
     },
   },
-  {
+    {
     files: ['**/*.d.ts'],
     rules: {
       '@typescript-eslint/consistent-type-imports': 'off',
     },
-  },
+  }
 ];

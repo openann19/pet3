@@ -8,13 +8,14 @@
  * - Admin reviews report → Client reflects change
  */
 
-import { authService } from '../src/lib/auth'
 import { matchingAPI } from '../src/api/matching-api'
-import { mediaUploadService } from '../src/lib/media-upload-service'
+import { authService } from '../src/lib/auth'
 import { healthService } from '../src/lib/health-service'
-import { getRealtimeEvents } from '../src/lib/realtime-events'
-import { generateULID } from '../src/lib/utils'
 import { createLogger } from '../src/lib/logger'
+import { mediaUploadService } from '../src/lib/media-upload-service'
+import { getRealtimeEvents } from '../src/lib/realtime-events'
+import { storage } from '../src/lib/storage'
+import { generateULID } from '../src/lib/utils'
 
 const logger = createLogger('E2EWalkthrough')
 
@@ -29,7 +30,90 @@ interface WalkthroughResult {
   totalDuration: number
 }
 
+interface StoredPet {
+  id: string
+  ownerId: string
+  name: string
+  species: 'dog' | 'cat'
+  breed: string
+  age: number
+  size: 'small' | 'medium' | 'large'
+  gender: 'male' | 'female'
+  photos: string[]
+  personality: string[]
+  bio: string
+  location: {
+    latitude: number
+    longitude: number
+    city: string
+    country: string
+  }
+  verified: boolean
+  createdAt: string
+  updatedAt: string
+  status: 'active' | 'inactive' | 'pending' | 'archived'
+}
+
+interface StoredMatch {
+  id: string
+  chatRoomId: string
+}
+
+interface StoredReport {
+  id: string
+  status: string
+}
+
+function initializeExecutionEnvironment(): void {
+  const globalContext = globalThis as typeof globalThis & {
+    window?: typeof globalThis
+    localStorage?: Storage
+    sessionStorage?: Storage
+  }
+
+  if (typeof globalContext.localStorage === 'undefined') {
+    const backingStore = new Map<string, string>()
+    const polyfill: Storage = {
+      clear: () => backingStore.clear(),
+      getItem: (key: string) => (backingStore.has(key) ? backingStore.get(key)! : null),
+      key: (index: number) => Array.from(backingStore.keys())[index] ?? null,
+      removeItem: (key: string) => {
+        backingStore.delete(key)
+      },
+      setItem: (key: string, value: string) => {
+        backingStore.set(key, value)
+      },
+      get length() {
+        return backingStore.size
+      }
+    }
+
+    globalContext.localStorage = polyfill
+  }
+
+  if (typeof globalContext.sessionStorage === 'undefined') {
+    const backingStore = new Map<string, string>()
+    const polyfill: Storage = {
+      clear: () => backingStore.clear(),
+      getItem: (key: string) => (backingStore.has(key) ? backingStore.get(key)! : null),
+      key: (index: number) => Array.from(backingStore.keys())[index] ?? null,
+      removeItem: (key: string) => {
+        backingStore.delete(key)
+      },
+      setItem: (key: string, value: string) => {
+        backingStore.set(key, value)
+      },
+      get length() {
+        return backingStore.size
+      }
+    }
+
+    globalContext.sessionStorage = polyfill
+  }
+}
+
 export async function runWalkthrough(): Promise<WalkthroughResult> {
+  initializeExecutionEnvironment()
   const startTime = Date.now()
   const steps: WalkthroughResult['steps'] = []
 
@@ -84,7 +168,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('4. Create Pet Profile', async () => {
-      const pet = {
+      const pet: StoredPet = {
         id: generateULID(),
         ownerId: authService.getCurrentUser()?.id || '',
         name: 'Demo Pet',
@@ -108,9 +192,9 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
         status: 'active' as const
       }
 
-      const allPets = await window.spark.kv.get<typeof pet[]>('all-pets') || []
+      const allPets = await storage.get<StoredPet[]>('all-pets') || []
       allPets.push(pet)
-      await window.spark.kv.set('all-pets', allPets)
+      await storage.set('all-pets', allPets)
     })
 
     await step('5. Discover Pets', async () => {
@@ -119,7 +203,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
         throw new Error('No current user')
       }
 
-      const allPets = await window.spark.kv.get<Array<{ id: string; ownerId: string }>>('all-pets') || []
+      const allPets = await storage.get<StoredPet[]>('all-pets') || []
       const userPet = allPets.find(p => p.ownerId === currentUser.id)
       
       if (!userPet) {
@@ -142,7 +226,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
         throw new Error('No current user')
       }
 
-      const allPets = await window.spark.kv.get<Array<{ id: string; ownerId: string }>>('all-pets') || []
+      const allPets = await storage.get<StoredPet[]>('all-pets') || []
       const userPet = allPets.find(p => p.ownerId === currentUser.id)
       const targetPet = allPets.find(p => p.ownerId !== currentUser.id)
       
@@ -162,7 +246,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('7. Mutual Match Creation', async () => {
-      const allPets = await window.spark.kv.get<Array<{ id: string; ownerId: string }>>('all-pets') || []
+      const allPets = await storage.get<StoredPet[]>('all-pets') || []
       if (allPets.length < 2) {
         logger.warn('Skipping mutual match - need at least 2 pets')
         return
@@ -189,12 +273,22 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('8. Upload Photo', async () => {
+      if (typeof Blob === 'undefined' || typeof File === 'undefined') {
+        logger.warn('File APIs unavailable; skipping upload simulation')
+        return
+      }
+
       const blob = new Blob(['test image'], { type: 'image/jpeg' })
       const file = new File([blob], 'test.jpg', { type: 'image/jpeg' })
 
       const validation = mediaUploadService.validateFile(file, 'image')
       if (!validation.valid) {
         throw new Error(validation.error || 'File validation failed')
+      }
+
+      if (typeof document === 'undefined' || typeof Image === 'undefined') {
+        logger.warn('DOM APIs unavailable; skipping image dimension verification')
+        return
       }
 
       const dimensions = await mediaUploadService.getImageDimensions(file)
@@ -204,7 +298,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('9. Chat Room Access', async () => {
-      const matches = await window.spark.kv.get<Array<{ id: string; chatRoomId: string }>>('all-matches') || []
+      const matches = await storage.get<StoredMatch[]>('all-matches') || []
       if (matches.length > 0) {
         const match = matches[0]
         if (match) {
@@ -217,7 +311,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
     })
 
     await step('10. Admin Review Flow', async () => {
-      const reports = await window.spark.kv.get<Array<{ id: string; status: string }>>('all-reports') || []
+      const reports = await storage.get<StoredReport[]>('all-reports') || []
       if (reports.length > 0) {
         const report = reports[0]
         if (report && report.status === 'pending') {

@@ -2,20 +2,18 @@
  * Chat Service
  * 
  * Handles message sending, delivery status, read receipts, reactions, and real-time updates.
+ * Migrated from spark.kv to use backend API endpoints.
  */
 
 import type { Message, MessageType, ReactionType, ReadReceipt, TypingIndicator } from './chat-types'
-import { generateULID } from './utils'
+import { chatApi } from '@/api/chat-api'
 import { createLogger } from './logger'
 
 const logger = createLogger('ChatService')
 
-const KV_PREFIX = {
-  MESSAGE: 'message:',
-  ROOM: 'room:',
-  READ_RECEIPT: 'read-receipt:',
-  TYPING: 'typing:',
-}
+// Local cache for optimistic updates (client-side only, not persisted)
+const messageCache = new Map<string, Message>()
+const roomMessagesCache = new Map<string, Message[]>()
 
 /**
  * Send message
@@ -27,8 +25,9 @@ export async function sendMessage(
   content: string,
   metadata?: Message['metadata']
 ): Promise<Message> {
-  const message: Message = {
-    id: generateULID(),
+  // Create optimistic message
+  const optimisticMessage: Message = {
+    id: `temp-${Date.now()}`,
     roomId,
     senderId,
     type,
@@ -38,53 +37,53 @@ export async function sendMessage(
     createdAt: new Date().toISOString(),
   }
 
-  // Optimistic update - save immediately
-  const key = `${KV_PREFIX.MESSAGE}${message.id}`
-  await window.spark.kv.set(key, message)
-
-  // Add to room messages
-  const roomMessages = await window.spark.kv.get<Message[]>(`${KV_PREFIX.ROOM}${roomId}:messages`) || []
-  roomMessages.push(message)
-  await window.spark.kv.set(`${KV_PREFIX.ROOM}${roomId}:messages`, roomMessages)
+  // Optimistic update - cache immediately
+  messageCache.set(optimisticMessage.id, optimisticMessage)
+  const cachedRoomMessages = roomMessagesCache.get(roomId) || []
+  cachedRoomMessages.push(optimisticMessage)
+  roomMessagesCache.set(roomId, cachedRoomMessages)
 
   try {
     // Send to server
-    const response = await fetch(`/api/v1/chat/rooms/${roomId}/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type,
-        content,
-        metadata,
-      }),
+    const response = await chatApi.sendMessage(roomId, {
+      type,
+      content,
+      metadata,
     })
 
-    if (response.ok) {
-      const data = await response.json()
-      message.id = data.id
-      message.status = 'sent'
-      message.createdAt = data.createdAt
-
-      // Update message
-      await window.spark.kv.set(key, message)
-      
-      // Update in room messages
-      const index = roomMessages.findIndex(m => m.id === message.id)
-      if (index >= 0) {
-        roomMessages[index] = message
-        await window.spark.kv.set(`${KV_PREFIX.ROOM}${roomId}:messages`, roomMessages)
-      }
-    } else {
-      message.status = 'failed'
-      await window.spark.kv.set(key, message)
+    // Update optimistic message with server response
+    const finalMessage: Message = {
+      ...optimisticMessage,
+      id: response.id,
+      status: response.status,
+      createdAt: response.createdAt,
     }
-  } catch (error) {
-    logger.error('Send message error', error instanceof Error ? error : new Error(String(error)), { roomId, messageId: message.id })
-    message.status = 'failed'
-    await window.spark.kv.set(key, message)
-  }
 
-  return message
+    // Update cache
+    messageCache.delete(optimisticMessage.id)
+    messageCache.set(finalMessage.id, finalMessage)
+    
+    const roomIndex = cachedRoomMessages.findIndex(m => m.id === optimisticMessage.id)
+    if (roomIndex >= 0) {
+      cachedRoomMessages[roomIndex] = finalMessage
+      roomMessagesCache.set(roomId, cachedRoomMessages)
+    }
+
+    return finalMessage
+  } catch (error) {
+    // Mark as failed
+    optimisticMessage.status = 'failed'
+    messageCache.set(optimisticMessage.id, optimisticMessage)
+    
+    const roomIndex = cachedRoomMessages.findIndex(m => m.id === optimisticMessage.id)
+    if (roomIndex >= 0) {
+      cachedRoomMessages[roomIndex] = optimisticMessage
+      roomMessagesCache.set(roomId, cachedRoomMessages)
+    }
+
+    logger.error('Send message error', error instanceof Error ? error : new Error(String(error)), { roomId, messageId: optimisticMessage.id })
+    throw error
+  }
 }
 
 /**
@@ -95,34 +94,18 @@ export async function markAsRead(
   messageId: string,
   userId: string
 ): Promise<void> {
-  const receipt: ReadReceipt = {
-    userId,
-    messageId,
-    roomId,
-    readAt: new Date().toISOString(),
-  }
+  try {
+    await chatApi.markAsRead(roomId, messageId)
 
-  const key = `${KV_PREFIX.READ_RECEIPT}${messageId}:${userId}`
-  await window.spark.kv.set(key, receipt)
-
-  // Update message status
-  const messageKey = `${KV_PREFIX.MESSAGE}${messageId}`
-  const message = await window.spark.kv.get<Message>(messageKey)
-  
-  if (message && message.senderId !== userId) {
-    message.status = 'read'
-    await window.spark.kv.set(messageKey, message)
-
-    // Notify server
-    try {
-      await fetch(`/api/v1/chat/rooms/${roomId}/read-receipts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId }),
-      })
-    } catch (error) {
-      logger.error('Mark as read error', error instanceof Error ? error : new Error(String(error)), { roomId, messageId, userId })
+    // Update cached message status
+    const message = messageCache.get(messageId)
+    if (message && message.senderId !== userId) {
+      message.status = 'read'
+      messageCache.set(messageId, message)
     }
+  } catch (error) {
+    logger.error('Mark as read error', error instanceof Error ? error : new Error(String(error)), { roomId, messageId, userId })
+    throw error
   }
 }
 
@@ -134,57 +117,23 @@ export async function addReaction(
   userId: string,
   reaction: ReactionType
 ): Promise<void> {
-  const messageKey = `${KV_PREFIX.MESSAGE}${messageId}`
-  const message = await window.spark.kv.get<Message>(messageKey)
-
-  if (!message) {
-    throw new Error('Message not found')
-  }
-
-  // Normalize reactions to record format
-  let reactionsRecord: Record<ReactionType, string[]>
-  if (!message.reactions) {
-    reactionsRecord = {} as Record<ReactionType, string[]>
-  } else if (Array.isArray(message.reactions)) {
-    // Convert array to record format
-    reactionsRecord = {} as Record<ReactionType, string[]>
-    for (const r of message.reactions) {
-      if (r.emoji && r.userIds) {
-        reactionsRecord[r.emoji as ReactionType] = [...r.userIds]
-      }
-    }
-  } else {
-    reactionsRecord = { ...message.reactions } as Record<ReactionType, string[]>
-  }
-
-  if (!reactionsRecord[reaction]) {
-    reactionsRecord[reaction] = []
-  }
-
-  // Toggle reaction
-  const index = reactionsRecord[reaction].indexOf(userId)
-  if (index >= 0) {
-    reactionsRecord[reaction].splice(index, 1)
-    if (reactionsRecord[reaction].length === 0) {
-      delete reactionsRecord[reaction]
-    }
-  } else {
-    reactionsRecord[reaction].push(userId)
-  }
-
-  message.reactions = reactionsRecord
-
-  await window.spark.kv.set(messageKey, message)
-
-  // Notify server
   try {
-    await fetch(`/api/v1/chat/messages/${messageId}/reactions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reaction }),
-    })
+    const updatedMessage = await chatApi.addReaction(messageId, { reaction })
+    
+    // Update cached message
+    messageCache.set(messageId, updatedMessage)
+    
+    // Update in room cache
+    const roomId = updatedMessage.roomId
+    const roomMessages = roomMessagesCache.get(roomId) || []
+    const index = roomMessages.findIndex(m => m.id === messageId)
+    if (index >= 0) {
+      roomMessages[index] = updatedMessage
+      roomMessagesCache.set(roomId, roomMessages)
+    }
   } catch (error) {
     logger.error('Add reaction error', error instanceof Error ? error : new Error(String(error)), { messageId, userId, reaction })
+    throw error
   }
 }
 
@@ -195,37 +144,33 @@ export async function sendTypingIndicator(
   roomId: string,
   userId: string
 ): Promise<void> {
-  const indicator: TypingIndicator = {
-    userId,
-    roomId,
-    startedAt: new Date().toISOString(),
-  }
-
-  const key = `${KV_PREFIX.TYPING}${roomId}:${userId}`
-  await window.spark.kv.set(key, indicator)
-
   // Throttle - only send every 2 seconds
-  const lastSent = await window.spark.kv.get<number>(`${key}:last-sent`)
+  const lastSentKey = `typing:${roomId}:${userId}:last-sent`
+  const lastSent = messageCache.get(lastSentKey)?.createdAt ? new Date(messageCache.get(lastSentKey)!.createdAt).getTime() : 0
   const now = Date.now()
   
-  if (!lastSent || now - lastSent > 2000) {
-    try {
-      await fetch(`/api/v1/chat/rooms/${roomId}/typing`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      })
-      
-      await window.spark.kv.set(`${key}:last-sent`, now)
-    } catch (error) {
-      logger.error('Typing indicator error', error instanceof Error ? error : new Error(String(error)), { roomId, userId })
-    }
+  if (lastSent && now - lastSent < 2000) {
+    return // Skip - too soon
   }
 
-  // Auto-clear after 3 seconds
-  setTimeout(async () => {
-    await window.spark.kv.delete(key)
-  }, 3000)
+  try {
+    await chatApi.sendTypingIndicator(roomId, { userId })
+    
+    // Cache timestamp
+    const timestampMessage: Message = {
+      id: lastSentKey,
+      roomId,
+      senderId: userId,
+      type: 'text',
+      content: '',
+      status: 'sent',
+      createdAt: new Date(now).toISOString(),
+    }
+    messageCache.set(lastSentKey, timestampMessage)
+  } catch (error) {
+    logger.error('Typing indicator error', error instanceof Error ? error : new Error(String(error)), { roomId, userId })
+    // Don't throw - typing indicator is non-critical
+  }
 }
 
 /**
@@ -236,27 +181,31 @@ export async function getRoomMessages(
   cursor?: string
 ): Promise<{ messages: Message[]; nextCursor?: string }> {
   try {
-    const response = await fetch(
-      `/api/v1/chat/rooms/${roomId}/messages?${cursor ? `cursor=${cursor}` : ''}`
-    )
-
-    if (response.ok) {
-      const data = await response.json()
-      return {
-        messages: data.messages || [],
-        nextCursor: data.nextCursor,
-      }
+    const result = await chatApi.getMessages(roomId, cursor)
+    
+    // Update cache
+    if (!cursor) {
+      // First page - replace cache
+      roomMessagesCache.set(roomId, result.messages)
+    } else {
+      // Subsequent pages - append to cache
+      const cached = roomMessagesCache.get(roomId) || []
+      roomMessagesCache.set(roomId, [...cached, ...result.messages])
     }
+    
+    // Cache individual messages
+    result.messages.forEach(msg => {
+      messageCache.set(msg.id, msg)
+    })
+    
+    return result
   } catch (error) {
     logger.error('Get messages error', error instanceof Error ? error : new Error(String(error)), { roomId, cursor })
+    
+    // Fallback to cached messages
+    const cached = roomMessagesCache.get(roomId) || []
+    return { messages: cached }
   }
-
-  // Fallback to local storage
-  const roomMessages = await window.spark.kv.get<Message[]>(
-    `${KV_PREFIX.ROOM}${roomId}:messages`
-  ) || []
-
-  return { messages: roomMessages }
 }
 
 /**
@@ -267,38 +216,42 @@ export async function deleteMessage(
   userId: string,
   forEveryone: boolean = false
 ): Promise<void> {
-  const messageKey = `${KV_PREFIX.MESSAGE}${messageId}`
-  const message = await window.spark.kv.get<Message>(messageKey)
+  const cachedMessage = messageCache.get(messageId)
 
-  if (!message) {
+  if (!cachedMessage) {
     throw new Error('Message not found')
   }
 
-  const messageAge = Date.now() - new Date(message.createdAt).getTime()
+  const messageAge = Date.now() - new Date(cachedMessage.createdAt).getTime()
   const twoMinutes = 2 * 60 * 1000
 
-  if (message.senderId === userId && messageAge < twoMinutes && forEveryone) {
+  if (cachedMessage.senderId === userId && messageAge < twoMinutes && forEveryone) {
     // Revoke for everyone
-    message.deletedAt = new Date().toISOString()
-    await window.spark.kv.set(messageKey, message)
-
-    // Notify server
     try {
-      await fetch(`/api/v1/chat/messages/${messageId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ forEveryone: true }),
-      })
+      await chatApi.deleteMessage(messageId, true)
+      
+      // Update cache
+      cachedMessage.deletedAt = new Date().toISOString()
+      messageCache.set(messageId, cachedMessage)
+      
+      // Update in room cache
+      const roomMessages = roomMessagesCache.get(cachedMessage.roomId) || []
+      const index = roomMessages.findIndex(m => m.id === messageId)
+      if (index >= 0) {
+        roomMessages[index] = cachedMessage
+        roomMessagesCache.set(cachedMessage.roomId, roomMessages)
+      }
     } catch (error) {
       logger.error('Delete message error', error instanceof Error ? error : new Error(String(error)), { messageId, userId, forEveryone })
+      throw error
     }
   } else {
     // Delete for me only
-    if (!message.deletedFor) {
-      message.deletedFor = []
+    if (!cachedMessage.deletedFor) {
+      cachedMessage.deletedFor = []
     }
-    message.deletedFor.push(userId)
-    await window.spark.kv.set(messageKey, message)
+    cachedMessage.deletedFor.push(userId)
+    messageCache.set(messageId, cachedMessage)
   }
 }
 

@@ -1,14 +1,14 @@
 'use client'
 
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { springConfigs } from '@/effects/reanimated/transitions'
+import { useUIConfig } from '@/hooks/useUIConfig'
 import { useMemo } from 'react'
 import {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring
 } from 'react-native-reanimated'
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { useUIConfig } from '@/hooks/useUIConfig'
-import { springConfigs } from '@/effects/reanimated/transitions'
 
 export interface UseMoodThemeOptions {
   text: string
@@ -86,11 +86,11 @@ export function useMoodTheme(
 
   const animatedStyle = useAnimatedStyle(() => {
     if (!enabled || !theme.adaptiveMood) {
-      return {}
+      return {} as Record<string, unknown>
     }
 
     return {
-      background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,
+      background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,                                                                        
       backgroundOpacity: gradientOpacity.value
     }
   }) as AnimatedStyle

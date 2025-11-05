@@ -21,6 +21,7 @@ import { useApp } from '@/contexts/AppContext'
 import { CommentsSheet } from './CommentsSheet'
 import { MediaViewer } from './MediaViewer'
 import { ReportDialog } from './ReportDialog'
+import { PostDetailView } from './PostDetailView'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('PostCard')
@@ -28,9 +29,10 @@ const logger = createLogger('PostCard')
 interface PostCardProps {
   post: Post
   onAuthorClick?: (authorId: string) => void
+  onPostClick?: (postId: string) => void
 }
 
-function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
+function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps) {
   const { t } = useApp()
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
@@ -41,6 +43,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
   const [showMediaViewer, setShowMediaViewer] = useState(false)
   const [mediaViewerIndex, setMediaViewerIndex] = useState(0)
   const [showReportDialog, setShowReportDialog] = useState(false)
+  const [showPostDetail, setShowPostDetail] = useState(false)
 
   useEffect(() => {
     // Check if user has reacted to this post
@@ -112,14 +115,31 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
     setShowReportDialog(true)
   }
 
-  const handleCommentClick = () => {
-    setShowComments(true)
-    triggerHaptic('selection')
-  }
-
   const handleMediaClick = (index: number) => {
     setMediaViewerIndex(index)
     setShowMediaViewer(true)
+    triggerHaptic('selection')
+  }
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open detail view if clicking on interactive elements
+    const target = e.target as HTMLElement
+    if (
+      target.closest('button') ||
+      target.closest('[role="button"]') ||
+      target.closest('a') ||
+      target.closest('[role="link"]')
+    ) {
+      return
+    }
+
+    triggerHaptic('selection')
+    setShowPostDetail(true)
+    onPostClick?.(post.id)
+  }
+
+  const handleCommentClick = () => {
+    setShowComments(true)
     triggerHaptic('selection')
   }
 
@@ -151,12 +171,16 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
   })
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-    >
-      <Card className="overflow-hidden bg-linear-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm">
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <Card 
+          className="overflow-hidden bg-linear-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm cursor-pointer"
+          onClick={handleCardClick}
+        >
         {/* Author Header */}
         <div className="flex items-center justify-between p-4 pb-3">
           <motion.button
@@ -236,7 +260,7 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
             <motion.img
               key={currentMediaIndex}
               src={typeof post.media[currentMediaIndex] === 'string' 
-                ? post.media[currentMediaIndex]
+                ? post.media[currentMediaIndex] as string
                 : (post.media[currentMediaIndex] as { url: string }).url}
               alt="Post media"
               className="w-full h-full object-cover cursor-pointer"
@@ -380,13 +404,21 @@ function PostCardComponent({ post, onAuthorClick }: PostCardProps) {
         onOpenChange={setShowReportDialog}
         resourceType="post"
         resourceId={post.id}
-        resourceName={`Post by ${post.authorName}`}
-        onReported={() => {
-          toast.success('Report submitted. Thank you for helping keep our community safe.')
-        }}
+                            resourceName={`Post by ${post.authorName}`}
+          onReported={() => {
+            toast.success('Report submitted. Thank you for helping keep our community safe.')
+          }}
+        />
+        </Card>
+      </motion.div>
+
+      <PostDetailView
+        open={showPostDetail}
+        onOpenChange={setShowPostDetail}
+        postId={post.id}
+        onAuthorClick={onAuthorClick}
       />
-      </Card>
-    </motion.div>
+    </>
   )
 }
 

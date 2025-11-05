@@ -3,12 +3,15 @@ import { useStorage } from '@/hooks/useStorage'
 import { motion, AnimatePresence } from 'framer-motion'
 import ChatRoomsList from '@/components/ChatRoomsList'
 import ChatWindow from '@/components/ChatWindowNew'
-import type { ChatRoom, ChatMessage } from '@/lib/chat-types'
+import type { ChatRoom } from '@/lib/chat-types'
 import type { Match, Pet } from '@/lib/types'
 import { createChatRoom } from '@/lib/chat-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useApp } from '@/contexts/AppContext'
 import { createLogger } from '@/lib/logger'
+import { getRoomMessages } from '@/lib/chat-service'
+
+const logger = createLogger('ChatView')
 
 export default function ChatView() {
   const { t } = useApp()
@@ -67,7 +70,8 @@ export default function ChatView() {
       const updatedRooms = await Promise.all(
         chatRooms.map(async (room) => {
           try {
-            const messages = await window.spark.kv.get<ChatMessage[]>(`chat-messages-${room.id}`)
+            const result = await getRoomMessages(room.id)
+            const messages = result.messages
             if (Array.isArray(messages) && messages.length > 0) {
               const lastMessage = messages[messages.length - 1]
               const unreadCount = messages.filter(
@@ -82,7 +86,6 @@ export default function ChatView() {
               }
             }
           } catch (error) {
-            const logger = createLogger('ChatView')
             logger.error('Error loading messages', error instanceof Error ? error : new Error(String(error)))
           }
           return room

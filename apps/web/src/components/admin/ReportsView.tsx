@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Flag, CheckCircle, XCircle, Eye, Clock, Warning } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { generateULID } from '@/lib/utils'
+import { adminApi } from '@/api/admin-api'
 
 interface Report {
   id: string
@@ -107,22 +108,18 @@ export default function ReportsView() {
     toast.success('Report resolved successfully')
 
     const auditEntry = {
-      id: generateULID(),
       adminId: 'admin-current',
-      adminName: 'Current Admin',
       action: 'resolve_report',
       targetType: 'report',
       targetId: selectedReport.id,
-      details: {
+      details: JSON.stringify({
         reportReason: selectedReport.reason,
         resolution,
         actionType
-      },
-      timestamp: new Date().toISOString()
+      })
     }
 
-    const existingAudit = await window.spark.kv.get<any[]>('admin-audit-log') || []
-    await window.spark.kv.set('admin-audit-log', [...existingAudit, auditEntry])
+    await adminApi.createAuditLog(auditEntry)
   }
 
   const handleDismiss = async () => {

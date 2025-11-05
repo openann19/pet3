@@ -1,7 +1,10 @@
-import type { Pet } from './types'
-import { generateTrustBadges, generateRatings, calculateTrustProfile } from './trust-utils'
+import { buildLLMPrompt } from './llm-prompt'
+import { llmService } from './llm-service'
 import { parseLLMError } from './llm-utils'
 import { createLogger } from './logger'
+import { calculateTrustProfile, generateRatings, generateTrustBadges } from './trust-utils'
+import type { Pet } from './types'
+import { userService } from './user-service'
 
 const logger = createLogger('seedData')
 
@@ -29,7 +32,7 @@ export async function generateSamplePets(count: number = 15): Promise<Pet[]> {
     logger.warn(`Invalid count provided to generateSamplePets: ${count}, using default: 15`)
   }
   
-  const prompt = window.spark.llmPrompt`Generate exactly ${validCount} diverse and realistic pet profiles for a premium pet matching platform. Create a rich mix of dogs and cats with varied breeds, ages, personalities, and interests that feel authentic and engaging. Return the result as a valid JSON object with a single property called "pets" that contains the pet list.
+  const prompt = buildLLMPrompt`Generate exactly ${validCount} diverse and realistic pet profiles for a premium pet matching platform. Create a rich mix of dogs and cats with varied breeds, ages, personalities, and interests that feel authentic and engaging. Return the result as a valid JSON object with a single property called "pets" that contains the pet list.
 
 Requirements for maximum diversity and realism:
 
@@ -91,11 +94,10 @@ Return ONLY valid JSON in this exact structure:
 }`
 
   try {
-    const result = await window.spark.llm(prompt, 'gpt-4o', true)
-    const data = JSON.parse(result)
-    
-    const { userService } = await import('./user-service')
-    const currentUser = await userService.user().catch(() => null)
+  const result = await llmService.llm(prompt, 'gpt-4o', true)
+  const data = JSON.parse(result)
+
+  const currentUser = await userService.user().catch(() => null)
     
     if (!data.pets || !Array.isArray(data.pets) || data.pets.length === 0) {
       logger.warn('AI generated invalid or empty pet data, using fallback')

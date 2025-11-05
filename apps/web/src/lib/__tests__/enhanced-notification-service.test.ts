@@ -2,13 +2,22 @@
  * Enhanced Notification Service Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { APIClient } from '../api-client'
+import type { Match, User } from '../contracts'
 import { EnhancedNotificationService } from '../enhanced-notification-service'
-import type { User, Match } from '../contracts'
+import { pushNotifications } from '../push-notifications'
 
 vi.mock('../push-notifications', () => ({
   pushNotifications: {
     showNotification: vi.fn().mockResolvedValue(undefined)
+  }
+}))
+
+vi.mock('../api-client', () => ({
+  APIClient: {
+    post: vi.fn(),
+    get: vi.fn()
   }
 }))
 
@@ -27,6 +36,8 @@ describe('EnhancedNotificationService', () => {
   beforeEach(() => {
     service = new EnhancedNotificationService()
     vi.clearAllMocks()
+    vi.mocked(APIClient.post).mockResolvedValue({ data: null } as any)
+    vi.mocked(APIClient.get).mockResolvedValue({ data: null } as any)
   })
 
   describe('notifyMatchCreated', () => {
@@ -80,12 +91,9 @@ describe('EnhancedNotificationService', () => {
         displayName: 'User B'
       }
 
-      vi.mocked(window.spark.kv.get).mockResolvedValue([])
-      vi.mocked(window.spark.kv.set).mockResolvedValue(undefined)
-
       await service.notifyMatchCreated(match, userA, userB)
-
-      expect(window.spark.kv.set).toHaveBeenCalled()
+      expect(pushNotifications.showNotification).toHaveBeenCalledTimes(2)
+      expect(APIClient.post).toHaveBeenCalledTimes(2)
     })
 
     it('should respect quiet hours', async () => {
@@ -144,12 +152,18 @@ describe('EnhancedNotificationService', () => {
         displayName: 'User B'
       }
 
-      vi.mocked(window.spark.kv.get).mockResolvedValue([])
-      vi.mocked(window.spark.kv.set).mockResolvedValue(undefined)
+      vi.useFakeTimers()
+      try {
+        const quietTime = new Date()
+        quietTime.setHours(22, 30, 0, 0)
+        vi.setSystemTime(quietTime)
 
-      await service.notifyMatchCreated(match, userA, userB)
-
-      expect(window.spark.kv.set).not.toHaveBeenCalled()
+        await service.notifyMatchCreated(match, userA, userB)
+        expect(pushNotifications.showNotification).not.toHaveBeenCalled()
+        expect(APIClient.post).not.toHaveBeenCalled()
+      } finally {
+        vi.useRealTimers()
+      }
     })
   })
 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useSharedValue, useAnimatedStyle, withSpring, type SharedValue } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useCallback } from 'react'
+import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
 
 export interface UseHoverLiftOptions {
   scale?: number
@@ -13,7 +14,7 @@ export interface UseHoverLiftOptions {
 export interface UseHoverLiftReturn {
   scale: SharedValue<number>
   translateY: SharedValue<number>
-  animatedStyle: ReturnType<typeof useAnimatedStyle>
+  animatedStyle: AnimatedStyle
   handleEnter: () => void
   handleLeave: () => void
 }
@@ -41,7 +42,7 @@ export function useHoverLift(options: UseHoverLiftOptions = {}): UseHoverLiftRet
         { translateY: translateY.value }
       ]
     }
-  })
+  }) as AnimatedStyle
 
   const handleEnter = useCallback(() => {
     scale.value = withSpring(scaleValue, { damping, stiffness })

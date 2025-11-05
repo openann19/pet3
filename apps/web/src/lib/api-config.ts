@@ -1,14 +1,25 @@
 import type { APIConfig } from '@/components/admin/APIConfigView'
 import { logger } from './logger'
+import { storage } from './storage'
+import { apiConfigApi } from '@/api/api-config-api'
 
 export async function getAPIConfig(): Promise<APIConfig | null> {
   try {
-    const config = await window.spark.kv.get<APIConfig>('admin-api-config')
-    return config || null
+    const config = await apiConfigApi.getAPIConfig()
+    if (config) {
+      // Cache in local storage for offline access
+      await storage.set('admin-api-config', config)
+      return config
+    }
+    
+    // Fallback to cached config if API returns null
+    const cachedConfig = await storage.get<APIConfig>('admin-api-config')
+    return cachedConfig || null
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
-    logger.error('Error fetching API config', err, { action: 'getAPIConfig' })
-    return null
+    logger.error('Error fetching API config, using cached config', err, { action: 'getAPIConfig' })
+    const cachedConfig = await storage.get<APIConfig>('admin-api-config')
+    return cachedConfig || null
   }
 }
 
@@ -50,6 +61,11 @@ export async function getStorageConfig() {
 export async function getAnalyticsConfig() {
   const config = await getAPIConfig()
   return config?.analytics || null
+}
+
+export async function getLiveKitConfig() {
+  const config = await getAPIConfig()
+  return config?.livekit || null
 }
 
 export function isServiceEnabled(service: keyof APIConfig, config: APIConfig | null): boolean {

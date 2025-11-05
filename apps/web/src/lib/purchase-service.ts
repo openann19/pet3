@@ -6,16 +6,11 @@
 
 import type { Purchase, BusinessConfig } from './business-types'
 import { generateULID } from './utils'
-import { getUserEntitlements } from './entitlements-engine'
+import { PaymentsService } from './payments-service'
+import { APIClient } from '@/lib/api-client'
 import { createLogger } from './logger'
 
 const logger = createLogger('purchase-service')
-
-const KV_PREFIX = {
-  PURCHASE: 'purchase:',
-  CONFIG: 'business-config:',
-  AUDIT: 'audit-log:',
-}
 
 const ERROR_VERIFICATION_FAILED = 'Verification failed'
 const ERROR_INVALID_RECEIPT = 'Invalid receipt'
@@ -78,21 +73,12 @@ async function verifyStripeReceipt(
 ): Promise<{ valid: boolean; purchase?: Purchase; error?: string }> {
   try {
     // Call backend API to verify with Stripe
-    const response = await fetch('/api/v1/billing/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform: 'web', receipt, userId }),
-    })
+    const response = await APIClient.post<VerificationResponse>(
+      '/payments/verify-receipt',
+      { platform: 'web', receipt, userId }
+    )
 
-    if (!response.ok) {
-      return { valid: false, error: ERROR_VERIFICATION_FAILED }
-    }
-
-    const data: unknown = await response.json()
-    
-    if (!isValidVerificationResponse(data)) {
-      return { valid: false, error: ERROR_INVALID_RESPONSE_FORMAT }
-    }
+    const data = response.data
     
     if (data.valid) {
       const purchase: Purchase = {
@@ -133,21 +119,12 @@ async function verifyAppleReceipt(
   userId: string
 ): Promise<{ valid: boolean; purchase?: Purchase; error?: string }> {
   try {
-    const response = await fetch('/api/v1/billing/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform: 'ios', receipt, userId }),
-    })
+    const response = await APIClient.post<VerificationResponse>(
+      '/payments/verify-receipt',
+      { platform: 'ios', receipt, userId }
+    )
 
-    if (!response.ok) {
-      return { valid: false, error: ERROR_VERIFICATION_FAILED }
-    }
-
-    const data: unknown = await response.json()
-    
-    if (!isValidVerificationResponse(data)) {
-      return { valid: false, error: ERROR_INVALID_RESPONSE_FORMAT }
-    }
+    const data = response.data
     
     if (data.valid) {
       const purchase: Purchase = {
@@ -188,21 +165,12 @@ async function verifyGoogleReceipt(
   userId: string
 ): Promise<{ valid: boolean; purchase?: Purchase; error?: string }> {
   try {
-    const response = await fetch('/api/v1/billing/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform: 'android', receipt, userId }),
-    })
+    const response = await APIClient.post<VerificationResponse>(
+      '/payments/verify-receipt',
+      { platform: 'android', receipt, userId }
+    )
 
-    if (!response.ok) {
-      return { valid: false, error: ERROR_VERIFICATION_FAILED }
-    }
-
-    const data: unknown = await response.json()
-    
-    if (!isValidVerificationResponse(data)) {
-      return { valid: false, error: ERROR_INVALID_RESPONSE_FORMAT }
-    }
+    const data = response.data
     
     if (data.valid) {
       const purchase: Purchase = {
@@ -239,37 +207,46 @@ async function verifyGoogleReceipt(
  * Save purchase to storage
  */
 async function savePurchase(purchase: Purchase): Promise<void> {
-  const key = `${KV_PREFIX.PURCHASE}${purchase.id}`
-  await window.spark.kv.set(key, purchase)
-
-  // Also index by user
-  const userPurchases = await window.spark.kv.get<Purchase[]>(`${KV_PREFIX.PURCHASE}user:${purchase.userId}`) || []
-  const updatedPurchases: Purchase[] = [...userPurchases, purchase]
-  await window.spark.kv.set(`${KV_PREFIX.PURCHASE}user:${purchase.userId}`, updatedPurchases)
+  try {
+    await APIClient.post('/payments/purchases', purchase)
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to save purchase', err, { purchaseId: purchase.id })
+    throw err
+  }
 }
 
 /**
  * Grant entitlements based on purchase
  */
 async function grantEntitlements(userId: string, sku: string): Promise<void> {
-  // Parse SKU to determine plan
-  let plan: 'free' | 'premium' | 'elite' = 'free'
-  
-  if (sku.includes('premium')) {
-    plan = 'premium'
-  } else if (sku.includes('elite')) {
-    plan = 'elite'
-  } else if (sku.includes('boost')) {
-    // Consumable boost - handled separately
-    return
-  } else if (sku.includes('super_like')) {
-    // Consumable super like - handled separately
-    return
-  }
+  try {
+    // Parse SKU to determine plan
+    let plan: 'free' | 'premium' | 'elite' = 'free'
+    
+    if (sku.includes('premium')) {
+      plan = 'premium'
+    } else if (sku.includes('elite')) {
+      plan = 'elite'
+    } else if (sku.includes('boost')) {
+      // Consumable boost - handled separately
+      await PaymentsService.addConsumable(userId, 'boosts', 1)
+      return
+    } else if (sku.includes('super_like')) {
+      // Consumable super like - handled separately
+      await PaymentsService.addConsumable(userId, 'super_likes', 1)
+      return
+    }
 
-  // Update user plan
-  const key = `entitlements:${userId}`
-  await window.spark.kv.set(key, { plan, updatedAt: new Date().toISOString() })
+    // Update user plan
+    if (plan !== 'free') {
+      await PaymentsService.updateEntitlements(userId, plan)
+    }
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to grant entitlements', err, { userId, sku })
+    throw err
+  }
 }
 
 /**
@@ -279,43 +256,51 @@ export async function handleRefund(
   purchaseId: string,
   reason?: string
 ): Promise<void> {
-  const key = `${KV_PREFIX.PURCHASE}${purchaseId}`
-  const purchase = await window.spark.kv.get<Purchase>(key)
-  
-  if (!purchase) {
-    return
-  }
+  try {
+    // Get purchase from API
+    const response = await APIClient.get<{ purchase: Purchase }>(
+      `/payments/purchases/${purchaseId}`
+    )
+    const purchase = response.data.purchase
+    
+    if (!purchase) {
+      return
+    }
 
-  // Update purchase status
-  purchase.status = 'refunded'
-  await window.spark.kv.set(key, purchase)
-
-  // Revoke entitlements
-  const entitlements = await getUserEntitlements(purchase.userId)
-  if (entitlements.swipeDailyCap === 'unlimited') {
-    // Downgrade to free plan
-    const userKey = `entitlements:${purchase.userId}`
-    await window.spark.kv.set(userKey, { 
-      plan: 'free', 
-      updatedAt: new Date().toISOString() 
+    // Update purchase status
+    await APIClient.patch(`/payments/purchases/${purchaseId}`, {
+      status: 'refunded'
     })
-  }
 
-  // Log audit
-  await logAudit({
-    action: 'refund_processed',
-    userId: purchase.userId,
-    purchaseId,
-    reason,
-  })
+    // Revoke entitlements
+    const entitlements = await PaymentsService.getUserEntitlements(purchase.userId)
+    if (entitlements.swipeDailyCap === 'unlimited') {
+      // Downgrade to free plan
+      await PaymentsService.updateEntitlements(purchase.userId, 'free', reason)
+    }
+
+    logger.info('Refund processed', { purchaseId, userId: purchase.userId, reason })
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to handle refund', err, { purchaseId })
+    throw err
+  }
 }
 
 /**
  * Get business config
  */
 export async function getBusinessConfig(): Promise<BusinessConfig | null> {
-  const key = `${KV_PREFIX.CONFIG}current`
-  return await window.spark.kv.get<BusinessConfig>(key) || null
+  try {
+    const response = await APIClient.get<{ config: BusinessConfig | null }>(
+      '/payments/business-config'
+    )
+    return response.data.config
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to get business config', err)
+    throw err
+  }
 }
 
 /**
@@ -325,66 +310,19 @@ export async function updateBusinessConfig(
   config: Partial<BusinessConfig>,
   updatedBy: string
 ): Promise<BusinessConfig> {
-  const existing = await getBusinessConfig()
-  
-  const newConfig: BusinessConfig = {
-    id: existing?.id || generateULID(),
-    version: existing ? `${parseInt(existing.version) + 1}` : '1',
-    prices: config.prices || existing?.prices || {
-      premium: { monthly: 9.99, yearly: 99.99, currency: 'USD' },
-      elite: { monthly: 19.99, yearly: 199.99, currency: 'USD' },
-      boost: { price: 2.99, currency: 'USD' },
-      superLike: { price: 0.99, currency: 'USD' },
-    },
-    limits: config.limits || existing?.limits || {
-      free: { swipeDailyCap: 5, adoptionListingLimit: 1 },
-      premium: { boostsPerWeek: 1, superLikesPerDay: 0 },
-      elite: { boostsPerWeek: 2, superLikesPerDay: 10 },
-    },
-    experiments: config.experiments || existing?.experiments || {},
-    updatedAt: new Date().toISOString(),
-    updatedBy,
+  try {
+    const response = await APIClient.put<{ config: BusinessConfig }>(
+      '/payments/business-config',
+      {
+        ...config,
+        updatedBy
+      }
+    )
+    return response.data.config
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to update business config', err, { updatedBy })
+    throw err
   }
-
-  const key = `${KV_PREFIX.CONFIG}current`
-  await window.spark.kv.set(key, newConfig)
-
-  // Log audit
-  await logAudit({
-    action: 'business_config_updated',
-    userId: updatedBy,
-    config: newConfig,
-  })
-
-  return newConfig
-}
-
-/**
- * Log audit entry
- */
-async function logAudit(entry: {
-  action: string
-  userId: string
-  purchaseId?: string
-  reason?: string
-  config?: BusinessConfig
-}): Promise<void> {
-  const auditEntry = {
-    id: generateULID(),
-    timestamp: new Date().toISOString(),
-    ...entry,
-  }
-
-  const key = `${KV_PREFIX.AUDIT}${auditEntry.id}`
-  await window.spark.kv.set(key, auditEntry)
-
-  // Append to audit log list
-  const auditLog = await window.spark.kv.get<typeof auditEntry[]>(`${KV_PREFIX.AUDIT}list`) || []
-  auditLog.push(auditEntry)
-  // Keep only last 1000 entries
-  if (auditLog.length > 1000) {
-    auditLog.shift()
-  }
-  await window.spark.kv.set(`${KV_PREFIX.AUDIT}list`, auditLog)
 }
 

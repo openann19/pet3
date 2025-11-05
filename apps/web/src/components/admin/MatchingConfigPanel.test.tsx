@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render } from '@testing-library/react'
-import { screen, waitFor } from '@testing-library/dom'
-import userEvent from '@testing-library/user-event'
-import { MatchingConfigPanel } from './MatchingConfigPanel'
 import { matchingAPI } from '@/api/matching-api'
 import type { MatchingConfig } from '@/core/domain/matching-config'
-import { DEFAULT_MATCHING_WEIGHTS, DEFAULT_HARD_GATES } from '@/core/domain/matching-config'
+import { DEFAULT_HARD_GATES, DEFAULT_MATCHING_WEIGHTS } from '@/core/domain/matching-config'
+import { screen, waitFor } from '@testing-library/dom'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { MatchingConfigPanel } from './MatchingConfigPanel'
 
 vi.mock('@/api/matching-api', () => ({
   matchingAPI: {
@@ -47,16 +47,6 @@ const mockConfig: MatchingConfig = {
 describe('MatchingConfigPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
-    // Mock window.spark.kv
-    global.window.spark = {
-      kv: {
-        get: vi.fn(),
-        set: vi.fn(),
-        keys: vi.fn().mockResolvedValue([])
-      },
-      user: vi.fn().mockResolvedValue({ login: 'testuser', id: '123' })
-    } as unknown as typeof window.spark
   })
 
   afterEach(() => {
@@ -64,7 +54,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should render loading state initially', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(null)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(null as unknown as MatchingConfig)
     
     render(<MatchingConfigPanel />)
     
@@ -72,7 +62,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should load and display configuration', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(mockConfig)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(mockConfig)
     
     render(<MatchingConfigPanel />)
     
@@ -85,7 +75,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should display default configuration when none exists', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(null)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(null as unknown as MatchingConfig)
     
     render(<MatchingConfigPanel />)
     
@@ -95,7 +85,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should update weights when slider changes', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(mockConfig)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(mockConfig)
     
     render(<MatchingConfigPanel />)
     
@@ -108,7 +98,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should save configuration with strict optional types', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(mockConfig)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(mockConfig)
     const updateConfigMock = vi.mocked(matchingAPI.updateConfig).mockResolvedValue(mockConfig)
     
     const user = userEvent.setup()
@@ -131,7 +121,7 @@ describe('MatchingConfigPanel', () => {
   })
 
   it('should handle save errors gracefully', async () => {
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(mockConfig)
+    vi.mocked(matchingAPI.getConfig).mockResolvedValue(mockConfig)
     const updateConfigMock = vi.mocked(matchingAPI.updateConfig).mockRejectedValue(new Error('Save failed'))
     
     const user = userEvent.setup()
@@ -159,7 +149,7 @@ describe('MatchingConfigPanel', () => {
       }
     }
     
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(invalidConfig)
+  vi.mocked(matchingAPI.getConfig).mockResolvedValue(invalidConfig)
     
     render(<MatchingConfigPanel />)
     
@@ -176,7 +166,7 @@ describe('MatchingConfigPanel', () => {
       updatedAt: new Date().toISOString()
     }
     
-    vi.spyOn(window.spark.kv, 'get').mockResolvedValue(mockConfig)
+  vi.mocked(matchingAPI.getConfig).mockResolvedValue(mockConfig)
     vi.mocked(matchingAPI.updateConfig).mockResolvedValue(updatedConfig)
     
     const user = userEvent.setup()

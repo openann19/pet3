@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Input } from '@/components/ui/input'
-import { Heart, ClipboardText, MagnifyingGlass, Plus } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
-import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
+import { adoptionApi } from '@/api/adoption-api'
 import { AdoptionListingCard } from '@/components/adoption/AdoptionListingCard'
 import { AdoptionListingDetailDialog } from '@/components/adoption/AdoptionListingDetailDialog'
 import { CreateAdoptionListingDialog } from '@/components/adoption/CreateAdoptionListingDialog'
 import { MyApplicationsView } from '@/components/adoption/MyApplicationsView'
-import { adoptionAPI } from '@/api/adoption-api'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useApp } from '@/contexts/AppContext'
-import { toast } from 'sonner'
+import { useStorage } from '@/hooks/useStorage'
+import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
 import { createLogger } from '@/lib/logger'
+import { ClipboardText, Heart, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('AdoptionView')
 
@@ -33,7 +33,7 @@ export default function AdoptionView() {
   const [selectedListing, setSelectedListing] = useState<AdoptionListing | null>(null)
   const [showDetailDialog, setShowDetailDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [cursor, setCursor] = useState<string | undefined>()
+  const [_cursor, setCursor] = useState<string | undefined>()
 
   useEffect(() => {
     loadListings()
@@ -44,11 +44,39 @@ export default function AdoptionView() {
     try {
       setLoading(true)
       await spark.user()
-      const result = await adoptionAPI.queryListings({
-        limit: 50,
-        cursor: cursor
-      })
-      setListings(result.listings)
+      const result = await adoptionApi.getAdoptionProfiles({ limit: 50 })
+      const mappedListings = result.profiles.map(p => ({
+        id: p._id,
+        ownerId: p.shelterId,
+        ownerName: p.shelterName,
+        petId: p.petId,
+        petName: p.petName,
+        petBreed: p.breed,
+        petAge: p.age,
+        petGender: p.gender,
+        petSize: p.size,
+        petSpecies: 'dog' as const,
+        petPhotos: p.photos,
+        petDescription: p.description,
+        status: p.status === 'available' ? 'active' as const : p.status === 'pending' ? 'pending_review' as const : p.status === 'adopted' ? 'adopted' as const : 'pending_review' as const,
+        location: { city: p.location.split(', ')[0] || '', country: p.location.split(', ')[1] || '', privacyRadiusM: 1000 },
+        requirements: [],
+        vetDocuments: [],
+        vaccinated: p.vaccinated,
+        spayedNeutered: p.spayedNeutered,
+        microchipped: false,
+        goodWithKids: p.goodWithKids,
+        goodWithPets: p.goodWithPets,
+        energyLevel: p.energyLevel,
+        temperament: p.personality,
+        reasonForAdoption: p.description || 'Looking for a loving home',
+        createdAt: p.postedDate,
+        updatedAt: p.postedDate,
+        viewsCount: 0,
+        applicationsCount: 0,
+        featured: false
+      } as AdoptionListing))
+      setListings(mappedListings)
       setCursor(result.nextCursor)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
@@ -62,7 +90,7 @@ export default function AdoptionView() {
   const loadUserApplicationsCount = async () => {
     try {
       const user = await spark.user()
-      const applications = await adoptionAPI.queryApplications(user.id)
+      const applications = await adoptionApi.getUserApplications(user.id)
       setUserApplicationsCount(applications.length)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))

@@ -1,5 +1,8 @@
 import { db, type DBRecord } from './database'
 import { createLogger } from './logger'
+import { storage } from './storage'
+import type { User } from './user-service'
+import { userService } from './user-service'
 
 const logger = createLogger('EnhancedAuth')
 
@@ -50,20 +53,22 @@ export class EnhancedAuthService {
 
   async initialize(): Promise<void> {
     try {
-      const sparkUser = await window.spark.user()
-      
-      if (sparkUser && sparkUser.login) {
+      const currentUser = await userService.user()
+
+      if (currentUser && currentUser.isGuest !== true) {
+        const loginIdentifier = currentUser.login ?? currentUser.email ?? currentUser.id
         let userProfile = await db.findOne<UserProfile>('users', {
-          githubLogin: sparkUser.login
+          githubLogin: loginIdentifier
         })
 
         if (!userProfile) {
-          userProfile = await this.createUserFromSparkUser(sparkUser as unknown as UserInfo)
+          userProfile = await this.createUserFromCurrentUser(currentUser)
         } else {
           userProfile = await db.update<UserProfile>('users', userProfile.id, {
             lastSeenAt: new Date().toISOString(),
-            avatarUrl: sparkUser.avatarUrl,
-            email: sparkUser.email
+            avatarUrl: currentUser.avatarUrl ?? undefined,
+            email: currentUser.email ?? undefined,
+            displayName: currentUser.displayName ?? currentUser.login ?? userProfile.displayName
           })
         }
 
@@ -81,19 +86,28 @@ export class EnhancedAuthService {
     }
   }
 
-  private async createUserFromSparkUser(sparkUser: UserInfo): Promise<UserProfile> {
+  private async createUserFromCurrentUser(user: User): Promise<UserProfile> {
     const roles: UserRole[] = ['user']
-    
-    if (sparkUser.isOwner) {
+
+    const possibleRoles = (user as { roles?: unknown }).roles
+    if (Array.isArray(possibleRoles)) {
+      for (const role of possibleRoles) {
+        if (role === 'admin' || role === 'moderator') {
+          roles.push(role)
+        }
+      }
+    }
+
+    if ((user as { isOwner?: boolean }).isOwner) {
       roles.push('admin', 'moderator')
     }
 
     const userProfile = await db.create<UserProfile>('users', {
-      githubId: sparkUser.id,
-      githubLogin: sparkUser.login,
-      email: sparkUser.email,
-      displayName: sparkUser.login || 'Anonymous',
-      avatarUrl: sparkUser.avatarUrl,
+      githubId: user.id,
+      githubLogin: user.login ?? user.email ?? user.id,
+      email: user.email ?? undefined,
+      displayName: user.displayName ?? user.login ?? 'Anonymous',
+      avatarUrl: user.avatarUrl ?? undefined,
       roles,
       status: 'active',
       preferences: {
@@ -115,7 +129,7 @@ export class EnhancedAuthService {
   }
 
   private async restoreGuestSession(): Promise<void> {
-    const guestUserId = await window.spark.kv.get<string>('guest-user-id')
+    const guestUserId = await storage.get<string>('guest-user-id')
     
     if (guestUserId) {
       const guestUser = await db.findById<UserProfile>('users', guestUserId)
@@ -145,7 +159,7 @@ export class EnhancedAuthService {
     })
 
     this.currentUser = guestUser
-    await window.spark.kv.set('guest-user-id', guestUser.id)
+    await storage.set('guest-user-id', guestUser.id)
   }
 
   private async createSession(user: UserProfile): Promise<void> {
@@ -162,7 +176,7 @@ export class EnhancedAuthService {
     this.currentUser = user
     this.currentSession = session
 
-    await window.spark.kv.set('current-session-id', session.id)
+    await storage.set('current-session-id', session.id)
   }
 
   private startSessionMonitoring(): void {
@@ -206,8 +220,8 @@ export class EnhancedAuthService {
     this.currentUser = null
     this.currentSession = null
 
-    await window.spark.kv.delete('current-session-id')
-    await window.spark.kv.delete('guest-user-id')
+    await storage.delete('current-session-id')
+    await storage.delete('guest-user-id')
   }
 
   getCurrentUser(): UserProfile | null {

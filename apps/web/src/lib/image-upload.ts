@@ -7,6 +7,9 @@
 import imageCompression from 'browser-image-compression'
 import { generateULID } from './utils'
 import { createLogger } from './logger'
+import { storage } from './storage'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
 
 const logger = createLogger('ImageUpload')
 
@@ -158,24 +161,49 @@ export async function uploadImage(
     // Convert to ArrayBuffer for storage
     const arrayBuffer = await strippedFile.arrayBuffer()
 
-    // Store in Spark KV
-    await spark.kv.set(key, arrayBuffer)
+        // Upload to backend API
+    let uploadUrl = `/api/images/${key}`
+    try {
+      const formData = new FormData()
+      const blob = new Blob([arrayBuffer], { type: strippedFile.type })
+      formData.append('file', blob, key)
+      formData.append('key', key)
+      
+      const response = await APIClient.post<{ url: string; key: string }>(
+        ENDPOINTS.IMAGES.UPLOAD,
+        formData,
+        {
+          headers: {
+            // Don't set Content-Type, let browser set it with boundary for FormData
+          }
+        }
+      )
+      
+      if (response.data?.url) {
+        uploadUrl = response.data.url
+      } else if (response.data?.key) {
+        uploadUrl = `/api/images/${response.data.key}`
+      }
+      
+      logger.debug('Image uploaded to API', { key, url: uploadUrl })
+    } catch (apiError) {
+            logger.warn('Failed to upload image to API, storing locally', { error: apiError, key })                                                                   
+    }
+    
+    // Store in local storage (client-side caching)
+    await storage.set(key, arrayBuffer)
 
     logger.info('Image uploaded successfully', {
       key,
+      url: uploadUrl,
       originalSize,
       compressedSize: strippedFile.size,
-      compressionRatio: ((1 - strippedFile.size / originalSize) * 100).toFixed(2) + '%',
+      compressionRatio: ((1 - strippedFile.size / originalSize) * 100).toFixed(2) + '%',                                                                      
       dimensions
     })
 
-    // Generate URL
-    // In production, this would be a CDN URL
-    // For now, we'll use a data URL or return the key for the API to serve
-    const url = `/api/images/${key}`
-
     return {
-      url,
+      url: uploadUrl,
       key,
       originalSize,
       compressedSize: strippedFile.size,

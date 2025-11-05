@@ -18,7 +18,9 @@ export const ENDPOINTS = {
     UPLOAD_AVATAR: '/users/avatar',
     PREFERENCES: '/users/preferences',
     NOTIFICATIONS: '/users/notifications',
-    SETTINGS: '/users/settings'
+    SETTINGS: '/users/settings',
+    LOCATION: '/users/location',
+    LOCATION_NEARBY: '/users/location/nearby'
   },
 
   // Adoption
@@ -48,7 +50,13 @@ export const ENDPOINTS = {
     CREATE_INTENT: '/payments/create-intent',
     CONFIRM_PAYMENT: '/payments/confirm',
     SUBSCRIPTIONS: '/payments/subscriptions',
-    CANCEL_SUBSCRIPTION: (id: string) => `/payments/subscriptions/${id}`
+    CANCEL_SUBSCRIPTION: (id: string) => `/payments/subscriptions/${id}`,
+    ENTITLEMENTS: '/payments/entitlements',
+    UPDATE_ENTITLEMENTS: '/payments/entitlements',
+    SUBSCRIPTION: '/payments/subscription',
+    CREATE_SUBSCRIPTION: '/payments/subscription',
+    UPDATE_SUBSCRIPTION: (id: string) => `/payments/subscription/${id}`,
+    CONSUMABLES: '/payments/consumables'
   },
 
   // File Uploads
@@ -72,7 +80,9 @@ export const ENDPOINTS = {
     LIST: '/notifications',
     MARK_READ: (id: string) => `/notifications/${id}/read`,
     MARK_ALL_READ: '/notifications/read-all',
-    SETTINGS: '/notifications/settings'
+    SETTINGS: '/notifications/settings',
+    GEOFENCE: '/notifications/geofence',
+    USER_LOCATIONS: '/notifications/user-locations'
   },
 
   // Community
@@ -115,6 +125,81 @@ export const ENDPOINTS = {
       `/blocking/status/${blockerPetId}/${blockedPetId}`,
     BLOCKED_PETS: (petId: string) => `/blocking/pets/${petId}/blocked`,
     BLOCKED_USERS: (userId: string) => `/blocking/users/${userId}/blocked`
+  },
+
+  // Lost & Found
+  LOST_FOUND: {
+    CREATE_ALERT: '/alerts/lost',
+    QUERY_ALERTS: '/alerts/lost',
+    GET_ALERT: (id: string) => `/alerts/lost/${id}`,
+    UPDATE_STATUS: (id: string) => `/alerts/lost/${id}/status`,
+    INCREMENT_VIEW: (id: string) => `/alerts/lost/${id}/increment-view`,
+    CREATE_SIGHTING: '/alerts/sightings',
+    GET_SIGHTINGS: '/alerts/sightings'
+  },
+
+  // Live Streaming
+  STREAMING: {
+    CREATE_ROOM: '/live/createRoom',
+    END_ROOM: '/live/endRoom',
+    QUERY_ACTIVE: '/live/active',
+    GET_STREAM: (id: string) => `/live/${id}`,
+    JOIN_STREAM: (id: string) => `/live/${id}/join`,
+    LEAVE_STREAM: (id: string) => `/live/${id}/leave`,
+    SEND_REACTION: (id: string) => `/live/${id}/react`,
+    SEND_CHAT: (id: string) => `/live/${id}/chat`,
+    GET_CHAT: (id: string) => `/live/${id}/chat`,
+    REPORT_STREAM: (id: string) => `/live/${id}/report`
+  },
+
+  // Sync & Offline
+  SYNC: {
+    QUEUE: '/sync/queue',
+    LAST_SYNC_TIME: '/sync/last-sync-time',
+    SYNC_ACTION: '/sync/actions'
+  },
+
+  // Photos & Moderation
+  PHOTOS: {
+    LIST: '/photos',
+    GET: (id: string) => `/photos/${id}`,
+    CREATE: '/photos',
+    CHECK_DUPLICATE: '/photos/check-duplicate',
+    BY_STATUS: '/photos',
+    BY_OWNER: '/photos',
+    PUBLIC: '/photos/public',
+    RELEASE_HELD: '/photos/release-held'
+  },
+
+  // Moderation
+  MODERATION: {
+    POLICY: '/admin/moderation/policy',
+    TASKS: '/admin/moderation/tasks',
+    TASK: (id: string) => `/admin/moderation/tasks/${id}`,
+    TAKE_TASK: (id: string) => `/admin/moderation/tasks/${id}/take`,
+    METRICS: '/admin/moderation/metrics'
+  },
+
+  // User Quotas
+  QUOTAS: {
+    GET: (userId: string) => `/users/${userId}/quota`,
+    INCREMENT: (userId: string) => `/users/${userId}/quota/increment`
+  },
+
+  // Audit Logs
+  AUDIT: {
+    LOGS: '/admin/audit-logs',
+    CREATE: '/admin/audit-logs'
+  },
+
+  // Events
+  EVENTS: {
+    CREATE: '/events'
+  },
+
+  // Image Uploads
+  IMAGES: {
+    UPLOAD: '/uploads/images'
   }
 } as const
 

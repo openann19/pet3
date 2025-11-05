@@ -27,7 +27,7 @@ import {
   Calendar
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { generateULID } from '@/lib/utils'
+import { adminApi } from '@/api/admin-api'
 
 interface UserData {
   id: string
@@ -96,18 +96,14 @@ export default function UsersView() {
     toast.success('User suspended')
 
     const auditEntry = {
-      id: generateULID(),
       adminId: 'admin-current',
-      adminName: 'Current Admin',
       action: 'suspend_user',
       targetType: 'user',
       targetId: userId,
-      details: { duration: '7 days' },
-      timestamp: new Date().toISOString()
+      details: JSON.stringify({ duration: '7 days' })
     }
 
-    const existingAudit = await window.spark.kv.get<any[]>('admin-audit-log') || []
-    await window.spark.kv.set('admin-audit-log', [...existingAudit, auditEntry])
+    await adminApi.createAuditLog(auditEntry)
   }
 
   const handleBanUser = async (userId: string) => {
@@ -119,18 +115,14 @@ export default function UsersView() {
     toast.success('User banned permanently')
 
     const auditEntry = {
-      id: generateULID(),
       adminId: 'admin-current',
-      adminName: 'Current Admin',
       action: 'ban_user',
       targetType: 'user',
       targetId: userId,
-      details: { permanent: true },
-      timestamp: new Date().toISOString()
+      details: JSON.stringify({ permanent: true })
     }
 
-    const existingAudit = await window.spark.kv.get<any[]>('admin-audit-log') || []
-    await window.spark.kv.set('admin-audit-log', [...existingAudit, auditEntry])
+    await adminApi.createAuditLog(auditEntry)
   }
 
   const handleReactivateUser = async (userId: string) => {
@@ -142,17 +134,13 @@ export default function UsersView() {
     toast.success('User reactivated')
 
     const auditEntry = {
-      id: generateULID(),
       adminId: 'admin-current',
-      adminName: 'Current Admin',
       action: 'reactivate_user',
       targetType: 'user',
-      targetId: userId,
-      timestamp: new Date().toISOString()
+      targetId: userId
     }
 
-    const existingAudit = await window.spark.kv.get<any[]>('admin-audit-log') || []
-    await window.spark.kv.set('admin-audit-log', [...existingAudit, auditEntry])
+    await adminApi.createAuditLog(auditEntry)
   }
 
   const filteredUsers = users.filter(user => {

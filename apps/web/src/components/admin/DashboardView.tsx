@@ -14,6 +14,7 @@ import {
   Clock
 } from '@phosphor-icons/react'
 import { PetProfileGenerator } from '@/components/admin/PetProfileGenerator'
+import { adminApi } from '@/api/admin-api'
 import type { Pet, Match } from '@/lib/types'
 
 interface Report {
@@ -57,35 +58,44 @@ export default function DashboardView() {
   const [verifications] = useStorage<Verification[]>('admin-verifications', [])
 
   useEffect(() => {
-    const calculateStats = async () => {
-      const uniqueOwners = new Set((allPets || []).map(p => p.ownerId || p.ownerName))
-      const pendingReports = (reports || []).filter(r => r.status === 'pending').length
-      const resolvedReports = (reports || []).filter(r => r.status === 'resolved').length
-      const pendingVerifications = (verifications || []).filter(v => v.status === 'pending').length
-
-      // Calculate total messages from chat rooms
-      const allChatRooms = await window.spark.kv.keys().then(keys => 
-        keys.filter(k => k.startsWith('chat-messages-'))
-      )
-      let totalMessagesCount = 0
-      for (const roomKey of allChatRooms) {
-        const messages = await window.spark.kv.get<any[]>(roomKey) || []
-        totalMessagesCount += messages.length
+    const loadStats = async () => {
+      try {
+        const systemStats = await adminApi.getSystemStats()
+        // Merge with local data for immediate UI updates
+        const localStats = {
+          totalUsers: new Set((allPets || []).map(p => p.ownerId || p.ownerName)).size,
+          activeUsers: Math.floor(new Set((allPets || []).map(p => p.ownerId || p.ownerName)).size * 0.7),
+          totalPets: (allPets || []).length,
+          totalMatches: (matches || []).length,
+          totalMessages: systemStats.totalMessages,
+          pendingReports: (reports || []).filter(r => r.status === 'pending').length,
+          pendingVerifications: (verifications || []).filter(v => v.status === 'pending').length,
+          resolvedReports: (reports || []).filter(r => r.status === 'resolved').length,
+        }
+        // Use API stats when available, fallback to local calculations
+        setStats({
+          ...localStats,
+          ...systemStats,
+          // Keep local counts if API doesn't provide them
+          totalMessages: systemStats.totalMessages || localStats.totalMessages,
+        })
+      } catch (error) {
+        // Fallback to local calculations if API fails
+        const uniqueOwners = new Set((allPets || []).map(p => p.ownerId || p.ownerName))
+        setStats({
+          totalUsers: uniqueOwners.size,
+          activeUsers: Math.floor(uniqueOwners.size * 0.7),
+          totalPets: (allPets || []).length,
+          totalMatches: (matches || []).length,
+          totalMessages: 0, // Can't calculate from local storage
+          pendingReports: (reports || []).filter(r => r.status === 'pending').length,
+          pendingVerifications: (verifications || []).filter(v => v.status === 'pending').length,
+          resolvedReports: (reports || []).filter(r => r.status === 'resolved').length,
+        })
       }
-
-      setStats({
-        totalUsers: uniqueOwners.size,
-        activeUsers: Math.floor(uniqueOwners.size * 0.7),
-        totalPets: (allPets || []).length,
-        totalMatches: (matches || []).length,
-        totalMessages: totalMessagesCount,
-        pendingReports,
-        pendingVerifications,
-        resolvedReports
-      })
     }
 
-    void calculateStats()
+    void loadStats()
   }, [allPets, matches, reports, verifications])
 
   const statCards = [

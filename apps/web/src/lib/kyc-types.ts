@@ -6,6 +6,16 @@
 
 export type KYCStatus = 'not_started' | 'pending' | 'verified' | 'rejected' | 'expired'
 
+export type KYCRejectReason = 
+  | 'blurry_document'
+  | 'expired_document'
+  | 'invalid_document'
+  | 'mismatched_information'
+  | 'fraudulent_document'
+  | 'poor_quality'
+  | 'missing_information'
+  | 'other'
+
 export type UserRole = 'user' | 'shelter' | 'partner' | 'admin'
 
 export interface AgeVerification {
@@ -35,10 +45,25 @@ export interface KYCSubmission {
   providerSessionId?: string
   providerReference?: string
   startedAt: string
+  createdAt: string
   completedAt?: string
+  verifiedAt?: string
   rejectedAt?: string
-  rejectionReason?: string
+  updatedAt?: string
+  expiresAt?: string
+  rejectionReason?: KYCRejectReason
+  rejectReasonText?: string
   retryCount: number
+  documents?: Array<{
+    type: string
+    url: string
+    status: string
+  }>
+  livenessCheck?: {
+    passed: boolean
+    score?: number
+    images?: string[]
+  }
   metadata: {
     country?: string
     documentType?: string

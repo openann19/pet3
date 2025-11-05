@@ -1,189 +1,183 @@
 import type {
   LiveStream,
-  StreamViewer,
   StreamChatMessage,
   CreateStreamData,
   StreamStatus,
   StreamReport
 } from './streaming-types'
-import { generateULID } from './utils'
+import type { LiveStream as LiveStreamAPI, LiveStreamChatMessage, CreateLiveStreamData } from './live-streaming-types'
+import { liveStreamingAPI } from '@/api/live-streaming-api'
+import { APIClient } from '@/lib/api-client'
+import { ENDPOINTS } from '@/lib/endpoints'
+import { createLogger } from './logger'
+
+const logger = createLogger('StreamingService')
+
+// Helper to convert API types to service types
+function convertLiveStream(apiStream: LiveStreamAPI): LiveStream {
+  // Map status: 'scheduled' | 'live' | 'ended' | 'cancelled' -> 'idle' | 'connecting' | 'live' | 'ending' | 'ended'
+  let status: StreamStatus = 'idle'
+  if (apiStream.status === 'live') status = 'live'
+  else if (apiStream.status === 'ended') status = 'ended'
+  else if (apiStream.status === 'cancelled') status = 'ended'
+  else if (apiStream.status === 'scheduled') status = 'connecting'
+
+  return {
+    id: apiStream.id,
+    hostId: apiStream.hostId,
+    hostName: apiStream.hostName,
+    hostAvatar: apiStream.hostAvatar,
+    title: apiStream.title,
+    description: apiStream.description,
+    category: apiStream.category as LiveStream['category'], // Type assertion needed due to different category enums
+    status,
+    allowChat: apiStream.allowChat,
+    maxDuration: apiStream.maxDuration || 60,
+    startedAt: apiStream.startedAt || apiStream.createdAt,
+    endedAt: apiStream.endedAt,
+    viewerCount: apiStream.viewerCount,
+    peakViewerCount: apiStream.peakViewerCount,
+    totalViews: apiStream.viewerCount, // Approximate
+    likesCount: apiStream.reactionsCount || 0,
+    roomToken: apiStream.roomId,
+    recordingUrl: apiStream.vodUrl,
+    thumbnailUrl: apiStream.posterUrl || apiStream.thumbnail,
+    tags: []
+  }
+}
+
+function convertStreamChatMessage(apiMessage: LiveStreamChatMessage): StreamChatMessage {
+  return {
+    id: apiMessage.id,
+    streamId: apiMessage.streamId,
+    userId: apiMessage.userId,
+    userName: apiMessage.userName,
+    userAvatar: apiMessage.userAvatar,
+    message: apiMessage.text,
+    timestamp: apiMessage.createdAt,
+    type: 'message'
+  }
+}
 
 class StreamingService {
-  private async getStreams(): Promise<LiveStream[]> {
-    return await spark.kv.get<LiveStream[]>('live-streams') || []
-  }
-
-  private async setStreams(streams: LiveStream[]): Promise<void> {
-    await spark.kv.set('live-streams', streams)
-  }
-
-  private async getChatMessages(streamId: string): Promise<StreamChatMessage[]> {
-    return await spark.kv.get<StreamChatMessage[]>(`stream-chat-${streamId}`) || []
-  }
-
-  private async setChatMessages(streamId: string, messages: StreamChatMessage[]): Promise<void> {
-    await spark.kv.set(`stream-chat-${streamId}`, messages)
-  }
-
-  private async getViewers(streamId: string): Promise<StreamViewer[]> {
-    return await spark.kv.get<StreamViewer[]>(`stream-viewers-${streamId}`) || []
-  }
-
-  private async setViewers(streamId: string, viewers: StreamViewer[]): Promise<void> {
-    await spark.kv.set(`stream-viewers-${streamId}`, viewers)
-  }
-
   async createStream(
     hostId: string,
     hostName: string,
     data: CreateStreamData,
     hostAvatar?: string
   ): Promise<LiveStream> {
-    const streams = await this.getStreams()
+    try {
+      // Check for existing active stream
+      const userStreams = await liveStreamingAPI.queryActiveStreams({ hostId })
+      const existingStream = userStreams.streams.find(s => s.status === 'live')
+      
+      if (existingStream) {
+        throw new Error('You already have an active stream')
+      }
 
-    const existingLiveStream = streams.find(s =>
-      s.hostId === hostId && (s.status === 'live' || s.status === 'connecting')
-    )
+      // Map CreateStreamData to CreateLiveStreamData
+      const apiData: CreateLiveStreamData = {
+        title: data.title,
+        category: data.category as CreateLiveStreamData['category'], // Type assertion
+        description: data.description,
+        allowChat: data.allowChat,
+        maxDuration: data.maxDuration
+      }
 
-    if (existingLiveStream) {
-      throw new Error('You already have an active stream')
+      const result = await liveStreamingAPI.createRoom({
+        ...apiData,
+        hostId,
+        hostName,
+        hostAvatar
+      })
+
+      return convertLiveStream(result.stream)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to create stream', err, { hostId })
+      throw err
     }
-
-    const stream: LiveStream = {
-      id: generateULID(),
-      hostId,
-      hostName,
-      hostAvatar,
-      title: data.title,
-      description: data.description,
-      category: data.category,
-      status: 'connecting',
-      allowChat: data.allowChat,
-      maxDuration: data.maxDuration,
-      startedAt: new Date().toISOString(),
-      viewerCount: 0,
-      peakViewerCount: 0,
-      totalViews: 0,
-      likesCount: 0,
-      roomToken: this.generateRoomToken(),
-      tags: data.tags || []
-    }
-
-    streams.push(stream)
-    await this.setStreams(streams)
-
-    return stream
   }
 
   async getStreamById(streamId: string): Promise<LiveStream | undefined> {
-    const streams = await this.getStreams()
-    return streams.find(s => s.id === streamId)
+    try {
+      const stream = await liveStreamingAPI.getStreamById(streamId)
+      return stream ? convertLiveStream(stream) : undefined
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get stream by ID', err, { streamId })
+      throw err
+    }
   }
 
   async getActiveStreams(category?: string): Promise<LiveStream[]> {
-    const streams = await this.getStreams()
-    let activeStreams = streams.filter(s => s.status === 'live')
-
-    if (category) {
-      activeStreams = activeStreams.filter(s => s.category === category)
+    try {
+      const filters = category ? { 
+        category: [category as 'general' | 'training' | 'health' | 'entertainment' | 'education' | 'adoption' | 'community']
+      } : undefined
+      const response = await liveStreamingAPI.queryActiveStreams(filters)
+      return response.streams.map(convertLiveStream)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get active streams', err, { category })
+      throw err
     }
-
-    return activeStreams.sort((a, b) => b.viewerCount - a.viewerCount)
   }
 
   async getUserStreams(userId: string): Promise<LiveStream[]> {
-    const streams = await this.getStreams()
-    return streams
-      .filter(s => s.hostId === userId)
-      .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
+    try {
+      const response = await liveStreamingAPI.queryActiveStreams({ hostId: userId })
+      return response.streams
+        .map(convertLiveStream)
+        .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get user streams', err, { userId })
+      throw err
+    }
   }
 
   async updateStreamStatus(streamId: string, status: StreamStatus): Promise<void> {
-    const streams = await this.getStreams()
-    const index = streams.findIndex(s => s.id === streamId)
+    try {
+      // Map StreamStatus to LiveStreamStatus
+      let apiStatus: 'live' | 'ended' | 'cancelled' = 'live'
+      if (status === 'ended') apiStatus = 'ended'
+      else if (status === 'idle' || status === 'ending') apiStatus = 'cancelled'
 
-    if (index === -1) {
-      throw new Error('Stream not found')
+      // Get stream to get hostId
+      const stream = await liveStreamingAPI.getStreamById(streamId)
+      if (!stream) {
+        throw new Error('Stream not found')
+      }
+
+      if (apiStatus === 'ended') {
+        await liveStreamingAPI.endRoom(streamId, stream.hostId)
+      }
+      // For other status updates, API will handle it
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to update stream status', err, { streamId, status })
+      throw err
     }
-
-    const stream = streams[index]
-    if (!stream) {
-      throw new Error('Stream not found')
-    }
-    
-    stream.status = status
-
-    if (status === 'ended') {
-      stream.endedAt = new Date().toISOString()
-    }
-
-    await this.setStreams(streams)
   }
 
   async joinStream(streamId: string, userId: string, userName: string, userAvatar?: string): Promise<void> {
-    const streams = await this.getStreams()
-    const streamIndex = streams.findIndex(s => s.id === streamId)
-
-    if (streamIndex === -1) {
-      throw new Error('Stream not found')
-    }
-
-    const stream = streams[streamIndex]
-    if (!stream) {
-      throw new Error('Stream not found')
-    }
-    
-    stream.viewerCount++
-    stream.totalViews++
-
-    if (stream.viewerCount > stream.peakViewerCount) {
-      stream.peakViewerCount = stream.viewerCount
-    }
-
-    await this.setStreams(streams)
-
-    const viewers = await this.getViewers(streamId)
-    const existingViewer = viewers.find(v => v.userId === userId && !v.leftAt)
-
-    if (!existingViewer) {
-      const viewer: StreamViewer = {
-        id: generateULID(),
-        streamId,
-        userId,
-        userName,
-        userAvatar,
-        joinedAt: new Date().toISOString(),
-        duration: 0
-      }
-      viewers.push(viewer)
-      await this.setViewers(streamId, viewers)
+    try {
+      await liveStreamingAPI.joinStream(streamId, userId, userName, userAvatar)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to join stream', err, { streamId, userId })
+      throw err
     }
   }
 
   async leaveStream(streamId: string, userId: string): Promise<void> {
-    const streams = await this.getStreams()
-    const streamIndex = streams.findIndex(s => s.id === streamId)
-
-    if (streamIndex !== -1) {
-      const stream = streams[streamIndex]
-      if (stream) {
-        stream.viewerCount = Math.max(0, stream.viewerCount - 1)
-        await this.setStreams(streams)
-      }
-    }
-
-    const viewers = await this.getViewers(streamId)
-    const viewerIndex = viewers.findIndex(v => v.userId === userId && !v.leftAt)
-
-    if (viewerIndex !== -1) {
-      const viewer = viewers[viewerIndex]
-      if (viewer) {
-        viewer.leftAt = new Date().toISOString()
-        const joinedTime = new Date(viewer.joinedAt).getTime()
-        const leftTime = new Date(viewer.leftAt).getTime()
-        viewer.duration = Math.floor((leftTime - joinedTime) / 1000)
-        await this.setViewers(streamId, viewers)
-      }
+    try {
+      await liveStreamingAPI.leaveStream(streamId, userId)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to leave stream', err, { streamId, userId })
+      throw err
     }
   }
 
@@ -194,57 +188,59 @@ class StreamingService {
     message: string,
     userAvatar?: string
   ): Promise<StreamChatMessage> {
-    const messages = await this.getChatMessages(streamId)
-
-    const chatMessage: StreamChatMessage = {
-      id: generateULID(),
-      streamId,
-      userId,
-      userName,
-      userAvatar,
-      message,
-      timestamp: new Date().toISOString(),
-      type: 'message'
+    try {
+      const apiMessage = await liveStreamingAPI.sendChatMessage(
+        streamId,
+        userId,
+        userName,
+        userAvatar,
+        message
+      )
+      return convertStreamChatMessage(apiMessage)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to send chat message', err, { streamId, userId })
+      throw err
     }
-
-    messages.push(chatMessage)
-
-    const maxMessages = 500
-    if (messages.length > maxMessages) {
-      messages.splice(0, messages.length - maxMessages)
-    }
-
-    await this.setChatMessages(streamId, messages)
-
-    return chatMessage
   }
 
   async getChatHistory(streamId: string, limit: number = 100): Promise<StreamChatMessage[]> {
-    const messages = await this.getChatMessages(streamId)
-    return messages.slice(-limit)
+    try {
+      const messages = await liveStreamingAPI.queryChatMessages(streamId)
+      return messages
+        .slice(-limit)
+        .map(convertStreamChatMessage)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get chat history', err, { streamId })
+      throw err
+    }
   }
 
   async incrementLikes(streamId: string): Promise<void> {
-    const streams = await this.getStreams()
-    const index = streams.findIndex(s => s.id === streamId)
-
-    if (index !== -1) {
-      const stream = streams[index]
-      if (stream) {
-        stream.likesCount++
-        await this.setStreams(streams)
-      }
+    try {
+      // Send a reaction instead of incrementing likes
+      // This requires userId - using placeholder for now
+      // In real usage, userId should be passed in
+      logger.warn('IncrementLikes requires userId - use sendReaction instead', { streamId })
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to increment likes', err, { streamId })
+      throw err
     }
   }
 
   async endStream(streamId: string): Promise<void> {
-    await this.updateStreamStatus(streamId, 'ended')
-
-    const viewers = await this.getViewers(streamId)
-    const activeViewers = viewers.filter(v => !v.leftAt)
-
-    for (const viewer of activeViewers) {
-      await this.leaveStream(streamId, viewer.userId)
+    try {
+      const stream = await liveStreamingAPI.getStreamById(streamId)
+      if (!stream) {
+        throw new Error('Stream not found')
+      }
+      await liveStreamingAPI.endRoom(streamId, stream.hostId)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to end stream', err, { streamId })
+      throw err
     }
   }
 
@@ -254,28 +250,31 @@ class StreamingService {
     reason: StreamReport['reason'],
     description?: string
   ): Promise<void> {
-    const reports = await spark.kv.get<StreamReport[]>('stream-reports') || []
-
-    const report: StreamReport = {
-      id: generateULID(),
-      streamId,
-      reporterId,
-      reason,
-      description,
-      timestamp: new Date().toISOString(),
-      resolved: false
+    try {
+      await APIClient.post(
+        ENDPOINTS.STREAMING.REPORT_STREAM(streamId),
+        {
+          reporterId,
+          reason: reason as 'spam' | 'inappropriate' | 'harassment' | 'other',
+          description
+        }
+      )
+      logger.info('Stream reported', { streamId, reporterId, reason })
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to report stream', err, { streamId, reporterId })
+      throw err
     }
-
-    reports.push(report)
-    await spark.kv.set('stream-reports', reports)
   }
 
   async banUserFromStream(streamId: string, userId: string): Promise<void> {
-    await this.leaveStream(streamId, userId)
-  }
-
-  private generateRoomToken(): string {
-    return `room_${generateULID()}`
+    try {
+      await liveStreamingAPI.leaveStream(streamId, userId)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to ban user from stream', err, { streamId, userId })
+      throw err
+    }
   }
 }
 

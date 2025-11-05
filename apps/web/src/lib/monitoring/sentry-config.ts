@@ -1,7 +1,7 @@
-import * as Sentry from '@sentry/browser'
-import { Integrations } from '@sentry/tracing'
 import { ENV } from '@/config/env'
 import { createLogger } from '@/lib/logger'
+import * as Sentry from '@sentry/browser'
+import { Integrations } from '@sentry/tracing'
 
 const logger = createLogger('Sentry')
 
@@ -20,8 +20,8 @@ class SentryConfigImpl {
         new Integrations.BrowserTracing() as unknown as Sentry.Integration
       ],
 
-      // Performance monitoring
-      beforeSend: (event, _hint) => {
+            // Performance monitoring
+      beforeSend: (event: Sentry.Event, _hint?: Sentry.EventHint): Sentry.Event | null => {
         // Filter out non-critical errors in development
         if (ENV.VITE_ENVIRONMENT === 'development') {
           if (event.exception?.values?.[0]?.type === 'ChunkLoadError') {
@@ -31,7 +31,7 @@ class SentryConfigImpl {
 
         // Scrub sensitive data
         if (event.request?.data) {
-          event.request.data = this.scrubSensitiveData(event.request.data) as Record<string, unknown>
+          event.request.data = this.scrubSensitiveData(event.request.data) as Record<string, unknown>                                                           
         }
 
         return event

@@ -1,5 +1,7 @@
 import { useStorage } from '@/hooks/useStorage'
 import { useEffect, useState } from 'react'
+import { storage } from './storage'
+import { featureFlagsApi } from '@/api/feature-flags-api'
 
 export type FeatureFlagKey = 
   | 'stories_enabled'
@@ -225,47 +227,67 @@ export async function updateFeatureFlag(
   updates: Partial<FeatureFlag>,
   modifiedBy: string
 ): Promise<void> {
-  const currentFlags = await window.spark.kv.get<Record<FeatureFlagKey, FeatureFlag>>('feature-flags') || DEFAULT_FLAGS
-  
-  currentFlags[flagKey] = {
-    ...currentFlags[flagKey],
-    ...updates,
-    lastModified: new Date().toISOString(),
-    modifiedBy
+  try {
+    await featureFlagsApi.updateFeatureFlag(flagKey, updates, modifiedBy)
+    
+    // Update local cache for immediate UI updates
+    const currentFlags = await storage.get<Record<FeatureFlagKey, FeatureFlag>>('feature-flags') || DEFAULT_FLAGS
+    currentFlags[flagKey] = {
+      ...currentFlags[flagKey],
+      ...updates,
+      lastModified: new Date().toISOString(),
+      modifiedBy
+    }
+    await storage.set('feature-flags', currentFlags)
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    // Fallback to local storage if API fails
+    const currentFlags = await storage.get<Record<FeatureFlagKey, FeatureFlag>>('feature-flags') || DEFAULT_FLAGS
+    currentFlags[flagKey] = {
+      ...currentFlags[flagKey],
+      ...updates,
+      lastModified: new Date().toISOString(),
+      modifiedBy
+    }
+    await storage.set('feature-flags', currentFlags)
   }
-  
-  await window.spark.kv.set('feature-flags', currentFlags)
 }
 
 export async function getABTestVariant(testId: string, userId: string): Promise<ABTestVariant | null> {
-  const tests = await window.spark.kv.get<Record<string, ABTest>>('ab-tests') || {}
-  const test = tests[testId]
-  
-  if (!test || !test.enabled) {
-    return null
-  }
-
-  const now = new Date()
-  const startDate = new Date(test.startDate)
-  const endDate = test.endDate ? new Date(test.endDate) : null
-  
-  if (now < startDate || (endDate && now > endDate)) {
-    return null
-  }
-
-  const hash = hashString(userId + testId)
-  const totalWeight = test.variants.reduce((sum, v) => sum + v.weight, 0)
-  const userValue = hash % totalWeight
-  
-  let cumulativeWeight = 0
-  for (const variant of test.variants) {
-    cumulativeWeight += variant.weight
-    if (userValue < cumulativeWeight) {
-      return variant
+  try {
+    return await featureFlagsApi.getABTestVariant(testId, userId)
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    // Fallback to local storage if API fails
+    const tests = await storage.get<Record<string, ABTest>>('ab-tests') || {}
+    const test = tests[testId]
+    
+    if (!test || !test.enabled) {
+      return null
     }
+
+    const now = new Date()
+    const startDate = new Date(test.startDate)
+    const endDate = test.endDate ? new Date(test.endDate) : null
+    
+    if (now < startDate || (endDate && now > endDate)) {
+      return null
+    }
+
+    const hash = hashString(userId + testId)
+    const totalWeight = test.variants.reduce((sum, v) => sum + v.weight, 0)
+    const userValue = hash % totalWeight
+    
+    let cumulativeWeight = 0
+    for (const variant of test.variants) {
+      cumulativeWeight += variant.weight
+      if (userValue < cumulativeWeight) {
+        return variant
+      }
+    }
+    
+    return test.variants[0] ?? null
   }
-  
-  return test.variants[0] ?? null
 }
 
 export async function trackABTestExposure(
@@ -273,21 +295,27 @@ export async function trackABTestExposure(
   userId: string,
   variantId: string
 ): Promise<void> {
-  const exposures = await window.spark.kv.get<Array<{
-    testId: string
-    userId: string
-    variantId: string
-    timestamp: string
-  }>>('ab-test-exposures') || []
-  
-  exposures.push({
-    testId,
-    userId,
-    variantId,
-    timestamp: new Date().toISOString()
-  })
-  
-  await window.spark.kv.set('ab-test-exposures', exposures.slice(-10000))
+  try {
+    await featureFlagsApi.trackABTestExposure(testId, userId, variantId)
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    // Fallback to local storage if API fails
+    const exposures = await storage.get<Array<{
+      testId: string
+      userId: string
+      variantId: string
+      timestamp: string
+    }>>('ab-test-exposures') || []
+    
+    exposures.push({
+      testId,
+      userId,
+      variantId,
+      timestamp: new Date().toISOString()
+    })
+    
+    await storage.set('ab-test-exposures', exposures.slice(-10000))
+  }
 }
 
 function hashString(str: string): number {

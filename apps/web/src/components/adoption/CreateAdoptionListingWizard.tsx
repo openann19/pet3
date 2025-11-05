@@ -1,19 +1,20 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { X, Check, ArrowLeft, ArrowRight, Upload, MapPin } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import type { CreateAdoptionListingData } from '@/lib/adoption-marketplace-types'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service'
+import type { CreateAdoptionListingData } from '@/lib/adoption-marketplace-types'
 import { createLogger } from '@/lib/logger'
+import { userService } from '@/lib/user-service'
+import { ArrowLeft, ArrowRight, Check, MapPin, Upload, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('CreateAdoptionListingWizard')
 
@@ -116,12 +117,15 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
         return
       }
 
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('User context unavailable')
+      }
       
       await adoptionMarketplaceService.createListing({
         ...formData as CreateAdoptionListingData,
         ownerId: user.id,
-        ownerName: user.login
+        ownerName: user.displayName ?? user.login ?? 'Guest User'
       })
 
       toast.success('Adoption listing submitted for review!')

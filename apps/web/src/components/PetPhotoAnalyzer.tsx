@@ -1,12 +1,16 @@
-import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, Sparkle, Check, X, Upload, Image as ImageIcon } from '@phosphor-icons/react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
+import { buildLLMPrompt } from '@/lib/llm-prompt'
+import { llmService } from '@/lib/llm-service'
 import { parseLLMError } from '@/lib/llm-utils'
 import { createLogger } from '@/lib/logger'
+import { Camera, Check, Image as ImageIcon, Sparkle, Upload, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { toast } from 'sonner'
+
+const logger = createLogger('PetPhotoAnalyzer')
 
 interface AnalysisResult {
   breed: string
@@ -80,7 +84,7 @@ export default function PetPhotoAnalyzer({ onAnalysisComplete }: PetPhotoAnalyze
 
     try {
       const isDataUrl = photo.startsWith('data:')
-      const prompt = window.spark.llmPrompt`You are an expert veterinarian and animal behaviorist. Analyze this pet photo and extract the following information. Be specific but realistic.
+      const prompt = buildLLMPrompt`You are an expert veterinarian and animal behaviorist. Analyze this pet photo and extract the following information. Be specific but realistic.
 
 ${isDataUrl ? 'This is an uploaded/captured photo of a pet.' : `Photo URL: ${photo}`}
 
@@ -100,7 +104,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
   "confidence": number
 }`
 
-      const response = await window.spark.llm(prompt, 'gpt-4o', true)
+      const response = await llmService.llm(prompt, 'gpt-4o', true)
       const analysisResult = JSON.parse(response)
 
       setResult(analysisResult)
@@ -111,7 +115,6 @@ Return ONLY valid JSON with this exact structure, nothing else:
       })
     } catch (error) {
       const errorInfo = parseLLMError(error)
-      const logger = createLogger('PetPhotoAnalyzer')
       logger.error('Failed to analyze photo', error instanceof Error ? error : new Error(String(error)), { technicalMessage: errorInfo.technicalMessage })
       toast.error('Failed to analyze photo', {
         description: errorInfo.userMessage,

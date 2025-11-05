@@ -1,4 +1,6 @@
 import { createLogger } from './logger'
+import { storage } from './storage'
+import { rateLimitingApi } from '@/api/rate-limiting-api'
 
 const logger = createLogger('RateLimiting')
 
@@ -24,11 +26,20 @@ export async function checkRateLimit(
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
   const { maxRequests, windowMs, action } = config
-  const key = `rate-limit:${action}:${userId}`
   const now = Date.now()
   
   try {
-    const attempts = await spark.kv.get<number[]>(key) || []
+    return await rateLimitingApi.checkRateLimit(userId, action, maxRequests, windowMs)
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Rate limit check failed, falling back to local storage', err, {
+      userId,
+      action
+    })
+    
+    // Fallback to local storage if API fails
+    const key = `rate-limit:${action}:${userId}`
+    const attempts = await storage.get<number[]>(key) || []
     
     // Filter out attempts outside the window
     const recentAttempts = attempts.filter(
@@ -53,7 +64,7 @@ export async function checkRateLimit(
     recentAttempts.push(now)
     
     // Store updated attempts
-    await spark.kv.set(key, recentAttempts)
+    await storage.set(key, recentAttempts)
     
     const remaining = Math.max(0, maxRequests - recentAttempts.length)
     const resetAt = recentAttempts.length > 0 && recentAttempts[0]
@@ -64,18 +75,6 @@ export async function checkRateLimit(
       allowed: true,
       remaining,
       resetAt,
-      limit: maxRequests
-    }
-  } catch (error) {
-    logger.error('Rate limit check failed', error instanceof Error ? error : new Error(String(error)), {
-      userId,
-      action
-    })
-    // Fail open - allow request if rate limiting check fails
-    return {
-      allowed: true,
-      remaining: maxRequests,
-      resetAt: now + windowMs,
       limit: maxRequests
     }
   }

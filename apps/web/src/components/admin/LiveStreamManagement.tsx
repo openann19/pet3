@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { VideoCamera, Eye, Heart, ChatCircle, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { streamingService } from '@/lib/streaming-service'
+import { liveStreamingAPI } from '@/api/live-streaming-api'
 import type { LiveStream } from '@/lib/streaming-types'
 import { createLogger } from '@/lib/logger'
 
@@ -24,8 +25,40 @@ export function LiveStreamManagement() {
 
   const loadStreams = async () => {
     try {
-      const allStreams = await spark.kv.get<LiveStream[]>('live-streams') || []
-      setStreams(allStreams.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()))
+      const apiStreams = await liveStreamingAPI.getAllStreams()
+      // Convert API streams to service streams
+      const convertedStreams = apiStreams.map(apiStream => {
+        // Map status: 'scheduled' | 'live' | 'ended' | 'cancelled' -> 'idle' | 'connecting' | 'live' | 'ending' | 'ended'
+        let status: LiveStream['status'] = 'idle'
+        if (apiStream.status === 'live') status = 'live'
+        else if (apiStream.status === 'ended') status = 'ended'
+        else if (apiStream.status === 'cancelled') status = 'ended'
+        else if (apiStream.status === 'scheduled') status = 'connecting'
+
+        return {
+          id: apiStream.id,
+          hostId: apiStream.hostId,
+          hostName: apiStream.hostName,
+          hostAvatar: apiStream.hostAvatar,
+          title: apiStream.title,
+          description: apiStream.description,
+          category: apiStream.category as LiveStream['category'],
+          status,
+          allowChat: apiStream.allowChat,
+          maxDuration: apiStream.maxDuration || 60,
+          startedAt: apiStream.startedAt || apiStream.createdAt,
+          endedAt: apiStream.endedAt,
+          viewerCount: apiStream.viewerCount,
+          peakViewerCount: apiStream.peakViewerCount,
+          totalViews: apiStream.viewerCount,
+          likesCount: apiStream.reactionsCount || 0,
+          roomToken: apiStream.roomId,
+          recordingUrl: apiStream.vodUrl,
+          thumbnailUrl: apiStream.posterUrl || apiStream.thumbnail,
+          tags: []
+        } as LiveStream
+      })
+      setStreams(convertedStreams.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()))
     } catch (error) {
       logger.error('Failed to load streams', error instanceof Error ? error : new Error(String(error)))
       toast.error('Failed to load streams')

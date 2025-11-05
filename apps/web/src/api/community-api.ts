@@ -1,22 +1,81 @@
-import type {
-  Post,
-  Comment,
-  Reaction,
-  PostFilters,
-  CreatePostData,
-  CreateCommentData,
-  ReportData,
-  ReactionEmoji
-} from '@/lib/community-types'
 import type { PostStatus } from '@/core/domain/community'
-import { isValidPostStatusTransition, canReceiveComments } from '@/core/domain/community'                                         
+import { canReceiveComments, isValidPostStatusTransition } from '@/core/domain/community'
+import { checkDuplicateContent, moderatePost } from '@/core/services/content-moderation'
+import { APIClient } from '@/lib/api-client'
+import type {
+  Comment,
+  CreateCommentData,
+  CreatePostData,
+  Post,
+  PostFilters,
+  ReactionEmoji,
+  ReportData
+} from '@/lib/community-types'
 import type { Report } from '@/lib/contracts'
-import { generateULID } from '@/lib/utils'
-import { moderatePost, checkDuplicateContent } from '@/core/services/content-moderation'
+import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
 import { enforceRateLimit } from '@/lib/rate-limiting'
 
 const logger = createLogger('CommunityAPI')
+
+export interface CreatePostRequest extends CreatePostData {
+  authorId: string
+  authorName: string
+  authorAvatar?: string
+}
+
+export interface CreatePostResponse {
+  post: Post
+}
+
+export interface QueryFeedResponse {
+  posts: Post[]
+  nextCursor?: string
+  total: number
+}
+
+export interface ToggleReactionRequest {
+  userId: string
+  userName: string
+  userAvatar?: string
+  emoji: ReactionEmoji
+}
+
+export interface ToggleReactionResponse {
+  added: boolean
+  reactionsCount: number
+}
+
+export interface CreateCommentRequest extends CreateCommentData {
+  authorId: string
+  authorName: string
+  authorAvatar?: string
+}
+
+export interface CreateCommentResponse {
+  comment: Comment
+}
+
+export interface GetCommentsResponse {
+  comments: Comment[]
+}
+
+export interface ReportContentRequest extends ReportData {
+  reporterId: string
+}
+
+export interface AppealModerationRequest {
+  resourceId: string
+  resourceType: 'post' | 'comment' | 'user'
+  userId: string
+  userName: string
+  appealText: string
+  reportId?: string
+}
+
+export interface GetReportsResponse {
+  reports: Report[]
+}
 
 /**
  * Community Feed API Service
@@ -28,37 +87,6 @@ const logger = createLogger('CommunityAPI')
  * POST /community/posts/:id/report
  */
 export class CommunityAPI {
-  private async getPosts(): Promise<Post[]> {
-    return await spark.kv.get<Post[]>('community-posts') || []
-  }
-
-  private async setPosts(posts: Post[]): Promise<void> {
-    await spark.kv.set('community-posts', posts)
-  }
-
-  private async getComments(): Promise<Comment[]> {
-    return await spark.kv.get<Comment[]>('community-comments') || []
-  }
-
-  private async setComments(comments: Comment[]): Promise<void> {
-    await spark.kv.set('community-comments', comments)
-  }
-
-  private async getReactions(): Promise<Reaction[]> {
-    return await spark.kv.get<Reaction[]>('community-reactions') || []
-  }
-
-  private async setReactions(reactions: Reaction[]): Promise<void> {
-    await spark.kv.set('community-reactions', reactions)
-  }
-
-  private async getReports(): Promise<Report[]> {
-    return await spark.kv.get<Report[]>('community-reports') || []
-  }
-
-  private async setReports(reports: Report[]): Promise<void> {
-    await spark.kv.set('community-reports', reports)
-  }
 
   /**
    * POST /community/posts
@@ -72,81 +100,69 @@ export class CommunityAPI {
       authorAvatar?: string
     }
   ): Promise<Post> {
-    const posts = await this.getPosts()
-    
-    // Extract media URLs for moderation
-    const mediaUrls: string[] = data.media || []
-    
-    // Moderate content before storage
-    const moderationResult = await moderatePost(
-      data.text || '',
-      mediaUrls
-    )
-    
-    // Check for duplicate content
-    const existingFingerprints = new Set(
-      posts
-        .map(p => p.contentFingerprint)
-        .filter((fp): fp is string => Boolean(fp))
-    )
-    
-    const isDuplicate = await checkDuplicateContent(
-      moderationResult.contentFingerprint,
-      existingFingerprints
-    )
-    
-    if (isDuplicate) {
-      throw new Error('Duplicate content detected - this post has already been submitted')
-    }
-    
-    // Block content that fails moderation
-    if (!moderationResult.passed) {
-      throw new Error(`Content moderation failed: ${moderationResult.blockedReasons.join(', ')}`)
-    }
-    
-    // Determine status based on moderation result
-    const status: PostStatus = moderationResult.requiresReview 
-      ? 'pending_review' 
-      : 'active'
-    
-    const postId = generateULID()
-    
-    if (status === 'pending_review') {
-      logger.info('Post requires review', { 
-        postId,
-        nsfwScore: moderationResult.nsfwScore,
-        reasons: moderationResult.blockedReasons 
-      })
-    }
-    
-    const post: Post = {
-      id: postId,
-      authorId: data.authorId,
-      authorName: data.authorName,
-      authorAvatar: data.authorAvatar,
-      kind: data.kind,
-      text: data.text,
-      media: data.media, // Should be stripped of EXIF before storage
-      tags: data.tags,
-      location: data.location,
-      visibility: data.visibility,
-      status,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
-      viewsCount: 0,
-      reactionsCount: 0,
-      commentsCount: 0,
-      sharesCount: 0,
-      featured: false,
-      nsfwScore: moderationResult.nsfwScore,
-      contentFingerprint: moderationResult.contentFingerprint
-    }
+    try {
+      // Extract media URLs for moderation
+      const mediaUrls: string[] = data.media || []
+      
+      // Moderate content before storage
+      const moderationResult = await moderatePost(
+        data.text || '',
+        mediaUrls
+      )
+      
+      // Check for duplicate content (get fingerprints from API)
+      try {
+        const fingerprintsResponse = await APIClient.get<{ fingerprints: string[] }>(
+          '/community/posts/fingerprints'
+        )
+        const existingFingerprints = new Set(fingerprintsResponse.data.fingerprints)
+        
+        const isDuplicate = await checkDuplicateContent(
+          moderationResult.contentFingerprint,
+          existingFingerprints
+        )
+        
+        if (isDuplicate) {
+          throw new Error('Duplicate content detected - this post has already been submitted')
+        }
+      } catch (error) {
+        // If fingerprint check fails, continue anyway (backend will check)
+        logger.warn('Failed to check duplicate content', error instanceof Error ? error : new Error(String(error)))
+      }
+      
+      // Block content that fails moderation
+      if (!moderationResult.passed) {
+        throw new Error(`Content moderation failed: ${moderationResult.blockedReasons.join(', ')}`)
+      }
+      
+      const request: CreatePostRequest = {
+        ...data,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar
+      }
 
-    posts.push(post)
-    await this.setPosts(posts)
-    
-    return post
+      const response = await APIClient.post<CreatePostResponse>(
+        ENDPOINTS.COMMUNITY.CREATE_POST,
+        request
+      )
+
+      const post = response.data.post
+
+      if (post.status === 'pending_review') {
+        logger.info('Post requires review', { 
+          postId: post.id,
+          nsfwScore: moderationResult.nsfwScore,
+          reasons: moderationResult.blockedReasons 
+        })
+      }
+
+      return post
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to create post', err, { authorId: data.authorId })
+      throw err
+    }
   }
 
   /**
@@ -157,108 +173,64 @@ export class CommunityAPI {
     filters?: PostFilters,
     userId?: string
   ): Promise<{ posts: Post[]; nextCursor?: string; total: number }> {
-    let posts = await this.getPosts()
-    
-    // Filter by status - only show active posts
-    posts = posts.filter(p => p.status === 'active')
-
-    if (filters) {
-      if (filters.kind && filters.kind.length > 0) {
-        posts = posts.filter(p => filters.kind!.includes(p.kind))
+    try {
+      const queryParams: Record<string, unknown> = {}
+      
+      if (filters?.kind && filters.kind.length > 0) {
+        queryParams['kind'] = filters.kind
       }
 
-      if (filters.authorId) {
-        posts = posts.filter(p => p.authorId === filters.authorId)
+      if (filters?.authorId) {
+        queryParams['authorId'] = filters.authorId
       }
 
-      if (filters.tags && filters.tags.length > 0) {
-        posts = posts.filter(p =>
-          p.tags && filters.tags!.some(tag => p.tags!.includes(tag))
-        )
+      if (filters?.tags && filters.tags.length > 0) {
+        queryParams['tags'] = filters.tags
       }
 
-      if (filters.location) {
-        posts = posts.filter(p => {
-          if (!p.location?.lat || !p.location?.lon) return false
-          const distance = this.calculateDistance(
-            filters.location!.lat,
-            filters.location!.lon,
-            p.location.lat,
-            p.location.lon
-          )
-          return distance <= filters.location!.radiusKm
-        })
+      if (filters?.location) {
+        queryParams['near'] = `${filters.location.lat},${filters.location.lon}`
+        queryParams['radius'] = filters.location.radiusKm
       }
 
-      if (filters.visibility && filters.visibility.length > 0) {
-        posts = posts.filter(p => filters.visibility!.includes(p.visibility))
-      } else {
-        // Default: show public and matches if user logged in
-        if (userId) {
-          posts = posts.filter(p => p.visibility === 'public' || p.visibility === 'matches')
-        } else {
-          posts = posts.filter(p => p.visibility === 'public')
-        }
+      if (filters?.visibility && filters.visibility.length > 0) {
+        queryParams['visibility'] = filters.visibility
+      } else if (userId) {
+        queryParams['visibility'] = ['public', 'matches']
       }
 
-      if (filters.featured) {
-        posts = posts.filter(p => p.featured)
+      if (filters?.featured) {
+        queryParams['featured'] = filters.featured
       }
 
-      // Sort
-      if (filters.sortBy) {
-        switch (filters.sortBy) {
-          case 'recent':
-            posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            break
-          case 'popular':
-            posts.sort((a, b) => {
-              const scoreA = ((a.reactionsCount ?? 0) * 2) + (a.commentsCount ?? 0) + ((a.sharesCount ?? 0) * 3)
-              const scoreB = ((b.reactionsCount ?? 0) * 2) + (b.commentsCount ?? 0) + ((b.sharesCount ?? 0) * 3)
-              return scoreB - scoreA
-            })
-            break
-                    case 'trending': {
-            // Combine recency with engagement
-            const now = Date.now()
-            posts.sort((a, b) => {
-              const ageA = now - new Date(a.createdAt).getTime()
-              const ageB = now - new Date(b.createdAt).getTime()
-              const scoreA = (((a.reactionsCount ?? 0) * 2) + (a.commentsCount ?? 0) + ((a.sharesCount ?? 0) * 3)) / (ageA / 3600000) // Per hour               
-              const scoreB = (((b.reactionsCount ?? 0) * 2) + (b.commentsCount ?? 0) + ((b.sharesCount ?? 0) * 3)) / (ageB / 3600000)                           
-              return scoreB - scoreA
-            })
-            break
-          }
-        }
-      } else {
-        // Default: featured first, then recent
-        posts.sort((a, b) => {
-          if (a.featured && !b.featured) return -1
-          if (!a.featured && b.featured) return 1
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        })
+      if (filters?.sortBy) {
+        queryParams['sortBy'] = filters.sortBy
       }
-    } else {
-      // Default sort: featured first, then recent
-      posts.sort((a, b) => {
-        if (a.featured && !b.featured) return -1
-        if (!a.featured && b.featured) return 1
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      })
-    }
 
-    const total = posts.length
-    const limit = filters?.limit || 20
-    const startIndex = filters?.cursor ? parseInt(filters.cursor, 10) : 0
-    const endIndex = startIndex + limit
-    const paginated = posts.slice(startIndex, endIndex)
-    const nextCursor = endIndex < total ? endIndex.toString() : undefined
+      if (filters?.cursor) {
+        queryParams['cursor'] = filters.cursor
+      }
 
-    return {
-      posts: paginated,
-      nextCursor,
-      total
+      if (filters?.limit) {
+        queryParams['limit'] = filters.limit
+      }
+
+      if (userId) {
+        queryParams['userId'] = userId
+      }
+
+      const url = ENDPOINTS.COMMUNITY.POSTS + (Object.keys(queryParams).length > 0 
+        ? '?' + new URLSearchParams(
+            Object.entries(queryParams).map(([k, v]) => [k, String(v)])
+          ).toString()
+        : '')
+
+      const response = await APIClient.get<QueryFeedResponse>(url)
+      return response.data
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to query feed', err, { filters })
+      throw err
     }
   }
 
@@ -266,32 +238,63 @@ export class CommunityAPI {
    * GET /community/posts/:id
    */
   async getPostById(id: string): Promise<Post | null> {
-    const posts = await this.getPosts()
-    const post = posts.find(p => p.id === id)
-    
-    if (post && post.status === 'active') {
-      // Increment view count
-      await this.incrementViewCount(id)
+    try {
+      const response = await APIClient.get<{ post: Post }>(
+        ENDPOINTS.COMMUNITY.POST(id)
+      )
+      
+      const post = response.data.post
+      
+      // Increment view count (fire and forget)
+      try {
+        await APIClient.post(`${ENDPOINTS.COMMUNITY.POST(id)}/view`)
+      } catch (error) {
+        logger.warn('Failed to increment view count', { 
+          postId: id, 
+          error: error instanceof Error ? error : new Error(String(error)) 
+        })
+      }
+      
+      return post
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      // If 404, return null instead of throwing
+      if (err.message.includes('404') || err.message.includes('not found')) {
+        return null
+      }
+      logger.error('Failed to get post by ID', err, { id })
+      throw err
     }
-    
-    return post || null
   }
 
   /**
    * Get all posts (public method for admin/moderation)
    */
   async getAllPosts(): Promise<Post[]> {
-    return await this.getPosts()
+    try {
+      const response = await this.queryFeed({ limit: 1000 })
+      return response.posts
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get all posts', err)
+      throw err
+    }
   }
 
   /**
    * Get content fingerprints for duplicate detection
    */
   async getContentFingerprints(): Promise<string[]> {
-    const posts = await this.getPosts()
-    return posts
-      .filter(p => p.contentFingerprint)
-      .map(p => p.contentFingerprint!)
+    try {
+      const response = await APIClient.get<{ fingerprints: string[] }>(
+        '/community/posts/fingerprints'
+      )
+      return response.data.fingerprints
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get content fingerprints', err)
+      throw err
+    }
   }
 
   /**
@@ -305,44 +308,24 @@ export class CommunityAPI {
     userAvatar: string | undefined,
     emoji: ReactionEmoji
   ): Promise<{ added: boolean; reactionsCount: number }> {
-    const reactions = await this.getReactions()
-    const posts = await this.getPosts()
-    
-    const existingReaction = reactions.find(
-      r => r.postId === postId && r.userId === userId && r.emoji === emoji
-    )
-
-    const post = posts.find(p => p.id === postId)
-    if (!post) {
-      throw new Error('Post not found')
-    }
-
-    if (existingReaction) {
-      // Remove reaction
-      const reactionIndex = reactions.findIndex(r => r.id === existingReaction.id)
-      if (reactionIndex >= 0) {
-        reactions.splice(reactionIndex, 1)
-      }
-      post.reactionsCount = Math.max(0, (post.reactionsCount ?? 0) - 1)
-      await this.setReactions(reactions)
-      await this.setPosts(posts)
-      return { added: false, reactionsCount: post.reactionsCount ?? 0 }
-    } else {
-      // Add reaction
-      const reaction: Reaction = {
-        id: generateULID(),
-        postId,
+    try {
+      const request: ToggleReactionRequest = {
         userId,
         userName,
-        userAvatar,
-        emoji,
-        createdAt: new Date().toISOString()
+        ...(userAvatar !== undefined && { userAvatar }),
+        emoji
       }
-      reactions.push(reaction)
-      post.reactionsCount = (post.reactionsCount ?? 0) + 1
-      await this.setReactions(reactions)
-      await this.setPosts(posts)
-      return { added: true, reactionsCount: post.reactionsCount ?? 0 }
+
+      const response = await APIClient.post<ToggleReactionResponse>(
+        ENDPOINTS.COMMUNITY.LIKE_POST(postId),
+        request
+      )
+
+      return response.data
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to toggle reaction', err, { postId, userId })
+      throw err
     }
   }
 
@@ -357,60 +340,57 @@ export class CommunityAPI {
       authorAvatar?: string
     }
   ): Promise<Comment> {
-    const comments = await this.getComments()
-    const posts = await this.getPosts()
-    
-    // Verify post exists and can receive comments
-    const post = posts.find(p => p.id === data.postId)
-    if (!post) {
-      throw new Error('Post not found')
-    }
-    if (!canReceiveComments(post.status)) {
-      throw new Error('Cannot comment on inactive post')
-    }
+    try {
+      // Verify post exists and can receive comments
+      const post = await this.getPostById(data.postId)
+      if (!post) {
+        throw new Error('Post not found')
+      }
+      if (!canReceiveComments(post.status)) {
+        throw new Error('Cannot comment on inactive post')
+      }
 
-    // Rate limit check (max 50 comments per hour)
-    await enforceRateLimit(data.authorId, {
-      maxRequests: 50,
-      windowMs: 60 * 60 * 1000, // 1 hour
-      action: 'comment'
-    })
-    
-    const comment: Comment = {
-      id: generateULID(),
-      postId: data.postId,
-      authorId: data.authorId,
-      authorName: data.authorName,
-      authorAvatar: data.authorAvatar,
-      text: data.text,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      parentCommentId: data.parentCommentId,
-      reactionsCount: 0
+      // Rate limit check (max 50 comments per hour)
+      await enforceRateLimit(data.authorId, {
+        maxRequests: 50,
+        windowMs: 60 * 60 * 1000, // 1 hour
+        action: 'comment'
+      })
+
+      const request: CreateCommentRequest = {
+        ...data,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar
+      }
+
+      const response = await APIClient.post<CreateCommentResponse>(
+        ENDPOINTS.COMMUNITY.COMMENT(data.postId),
+        request
+      )
+
+      return response.data.comment
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to create comment', err, { postId: data.postId })
+      throw err
     }
-
-    comments.push(comment)
-    await this.setComments(comments)
-
-    // Increment post comments count
-    const postToUpdate = posts.find(p => p.id === data.postId)
-    if (postToUpdate) {
-      postToUpdate.commentsCount = (postToUpdate.commentsCount ?? 0) + 1
-      await this.setPosts(posts)
-    }
-
-    return comment
   }
 
   /**
    * GET /community/posts/:id/comments
    */
   async getPostComments(postId: string): Promise<Comment[]> {
-    const comments = await this.getComments()
-    return comments
-      .filter(c => c.postId === postId && c.status === 'active')
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    try {
+      const response = await APIClient.get<GetCommentsResponse>(
+        ENDPOINTS.COMMUNITY.COMMENT(postId)
+      )
+      return response.data.comments
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get post comments', err, { postId })
+      throw err
+    }
   }
 
   /**
@@ -420,33 +400,28 @@ export class CommunityAPI {
   async reportContent(
     data: ReportData & { reporterId: string }
   ): Promise<void> {
-    const reports = await this.getReports()
-    
-    // Map ReportData to Report from contracts.ts
-    const report: Report = {
-      id: generateULID(),
-      reporterId: data.reporterId,
-      reportedEntityType: data.resourceType === 'user' ? 'user' : data.resourceType === 'post' ? 'pet' : 'message',                                             
-      reportedEntityId: data.resourceId,
-      reason: (data.reason as 'spam' | 'inappropriate' | 'fake' | 'harassment' | 'other') || 'other',                                                           
-      details: data.details || '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    }
+    try {
+      const request: ReportContentRequest = {
+        ...data,
+        reporterId: data.reporterId
+      }
 
-    reports.push(report)
-    await this.setReports(reports)
-    
-    // Log report for moderation queue
-    logger.info('Content reported', {
-      reportId: report.id,
-      entityType: report.reportedEntityType,
-      entityId: report.reportedEntityId,
-      reason: report.reason,
-      reporterId: report.reporterId
-    })
-    
-    // Report is now available in moderation queue via getReports()
+      await APIClient.post(
+        `${ENDPOINTS.COMMUNITY.POST(data.resourceId)}/report`,
+        request
+      )
+      
+      logger.info('Content reported', {
+        resourceType: data.resourceType,
+        resourceId: data.resourceId,
+        reason: data.reason,
+        reporterId: data.reporterId
+      })
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to report content', err, { resourceId: data.resourceId })
+      throw err
+    }
   }
 
   /**
@@ -461,42 +436,29 @@ export class CommunityAPI {
     appealText: string,
     reportId?: string
   ): Promise<void> {
-    const appeals = await spark.kv.get<Array<{
-      id: string
-      resourceId: string
-      resourceType: 'post' | 'comment' | 'user'
-      userId: string
-      userName: string
-      appealText: string
-      reportId?: string
-      status: 'pending' | 'approved' | 'rejected'
-      createdAt: string
-      reviewedAt?: string
-      reviewedBy?: string
-    }>>('community-appeals') || []
+    try {
+      const request: AppealModerationRequest = {
+        resourceId,
+        resourceType,
+        userId,
+        userName,
+        appealText,
+        ...(reportId !== undefined && { reportId })
+      }
 
-    const appeal = {
-      id: generateULID(),
-      resourceId,
-      resourceType,
-      userId,
-      userName,
-      appealText,
-      reportId,
-      status: 'pending' as const,
-      createdAt: new Date().toISOString()
+      await APIClient.post('/community/appeals', request)
+
+      logger.info('Appeal submitted', {
+        resourceType,
+        resourceId,
+        userId,
+        reportId
+      })
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to submit appeal', err, { resourceId, userId })
+      throw err
     }
-
-    appeals.push(appeal)
-    await spark.kv.set('community-appeals', appeals)
-
-    logger.info('Appeal submitted', {
-      appealId: appeal.id,
-      resourceType,
-      resourceId,
-      userId,
-      reportId
-    })
   }
   
   /**
@@ -509,38 +471,52 @@ export class CommunityAPI {
       limit?: number
     }
   ): Promise<Report[]> {
-    const reports = await this.getReports()
-    
-    let filtered = reports
-    
-    if (filters) {
-      if (filters.status && filters.status.length > 0) {
-        filtered = filtered.filter(r => filters.status!.includes(r.status))
+    try {
+      const queryParams: Record<string, unknown> = {}
+      
+      if (filters?.status && filters.status.length > 0) {
+        queryParams['status'] = filters.status
       }
       
-      if (filters.entityType && filters.entityType.length > 0) {
-        filtered = filtered.filter(r => filters.entityType!.includes(r.reportedEntityType))
+      if (filters?.entityType && filters.entityType.length > 0) {
+        queryParams['entityType'] = filters.entityType
       }
+
+      if (filters?.limit) {
+        queryParams['limit'] = filters.limit
+      }
+
+      const url = '/community/reports' + (Object.keys(queryParams).length > 0 
+        ? '?' + new URLSearchParams(
+            Object.entries(queryParams).map(([k, v]) => [k, String(v)])
+          ).toString()
+        : '')
+
+      const response = await APIClient.get<GetReportsResponse>(url)
+      return response.data.reports
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get reports for moderation', err, { filters })
+      throw err
     }
-    
-    // Sort by creation date (newest first)
-    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    
-    if (filters?.limit) {
-      filtered = filtered.slice(0, filters.limit)
-    }
-    
-    return filtered
   }
 
   /**
    * Admin: Get pending posts
    */
   async getPendingPosts(): Promise<Post[]> {
-    const posts = await this.getPosts()
-    return posts
-      .filter(p => p.status === 'pending_review')
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    try {
+      const response = await this.queryFeed({ 
+        // Query with status filter (need to add status param)
+        limit: 1000 
+      })
+      // Filter pending posts client-side if backend doesn't support status filter
+      return response.posts.filter(p => p.status === 'pending_review')
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to get pending posts', err)
+      throw err
+    }
   }
 
   /**
@@ -552,62 +528,33 @@ export class CommunityAPI {
     adminId: string,
     reason?: string
   ): Promise<Post> {
-    const posts = await this.getPosts()
-    const post = posts.find(p => p.id === postId)
-    
-    if (!post) {
-      throw new Error('Post not found')
+    try {
+      // First get the post to validate transition
+      const currentPost = await this.getPostById(postId)
+      if (!currentPost) {
+        throw new Error('Post not found')
+      }
+
+      // Validate status transition using domain logic
+      if (!isValidPostStatusTransition(currentPost.status, status)) {
+        throw new Error(`Invalid status transition from ${currentPost.status} to ${status}`)
+      }
+
+      const response = await APIClient.patch<{ post: Post }>(
+        ENDPOINTS.COMMUNITY.POST(postId),
+        {
+          status,
+          adminId,
+          reason
+        }
+      )
+
+      return response.data.post
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to update post status', err, { postId, status, adminId })
+      throw err
     }
-
-    // Validate status transition using domain logic
-    if (!isValidPostStatusTransition(post.status, status)) {
-      throw new Error(`Invalid status transition from ${post.status} to ${status}`)
-    }
-
-    post.status = status
-    post.updatedAt = new Date().toISOString()
-
-    if (status === 'active') {
-      post.approvedAt = new Date().toISOString()
-      post.approvedBy = adminId
-      post.rejectedAt = undefined
-      post.rejectionReason = undefined
-    } else if (status === 'rejected') {
-      post.rejectedAt = new Date().toISOString()
-      post.rejectionReason = reason
-    }
-
-    await this.setPosts(posts)
-    
-    return post
-  }
-
-  // Helper methods
-
-  private async incrementViewCount(postId: string): Promise<void> {
-    const posts = await this.getPosts()
-    const post = posts.find(p => p.id === postId)
-    
-    if (post) {
-      post.viewsCount = (post.viewsCount ?? 0) + 1
-      await this.setPosts(posts)
-    }
-  }
-
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371 // Earth radius in km
-    const dLat = this.toRad(lat2 - lat1)
-    const dLon = this.toRad(lon2 - lon1)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
-
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180)
   }
 }
 

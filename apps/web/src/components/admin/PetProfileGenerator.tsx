@@ -1,11 +1,13 @@
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sparkle, Check, Warning } from '@phosphor-icons/react'
-import { toast } from 'sonner'
 import { useStorage } from '@/hooks/useStorage'
+import { buildLLMPrompt } from '@/lib/llm-prompt'
+import { llmService } from '@/lib/llm-service'
 import { parseLLMError } from '@/lib/llm-utils'
 import { createLogger } from '@/lib/logger'
+import { Check, Sparkle, Warning } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('PetProfileGenerator')
 
@@ -37,7 +39,7 @@ export function PetProfileGenerator() {
     try {
       toast.info('AI is generating 15 diverse pet profiles...')
 
-      const prompt = window.spark.llmPrompt`Generate exactly 15 diverse and realistic pet profiles for a pet matching platform. Create a mix of dogs and cats with varied breeds, ages, personalities, and interests.
+  const prompt = buildLLMPrompt`Generate exactly 15 diverse and realistic pet profiles for a pet matching platform. Create a mix of dogs and cats with varied breeds, ages, personalities, and interests.
 
 Each pet should have:
 - Unique and realistic pet names
@@ -81,7 +83,7 @@ JSON format:
   ]
 }`
 
-      const result = await window.spark.llm(prompt, 'gpt-4o', true)
+  const result = await llmService.llm(prompt, 'gpt-4o', true)
       const data = JSON.parse(result)
 
       if (!data.pets || !Array.isArray(data.pets)) {

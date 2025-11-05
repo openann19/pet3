@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useStorage } from '@/hooks/useStorage'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -27,13 +26,14 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('AdoptionApplicationReview')
-import { motion, AnimatePresence } from 'framer-motion'
+import { adoptionApi } from '@/api/adoption-api'
 import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { haptics } from '@/lib/haptics'
+import { motion, AnimatePresence } from 'framer-motion'
+
+const logger = createLogger('AdoptionApplicationReview')
 
 type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn'
 
@@ -42,8 +42,9 @@ interface ApplicationWithProfile extends AdoptionApplication {
 }
 
 export default function AdoptionApplicationReview() {
-  const [applications] = useStorage<AdoptionApplication[]>('adoption-applications', [])
-  const [profiles] = useStorage<AdoptionProfile[]>('adoption-profiles', [])
+  const [applications, setApplications] = useState<AdoptionApplication[]>([])
+  const [profiles, setProfiles] = useState<AdoptionProfile[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedApplication, setSelectedApplication] = useState<ApplicationWithProfile | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
@@ -53,9 +54,29 @@ export default function AdoptionApplicationReview() {
   const [activeTab, setActiveTab] = useState<ApplicationStatus | 'all'>('pending')
   const [expandedApplications, setExpandedApplications] = useState<Set<string>>(new Set())
 
-  const applicationsWithProfiles: ApplicationWithProfile[] = (applications || []).map(app => ({
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true)
+        const [appsData, profilesData] = await Promise.all([
+          adoptionApi.getAllApplications(),
+          adoptionApi.getAdoptionProfiles({})
+        ])
+        setApplications(appsData)
+        setProfiles(profilesData.profiles)
+      } catch (error) {
+        logger.error('Failed to load applications', error instanceof Error ? error : new Error(String(error)))
+        toast.error('Failed to load applications')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  const applicationsWithProfiles: ApplicationWithProfile[] = applications.map(app => ({
     ...app,
-    profile: (profiles || []).find(p => p._id === app.adoptionProfileId)
+    profile: profiles.find(p => p._id === app.adoptionProfileId)
   }))
 
   const filteredApplications = () => {
@@ -94,30 +115,28 @@ export default function AdoptionApplicationReview() {
     haptics.trigger('light')
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      const updatedApplications = (applications || []).map(app => {
-        if (app._id === selectedApplication._id) {
-          return {
-            ...app,
-            status: reviewAction === 'approve' ? 'approved' as const : 'rejected' as const,
-            reviewedAt: new Date().toISOString(),
-            reviewNotes: reviewNotes || undefined
-          }
-        }
-        return app
+      const newStatus = reviewAction === 'approve' ? 'approved' as const : 'rejected' as const
+      
+      await adoptionApi.updateApplicationStatus(selectedApplication._id, {
+        status: newStatus,
+        reviewNotes: reviewNotes || undefined
       })
 
-      await spark.kv.set('adoption-applications', updatedApplications)
+      // Update local state
+      setApplications(prev => prev.map(app => 
+        app._id === selectedApplication._id
+          ? { ...app, status: newStatus, reviewedAt: new Date().toISOString(), reviewNotes: reviewNotes || undefined }
+          : app
+      ))
 
+      // If approved, update profile status
       if (reviewAction === 'approve' && selectedApplication.profile) {
-        const updatedProfiles = (profiles || []).map(p => {
-          if (p._id === selectedApplication.adoptionProfileId) {
-            return { ...p, status: 'pending' as const }
-          }
-          return p
-        })
-        await spark.kv.set('adoption-profiles', updatedProfiles)
+        await adoptionApi.updateProfileStatus(selectedApplication.adoptionProfileId, 'pending')
+        setProfiles(prev => prev.map(p => 
+          p._id === selectedApplication.adoptionProfileId
+            ? { ...p, status: 'pending' as const }
+            : p
+        ))
       }
 
       haptics.trigger('success')
@@ -192,6 +211,16 @@ export default function AdoptionApplicationReview() {
       case 'withdrawn':
         return <Warning size={16} weight="fill" />
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-auto p-6 space-y-6">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading applications...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

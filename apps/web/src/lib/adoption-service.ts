@@ -1,5 +1,15 @@
+/**
+ * Adoption Service
+ * 
+ * Handles adoption profiles, applications, and shelters.
+ * Migrated from spark.kv to use backend API endpoints.
+ */
+
 import type { AdoptionProfile, AdoptionApplication, Shelter } from './adoption-types'
-import { safeParseAdoptionProfiles, safeParseAdoptionApplications, isShelterArray } from './type-guards'
+import { adoptionApi } from '@/api/adoption-api'
+import { createLogger } from './logger'
+
+const logger = createLogger('AdoptionService')
 
 export const adoptionService = {
   async getAdoptionProfiles(filters?: {
@@ -14,100 +24,85 @@ export const adoptionService = {
     cursor?: string
     limit?: number
   }): Promise<{ profiles: AdoptionProfile[]; hasMore: boolean; nextCursor?: string }> {
-    const allProfiles = await this.getAllProfiles()
-    let filtered = allProfiles
-
-    if (filters?.status) {
-      filtered = filtered.filter(p => p.status === filters.status)
+    try {
+      return await adoptionApi.getAdoptionProfiles(filters)
+    } catch (error) {
+      logger.error('Failed to get adoption profiles', error instanceof Error ? error : new Error(String(error)), { filters })
+      return { profiles: [], hasMore: false }
     }
-    if (filters?.breed) {
-      filtered = filtered.filter(p => 
-        p.breed.toLowerCase().includes(filters.breed!.toLowerCase())
-      )
-    }
-    if (filters?.size && filters.size.length > 0) {
-      filtered = filtered.filter(p => filters.size!.includes(p.size))
-    }
-    if (filters?.goodWithKids !== undefined) {
-      filtered = filtered.filter(p => p.goodWithKids === filters.goodWithKids)
-    }
-    if (filters?.goodWithPets !== undefined) {
-      filtered = filtered.filter(p => p.goodWithPets === filters.goodWithPets)
-    }
-
-    const limit = filters?.limit || 20
-    const startIndex = filters?.cursor ? parseInt(filters.cursor) : 0
-    const profiles = filtered.slice(startIndex, startIndex + limit)
-    const hasMore = startIndex + limit < filtered.length
-    const nextCursor = hasMore ? String(startIndex + limit) : undefined
-
-    return { profiles, hasMore, nextCursor }
   },
 
   async getProfileById(id: string): Promise<AdoptionProfile | null> {
-    const profiles = await this.getAllProfiles()
-    return profiles.find(p => p._id === id) || null
+    try {
+      return await adoptionApi.getProfileById(id)
+    } catch (error) {
+      logger.error('Failed to get profile by ID', error instanceof Error ? error : new Error(String(error)), { id })
+      return null
+    }
   },
 
   async getAllProfiles(): Promise<AdoptionProfile[]> {
-    const profiles = await spark.kv.get<unknown>('adoption-profiles')
-    return safeParseAdoptionProfiles(profiles)
+    try {
+      const result = await adoptionApi.getAdoptionProfiles({ limit: 1000 })
+      return result.profiles
+    } catch (error) {
+      logger.error('Failed to get all profiles', error instanceof Error ? error : new Error(String(error)))
+      return []
+    }
   },
 
   async submitApplication(application: Omit<AdoptionApplication, '_id' | 'submittedAt' | 'status'>): Promise<AdoptionApplication> {
-    const newApplication: AdoptionApplication = {
-      ...application,
-      _id: `app-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
+    try {
+      return await adoptionApi.submitApplication(application)
+    } catch (error) {
+      logger.error('Failed to submit application', error instanceof Error ? error : new Error(String(error)), { adoptionProfileId: application.adoptionProfileId })
+      throw error
     }
-
-    const applications = safeParseAdoptionApplications(await spark.kv.get<unknown>('adoption-applications'))
-    applications.push(newApplication)
-    await spark.kv.set('adoption-applications', applications)
-
-    return newApplication
   },
 
   async getUserApplications(userId: string): Promise<AdoptionApplication[]> {
-    const applications = safeParseAdoptionApplications(await spark.kv.get<unknown>('adoption-applications'))
-    return applications.filter(app => app.applicantId === userId)
+    try {
+      return await adoptionApi.getUserApplications(userId)
+    } catch (error) {
+      logger.error('Failed to get user applications', error instanceof Error ? error : new Error(String(error)), { userId })
+      return []
+    }
   },
 
   async getShelters(): Promise<Shelter[]> {
-    const shelters = await spark.kv.get<unknown>('adoption-shelters')
-    return isShelterArray(shelters) ? shelters : []
+    try {
+      return await adoptionApi.getShelters()
+    } catch (error) {
+      logger.error('Failed to get shelters', error instanceof Error ? error : new Error(String(error)))
+      return []
+    }
   },
 
   async createAdoptionProfile(profile: Omit<AdoptionProfile, '_id' | 'postedDate'>): Promise<AdoptionProfile> {
-    const newProfile: AdoptionProfile = {
-      ...profile,
-      _id: `adopt-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      postedDate: new Date().toISOString()
+    try {
+      return await adoptionApi.createAdoptionProfile(profile)
+    } catch (error) {
+      logger.error('Failed to create adoption profile', error instanceof Error ? error : new Error(String(error)))
+      throw error
     }
-
-    const profiles = await this.getAllProfiles()
-    profiles.push(newProfile)
-    await spark.kv.set('adoption-profiles', profiles)
-
-    return newProfile
   },
 
   async updateProfileStatus(profileId: string, status: AdoptionProfile['status']): Promise<void> {
-    const profiles = await this.getAllProfiles()
-    const index = profiles.findIndex(p => p._id === profileId)
-    if (index !== -1) {
-      const profile = profiles[index]
-      if (profile) {
-        profile.status = status
-        await spark.kv.set('adoption-profiles', profiles)
-      }
+    try {
+      await adoptionApi.updateProfileStatus(profileId, status)
+    } catch (error) {
+      logger.error('Failed to update profile status', error instanceof Error ? error : new Error(String(error)), { profileId, status })
+      throw error
     }
   },
 
   async getAllApplications(): Promise<AdoptionApplication[]> {
-    const applications = await spark.kv.get<unknown>('adoption-applications')
-    return safeParseAdoptionApplications(applications)
+    try {
+      return await adoptionApi.getAllApplications()
+    } catch (error) {
+      logger.error('Failed to get all applications', error instanceof Error ? error : new Error(String(error)))
+      return []
+    }
   },
 
   async updateApplicationStatus(
@@ -115,23 +110,23 @@ export const adoptionService = {
     status: AdoptionApplication['status'],
     reviewNotes?: string
   ): Promise<void> {
-    const applications = await this.getAllApplications()
-    const index = applications.findIndex(app => app._id === applicationId)
-    if (index !== -1) {
-      const application = applications[index]
-      if (application) {
-        application.status = status
-        application.reviewedAt = new Date().toISOString()
-        if (reviewNotes) {
-          application.reviewNotes = reviewNotes
-        }
-        await spark.kv.set('adoption-applications', applications)
-      }
+    try {
+      await adoptionApi.updateApplicationStatus(applicationId, {
+        status,
+        reviewNotes,
+      })
+    } catch (error) {
+      logger.error('Failed to update application status', error instanceof Error ? error : new Error(String(error)), { applicationId, status })
+      throw error
     }
   },
 
   async getApplicationsByProfile(profileId: string): Promise<AdoptionApplication[]> {
-    const applications = await this.getAllApplications()
-    return applications.filter(app => app.adoptionProfileId === profileId)
+    try {
+      return await adoptionApi.getApplicationsByProfile(profileId)
+    } catch (error) {
+      logger.error('Failed to get applications by profile', error instanceof Error ? error : new Error(String(error)), { profileId })
+      return []
+    }
   }
 }

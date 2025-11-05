@@ -1,17 +1,17 @@
 'use client'
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  Extrapolation,
-  type SharedValue
-} from 'react-native-reanimated'
-import { useCallback, useRef } from 'react'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import { platformHaptics, type PlatformHaptics } from '@/lib/platform-haptics'
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { useCallback, useRef } from 'react'
+import {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  type SharedValue
+} from 'react-native-reanimated'
 
 export interface UseNativeSwipeOptions {
   cardWidth: number
@@ -39,8 +39,8 @@ export interface UseNativeSwipeReturn {
   likeOpacity: SharedValue<number>
   passOpacity: SharedValue<number>
   scale: SharedValue<number>
-  animatedStyle: ReturnType<typeof useAnimatedStyle>
-  badgeStyle: ReturnType<typeof useAnimatedStyle>
+  animatedStyle: AnimatedStyle
+  badgeStyle: AnimatedStyle
   gestureHandlers: GestureHandlers
   reset: () => void
   commit: (direction: 'left' | 'right') => void

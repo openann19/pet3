@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import type { Pet, Match, SwipeAction } from '@/lib/types'
 import type { Story } from '@/lib/stories-types'
 import type { VerificationRequest } from '@/lib/verification-types'
+import type { AdoptionProfile } from '@/lib/adoption-types'
 import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
 import CompatibilityBreakdown from '@/components/CompatibilityBreakdown'
 import DiscoveryFilters, { type DiscoveryPreferences } from '@/components/DiscoveryFilters'
@@ -23,7 +24,7 @@ import { VerificationBadge } from '@/components/VerificationBadge'
 import { useApp } from '@/contexts/AppContext'
 import { haptics } from '@/lib/haptics'
 import { parseLocation, getDistanceBetweenLocations, formatDistance } from '@/lib/distance'
-import { adoptionAPI } from '@/api/adoption-api'
+import { adoptionApi } from '@/api/adoption-api'
 import { usePetDiscovery } from '@/hooks/usePetDiscovery'
 import { useMatching } from '@/hooks/useMatching'
 import { useSwipe } from '@/hooks/useSwipe'
@@ -127,10 +128,10 @@ export default function DiscoverView() {
   useEffect(() => {
     const loadAdoptablePets = async () => {
       try {
-        const result = await adoptionAPI.queryListings()
+        const result = await adoptionApi.getAdoptionProfiles({})
         // Only include active listings
-        const activeListings = result.listings.filter(l => l.status === 'active')
-        const petIds = new Set(activeListings.map(listing => listing.petId))
+        const activeListings = result.profiles.filter((l: AdoptionProfile) => l.status === 'available')
+        const petIds = new Set<string>(activeListings.map((listing: AdoptionProfile) => listing.petId))
         setAdoptablePetIds(petIds)
       } catch (error) {
         logger.error('Failed to load adoptable pets', error instanceof Error ? error : new Error(String(error)))

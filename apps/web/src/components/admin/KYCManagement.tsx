@@ -9,17 +9,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  CheckCircle, XCircle, Clock, ShieldCheck, IdentificationCard,
+  CheckCircle, XCircle, Clock, ShieldCheck,
   User, Calendar, Warning, ArrowRight
 } from '@phosphor-icons/react'
-import { kycService } from '@/lib/backend-services'
-import type { KYCSession, KYCRejectReason, KYCStatus } from '@/lib/backend-types'
+import { kycApi } from '@/api/kyc-api'
+import type { KYCSubmission, KYCStatus, KYCRejectReason } from '@/lib/kyc-types'
 import { toast } from 'sonner'
 
 export function KYCManagement() {
-  const [sessions, setSessions] = useState<KYCSession[]>([])
+  const [sessions, setSessions] = useState<KYCSubmission[]>([])
   const [selectedTab, setSelectedTab] = useState<KYCStatus | 'all'>('pending')
-  const [selectedSession, setSelectedSession] = useState<KYCSession | null>(null)
+  const [selectedSession, setSelectedSession] = useState<KYCSubmission | null>(null)
   const [loading, setLoading] = useState(false)
   const [rejectReason, setRejectReason] = useState<KYCRejectReason>('blurry_document')
   const [rejectText, setRejectText] = useState('')
@@ -29,8 +29,12 @@ export function KYCManagement() {
   }, [])
 
   const loadSessions = async () => {
-    const allSessions = await window.spark.kv.get<KYCSession[]>('kyc-sessions') || []
-    setSessions(allSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    try {
+      const allSessions = await kycApi.getAllKYCSubmissions()
+      setSessions(allSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    } catch (error) {
+      toast.error('Failed to load KYC sessions')
+    }
   }
 
   const filteredSessions = sessions.filter(s => {
@@ -38,7 +42,7 @@ export function KYCManagement() {
     return s.status === selectedTab
   })
 
-  const handleSessionClick = (session: KYCSession) => {
+  const handleSessionClick = (session: KYCSubmission) => {
     setSelectedSession(session)
   }
 
@@ -47,10 +51,15 @@ export function KYCManagement() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
       
-      await kycService.verifySession(selectedSession.id, user.id.toString())
+      await kycApi.manualKYCReview({
+        submissionId: selectedSession.id,
+        decision: 'verified',
+        actorUserId: user.id,
+      })
       toast.success('KYC session verified!')
       await loadSessions()
       setSelectedSession(null)
@@ -66,10 +75,16 @@ export function KYCManagement() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
       
-      await kycService.rejectSession(selectedSession.id, rejectReason, rejectText, user.id.toString())
+      await kycApi.manualKYCReview({
+        submissionId: selectedSession.id,
+        decision: 'rejected',
+        actorUserId: user.id,
+        reason: rejectText,
+      })
       toast.success('KYC session rejected')
       await loadSessions()
       setSelectedSession(null)
@@ -88,7 +103,7 @@ export function KYCManagement() {
       case 'rejected': return 'text-red-500 bg-red-500/10'
       case 'pending': return 'text-orange-500 bg-orange-500/10'
       case 'expired': return 'text-gray-500 bg-gray-500/10'
-      case 'unverified': return 'text-blue-500 bg-blue-500/10'
+      case 'not_started': return 'text-blue-500 bg-blue-500/10'
       default: return 'text-gray-500 bg-gray-500/10'
     }
   }
@@ -154,7 +169,7 @@ export function KYCManagement() {
       <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)} className="w-full">
         <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="unverified">Unverified</TabsTrigger>
+          <TabsTrigger value="not_started">Not Started</TabsTrigger>
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
@@ -207,10 +222,6 @@ export function KYCManagement() {
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <User size={14} />
                                 <span>User ID: {session.userId.substring(0, 16)}...</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <IdentificationCard size={14} />
-                                <span>Documents: {session.documents.length}</span>
                               </div>
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <Calendar size={14} />
@@ -273,7 +284,7 @@ export function KYCManagement() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Updated:</span>
-                    <span>{new Date(selectedSession.updatedAt).toLocaleString()}</span>
+                    <span>{selectedSession.updatedAt ? new Date(selectedSession.updatedAt).toLocaleString() : 'N/A'}</span>
                   </div>
                   {selectedSession.expiresAt && (
                     <div className="flex justify-between">
@@ -288,20 +299,20 @@ export function KYCManagement() {
                 </div>
               </Card>
 
-              {selectedSession.documents.length > 0 && (
+              {selectedSession.documents && selectedSession.documents.length > 0 && (
                 <Card className="p-4">
                   <h3 className="font-semibold mb-3">Documents ({selectedSession.documents.length})</h3>
                   <div className="space-y-2">
-                    {selectedSession.documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                    {selectedSession.documents.map((doc, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
                         <div>
                           <div className="font-medium text-sm">{doc.type.replace('_', ' ')}</div>
                           <div className="text-xs text-muted-foreground">
-                            Uploaded: {new Date(doc.uploadedAt).toLocaleString()}
+                            Status: {doc.status}
                           </div>
                         </div>
-                        <Badge variant={doc.verified ? 'default' : 'outline'}>
-                          {doc.verified ? 'Verified' : 'Pending'}
+                        <Badge variant={doc.status === 'verified' ? 'default' : 'outline'}>
+                          {doc.status === 'verified' ? 'Verified' : 'Pending'}
                         </Badge>
                       </div>
                     ))}
@@ -319,24 +330,28 @@ export function KYCManagement() {
                         {selectedSession.livenessCheck.passed ? 'Yes' : 'No'}
                       </Badge>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Confidence:</span>
-                      <span>{(selectedSession.livenessCheck.confidence * 100).toFixed(0)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Attempts:</span>
-                      <span>{selectedSession.livenessCheck.attemptCount}</span>
-                    </div>
+                    {selectedSession.livenessCheck.score !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Score:</span>
+                        <span>{(selectedSession.livenessCheck.score * 100).toFixed(0)}%</span>
+                      </div>
+                    )}
+                    {selectedSession.livenessCheck.images && selectedSession.livenessCheck.images.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Images:</span>
+                        <span>{selectedSession.livenessCheck.images.length}</span>
+                      </div>
+                    )}
                   </div>
                 </Card>
               )}
 
-              {selectedSession.rejectReason && (
+              {selectedSession.rejectionReason && (
                 <Card className="p-4 border-destructive">
                   <h3 className="font-semibold mb-2 text-destructive">Rejection Reason</h3>
                   <p className="text-sm">
-                    <strong>{selectedSession.rejectReason.replace('_', ' ')}:</strong>{' '}
-                    {selectedSession.rejectReasonText}
+                    <strong>{selectedSession.rejectionReason.replace('_', ' ')}:</strong>{' '}
+                    {selectedSession.rejectReasonText || 'No additional details provided'}
                   </p>
                 </Card>
               )}
@@ -352,11 +367,12 @@ export function KYCManagement() {
                       <SelectContent>
                         <SelectItem value="blurry_document">Blurry Document</SelectItem>
                         <SelectItem value="expired_document">Expired Document</SelectItem>
-                        <SelectItem value="document_mismatch">Document Mismatch</SelectItem>
-                        <SelectItem value="liveness_failed">Liveness Check Failed</SelectItem>
-                        <SelectItem value="unreadable">Unreadable</SelectItem>
-                        <SelectItem value="incomplete">Incomplete</SelectItem>
-                        <SelectItem value="suspicious">Suspicious Activity</SelectItem>
+                        <SelectItem value="invalid_document">Invalid Document</SelectItem>
+                        <SelectItem value="mismatched_information">Mismatched Information</SelectItem>
+                        <SelectItem value="fraudulent_document">Fraudulent Document</SelectItem>
+                        <SelectItem value="poor_quality">Poor Quality</SelectItem>
+                        <SelectItem value="missing_information">Missing Information</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

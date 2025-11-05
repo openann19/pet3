@@ -91,10 +91,10 @@ export default function SystemMap() {
                 Persistent storage system
               </p>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">spark.kv Store</span>
-                  <Badge variant="default">Active</Badge>
-                </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Backend API</span>
+                    <Badge variant="default">Active</Badge>
+                  </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">User Profiles</span>
                   <Badge variant="outline">2.5K records</Badge>
@@ -211,7 +211,7 @@ export default function SystemMap() {
                 <div className="border-l-4 border-primary pl-4">
                   <h4 className="font-bold text-lg mb-2">Layer 4: Data Layer</h4>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Persistent storage using spark.kv key-value store
+                    Persistent storage using backend API endpoints
                   </p>
                   <div className="space-y-2">
                     <div className="text-sm">
@@ -219,8 +219,8 @@ export default function SystemMap() {
                       Reports, Notifications, Audit Logs
                     </div>
                     <div className="text-sm">
-                      <strong>Access Pattern:</strong> Direct key-value access with 
-                      indexing via prefixed keys
+                      <strong>Access Pattern:</strong> RESTful API endpoints with 
+                      centralized data management
                     </div>
                   </div>
                 </div>
@@ -338,17 +338,17 @@ export default function SystemMap() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold">3</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm">Store in KV</div>
-                    <div className="text-xs text-muted-foreground">
-                      Save to chat-messages-{'{roomId}'}
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-bold">3</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">Store in API</div>
+                      <div className="text-xs text-muted-foreground">
+                        Save to backend via REST API endpoint
+                      </div>
                     </div>
                   </div>
-                </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold">4</span>

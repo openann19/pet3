@@ -7,6 +7,8 @@
 import { pushNotifications as pushNotificationManager } from './push-notifications'
 import { createLogger } from './logger'
 import { generateULID } from './utils'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
 import type { Notification, User, Match } from './contracts'
 
 const logger = createLogger('EnhancedNotifications')
@@ -141,8 +143,9 @@ export class EnhancedNotificationService {
         return
       }
 
-      const users = await window.spark.kv.get<User[]>('all-users') || []
-      const user = users.find(u => u.id === toUserId)
+      // Get user from API
+      const response = await APIClient.get<User>(`${ENDPOINTS.USERS.PROFILE}?userId=${toUserId}`)
+      const user = response.data
 
       if (!user || !user.preferences.notifications.likes) {
         return
@@ -198,8 +201,9 @@ export class EnhancedNotificationService {
     try {
       const notificationId = `message-${chatRoomId}-${senderId}-${Date.now()}`
       
-      const users = await window.spark.kv.get<User[]>('all-users') || []
-      const recipient = users.find(u => u.id === recipientId)
+      // Get recipient from API
+      const response = await APIClient.get<User>(`${ENDPOINTS.USERS.PROFILE}?userId=${recipientId}`)
+      const recipient = response.data
 
       if (!recipient || !recipient.preferences.notifications.messages) {
         return
@@ -249,9 +253,17 @@ export class EnhancedNotificationService {
     const correlationId = generateULID()
     
     try {
-      const notifications = await window.spark.kv.get<Notification[]>('all-notifications') || []
-      notifications.push(notification)
-      await window.spark.kv.set('all-notifications', notifications)
+      // Store notification via API
+      await APIClient.post(ENDPOINTS.NOTIFICATIONS.LIST, {
+        notificationId: notification.id,
+        userId: notification.userId,
+        type: notification.type,
+        title: notification.title,
+        body: notification.body,
+        data: notification.data,
+        read: notification.read,
+        createdAt: notification.createdAt
+      })
 
       if (user.preferences.notifications.push) {
         const notificationData = {

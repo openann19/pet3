@@ -17,7 +17,8 @@ import {
   Image as ImageIcon,
   Warning,
   Globe,
-  TestTube
+  TestTube,
+  VideoCamera
 } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
@@ -78,6 +79,12 @@ export interface APIConfig {
     apiKey: string
     enabled: boolean
   }
+  livekit: {
+    apiKey: string
+    apiSecret: string
+    wsUrl: string
+    enabled: boolean
+  }
 }
 
 const DEFAULT_CONFIG: APIConfig = {
@@ -134,6 +141,12 @@ const DEFAULT_CONFIG: APIConfig = {
   analytics: {
     provider: 'disabled',
     apiKey: '',
+    enabled: false
+  },
+  livekit: {
+    apiKey: '',
+    apiSecret: '',
+    wsUrl: '',
     enabled: false
   }
 }
@@ -209,7 +222,7 @@ export default function APIConfigView() {
           </Card>
 
           <Tabs defaultValue="maps" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
               <TabsTrigger value="maps">Maps</TabsTrigger>
               <TabsTrigger value="ai">AI</TabsTrigger>
               <TabsTrigger value="kyc">KYC</TabsTrigger>
@@ -218,6 +231,7 @@ export default function APIConfigView() {
               <TabsTrigger value="email">Email</TabsTrigger>
               <TabsTrigger value="storage">Storage</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="livekit">LiveKit</TabsTrigger>
             </TabsList>
 
             <TabsContent value="maps" className="space-y-4">
@@ -944,22 +958,22 @@ export default function APIConfigView() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="analytics" className="space-y-4">
+              <TabsContent value="analytics" className="space-y-4">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-pink-500/10">
-                        <Globe size={24} className="text-pink-600" weight="fill" />
+                        <Globe size={24} className="text-pink-600" weight="fill" />                                                                             
                       </div>
                       <div>
                         <CardTitle>Analytics Service</CardTitle>
-                        <CardDescription>Configure user analytics and tracking</CardDescription>
+                        <CardDescription>Configure user analytics and tracking</CardDescription>                                                                
                       </div>
                     </div>
                     <Switch
                       checked={config?.analytics?.enabled ?? false}
-                      onCheckedChange={(checked) => updateConfig('analytics', 'enabled', checked)}
+                      onCheckedChange={(checked) => updateConfig('analytics', 'enabled', checked)}                                                              
                     />
                   </div>
                 </CardHeader>
@@ -969,8 +983,8 @@ export default function APIConfigView() {
                     <select
                       id="analytics-provider"
                       value={config?.analytics?.provider ?? 'disabled'}
-                      onChange={(e) => updateConfig('analytics', 'provider', e.target.value)}
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                      onChange={(e) => updateConfig('analytics', 'provider', e.target.value)}                                                                   
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"                                                                 
                     >
                       <option value="disabled">Disabled</option>
                       <option value="google-analytics">Google Analytics</option>
@@ -982,22 +996,22 @@ export default function APIConfigView() {
                   {config?.analytics?.provider !== 'disabled' && (
                     <div className="space-y-3">
                       <Label htmlFor="analytics-key">
-                        {config?.analytics?.provider === 'google-analytics' ? 'Measurement ID' : 'API Key'}
+                        {config?.analytics?.provider === 'google-analytics' ? 'Measurement ID' : 'API Key'}                                                     
                       </Label>
                       <div className="flex gap-2">
                         <Input
                           id="analytics-key"
-                          type={showSecrets['analytics-key'] ? 'text' : 'password'}
+                          type={showSecrets['analytics-key'] ? 'text' : 'password'}                                                                             
                           value={config?.analytics?.apiKey ?? ''}
-                          onChange={(e) => updateConfig('analytics', 'apiKey', e.target.value)}
-                          placeholder={config?.analytics?.provider === 'google-analytics' ? 'G-XXXXXXXXXX' : 'api_key'}
+                          onChange={(e) => updateConfig('analytics', 'apiKey', e.target.value)}                                                                 
+                          placeholder={config?.analytics?.provider === 'google-analytics' ? 'G-XXXXXXXXXX' : 'api_key'}                                         
                         />
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => toggleSecret('analytics-key')}
                         >
-                          {showSecrets['analytics-key'] ? <EyeSlash size={20} /> : <Eye size={20} />}
+                          {showSecrets['analytics-key'] ? <EyeSlash size={20} /> : <Eye size={20} />}                                                           
                         </Button>
                       </div>
                     </div>
@@ -1006,13 +1020,124 @@ export default function APIConfigView() {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => testConnection('Analytics')}
-                      disabled={testingService === 'Analytics' || config?.analytics?.provider === 'disabled'}
+                      disabled={testingService === 'Analytics' || config?.analytics?.provider === 'disabled'}                                                   
                       className="flex-1"
                     >
                       <TestTube size={20} className="mr-2" />
-                      {testingService === 'Analytics' ? 'Testing...' : 'Test Connection'}
+                      {testingService === 'Analytics' ? 'Testing...' : 'Test Connection'}                                                                       
                     </Button>
-                    <Button variant="outline" onClick={() => resetToDefaults('analytics')}>
+                    <Button variant="outline" onClick={() => resetToDefaults('analytics')}>                                                                     
+                      Reset
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="livekit" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-violet-500/10">
+                        <VideoCamera size={24} className="text-violet-600" weight="fill" />
+                      </div>
+                      <div>
+                        <CardTitle>LiveKit Streaming</CardTitle>
+                        <CardDescription>Configure live streaming and video chat</CardDescription>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={config?.livekit?.enabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('livekit', 'enabled', checked)}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <Card className="border-amber-500/50 bg-amber-500/5">
+                    <CardContent className="pt-6">
+                      <div className="flex gap-3">
+                        <Warning size={24} className="text-amber-600 shrink-0" weight="fill" />
+                        <div className="space-y-1">
+                          <p className="font-medium text-amber-900 dark:text-amber-100">
+                            Server-Side Implementation Required
+                          </p>
+                          <p className="text-sm text-amber-800 dark:text-amber-200">
+                            LiveKit tokens must be generated server-side for security. Configure these credentials on your backend server and use them to sign tokens via API.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="livekit-key">API Key</Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          id="livekit-key"
+                          type={showSecrets['livekit-key'] ? 'text' : 'password'}
+                          value={config?.livekit?.apiKey ?? ''}
+                          onChange={(e) => updateConfig('livekit', 'apiKey', e.target.value)}
+                          placeholder="APxxxxxxxxxxxx"
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toggleSecret('livekit-key')}
+                      >
+                        {showSecrets['livekit-key'] ? <EyeSlash size={20} /> : <Eye size={20} />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="livekit-secret">API Secret</Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          id="livekit-secret"
+                          type={showSecrets['livekit-secret'] ? 'text' : 'password'}
+                          value={config?.livekit?.apiSecret ?? ''}
+                          onChange={(e) => updateConfig('livekit', 'apiSecret', e.target.value)}
+                          placeholder="secret_..."
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toggleSecret('livekit-secret')}
+                      >
+                        {showSecrets['livekit-secret'] ? <EyeSlash size={20} /> : <Eye size={20} />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="livekit-url">WebSocket URL</Label>
+                    <Input
+                      id="livekit-url"
+                      type="url"
+                      value={config?.livekit?.wsUrl ?? ''}
+                      onChange={(e) => updateConfig('livekit', 'wsUrl', e.target.value)}
+                      placeholder="wss://your-project.livekit.cloud"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your LiveKit server WebSocket URL
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => testConnection('LiveKit')}
+                      disabled={testingService === 'LiveKit' || !config?.livekit?.enabled}
+                      className="flex-1"
+                    >
+                      <TestTube size={20} className="mr-2" />
+                      {testingService === 'LiveKit' ? 'Testing...' : 'Test Connection'}
+                    </Button>
+                    <Button variant="outline" onClick={() => resetToDefaults('livekit')}>
                       Reset
                     </Button>
                   </div>

@@ -6,28 +6,33 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { photoModerationAPI } from '@/api/photo-moderation-api'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  CheckCircle, XCircle, Clock, Shield, Warning, Eye
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { photoModerationAPI } from '@/api/photo-moderation-api'
-import { useTranslation } from '@/lib/i18n'
-import { useLanguage } from '@/hooks/useLanguage'
 import type {
-  PhotoModerationRecord,
-  PhotoModerationStatus
+    PhotoModerationAuditLog,
+    PhotoModerationRecord,
+    PhotoModerationStatus
 } from '@/core/domain/photo-moderation'
-import type { PhotoModerationAuditLog } from '@/core/domain/photo-moderation'
-import { formatDistanceToNow } from 'date-fns'
+import { useLanguage } from '@/hooks/useLanguage'
+import { useTranslation } from '@/lib/i18n'
 import { createLogger } from '@/lib/logger'
+import { userService } from '@/lib/user-service'
+import {
+    CheckCircle,
+    Clock,
+    Eye,
+    Shield, Warning,
+    XCircle
+} from '@phosphor-icons/react'
+import { formatDistanceToNow } from 'date-fns'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('PhotoModerationQueueAdmin')
 
@@ -114,7 +119,10 @@ export function PhotoModerationQueueAdmin() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       await photoModerationAPI.updateStatus({
         photoId: selectedRecord.photoId,
@@ -146,7 +154,10 @@ export function PhotoModerationQueueAdmin() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       await photoModerationAPI.updateStatus({
         photoId: selectedRecord.photoId,
@@ -176,7 +187,10 @@ export function PhotoModerationQueueAdmin() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       await photoModerationAPI.updateStatus({
         photoId: selectedRecord.photoId,
@@ -205,7 +219,10 @@ export function PhotoModerationQueueAdmin() {
 
     try {
       setLoading(true)
-      const user = await window.spark.user()
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('Moderator context unavailable')
+      }
 
       await photoModerationAPI.updateStatus({
         photoId: selectedRecord.photoId,

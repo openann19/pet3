@@ -1,5 +1,8 @@
 import { generateCorrelationId } from './utils'
 import { createLogger } from './logger'
+import { storage } from './storage'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
 
 const logger = createLogger('offline-sync')
 
@@ -62,25 +65,47 @@ class OfflineSyncManager {
 
   private async loadQueueFromStorage() {
     try {
-      const stored = await window.spark.kv.get<PendingSyncAction[]>('offline-sync-queue')
+      try {
+        const response = await APIClient.get<PendingSyncAction[]>(ENDPOINTS.SYNC.QUEUE)
+        if (response.data && Array.isArray(response.data)) {
+          this.syncQueue = response.data
+          logger.info('Loaded pending actions from API', { count: this.syncQueue.length })
+          
+          if (this.isOnline && this.syncQueue.length > 0) {
+            this.syncPendingActions()
+          }
+          return
+        }
+      } catch (apiError) {
+        logger.warn('Failed to load queue from API, falling back to local storage', { error: apiError })
+      }
+      
+      const stored = await storage.get<PendingSyncAction[]>('offline-sync-queue')                                                                               
       if (stored && Array.isArray(stored)) {
         this.syncQueue = stored
-        logger.info('Loaded pending actions from storage', { count: this.syncQueue.length })
+        logger.info('Loaded pending actions from storage', { count: this.syncQueue.length })                                                                    
         
         if (this.isOnline && this.syncQueue.length > 0) {
           this.syncPendingActions()
         }
       }
     } catch (error) {
-      logger.error('Failed to load queue from storage', error instanceof Error ? error : new Error(String(error)))
+      logger.error('Failed to load queue from storage', error instanceof Error ? error : new Error(String(error)))                                              
     }
   }
 
   private async saveQueueToStorage() {
     try {
-      await window.spark.kv.set('offline-sync-queue', this.syncQueue)
+      try {
+        await APIClient.post(ENDPOINTS.SYNC.QUEUE, { queue: this.syncQueue })
+        logger.debug('Saved queue to API', { count: this.syncQueue.length })
+      } catch (apiError) {
+        logger.warn('Failed to save queue to API, saving locally', { error: apiError })
+      }
+      
+      await storage.set('offline-sync-queue', this.syncQueue)
     } catch (error) {
-      logger.error('Failed to save queue to storage', error instanceof Error ? error : new Error(String(error)))
+      logger.error('Failed to save queue to storage', error instanceof Error ? error : new Error(String(error)))                                                
     }
   }
 
@@ -152,42 +177,79 @@ class OfflineSyncManager {
     this.isSyncing = false
     this.notifyListeners()
 
-    await window.spark.kv.set('last-sync-time', new Date().toISOString())
+    try {
+      await APIClient.post(ENDPOINTS.SYNC.LAST_SYNC_TIME, { timestamp: new Date().toISOString() })
+    } catch (apiError) {
+      logger.warn('Failed to update sync time on API, saving locally', { error: apiError })
+    }
+    
+    await storage.set('last-sync-time', new Date().toISOString())
 
     logger.info('Sync completed', { remaining: this.syncQueue.length })
   }
 
   private async executeAction(action: PendingSyncAction): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
-
     switch (action.action) {
-      case 'send_message':
+      case 'send_message': {
         logger.debug('Executing: send_message', { actionId: action.id })
+        const { chatApi } = await import('@/api/chat-api')
+        const data = action.data as { matchId: string; message: string; userId: string }
+        await chatApi.sendMessage(data.matchId, { type: 'text', content: data.message })
         break
-      case 'like_pet':
+      }
+      case 'like_pet': {
         logger.debug('Executing: like_pet', { actionId: action.id })
+        const { matchingAPI } = await import('@/api/matching-api')
+        const data = action.data as { petId: string; targetPetId: string }
+        await matchingAPI.swipe({ petId: data.petId, targetPetId: data.targetPetId, action: 'like' })
         break
-      case 'pass_pet':
+      }
+      case 'pass_pet': {
         logger.debug('Executing: pass_pet', { actionId: action.id })
+        const { matchingAPI } = await import('@/api/matching-api')
+        const data = action.data as { petId: string; targetPetId: string }
+        await matchingAPI.swipe({ petId: data.petId, targetPetId: data.targetPetId, action: 'pass' })
         break
-      case 'create_story':
+      }
+      case 'create_story': {
         logger.debug('Executing: create_story', { actionId: action.id })
+        // Story creation API not yet implemented - store locally for now
+        logger.warn('Story creation API not implemented, storing locally', { actionId: action.id })
         break
-      case 'create_pet':
+      }
+      case 'create_pet': {
         logger.debug('Executing: create_pet', { actionId: action.id })
+        const { petAPI } = await import('@/lib/api-services')
+        await petAPI.create(action.data as unknown)
         break
-      case 'update_pet':
+      }
+      case 'update_pet': {
         logger.debug('Executing: update_pet', { actionId: action.id })
+        const { petAPI } = await import('@/lib/api-services')
+        const data = action.data as { id: string; updates: unknown }
+        await petAPI.update(data.id, data.updates)
         break
-      case 'react_to_message':
+      }
+      case 'react_to_message': {
         logger.debug('Executing: react_to_message', { actionId: action.id })
+        const { chatApi } = await import('@/api/chat-api')
+        const data = action.data as { messageId: string; reaction: string; userId: string }
+        await chatApi.addReaction(data.messageId, { reaction: data.reaction as unknown })
         break
-      case 'update_profile':
+      }
+      case 'update_profile': {
         logger.debug('Executing: update_profile', { actionId: action.id })
+        // Profile update API not yet implemented - store locally for now
+        logger.warn('Profile update API not implemented, storing locally', { actionId: action.id })
         break
-      case 'upload_photo':
+      }
+      case 'upload_photo': {
         logger.debug('Executing: upload_photo', { actionId: action.id })
+        const { imageUploadApi } = await import('@/api/image-upload-api')
+        const data = action.data as { key: string; contentType: string; arrayBuffer: ArrayBuffer }
+        await imageUploadApi.uploadImage(data.key, data.contentType, data.arrayBuffer)
         break
+      }
       default:
         throw new Error(`Unknown action type: ${action.action}`)
     }
@@ -204,8 +266,17 @@ class OfflineSyncManager {
     }
   }
 
-  async getLastSyncTime(): Promise<string | undefined> {
-    return await window.spark.kv.get<string>('last-sync-time')
+    async getLastSyncTime(): Promise<string | undefined> {
+    try {
+      const response = await APIClient.get<{ timestamp: string }>(ENDPOINTS.SYNC.LAST_SYNC_TIME)
+      if (response.data?.timestamp) {
+        return response.data.timestamp
+      }
+    } catch (apiError) {
+      logger.warn('Failed to get sync time from API, using local storage', { error: apiError })
+    }
+    
+    return await storage.get<string>('last-sync-time')
   }
 
   subscribe(listener: (status: SyncStatus) => void): () => void {

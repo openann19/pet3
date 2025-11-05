@@ -61,9 +61,10 @@ export function ModerationQueue() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
-      await moderationService.takeTask(selectedTask.id, user.id.toString())
+      await moderationService.takeTask(selectedTask.id, user.id)
       toast.success('Task assigned to you')
       await loadQueue()
       setSelectedTask(null)
@@ -80,15 +81,16 @@ export function ModerationQueue() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
       await moderationService.makeDecision(
         selectedTask.id,
         'approve',
         undefined,
         'Photo meets all quality and safety standards',
-        user.id.toString(),
-        user.login || 'Moderator'
+        user.id,
+        user.name || 'Moderator'
       )
       toast.success('Photo approved!')
       await loadQueue()
@@ -107,15 +109,16 @@ export function ModerationQueue() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
       await moderationService.makeDecision(
         selectedTask.id,
         'reject',
         decisionReason,
         decisionText,
-        user.id.toString(),
-        user.login || 'Moderator'
+        user.id,
+        user.name || 'Moderator'
       )
       toast.success('Photo rejected')
       await loadQueue()
@@ -135,15 +138,16 @@ export function ModerationQueue() {
     
     setLoading(true)
     try {
-      const user = await window.spark.user()
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
       await moderationService.makeDecision(
         selectedTask.id,
         'hold_for_kyc',
         undefined,
         'Content requires KYC verification before publishing',
-        user.id.toString(),
-        user.login || 'Moderator'
+        user.id,
+        user.name || 'Moderator'
       )
       toast.success('Photo held for KYC')
       await loadQueue()

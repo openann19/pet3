@@ -1,50 +1,52 @@
-import { useState, useEffect, useRef } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion } from 'framer-motion'
-import { 
-  PaperPlaneRight, 
-  Smiley, 
-  ArrowLeft,
-  DotsThree,
-  Microphone,
-  MapPin,
-  X,
-  Translate as TranslateIcon,
-  Sparkle
-} from '@phosphor-icons/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
 } from '@/components/ui/popover'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useTypingManager } from '@/hooks/use-typing-manager'
+import { useStorage } from '@/hooks/useStorage'
+import { blockService } from '@/lib/block-service'
+import type { ChatMessage, ChatRoom, MessageTemplate, ReactionType, SmartSuggestion } from '@/lib/chat-types'
+import { MESSAGE_TEMPLATES, REACTION_EMOJIS } from '@/lib/chat-types'
+import {
+    CHAT_STICKERS,
+    formatChatTime,
+    generateMessageId,
+    groupMessagesByDate
+} from '@/lib/chat-utils'
+import { haptics } from '@/lib/haptics'
+import { buildLLMPrompt } from '@/lib/llm-prompt'
+import { llmService } from '@/lib/llm-service'
 import { parseLLMError } from '@/lib/llm-utils'
 import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('AdvancedChatWindow')
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import type { ChatRoom, ChatMessage, MessageTemplate, SmartSuggestion, ReactionType } from '@/lib/chat-types'
-import { REACTION_EMOJIS, MESSAGE_TEMPLATES } from '@/lib/chat-types'
-import { 
-  formatChatTime, 
-  groupMessagesByDate, 
-  generateMessageId,
-  CHAT_STICKERS 
-} from '@/lib/chat-utils'
+import { realtime } from '@/lib/realtime'
+import {
+    ArrowLeft,
+    DotsThree,
+    MapPin,
+    Microphone,
+    PaperPlaneRight,
+    Smiley,
+    Sparkle,
+    Translate as TranslateIcon,
+    X
+} from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { haptics } from '@/lib/haptics'
-import MessageReactions from './MessageReactions'
-import VoiceRecorder from './VoiceRecorder'
 import MessageAttachments from './MessageAttachments'
+import MessageReactions from './MessageReactions'
 import SmartSuggestionsPanel from './SmartSuggestionsPanel'
 import TypingIndicatorComponent from './TypingIndicator'
-import { useTypingManager } from '@/hooks/use-typing-manager'
-import { realtime } from '@/lib/realtime'
+import VoiceRecorder from './VoiceRecorder'
 import { WebBubbleWrapper } from './WebBubbleWrapper'
-import { blockService } from '@/lib/block-service'
+
+const logger = createLogger('AdvancedChatWindow')
 
 interface AdvancedChatWindowProps {
   room: ChatRoom
@@ -255,8 +257,8 @@ export default function AdvancedChatWindow({
     if (!message) return
 
     try {
-      const prompt = window.spark.llmPrompt`Translate the following message to English. Return only the translated text without any explanation: "${message.content}"`
-      const translated = await window.spark.llm(prompt, 'gpt-4o-mini')
+  const prompt = buildLLMPrompt`Translate the following message to English. Return only the translated text without any explanation: "${message.content}"`
+  const translated = await llmService.llm(prompt, 'gpt-4o-mini')
 
       setMessages((current) =>
         (current || []).map(msg =>

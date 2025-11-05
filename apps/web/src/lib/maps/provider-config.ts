@@ -1,4 +1,7 @@
 import { useStorage } from '@/hooks/useStorage';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('MapProviderConfig');
 
 interface MapProviderConfig {
   MAP_STYLE_URL: string;
@@ -75,7 +78,7 @@ export function setAdminMapProviderConfig(config: Partial<MapProviderConfig>): v
     cachedAdminConfig = updated;
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    console.error('Failed to save map provider config', err);
+    logger.error('Failed to save map provider config', err);
   }
 }
 

@@ -1,45 +1,68 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useStorage } from '@/hooks/useStorage'
+import { verificationApi } from '@/api/verification-api'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  CheckCircle, XCircle, Clock, ShieldCheck, Download, 
-  Calendar, Warning, ArrowRight, File, Image as ImageIcon
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
 import { haptics } from '@/lib/haptics'
-import type { VerificationRequest, VerificationStatus, VerificationLevel } from '@/lib/verification-types'
-import type { Pet } from '@/lib/types'
+import { createLogger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
+import type { VerificationLevel, VerificationRequest as VerificationRequestType, VerificationStatus } from '@/lib/verification-types'
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  File, Image as ImageIcon,
+  ShieldCheck,
+  Warning,
+  XCircle
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+const logger = createLogger('VerificationReviewDashboard')
+
+type VerificationRequest = VerificationRequestType
 
 export function VerificationReviewDashboard() {
-  const [verificationRequests] = useStorage<Record<string, VerificationRequest>>('verification-requests', {})
-  const [allPets] = useStorage<Pet[]>('all-pets', [])
+  const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([])
   const [selectedTab, setSelectedTab] = useState<VerificationStatus | 'all'>('pending')
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null)
   const [reviewNotes, setReviewNotes] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
 
-  const requests = Object.values(verificationRequests || {}).sort((a, b) => 
-    new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
-  )
+  useEffect(() => {
+    loadVerificationRequests()
+  }, [selectedTab])
 
-  const filteredRequests = requests.filter(r => {
+  const loadVerificationRequests = async () => {
+    try {
+      setInitialLoading(true)
+      const requests = await verificationApi.getVerificationRequests({
+        status: selectedTab === 'all' ? undefined : [selectedTab as VerificationStatus]
+      })
+      setVerificationRequests(requests)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to load verification requests', err)
+      toast.error('Failed to load verification requests')
+    } finally {
+      setInitialLoading(false)
+    }
+  }
+
+  const filteredRequests = verificationRequests.filter(r => {
     if (selectedTab === 'all') return true
     return r.status === selectedTab
   })
-
-  const getPet = (petId: string) => {
-    return allPets?.find(p => p.id === petId)
-  }
 
   const getStatusColor = (status: VerificationStatus) => {
     switch (status) {
@@ -84,46 +107,30 @@ export function VerificationReviewDashboard() {
     haptics.impact('medium')
     
     try {
-      const user = await window.spark.user()
-      
-      const updatedRequest: VerificationRequest = {
-        ...selectedRequest,
-        status: 'verified',
-        completedAt: new Date().toISOString(),
-        reviewedBy: user?.login || 'admin',
-        reviewNotes,
-        trustScore: Math.floor(Math.random() * 20) + 80,
-        documents: selectedRequest.documents.map(doc => ({
-          ...doc,
-          status: 'verified',
-          reviewedAt: new Date().toISOString(),
-          reviewedBy: user?.login || 'admin'
-        }))
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('User not authenticated')
       }
 
-      const allRequests = await window.spark.kv.get<Record<string, VerificationRequest>>('verification-requests') || {}
-      allRequests[selectedRequest.petId] = updatedRequest
-      await window.spark.kv.set('verification-requests', allRequests)
-
-      const pets = await window.spark.kv.get<Pet[]>('all-pets') || []
-      const petIndex = pets.findIndex(p => p.id === selectedRequest.petId)
-      if (petIndex !== -1) {
-        const existingPet = pets[petIndex]
-        if (existingPet && existingPet.id) {
-          pets[petIndex] = { ...existingPet, verified: true } as Pet
-          await window.spark.kv.set('all-pets', pets)
-        }
-      }
+      await verificationApi.updateVerificationStatus(
+        selectedRequest.id,
+        'approved',
+        user.id,
+        reviewNotes
+      )
 
       haptics.success()
       toast.success('Verification Approved!', {
-        description: `${getPet(selectedRequest.petId)?.name || 'Pet'} is now verified with trust score ${updatedRequest.trustScore}`
+        description: 'Pet verification has been approved'
       })
       
       setSelectedRequest(null)
       setReviewNotes('')
-      window.location.reload()
-    } catch {
+      await loadVerificationRequests()
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to approve verification', err)
       haptics.error()
       toast.error('Failed to approve verification')
     } finally {
@@ -141,26 +148,18 @@ export function VerificationReviewDashboard() {
     haptics.impact('medium')
     
     try {
-      const user = await window.spark.user()
-      
-      const updatedRequest: VerificationRequest = {
-        ...selectedRequest,
-        status: 'rejected',
-        completedAt: new Date().toISOString(),
-        reviewedBy: user?.login || 'admin',
-        reviewNotes: `${rejectionReason}${reviewNotes ? '\n\n' + reviewNotes : ''}`,
-        documents: selectedRequest.documents.map(doc => ({
-          ...doc,
-          status: 'rejected',
-          reviewedAt: new Date().toISOString(),
-          reviewedBy: user?.login || 'admin',
-          rejectionReason
-        }))
+      const { userService } = await import('@/lib/user-service')
+      const user = await userService.user()
+      if (!user) {
+        throw new Error('User not authenticated')
       }
 
-      const allRequests = await window.spark.kv.get<Record<string, VerificationRequest>>('verification-requests') || {}
-      allRequests[selectedRequest.petId] = updatedRequest
-      await window.spark.kv.set('verification-requests', allRequests)
+      await verificationApi.updateVerificationStatus(
+        selectedRequest.id,
+        'rejected',
+        user.id,
+        `${rejectionReason}${reviewNotes ? '\n\n' + reviewNotes : ''}`
+      )
 
       haptics.trigger('heavy')
       toast.error('Verification Rejected', {
@@ -170,8 +169,10 @@ export function VerificationReviewDashboard() {
       setSelectedRequest(null)
       setReviewNotes('')
       setRejectionReason('')
-      window.location.reload()
-    } catch {
+      await loadVerificationRequests()
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to reject verification', err)
       haptics.error()
       toast.error('Failed to reject verification')
     } finally {
@@ -180,12 +181,12 @@ export function VerificationReviewDashboard() {
   }
 
   const stats = {
-    total: requests.length,
-    pending: requests.filter(r => r.status === 'pending').length,
-    verified: requests.filter(r => r.status === 'verified').length,
-    rejected: requests.filter(r => r.status === 'rejected').length,
-    approvalRate: requests.length > 0 
-      ? Math.round((requests.filter(r => r.status === 'verified').length / requests.length) * 100)
+    total: verificationRequests.length,
+    pending: verificationRequests.filter(r => r.status === 'pending').length,
+    verified: verificationRequests.filter(r => r.status === 'verified').length,
+    rejected: verificationRequests.filter(r => r.status === 'rejected').length,
+    approvalRate: verificationRequests.length > 0 
+      ? Math.round((verificationRequests.filter(r => r.status === 'verified').length / verificationRequests.length) * 100)
       : 0
   }
 
@@ -244,28 +245,33 @@ export function VerificationReviewDashboard() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as VerificationStatus | 'all')} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
-          <TabsTrigger value="all" className="text-xs sm:text-sm">
-            All ({requests.length})
-          </TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs sm:text-sm">
-            Pending ({stats.pending})
-          </TabsTrigger>
-          <TabsTrigger value="verified" className="text-xs sm:text-sm">
-            Verified ({stats.verified})
-          </TabsTrigger>
-          <TabsTrigger value="rejected" className="text-xs sm:text-sm">
-            Rejected ({stats.rejected})
-          </TabsTrigger>
-          <TabsTrigger value="expired" className="text-xs sm:text-sm col-span-2 sm:col-span-1">
-            Expired
-          </TabsTrigger>
-        </TabsList>
+          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+            <TabsTrigger value="all" className="text-xs sm:text-sm">
+              All ({verificationRequests.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="text-xs sm:text-sm">
+              Pending ({stats.pending})
+            </TabsTrigger>
+            <TabsTrigger value="verified" className="text-xs sm:text-sm">
+              Verified ({stats.verified})
+            </TabsTrigger>
+            <TabsTrigger value="rejected" className="text-xs sm:text-sm">
+              Rejected ({stats.rejected})
+            </TabsTrigger>
+            <TabsTrigger value="expired" className="text-xs sm:text-sm col-span-2 sm:col-span-1">
+              Expired
+            </TabsTrigger>
+          </TabsList>
 
         <TabsContent value={selectedTab} className="mt-6">
           <ScrollArea className="h-[500px] sm:h-[600px] pr-2 sm:pr-4">
             <AnimatePresence mode="popLayout">
-              {filteredRequests.length === 0 ? (
+              {initialLoading ? (
+                <div className="text-center py-16">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-4 text-muted-foreground">Loading verification requests...</p>
+                </div>
+              ) : filteredRequests.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -279,7 +285,6 @@ export function VerificationReviewDashboard() {
               ) : (
                 <div className="space-y-4">
                   {filteredRequests.map((request, index) => {
-                    const pet = getPet(request.petId)
                     return (
                       <motion.div
                         key={request.id}
@@ -302,18 +307,17 @@ export function VerificationReviewDashboard() {
                         >
                           <div className="flex items-start gap-3 sm:gap-4">
                             <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-border shrink-0">
-                              <AvatarImage src={pet?.photo} />
                               <AvatarFallback className="text-base sm:text-lg">
-                                {pet?.name?.[0] || '?'}
+                                {request.petId[0] || '?'}
                               </AvatarFallback>
                             </Avatar>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between mb-2 gap-2">
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-semibold text-base sm:text-lg truncate">{pet?.name || 'Unknown Pet'}</h3>
+                                  <h3 className="font-semibold text-base sm:text-lg truncate">Pet ID: {request.petId}</h3>
                                   <p className="text-sm text-muted-foreground truncate">
-                                    {pet?.breed} • {pet?.ownerName}
+                                    Requested by User {request.userId}
                                   </p>
                                 </div>
                               </div>
@@ -323,8 +327,8 @@ export function VerificationReviewDashboard() {
                                   {getStatusIcon(request.status)}
                                   <span className="ml-1.5 font-medium">{request.status.toUpperCase()}</span>
                                 </Badge>
-                                <Badge className={getLevelColor(request.verificationLevel)} variant="outline">
-                                  {getLevelIcon(request.verificationLevel)} {request.verificationLevel.toUpperCase()}
+                                <Badge className={getLevelColor(request.level)} variant="outline">
+                                  {getLevelIcon(request.level)} {request.level.toUpperCase()}
                                 </Badge>
                                 {request.trustScore && (
                                   <Badge variant="outline" className="bg-linear-to-r from-primary/10 to-accent/10">
@@ -393,16 +397,15 @@ export function VerificationReviewDashboard() {
                 <Card className="p-5 bg-linear-to-br from-primary/5 to-accent/5">
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar className="h-20 w-20 border-2 border-primary">
-                      <AvatarImage src={getPet(selectedRequest.petId)?.photo} />
                       <AvatarFallback className="text-xl">
-                        {getPet(selectedRequest.petId)?.name?.[0] || '?'}
+                        {selectedRequest.petId[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-xl font-bold">{getPet(selectedRequest.petId)?.name}</h3>
-                      <p className="text-muted-foreground">{getPet(selectedRequest.petId)?.breed}</p>
+                      <h3 className="text-xl font-bold">Pet ID: {selectedRequest.petId}</h3>
+                      <p className="text-muted-foreground">User ID: {selectedRequest.userId}</p>
                       <p className="text-sm text-muted-foreground">
-                        Owner: {getPet(selectedRequest.petId)?.ownerName}
+                        Request ID: {selectedRequest.id}
                       </p>
                     </div>
                   </div>
@@ -420,8 +423,8 @@ export function VerificationReviewDashboard() {
                     <div>
                       <span className="text-sm text-muted-foreground">Level</span>
                       <div className="mt-1">
-                        <Badge className={getLevelColor(selectedRequest.verificationLevel)}>
-                          {getLevelIcon(selectedRequest.verificationLevel)} {selectedRequest.verificationLevel}
+                        <Badge className={getLevelColor(selectedRequest.level)}>
+                          {getLevelIcon(selectedRequest.level)} {selectedRequest.level}
                         </Badge>
                       </div>
                     </div>

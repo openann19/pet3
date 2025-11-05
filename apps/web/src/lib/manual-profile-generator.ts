@@ -5,10 +5,11 @@
  * Useful when AI is unavailable or for consistent testing data
  */
 
-import type { Pet } from './types'
-import { generateTrustBadges, generateRatings, calculateTrustProfile } from './trust-utils'
-import { logger } from './logger'
 import { FixerError } from './fixer-error'
+import { logger } from './logger'
+import { calculateTrustProfile, generateRatings, generateTrustBadges } from './trust-utils'
+import type { Pet } from './types'
+import { userService } from './user-service'
 
 const MANUAL_PROFILES = [
   {
@@ -239,7 +240,7 @@ const MANUAL_PROFILES = [
 ]
 
 export async function generateManualProfiles(count: number = 15): Promise<Pet[]> {
-  const currentUser = await window.spark?.user().catch(() => null)
+  const currentUser = await userService.user().catch(() => null)
   const profilesToUse = MANUAL_PROFILES.slice(0, Math.min(count, MANUAL_PROFILES.length))
   
   return profilesToUse.map((pet, idx) => {

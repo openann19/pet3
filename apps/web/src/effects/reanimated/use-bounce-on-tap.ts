@@ -1,8 +1,9 @@
 'use client'
 
-import { useSharedValue, useAnimatedStyle, withSpring, type SharedValue } from 'react-native-reanimated'
-import { useCallback } from 'react'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { haptics } from '@/lib/haptics'
+import { useCallback } from 'react'
+import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
 
 export interface UseBounceOnTapOptions {
   scale?: number
@@ -15,7 +16,7 @@ export interface UseBounceOnTapOptions {
 
 export interface UseBounceOnTapReturn {
   scale: SharedValue<number>
-  animatedStyle: ReturnType<typeof useAnimatedStyle>
+  animatedStyle: AnimatedStyle
   handlePress: () => void
 }
 
@@ -38,7 +39,7 @@ export function useBounceOnTap(options: UseBounceOnTapOptions = {}): UseBounceOn
     return {
       transform: [{ scale: scale.value }]
     }
-  })
+  }) as AnimatedStyle
 
   const handlePress = useCallback(() => {
     if (hapticFeedback) {

@@ -28,7 +28,7 @@ export function MatchingConfigPanel() {
   const loadConfig = async () => {
     try {
       setLoading(true)
-      const currentConfig = await window.spark.kv.get<MatchingConfig>('matching-config')
+      const currentConfig = await matchingAPI.getConfig()
       if (currentConfig) {
         setConfig(currentConfig)
       } else {

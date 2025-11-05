@@ -1,5 +1,7 @@
-import type { Pet, CompatibilityFactors } from './types'
+import { buildLLMPrompt } from './llm-prompt'
+import { llmService } from './llm-service'
 import { logger } from './logger'
+import type { CompatibilityFactors, Pet } from './types'
 
 const PERSONALITY_COMPATIBILITY: Record<string, string[]> = {
   'playful': ['energetic', 'playful', 'adventurous', 'social'],
@@ -106,7 +108,7 @@ export async function generateMatchReasoning(userPet: Pet, otherPet: Pet): Promi
   const factors = getCompatibilityFactors(userPet, otherPet)
   const compatibility = calculateCompatibility(userPet, otherPet)
 
-  const prompt = window.spark.llmPrompt`You are a pet compatibility expert. Generate 2-3 short, engaging reasons (max 10 words each) why these two pets would be great companions.
+  const prompt = buildLLMPrompt`You are a pet compatibility expert. Generate 2-3 short, engaging reasons (max 10 words each) why these two pets would be great companions.
 
 Pet 1: ${userPet.name}
 - Breed: ${userPet.breed}
@@ -138,7 +140,7 @@ Return as JSON with a "reasons" array of 2-3 strings:
 }`
 
   try {
-    const result = await window.spark.llm(prompt, 'gpt-4o-mini', true)
+  const result = await llmService.llm(prompt, 'gpt-4o-mini', true)
     const data = JSON.parse(result)
     return data.reasons || generateFallbackReasoning(userPet, otherPet, factors)
   } catch (error) {
