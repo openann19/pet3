@@ -24,6 +24,7 @@ import { UltraThemeSettings } from '@/components/settings/UltraThemeSettings'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { OfflineIndicator } from '@/components/network/OfflineIndicator'
+import { InstallPrompt } from '@/components/pwa/InstallPrompt'
 import '@/lib/profile-generator-helper' // Expose generateProfiles to window
 import type { Pet, Match, SwipeAction } from '@/lib/types'
 import type { Playdate } from '@/lib/playdate-types'
@@ -202,6 +203,7 @@ function App() {
   return (
     <ErrorBoundary>
       <OfflineIndicator />
+      <InstallPrompt />
       <Routes>
         <Route path="/demo/pets" element={<PetsDemoPage />} />
         <Route path="*" element={
