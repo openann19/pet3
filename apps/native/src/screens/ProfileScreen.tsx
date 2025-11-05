@@ -150,6 +150,13 @@ export default function ProfileScreen(): React.JSX.Element {
         <Text style={styles.sectionTitle}>Quick Access</Text>
         <TouchableOpacity 
           style={styles.settingItem}
+          onPress={() => navigation.navigate('Playdates' as never)}
+        >
+          <Text style={styles.settingText}>📅 Playdates</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.settingItem}
           onPress={() => navigation.navigate('Map' as never)}
         >
           <Text style={styles.settingText}>🗺️ Map View</Text>

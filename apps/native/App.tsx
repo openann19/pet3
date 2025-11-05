@@ -20,6 +20,7 @@ import NotificationsScreen from './src/screens/NotificationsScreen';
 import SavedPostsScreen from './src/screens/SavedPostsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { CallScreen } from './src/screens/CallScreen';
+import PlaydatesScreen from './src/screens/PlaydatesScreen';
 import DataInitializer from './src/components/DataInitializer';
 import { useStorage } from './src/hooks/useStorage';
 
@@ -212,6 +213,18 @@ export default function App(): React.JSX.Element {
                 options={{
                   headerShown: false,
                   presentation: 'fullScreenModal',
+                }}
+              />
+              <Stack.Screen
+                name="Playdates"
+                component={PlaydatesScreen}
+                options={{
+                  headerShown: true,
+                  title: 'Playdates',
+                  headerStyle: {
+                    backgroundColor: '#6366f1',
+                  },
+                  headerTintColor: '#fff',
                 }}
               />
             </>
