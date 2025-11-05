@@ -1,0 +1,117 @@
+{
+  "messages": {
+    "en": {
+      "hard_gates": {
+        "SPECIES_POLICY": "Cross-species matching is not currently enabled",
+        "SAFETY_POLICY": "Safety concerns prevent this match",
+        "VACCINATION_REQUIRED": "Both pets must have up-to-date vaccinations",
+        "DISTANCE_LIMIT": "Distance exceeds maximum preference ({maxDistanceKm}km)",
+        "BREEDING_POLICY": "Breeding intent requires compatible neuter status",
+        "MEDIA_REQUIRED": "Both pets must have at least one approved photo",
+        "BLOCKED": "One pet has blocked the other"
+      },
+      "explanations": {
+        "temperament_great": "Great temperament compatibility",
+        "temperament_different": "Different temperament profiles",
+        "energy_matching": "Matching energy levels",
+        "size_good": "Good size compatibility",
+        "intent_shared": "Shared interests and intentions",
+        "distance_greater": "Greater distance than preferred",
+        "health_update": "Health records may need updating"
+      },
+      "life_stages": {
+        "PUPPY": "Puppy",
+        "KITTEN": "Kitten",
+        "YOUNG": "Young",
+        "ADULT": "Adult",
+        "SENIOR": "Senior"
+      },
+      "sizes": {
+        "TOY": "Toy",
+        "SMALL": "Small",
+        "MEDIUM": "Medium",
+        "LARGE": "Large",
+        "GIANT": "Giant",
+        "SMALL_CAT": "Small",
+        "MEDIUM_CAT": "Medium",
+        "LARGE_CAT": "Large"
+      },
+      "species": {
+        "DOG": "Dog",
+        "CAT": "Cat"
+      },
+      "sex": {
+        "MALE": "Male",
+        "FEMALE": "Female"
+      },
+      "neuter_status": {
+        "INTACT": "Intact",
+        "NEUTERED": "Neutered",
+        "UNKNOWN": "Unknown"
+      },
+      "intents": {
+        "PLAYDATE": "Playdate",
+        "COMPANIONSHIP": "Companionship",
+        "ADOPTION": "Adoption",
+        "BREEDING": "Breeding"
+      }
+    },
+    "bg": {
+      "hard_gates": {
+        "SPECIES_POLICY": "Съвпадението между различни видове не е активирано",
+        "SAFETY_POLICY": "Проблеми със сигурността предотвратяват това съвпадение",
+        "VACCINATION_REQUIRED": "И двете домашни любимци трябва да имат актуални ваксинации",
+        "DISTANCE_LIMIT": "Разстоянието надвишава максималната преференция ({maxDistanceKm}км)",
+        "BREEDING_POLICY": "Намерението за развъждане изисква съвместим статус на кастрация",
+        "MEDIA_REQUIRED": "И двете домашни любимци трябва да имат поне една одобрена снимка",
+        "BLOCKED": "Един домашен любимец е блокирал другия"
+      },
+      "explanations": {
+        "temperament_great": "Отлична съвместимост на темперамента",
+        "temperament_different": "Различни профили на темперамент",
+        "energy_matching": "Съвпадащи енергийни нива",
+        "size_good": "Добра съвместимост по размер",
+        "intent_shared": "Споделени интереси и намерения",
+        "distance_greater": "По-голямо разстояние от предпочитаното",
+        "health_update": "Здравните записи може да се нуждаят от актуализация"
+      },
+      "life_stages": {
+        "PUPPY": "Кученце",
+        "KITTEN": "Котенце",
+        "YOUNG": "Млад",
+        "ADULT": "Възрастен",
+        "SENIOR": "Възрастен"
+      },
+      "sizes": {
+        "TOY": "Играчка",
+        "SMALL": "Малко",
+        "MEDIUM": "Средно",
+        "LARGE": "Голямо",
+        "GIANT": "Гигантско",
+        "SMALL_CAT": "Малка",
+        "MEDIUM_CAT": "Средна",
+        "LARGE_CAT": "Голяма"
+      },
+      "species": {
+        "DOG": "Куче",
+        "CAT": "Котка"
+      },
+      "sex": {
+        "MALE": "Мъжко",
+        "FEMALE": "Женско"
+      },
+      "neuter_status": {
+        "INTACT": "Некastreиран",
+        "NEUTERED": "Кастриран",
+        "UNKNOWN": "Неизвестно"
+      },
+      "intents": {
+        "PLAYDATE": "Игрище",
+        "COMPANIONSHIP": "Дружба",
+        "ADOPTION": "Осиновяване",
+        "BREEDING": "Развъждане"
+      }
+    }
+  }
+}
+

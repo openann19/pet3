@@ -1,0 +1,117 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Admin-tunable matching weights with safe ranges",
+    "totalWeight": 100.0
+  },
+  "defaultWeights": {
+    "temperamentFit": {
+      "value": 20.0,
+      "min": 10.0,
+      "max": 30.0,
+      "description": {
+        "en": "Temperament compatibility based on trait vector cosine similarity",
+        "bg": "Съвместимост на темперамента въз основа на косинусна подобност на векторните черти"
+      }
+    },
+    "energyLevelFit": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Energy level proximity (0-5 scale)",
+        "bg": "Близост на енергийното ниво (скала 0-5)"
+      }
+    },
+    "lifeStageProximity": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Life stage compatibility (puppy/kitten, young, adult, senior)",
+        "bg": "Съвместимост на жизнения етап (кученце/котенце, млад, възрастен, стар)"
+      }
+    },
+    "sizeCompatibility": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Size compatibility based on species-specific matrix",
+        "bg": "Съвместимост по размер въз основа на видоспецифична матрица"
+      }
+    },
+    "breedFamilyCompatibility": {
+      "value": 15.0,
+      "min": 10.0,
+      "max": 20.0,
+      "description": {
+        "en": "Breed family compatibility (sporting, herding, toy, etc.)",
+        "bg": "Съвместимост на породното семейство (ловджийски, пастирски, играчка и т.н.)"
+      }
+    },
+    "socializationCompatibility": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Average compatibility across dogs/cats/kids/strangers comfort levels",
+        "bg": "Средна съвместимост на нивата на комфорт с кучета/котки/деца/непознати"
+      }
+    },
+    "intentMatch": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Jaccard similarity of intents (playdate, companionship, adoption, breeding)",
+        "bg": "Jaccard подобност на намеренията (игрище, дружба, осиновяване, развъждане)"
+      }
+    },
+    "distanceFit": {
+      "value": 10.0,
+      "min": 5.0,
+      "max": 15.0,
+      "description": {
+        "en": "Distance proximity with diminishing returns (gamma=0.6)",
+        "bg": "Близост на разстоянието с намаляващи възвращаемости (гама=0.6)"
+      }
+    },
+    "healthActivityBonus": {
+      "value": 5.0,
+      "min": 0.0,
+      "max": 10.0,
+      "description": {
+        "en": "Health/vaccination bonus + recent activity boost",
+        "bg": "Бонус за здравословно състояние/ваксинация + усилване на скорошна активност"
+      }
+    }
+  },
+  "validationRules": {
+    "sumMustEqual": 100.0,
+    "tolerance": 0.01,
+    "minNonZeroWeights": 3,
+    "maxZeroWeights": 6
+  },
+  "speciesOverrides": {
+    "DOG": {
+      "breedFamilyCompatibility": {
+        "value": 15.0,
+        "min": 10.0,
+        "max": 20.0
+      }
+    },
+    "CAT": {
+      "breedFamilyCompatibility": {
+        "value": 10.0,
+        "min": 5.0,
+        "max": 15.0,
+        "note": {
+          "en": "Lower weight for cats as breed families are less significant",
+          "bg": "По-ниско тегло за котки, тъй като породните семейства са по-малко значими"
+        }
+      }
+    }
+  }
+}
+

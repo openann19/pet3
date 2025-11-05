@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "source": ["CFA", "TICA"],
+    "lang": ["en", "bg"],
+    "version": "1.0.0"
+  },
+  "breeds": [
+    {
+      "code": "cat_maine_coon",
+      "en": "Maine Coon",
+      "bg": "Мейн куун",
+      "synonyms": ["MC", "Maine Coon"]
+    },
+    {
+      "code": "cat_british_shorthair",
+      "en": "British Shorthair",
+      "bg": "Британска късокосместа",
+      "synonyms": ["British", "BSH"]
+    },
+    {
+      "code": "cat_siamese",
+      "en": "Siamese",
+      "bg": "Сиамска",
+      "synonyms": ["Siamese", "Meezer"]
+    },
+    {
+      "code": "cat_ragdoll",
+      "en": "Ragdoll",
+      "bg": "Рэгдол",
+      "synonyms": ["Ragdoll", "Rag"]
+    },
+    {
+      "code": "cat_bengal",
+      "en": "Bengal",
+      "bg": "Бенгалска",
+      "synonyms": ["Bengal"]
+    },
+    {
+      "code": "cat_persian",
+      "en": "Persian",
+      "bg": "Персийска",
+      "synonyms": ["Persian", "Longhair Persian"]
+    },
+    {
+      "code": "cat_russian_blue",
+      "en": "Russian Blue",
+      "bg": "Руска синя",
+      "synonyms": ["Russian Blue", "RB"]
+    },
+    {
+      "code": "cat_sphynx",
+      "en": "Sphynx",
+      "bg": "Сфинкс",
+      "synonyms": ["Sphynx", "Hairless"]
+    },
+    {
+      "code": "cat_norwegian_forest",
+      "en": "Norwegian Forest Cat",
+      "bg": "Норвежка горска котка",
+      "synonyms": ["Norwegian Forest", "Wegie"]
+    },
+    {
+      "code": "cat_siberian",
+      "en": "Siberian",
+      "bg": "Сибирска",
+      "synonyms": ["Siberian", "Siberian Forest Cat"]
+    },
+    {
+      "code": "cat_exotic_shorthair",
+      "en": "Exotic Shorthair",
+      "bg": "Екзотична късокосместа",
+      "synonyms": ["Exotic", "Exotic Shorthair"]
+    },
+    {
+      "code": "cat_abyssinian",
+      "en": "Abyssinian",
+      "bg": "Абисинска",
+      "synonyms": ["Abyssinian", "Aby"]
+    },
+    {
+      "code": "cat_american_shorthair",
+      "en": "American Shorthair",
+      "bg": "Американска късокосместа",
+      "synonyms": ["ASH", "American Shorthair"]
+    },
+    {
+      "code": "cat_scottish_fold",
+      "en": "Scottish Fold",
+      "bg": "Шотландска висяща",
+      "synonyms": ["Scottish Fold", "Fold"]
+    },
+    {
+      "code": "cat_burmese",
+      "en": "Burmese",
+      "bg": "Бирманска",
+      "synonyms": ["Burmese"]
+    },
+    {
+      "code": "cat_oriental_shorthair",
+      "en": "Oriental Shorthair",
+      "bg": "Ориенталска късокосместа",
+      "synonyms": ["Oriental", "OSH"]
+    },
+    {
+      "code": "cat_turkish_angora",
+      "en": "Turkish Angora",
+      "bg": "Турска ангора",
+      "synonyms": ["Turkish Angora", "Angora"]
+    },
+    {
+      "code": "cat_ragamuffin",
+      "en": "Ragamuffin",
+      "bg": "Рагамуфин",
+      "synonyms": ["Ragamuffin"]
+    },
+    {
+      "code": "cat_devon_rex",
+      "en": "Devon Rex",
+      "bg": "Девън рекс",
+      "synonyms": ["Devon Rex", "Devon"]
+    },
+    {
+      "code": "cat_cornish_rex",
+      "en": "Cornish Rex",
+      "bg": "Корнуолски рекс",
+      "synonyms": ["Cornish Rex", "Cornish"]
+    },
+    {
+      "code": "cat_somali",
+      "en": "Somali",
+      "bg": "Сомалийска",
+      "synonyms": ["Somali"]
+    },
+    {
+      "code": "cat_tonkinese",
+      "en": "Tonkinese",
+      "bg": "Тонкинска",
+      "synonyms": ["Tonkinese", "Tonk"]
+    },
+    {
+      "code": "cat_balinese",
+      "en": "Balinese",
+      "bg": "Балинезийска",
+      "synonyms": ["Balinese"]
+    },
+    {
+      "code": "cat_himalayan",
+      "en": "Himalayan",
+      "bg": "Хималайска",
+      "synonyms": ["Himalayan", "Himmie"]
+    },
+    {
+      "code": "cat_manx",
+      "en": "Manx",
+      "bg": "Манкс",
+      "synonyms": ["Manx"]
+    },
+    {
+      "code": "cat_british_longhair",
+      "en": "British Longhair",
+      "bg": "Британска дългокосместа",
+      "synonyms": ["British Longhair", "BLH"]
+    },
+    {
+      "code": "cat_chartreux",
+      "en": "Chartreux",
+      "bg": "Шартрьоз",
+      "synonyms": ["Chartreux"]
+    },
+    {
+      "code": "cat_bombay",
+      "en": "Bombay",
+      "bg": "Бомбейска",
+      "synonyms": ["Bombay"]
+    },
+    {
+      "code": "cat_japanese_bobtail",
+      "en": "Japanese Bobtail",
+      "bg": "Японска опашка",
+      "synonyms": ["Japanese Bobtail"]
+    },
+    {
+      "code": "cat_mixed",
+      "en": "Mixed Breed",
+      "bg": "Смесена порода",
+      "synonyms": ["Mixed", "Moggie", "Domestic"]
+    },
+    {
+      "code": "cat_unknown",
+      "en": "Unknown Breed",
+      "bg": "Неизвестна порода",
+      "synonyms": ["Unknown", "Unknown Breed"]
+    }
+  ]
+}
+
