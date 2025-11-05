@@ -32,6 +32,8 @@ jobs:
     name: EAS Build - ${{ github.event.inputs.platform || 'all' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -97,6 +99,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     if: always()
+    permissions:
+      contents: read
 
     steps:
       - name: Build status
