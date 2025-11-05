@@ -44,6 +44,7 @@ import TypingIndicatorComponent from './TypingIndicator'
 import { useTypingManager } from '@/hooks/use-typing-manager'
 import { realtime } from '@/lib/realtime'
 import { WebBubbleWrapper } from './WebBubbleWrapper'
+import { blockService } from '@/lib/block-service'
 
 interface AdvancedChatWindowProps {
   room: ChatRoom
@@ -338,6 +339,29 @@ export default function AdvancedChatWindow({
                 <Button
                   variant="ghost"
                   className="w-full justify-start text-destructive"
+                  onClick={async () => {
+                    if (!room || !currentUserId) return
+                    
+                    try {
+                      const otherUserId = room.participants.find(p => p.id !== currentUserId)?.id
+                      if (!otherUserId) return
+                      
+                      // Show confirmation dialog
+                      const confirmed = window.confirm(
+                        'Are you sure you want to block this user? You will no longer see their messages or matches.'
+                      )
+                      
+                      if (confirmed) {
+                        await blockService.blockUser(currentUserId, otherUserId, 'harassment')
+                        toast.success('User blocked successfully')
+                        // Close chat or navigate away
+                        onBack?.()
+                      }
+                    } catch (error) {
+                      toast.error('Failed to block user')
+                      logger.error('Failed to block user', error)
+                    }
+                  }}
                 >
                   🚫 Block User
                 </Button>

@@ -101,6 +101,20 @@ export const ENDPOINTS = {
     START_VERIFICATION: '/kyc/start',
     SUBMIT_DOCUMENTS: '/kyc/documents',
     GET_VERIFICATION: (id: string) => `/kyc/verifications/${id}`
+  },
+
+  // Blocking
+  BLOCKING: {
+    BLOCK: '/blocking/block',
+    BLOCK_USER: '/blocking/block-user',
+    UNBLOCK: (blockerPetId: string, blockedPetId: string) => 
+      `/blocking/unblock/${blockerPetId}/${blockedPetId}`,
+    UNBLOCK_USER: (blockerUserId: string, blockedUserId: string) =>
+      `/blocking/unblock-user/${blockerUserId}/${blockedUserId}`,
+    STATUS: (blockerPetId: string, blockedPetId: string) =>
+      `/blocking/status/${blockerPetId}/${blockedPetId}`,
+    BLOCKED_PETS: (petId: string) => `/blocking/pets/${petId}/blocked`,
+    BLOCKED_USERS: (userId: string) => `/blocking/users/${userId}/blocked`
   }
 } as const
 
