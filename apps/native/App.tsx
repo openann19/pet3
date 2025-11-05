@@ -10,6 +10,7 @@ import CommunityScreen from './src/screens/CommunityScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AdoptionScreen from './src/screens/AdoptionScreen';
 import LostFoundScreen from './src/screens/LostFoundScreen';
+import { AdminConsoleScreen } from './src/screens/AdminConsoleScreen';
 import PetDetailScreen from './src/screens/PetDetailScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -96,6 +97,15 @@ function MainTabs(): React.JSX.Element {
           title: 'Profile',
           tabBarLabel: 'Profile',
           tabBarIcon: () => '👤',
+        }}
+      />
+      <Tab.Screen
+        name="Admin"
+        component={AdminConsoleScreen}
+        options={{
+          title: 'Admin Console',
+          tabBarLabel: 'Admin',
+          tabBarIcon: () => '⚙️',
         }}
       />
     </Tab.Navigator>
