@@ -44,7 +44,7 @@ export const Easing = {
   },
   quad: (t: number) => t * t,
   cubic: (t: number) => t * t * t,
-  bezier: (x1: number, y1: number, x2: number, y2: number) => {
+  bezier: (_x1: number, y1: number, _x2: number, y2: number) => {
     return (t: number) => {
       // Simplified cubic bezier
       const t2 = t * t;
@@ -62,24 +62,6 @@ export const Easing = {
   in: (easing: (t: number) => number) => easing,
 };
 
-// Helper to convert spring config to CSS transition
-function springToCSS(config: WithSpringConfig = {}): string {
-  const damping = config.damping ?? 20;
-  const stiffness = config.stiffness ?? 180;
-  
-  // Approximate spring duration based on damping and stiffness
-  const duration = Math.sqrt(1 / stiffness) * 1000 * (damping / 10);
-  const timing = damping < 15 ? 'ease-out' : damping < 25 ? 'ease-in-out' : 'ease-in';
-  
-  return `${duration}ms ${timing}`;
-}
-
-// Helper to convert timing config to CSS transition
-function timingToCSS(config: WithTimingConfig = {}): string {
-  const duration = config.duration ?? 300;
-  return `${duration}ms ease-in-out`;
-}
-
 // Shared value implementation
 export function useSharedValue<T>(initialValue: T): SharedValue<T> {
   const ref = useRef<SharedValue<T>>({
@@ -90,19 +72,19 @@ export function useSharedValue<T>(initialValue: T): SharedValue<T> {
 }
 
 // Animation functions
-export function withSpring(toValue: number, config?: WithSpringConfig): number {
+export function withSpring(toValue: number, _config?: WithSpringConfig): number {
   // In web polyfill, we return the target value
   // The actual animation is handled by CSS transitions
   return toValue;
 }
 
-export function withTiming(toValue: number, config?: WithTimingConfig): number {
+export function withTiming(toValue: number, _config?: WithTimingConfig): number {
   // In web polyfill, we return the target value
   // The actual animation is handled by CSS transitions
   return toValue;
 }
 
-export function withDelay(delayMs: number, animation: number): number {
+export function withDelay(_delayMs: number, animation: number): number {
   // Return the animation value, delay will be handled by CSS transition-delay
   return animation;
 }
@@ -112,7 +94,7 @@ export function withSequence(...animations: number[]): number {
   return animations[animations.length - 1] ?? 0;
 }
 
-export function withRepeat(animation: number, numberOfReps?: number, reverse?: boolean): number {
+export function withRepeat(animation: number, _numberOfReps?: number, _reverse?: boolean): number {
   // Return the animation value
   return animation;
 }
@@ -130,18 +112,27 @@ export function interpolate(
     throw new Error('inputRange and outputRange must have the same length');
   }
   
+  if (inputRange.length === 0 || outputRange.length === 0) {
+    return 0;
+  }
+  
   // Find the right interval
   let i = 0;
   for (; i < inputRange.length - 1; i++) {
-    if (value <= inputRange[i + 1]) {
+    const nextInput = inputRange[i + 1];
+    if (nextInput !== undefined && value <= nextInput) {
       break;
     }
   }
   
   const inputMin = inputRange[i];
-  const inputMax = inputRange[i + 1] ?? inputMin;
+  const inputMax = inputRange[i + 1];
   const outputMin = outputRange[i];
-  const outputMax = outputRange[i + 1] ?? outputMin;
+  const outputMax = outputRange[i + 1];
+  
+  if (inputMin === undefined || outputMin === undefined) {
+    return 0;
+  }
   
   if (value < inputMin) {
     if (extrapolateType === 'clamp') {
@@ -151,26 +142,33 @@ export function interpolate(
     }
   }
   
-  if (value > inputMax) {
-    if (extrapolateType === 'clamp') {
+  if (inputMax !== undefined && value > inputMax) {
+    if (extrapolateType === 'clamp' && outputMax !== undefined) {
       return outputMax;
     } else if (extrapolateType === 'identity') {
       return value;
     }
   }
   
-  const progress = (value - inputMin) / (inputMax - inputMin);
-  return outputMin + progress * (outputMax - outputMin);
+  const effectiveInputMax = inputMax ?? inputMin;
+  const effectiveOutputMax = outputMax ?? outputMin;
+  const progress = (value - inputMin) / (effectiveInputMax - inputMin);
+  return outputMin + progress * (effectiveOutputMax - outputMin);
 }
 
 export function interpolateColor(
   value: number,
-  inputRange: number[],
+  _inputRange: number[],
   outputRange: string[]
 ): string {
   // Simplified color interpolation
   const index = Math.min(Math.floor(value), outputRange.length - 1);
-  return outputRange[Math.max(0, index)] ?? outputRange[0] ?? '#000';
+  const color = outputRange[Math.max(0, index)];
+  if (color !== undefined) {
+    return color;
+  }
+  const firstColor = outputRange[0];
+  return firstColor !== undefined ? firstColor : '#000';
 }
 
 // Animated style hook
@@ -188,6 +186,9 @@ export function useAnimatedStyle<T extends CSSProperties>(
       const transformString = transforms
         .map((t) => {
           const key = Object.keys(t)[0];
+          if (key === undefined) {
+            return '';
+          }
           const value = t[key];
           
           if (key === 'translateX' || key === 'translateY') {
@@ -212,7 +213,7 @@ export function useAnimatedStyle<T extends CSSProperties>(
       ...style,
       transition: 'all 300ms ease-in-out',
     } as T;
-  }, dependencies);
+  }, dependencies ?? []);
 }
 
 // Animated props hook
@@ -221,7 +222,7 @@ export function useAnimatedProps<T>(
   dependencies?: unknown[]
 ): T {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => updater(), dependencies);
+  return useMemo(() => updater(), dependencies ?? []);
 }
 
 // Gesture handlers (no-op for web)
@@ -263,12 +264,12 @@ export function useDerivedValue<T>(
   dependencies?: unknown[]
 ): SharedValue<T> {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const value = useMemo(() => updater(), dependencies);
+  const value = useMemo(() => updater(), dependencies ?? []);
   return useSharedValue(value);
 }
 
 // Animation cancellation
-export function cancelAnimation(sharedValue: SharedValue<unknown>): void {
+export function cancelAnimation(_sharedValue: SharedValue<unknown>): void {
   // No-op for web polyfill
 }
 

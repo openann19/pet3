@@ -63,7 +63,7 @@ export default defineConfig(async () => {
         include: [/node_modules/],
       },
       rollupOptions: {
-        external: (id) => {
+        external: (id: string) => {
           // Externalize optional tensorflow dependencies
           return id.includes('@tensorflow/tfjs');
         },
