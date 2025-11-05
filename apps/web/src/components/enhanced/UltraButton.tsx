@@ -103,7 +103,9 @@ export function UltraButton({
                   key={r.id}
                   style={ripple.animatedStyle}
                   className="absolute rounded-full pointer-events-none"
-                />
+                >
+                  <div />
+                </AnimatedView>
               ))}
             </Button>
           </AnimatedView>

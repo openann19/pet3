@@ -3,13 +3,13 @@ import { canReceiveComments, isValidPostStatusTransition } from '@/core/domain/c
 import { checkDuplicateContent, moderatePost } from '@/core/services/content-moderation'
 import { APIClient } from '@/lib/api-client'
 import type {
-  Comment,
-  CreateCommentData,
-  CreatePostData,
-  Post,
-  PostFilters,
-  ReactionEmoji,
-  ReportData
+    Comment,
+    CreateCommentData,
+    CreatePostData,
+    Post,
+    PostFilters,
+    ReactionEmoji,
+    ReportData
 } from '@/lib/community-types'
 import type { Report } from '@/lib/contracts'
 import { ENDPOINTS } from '@/lib/endpoints'
@@ -139,7 +139,7 @@ export class CommunityAPI {
         ...data,
         authorId: data.authorId,
         authorName: data.authorName,
-        authorAvatar: data.authorAvatar
+        ...(data.authorAvatar ? { authorAvatar: data.authorAvatar } : {})
       }
 
       const response = await APIClient.post<CreatePostResponse>(
@@ -361,7 +361,7 @@ export class CommunityAPI {
         ...data,
         authorId: data.authorId,
         authorName: data.authorName,
-        authorAvatar: data.authorAvatar
+        ...(data.authorAvatar ? { authorAvatar: data.authorAvatar } : {})
       }
 
       const response = await APIClient.post<CreateCommentResponse>(

@@ -1,50 +1,38 @@
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { useColorScheme, Text } from 'react-native'
-import type { RootTabParamList } from '@mobile/navigation/types'
-import { HomeScreen } from '@mobile/screens/HomeScreen'
-import { AdoptionScreen } from '@mobile/screens/AdoptionScreen'
-import { CommunityScreen } from '@mobile/screens/CommunityScreen'
-import { MatchingScreen } from '@mobile/screens/MatchingScreen'
-import { ProfileScreen } from '@mobile/screens/ProfileScreen'
-import { colors } from '@mobile/theme/colors'
+import { UploadAndEditScreen } from '@mobile/components/media-editor/UploadAndEditScreen'
+import { EnhancedTabNavigator } from '@mobile/navigation/EnhancedTabNavigator'
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import React from 'react'
+import { useColorScheme } from 'react-native'
+import { linking } from './linking'
 
-const Tab = createBottomTabNavigator<RootTabParamList>()
+export type RootStackParamList = {
+  MainTabs: undefined
+  UploadAndEdit: { onDone: (uri: string) => void; onCancel?: () => void }
+}
 
-export function AppNavigator() {
+const Stack = createNativeStackNavigator<RootStackParamList>()
+
+export function AppNavigator(): React.JSX.Element {
   const colorScheme = useColorScheme()
 
   return (
-    <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Tab.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: colors.card
-          },
-          headerTintColor: colors.textPrimary,
-          tabBarStyle: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border
-          },
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.textSecondary,
-          tabBarIcon: ({ color, size }) => <Text style={{ color, fontSize: size }}>●</Text>,
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '600'
-          },
-          tabBarHideOnKeyboard: true,
-          headerTitleStyle: {
-            fontWeight: '700'
-          }
-        }}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Adoption" component={AdoptionScreen} />
-        <Tab.Screen name="Community" component={CommunityScreen} />
-        <Tab.Screen name="Matching" component={MatchingScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
-      </Tab.Navigator>
+    <NavigationContainer 
+      linking={linking}
+      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+    >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MainTabs" component={EnhancedTabNavigator} />
+        <Stack.Screen 
+          name="UploadAndEdit" 
+          component={UploadAndEditScreen}
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Upload & Edit',
+          }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   )
 }

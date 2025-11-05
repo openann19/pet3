@@ -1,216 +1,39 @@
-/**
- * Service Worker for PWA
- * Provides offline support, caching, and background sync
- */
-
-const CACHE_VERSION = 'v1';
-const CACHE_NAME = `pet3-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `pet3-runtime-${CACHE_VERSION}`;
-
-// Assets to cache on install
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-];
-
-// Cache strategies
-const CACHE_FIRST = 'cache-first';
-const NETWORK_FIRST = 'network-first';
-const STALE_WHILE_REVALIDATE = 'stale-while-revalidate';
-
-// Route strategies
-const ROUTE_STRATEGIES = {
-  '/api/': NETWORK_FIRST,
-  '/assets/': CACHE_FIRST,
-  '/images/': STALE_WHILE_REVALIDATE,
-  default: NETWORK_FIRST,
-};
-
-/**
- * Install event - cache essential assets
- */
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => {
-      return self.skipWaiting();
-    })
-  );
-});
-
-/**
- * Activate event - clean up old caches
- */
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => {
-            return name.startsWith('pet3-') && name !== CACHE_NAME && name !== RUNTIME_CACHE;
-          })
-          .map((name) => caches.delete(name))
-      );
-    }).then(() => {
-      return self.clients.claim();
-    })
-  );
-});
-
-/**
- * Fetch event - handle network requests with caching strategies
- */
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+self.addEventListener("install",()=>self.skipWaiting());
+self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
+const QUEUE="upload-queue-v1";
+self.addEventListener("sync",e=>{ if(e.tag==="upload-sync") e.waitUntil(flushQueue()); });
+self.addEventListener("notificationclick",e=>{const a=e.action;n=e.notification;n.close();if(a==="reply"){clients.openWindow("/chat?reply="+encodeURIComponent(n.data?.mid||""));}else{clients.openWindow("/chat");}});
+self.addEventListener("fetch",e=>{
+  const {method,url} = e.request;
+  const u = new URL(url);
+  // chunked uploads fallback
+  if(method==="PUT" && url.includes("/api/uploads/parts")){
+    e.respondWith((async()=>{try{return await fetch(e.request);}catch{
+      const body = await e.request.clone().arrayBuffer();
+      const entry = { url, body: Array.from(new Uint8Array(body)), headers: [...e.request.headers] };
+      const db = await caches.open(QUEUE);
+      await db.put(new Request(url+"&queued=1",{method:"GET"}), new Response(JSON.stringify(entry)));
+      await self.registration.sync.register("upload-sync");
+      return new Response(JSON.stringify({queued:true}),{status:202});
+    }})());
     return;
   }
-
-  // Determine caching strategy
-  const strategy = getStrategy(url.pathname);
-
-  event.respondWith(
-    handleFetch(request, strategy)
-  );
-});
-
-/**
- * Get caching strategy for URL
- */
-function getStrategy(pathname) {
-  for (const [route, strategy] of Object.entries(ROUTE_STRATEGIES)) {
-    if (route !== 'default' && pathname.startsWith(route)) {
-      return strategy;
-    }
+  // feed: stale-while-revalidate
+  if(u.pathname.startsWith("/api/feed")){
+    e.respondWith((async()=>{const c=await caches.open("feed-v1");const cached=await c.match(e.request);const live=fetch(e.request).then(r=>{c.put(e.request,r.clone());return r});return cached||live;})()); return;
   }
-  return ROUTE_STRATEGIES.default;
-}
-
-/**
- * Handle fetch with caching strategy
- */
-async function handleFetch(request, strategy) {
-  switch (strategy) {
-    case CACHE_FIRST:
-      return cacheFirst(request);
-    case NETWORK_FIRST:
-      return networkFirst(request);
-    case STALE_WHILE_REVALIDATE:
-      return staleWhileRevalidate(request);
-    default:
-      return fetch(request);
-  }
-}
-
-/**
- * Cache first strategy
- */
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) {
-    return cached;
-  }
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-/**
- * Network first strategy
- */
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-/**
- * Stale while revalidate strategy
- */
-async function staleWhileRevalidate(request) {
-  const cached = await caches.match(request);
-  
-  const fetchPromise = fetch(request).then((response) => {
-    if (response.ok) {
-      const cache = caches.open(RUNTIME_CACHE);
-      cache.then((c) => c.put(request, response.clone()));
-    }
-    return response;
-  });
-
-  return cached || fetchPromise;
-}
-
-/**
- * Background sync for offline actions
- */
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-actions') {
-    event.waitUntil(syncPendingActions());
+  // media cache
+  if(/\.(jpg|jpeg|png|webp|mp4|webm)$/i.test(u.pathname)){
+    e.respondWith(caches.open("media-v1").then(async c=> (await c.match(e.request)) || (await fetch(e.request).then(r=>{c.put(e.request,r.clone());return r})))); return;
   }
 });
-
-/**
- * Sync pending actions when back online
- */
-async function syncPendingActions() {
-  // Implementation would sync queued actions
-  // This is a placeholder for actual implementation
-  return Promise.resolve();
+async function flushQueue(){
+  const db=await caches.open(QUEUE); const keys=await db.keys();
+  for(const k of keys){
+    const url = k.url.replace("&queued=1","");
+    const entry = await (await db.match(k)).json();
+    const body = new Uint8Array(entry.body);
+    const r = await fetch(url,{method:"PUT",body,headers:new Headers(entry.headers)}).catch(()=>null);
+    if(r && r.ok) await db.delete(k);
+  }
 }
-
-/**
- * Push notification handler
- */
-self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  
-  const options = {
-    body: data.body || 'New update available',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: {
-      url: data.url || '/',
-    },
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Pet3', options)
-  );
-});
-
-/**
- * Notification click handler
- */
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
-  );
-});

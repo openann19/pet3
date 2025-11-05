@@ -1,36 +1,37 @@
-import { useState, useEffect, lazy, Suspense, useMemo } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import { useStorage } from '@/hooks/useStorage'
-import { Toaster } from '@/components/ui/sonner'
-import { Heart, User, ChatCircle, Sparkle, Moon, Sun, Users, Translate, ShieldCheck, MapPin, Palette } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
-import { useHeaderAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useStaggeredContainer, useHeaderButtonAnimation, usePageTransition, useNavBarAnimation, useModalAnimation, useBounceOnTap } from '@/effects/reanimated'
-import { NavButton } from '@/components/navigation/NavButton'
-import SeedDataInitializer from '@/components/SeedDataInitializer'
-import WelcomeScreen from '@/components/WelcomeScreen'
-import AuthScreen from '@/components/AuthScreen'
 import AdminConsole from '@/components/AdminConsole'
-import LoadingState from '@/components/LoadingState'
-import { BillingIssueBanner } from '@/components/payments/BillingIssueBanner'
-import { PremiumNotificationBell } from '@/components/notifications/PremiumNotificationBell'
-import { SyncStatusIndicator } from '@/components/SyncStatusIndicator'
-import QuickActionsMenu from '@/components/QuickActionsMenu'
-import GenerateProfilesButton from '@/components/GenerateProfilesButton'
-import StatsCard from '@/components/StatsCard'
+import AuthScreen from '@/components/AuthScreen'
 import PetsDemoPage from '@/components/demo/PetsDemoPage'
-import { UltraThemeSettings } from '@/components/settings/UltraThemeSettings'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
+import GenerateProfilesButton from '@/components/GenerateProfilesButton'
+import LoadingState from '@/components/LoadingState'
+import BottomNavBar from '@/components/navigation/BottomNavBar'
+import { NavButton } from '@/components/navigation/NavButton'
 import { OfflineIndicator } from '@/components/network/OfflineIndicator'
+import { PremiumNotificationBell } from '@/components/notifications/PremiumNotificationBell'
+import { BillingIssueBanner } from '@/components/payments/BillingIssueBanner'
 import { InstallPrompt } from '@/components/pwa/InstallPrompt'
-import '@/lib/profile-generator-helper' // Expose generateProfiles to window
-import type { Pet, Match, SwipeAction } from '@/lib/types'
-import type { Playdate } from '@/lib/playdate-types'
+import QuickActionsMenu from '@/components/QuickActionsMenu'
+import SeedDataInitializer from '@/components/SeedDataInitializer'
+import { UltraThemeSettings } from '@/components/settings/UltraThemeSettings'
+import StatsCard from '@/components/StatsCard'
+import { SyncStatusIndicator } from '@/components/SyncStatusIndicator'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Toaster } from '@/components/ui/sonner'
+import WelcomeScreen from '@/components/WelcomeScreen'
 import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
+import { useStorage } from '@/hooks/useStorage'
 import { haptics } from '@/lib/haptics'
+import type { Playdate } from '@/lib/playdate-types'
+import '@/lib/profile-generator-helper'; // Expose generateProfiles to window
+import type { Match, Pet, SwipeAction } from '@/lib/types'
+import { ChatCircle, Heart, MapPin, Moon, Palette, ShieldCheck, Sparkle, Sun, Translate, User, Users } from '@phosphor-icons/react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Route, Routes } from 'react-router-dom'
 
 const DiscoverView = lazy(() => import('@/components/views/DiscoverView'))
 const MatchesView = lazy(() => import('@/components/views/MatchesView'))
@@ -108,7 +109,6 @@ function App() {
   const mapContent = useModalAnimation({ isVisible: showMap, duration: 300 })
   const adminModal = useModalAnimation({ isVisible: showAdminConsole, duration: 200 })
   const adminContent = useModalAnimation({ isVisible: showAdminConsole, duration: 300 })
-  const themeModal = useModalAnimation({ isVisible: showThemeSettings, duration: 200 })
   const themeContent = useModalAnimation({ isVisible: showThemeSettings, duration: 300 })
   
   // Reanimated animations for main app
@@ -153,12 +153,16 @@ function App() {
 
   useEffect(() => {
     // Initialize performance monitoring in production
-    if (process.env.NODE_ENV === 'production') {
-      import('@/lib/monitoring/performance').then(({ initPerformanceMonitoring }) => {
+    if (import.meta.env['NODE_ENV'] === 'production') {
+      Promise.all([
+        import('@/lib/monitoring/performance'),
+        import('@/lib/logger')
+      ]).then(([{ initPerformanceMonitoring }, { createLogger }]) => {
+        const logger = createLogger('PerformanceMonitoring');
         initPerformanceMonitoring((metric) => {
           // Log performance metrics (could send to analytics service)
           if (metric.rating === 'poor') {
-            console.warn(`Poor ${metric.name}: ${metric.value}ms`);
+            logger.warn(`Poor ${metric.name}: ${metric.value}ms`, { metric });
           }
         });
       });
@@ -602,8 +606,9 @@ function App() {
       )}
 
       <Toaster />
+      <BottomNavBar />
     </div>
-          )}
+                    )}
         </>
       } />
       </Routes>

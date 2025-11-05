@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
 import type { Highlight } from '../../components/stories/highlights/StoryHighlights';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('useHighlights');
 
 const STORAGE_KEY = '@story_highlights';
 
@@ -21,7 +24,8 @@ export const useHighlights = (userId: string) => {
         setHighlights(parsedHighlights);
       }
     } catch (error) {
-      console.error('Failed to load highlights:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load highlights', err, { context: 'loadHighlights', userId });
     } finally {
       setIsLoading(false);
     }
@@ -33,7 +37,8 @@ export const useHighlights = (userId: string) => {
       await AsyncStorage.setItem(key, JSON.stringify(newHighlights));
       setHighlights(newHighlights);
     } catch (error) {
-      console.error('Failed to save highlights:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to save highlights', err, { context: 'saveHighlights', userId });
       throw error;
     }
   };
@@ -55,7 +60,8 @@ export const useHighlights = (userId: string) => {
 
         return { success: true, highlight: newHighlight };
       } catch (error) {
-        console.error('Failed to create highlight:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to create highlight', err, { context: 'createHighlight', userId, title });
         return { success: false, error: 'Failed to create highlight' };
       }
     },
@@ -74,7 +80,8 @@ export const useHighlights = (userId: string) => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to update highlight:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to update highlight', err, { context: 'updateHighlight', highlightId });
         return { success: false, error: 'Failed to update highlight' };
       }
     },
@@ -89,7 +96,8 @@ export const useHighlights = (userId: string) => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to delete highlight:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to delete highlight', err, { context: 'deleteHighlight', highlightId });
         return { success: false, error: 'Failed to delete highlight' };
       }
     },
@@ -116,7 +124,8 @@ export const useHighlights = (userId: string) => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to add stories to highlight:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to add stories to highlight', err, { context: 'addStoriesToHighlight', highlightId, storyIds });
         return { success: false, error: 'Failed to add stories' };
       }
     },
@@ -140,7 +149,8 @@ export const useHighlights = (userId: string) => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to remove story from highlight:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to remove story from highlight', err, { context: 'removeStoryFromHighlight', highlightId, storyId });
         return { success: false, error: 'Failed to remove story' };
       }
     },

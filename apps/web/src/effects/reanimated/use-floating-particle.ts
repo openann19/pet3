@@ -4,6 +4,7 @@ import { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming 
 import { useEffect } from 'react'
 import { timingConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { makeRng } from '@petspark/shared'
 
 export interface UseFloatingParticleOptions {
   initialX?: number
@@ -41,12 +42,14 @@ export function useFloatingParticle(
   const scale = useSharedValue(0.5)
 
   useEffect(() => {
-    const randomX1 = Math.random() * width
-    const randomX2 = Math.random() * width
-    const randomX3 = Math.random() * width
-    const randomY1 = Math.random() * height
-    const randomY2 = Math.random() * height
-    const randomY3 = Math.random() * height
+    const seed = Date.now() + initialX + initialY
+    const rng = makeRng(seed)
+    const randomX1 = rng() * width
+    const randomX2 = rng() * width
+    const randomX3 = rng() * width
+    const randomY1 = rng() * height
+    const randomY2 = rng() * height
+    const randomY3 = rng() * height
 
     x.value = withRepeat(
       withSequence(
@@ -93,7 +96,7 @@ export function useFloatingParticle(
       -1,
       false
     )
-  }, [width, height, duration, opacity, x, y, opacityValue, scale])
+  }, [width, height, duration, opacity, initialX, initialY, x, y, opacityValue, scale])
 
   const style = useAnimatedStyle(() => {
     return {

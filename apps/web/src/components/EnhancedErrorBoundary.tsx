@@ -1,9 +1,9 @@
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { createLogger } from '@/lib/logger';
+import { ArrowClockwise, Warning } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
-import { Component } from 'react'
-import { Warning, ArrowClockwise } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { createLogger } from '@/lib/logger'
+import { Component } from 'react';
 
 interface Props {
   children: ReactNode
@@ -42,7 +42,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined })
+    this.setState({ hasError: false })
     window.location.reload()
   }
 
@@ -68,7 +68,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <div className="text-left p-4 bg-muted rounded-lg">
                 <p className="text-xs font-mono text-destructive break-all">
                   {this.state.error.message}

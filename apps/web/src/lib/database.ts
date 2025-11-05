@@ -1,3 +1,5 @@
+import type { QueryFilter } from './types/database-query'
+import { isQueryOperator } from './types/database-query'
 import { generateULID } from './utils'
 
 export interface DBRecord {
@@ -7,12 +9,12 @@ export interface DBRecord {
   ownerId?: string
 }
 
-export interface QueryOptions {
+export interface QueryOptions<T extends DBRecord = DBRecord> {
   limit?: number
   offset?: number
-  sortBy?: string
+  sortBy?: keyof T
   sortOrder?: 'asc' | 'desc'
-  filter?: Record<string, any>
+  filter?: QueryFilter<T & Record<string, unknown>>
 }
 
 export interface QueryResult<T> {
@@ -60,7 +62,7 @@ export class DatabaseService {
 
   async findOne<T extends DBRecord>(
     collectionName: string,
-    filter: Partial<T>
+    filter: QueryFilter<T & Record<string, unknown>>
   ): Promise<T | null> {
     const collection = await this.getCollection<T>(collectionName)
     return collection.find(item => this.matchesFilter(item, filter)) || null
@@ -68,19 +70,20 @@ export class DatabaseService {
 
   async findMany<T extends DBRecord>(
     collectionName: string,
-    options: QueryOptions = {}
+    options: QueryOptions<T> = {}
   ): Promise<QueryResult<T>> {
     const collection = await this.getCollection<T>(collectionName)
     let filtered = collection
 
     if (options.filter) {
-      filtered = filtered.filter(item => this.matchesFilter(item, options.filter! as Partial<T>))
+      filtered = filtered.filter(item => this.matchesFilter(item, options.filter!))
     }
 
     if (options.sortBy) {
       filtered.sort((a, b) => {
-        const aVal = (a as any)[options.sortBy!]
-        const bVal = (b as any)[options.sortBy!]
+        const sortKey = options.sortBy as keyof T
+        const aVal = a[sortKey]
+        const bVal = b[sortKey]
         const comparison = aVal > bVal ? 1 : aVal < bVal ? -1 : 0
         return options.sortOrder === 'desc' ? -comparison : comparison
       })
@@ -130,7 +133,7 @@ export class DatabaseService {
 
   async deleteMany<T extends DBRecord>(
     collectionName: string,
-    filter: Partial<T>
+    filter: QueryFilter<T & Record<string, unknown>>
   ): Promise<number> {
     const collection = await this.getCollection<T>(collectionName)
     const filteredCollection = collection.filter(item => !this.matchesFilter(item, filter))
@@ -143,7 +146,7 @@ export class DatabaseService {
     return deletedCount
   }
 
-  async count<T extends DBRecord>(collectionName: string, filter?: Partial<T>): Promise<number> {
+  async count<T extends DBRecord>(collectionName: string, filter?: QueryFilter<T & Record<string, unknown>>): Promise<number> {
     const collection = await this.getCollection<T>(collectionName)
     
     if (!filter) return collection.length
@@ -151,37 +154,39 @@ export class DatabaseService {
     return collection.filter(item => this.matchesFilter(item, filter)).length
   }
 
-  async exists<T extends DBRecord>(collectionName: string, filter: Partial<T>): Promise<boolean> {
+  async exists<T extends DBRecord>(collectionName: string, filter: QueryFilter<T & Record<string, unknown>>): Promise<boolean> {
     const collection = await this.getCollection<T>(collectionName)
     return collection.some(item => this.matchesFilter(item, filter))
   }
 
-  private matchesFilter<T>(item: T, filter: Partial<T>): boolean {
+  private matchesFilter<T extends DBRecord>(item: T, filter: QueryFilter<T & Record<string, unknown>>): boolean {
     return Object.entries(filter).every(([key, value]) => {
-      const itemValue = (item as any)[key]
+      const itemValue = item[key as keyof T]
       
       if (Array.isArray(value)) {
         return value.includes(itemValue)
       }
       
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        if ('$in' in value) {
-          return (value as any).$in.includes(itemValue)
-        }
-        if ('$gt' in value) {
-          return itemValue > (value as any).$gt
-        }
-        if ('$lt' in value) {
-          return itemValue < (value as any).$lt
-        }
-        if ('$gte' in value) {
-          return itemValue >= (value as any).$gte
-        }
-        if ('$lte' in value) {
-          return itemValue <= (value as any).$lte
-        }
-        if ('$ne' in value) {
-          return itemValue !== (value as any).$ne
+        if (isQueryOperator(value)) {
+          if ('$in' in value && value.$in) {
+            return value.$in.includes(itemValue as never)
+          }
+          if ('$gt' in value && value.$gt !== undefined && value.$gt !== null) {
+            return itemValue > value.$gt
+          }
+          if ('$lt' in value && value.$lt !== undefined && value.$lt !== null) {
+            return itemValue < value.$lt
+          }
+          if ('$gte' in value && value.$gte !== undefined && value.$gte !== null) {
+            return itemValue >= value.$gte
+          }
+          if ('$lte' in value && value.$lte !== undefined && value.$lte !== null) {
+            return itemValue <= value.$lte
+          }
+          if ('$ne' in value && value.$ne !== undefined) {
+            return itemValue !== value.$ne
+          }
         }
       }
       

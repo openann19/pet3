@@ -1,11 +1,8 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { adminApi } from '@/api/admin-api'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge, badgeVariants } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -14,20 +11,28 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useStorage } from '@/hooks/useStorage'
+import type { Pet } from '@/lib/types'
 import {
-  MagnifyingGlass,
-  User,
-  Prohibit,
+  Calendar,
   CheckCircle,
-  Warning,
-  Eye,
   Envelope,
-  Calendar
+  Eye,
+  MagnifyingGlass,
+  Prohibit,
+  User,
+  Warning
 } from '@phosphor-icons/react'
+import type { VariantProps } from 'class-variance-authority'
+import { AnimatePresence, motion } from 'framer-motion'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { adminApi } from '@/api/admin-api'
+
+type BadgeVariant = VariantProps<typeof badgeVariants>['variant']
 
 interface UserData {
   id: string
@@ -44,7 +49,7 @@ interface UserData {
 }
 
 export default function UsersView() {
-  const [allPets] = useStorage<any[]>('all-pets', [])
+  const [allPets] = useStorage<Pet[]>('all-pets', [])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -55,7 +60,7 @@ export default function UsersView() {
     if (allPets && allPets.length > 0) {
       const userMap = new Map<string, UserData>()
 
-      allPets.forEach((pet: any) => {
+      allPets.forEach((pet: Pet) => {
         const ownerId = pet.ownerId || pet.ownerName || 'unknown'
         const ownerName = pet.ownerName || 'Unknown User'
 
@@ -180,7 +185,11 @@ export default function UsersView() {
       </div>
 
       <div className="p-6">
-        <Tabs value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+        <Tabs value={filterStatus} onValueChange={(v: string) => {
+          if (v === 'all' || v === 'active' || v === 'suspended' || v === 'banned') {
+            setFilterStatus(v);
+          }
+        }}>
           <TabsList>
             <TabsTrigger value="all">
               All ({users.length})
@@ -379,23 +388,34 @@ export default function UsersView() {
   )
 }
 
+interface StatusVariant {
+  variant: BadgeVariant;
+  label: string;
+}
+
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { variant: any; label: string }> = {
+  const variants: Record<string, StatusVariant> = {
     active: { variant: 'default', label: 'Active' },
     suspended: { variant: 'secondary', label: 'Suspended' },
     banned: { variant: 'destructive', label: 'Banned' }
   }
 
-  const config = variants[status] || variants.active
+  const config = variants[status] ?? variants['active']
   if (!config) return null
 
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
-function InfoCard({ label, value, icon: Icon }: any) {
+interface InfoCardProps {
+  label: string;
+  value: string | number;
+  icon: React.ComponentType<{ size?: number; className?: string; color?: string }>;
+}
+
+function InfoCard({ label, value, icon: Icon }: InfoCardProps) {
   return (
     <div className="p-4 bg-muted rounded-lg">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">                                                                              
         <Icon size={14} />
         {label}
       </div>

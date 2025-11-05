@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { WifiSlash, Wifi } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
+import { WifiHigh, WifiSlash } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 
 export function OfflineIndicator(): JSX.Element | null {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -53,7 +53,7 @@ export function OfflineIndicator(): JSX.Element | null {
           </>
         ) : (
           <>
-            <Wifi size={16} weight="bold" />
+            <WifiHigh size={16} weight="bold" />
             <span>Back online! Syncing your changes...</span>
           </>
         )}

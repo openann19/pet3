@@ -69,9 +69,30 @@ export function PostDetailView({
       if (loadedPost) {
         setPost(loadedPost)
         setLikesCount(loadedPost.reactionsCount || 0)
-        // TODO: Check if user has reacted/saved
-        setIsLiked(false)
-        setIsSaved(false)
+        // Check if user has reacted/saved by fetching current state
+        userService.user()
+          .then(user => {
+            const userId = user?.id
+            if (userId) {
+              // Check if post is saved
+              communityService.isPostSaved(postId)
+                .then(saved => setIsSaved(saved))
+                .catch(() => setIsSaved(false))
+              
+              // Note: User reaction state will be updated when user interacts with the post
+              // For initial load, default to false as we don't have reaction list in Post type
+              setIsLiked(false)
+            } else {
+              // No user logged in, default to false
+              setIsLiked(false)
+              setIsSaved(false)
+            }
+          })
+          .catch(() => {
+            // If user fetch fails, default to false
+            setIsLiked(false)
+            setIsSaved(false)
+          })
       } else {
         toast.error('Post not found')
         onOpenChange(false)
@@ -117,7 +138,7 @@ export function PostDetailView({
       }
       
       const userId = typeof user.id === 'string' ? user.id : ''
-      const userName = typeof user.name === 'string' ? user.name : 'User'
+      const userName = typeof user['name'] === 'string' ? user['name'] : 'User'
       const result = await communityAPI.toggleReaction(
         post.id,
         userId,
@@ -170,7 +191,7 @@ export function PostDetailView({
       if (navigator.share) {
         await navigator.share({
           title: `Post by ${post.authorName}`,
-          text: post.text,
+          ...(post.text ? { text: post.text } : {}),
           url: window.location.href
         })
       } else {
@@ -194,14 +215,18 @@ export function PostDetailView({
       }
       
       const userId = typeof user.id === 'string' ? user.id : ''
-      const userName = typeof user.name === 'string' ? user.name : 'User'
-      await communityAPI.createComment({
+      const userName = typeof user['name'] === 'string' ? user['name'] : 'User'
+      const commentData: Parameters<typeof communityAPI.createComment>[0] = {
         postId: post.id,
         text: commentText.trim(),
         authorId: userId,
         authorName: userName,
-        authorAvatar: typeof user.avatarUrl === 'string' ? user.avatarUrl : undefined
-      })
+      }
+      const avatarUrl = typeof user.avatarUrl === 'string' ? user.avatarUrl : undefined
+      if (avatarUrl !== undefined) {
+        commentData.authorAvatar = avatarUrl
+      }
+      await communityAPI.createComment(commentData)
       
       setCommentText('')
       await loadComments()

@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import type { Story } from '@/lib/stories-types'
+import { filterActiveStories, groupStoriesByUser } from '@/lib/stories-utils'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import CreateStoryDialog from './CreateStoryDialog'
 import StoryRing from './StoryRing'
 import StoryViewer from './StoryViewer'
-import CreateStoryDialog from './CreateStoryDialog'
-import { groupStoriesByUser, filterActiveStories } from '@/lib/stories-utils'
-import type { Story } from '@/lib/stories-types'
 
 interface StoriesBarProps {
   allStories: Story[]
@@ -86,7 +86,7 @@ export default function StoriesBar({
           petId={currentUserPetId}
           petName={currentUserPetName}
           petPhoto={currentUserPetPhoto}
-          userAvatar={currentUserAvatar}
+          {...(currentUserAvatar !== undefined ? { userAvatar: currentUserAvatar } : {})}
           onStoryCreated={onStoryCreated}
         />
       </>
@@ -144,7 +144,7 @@ export default function StoriesBar({
           stories={viewingStories}
           currentUserId={currentUserId}
           currentUserName={currentUserName}
-          currentUserAvatar={currentUserAvatar}
+          {...(currentUserAvatar !== undefined ? { currentUserAvatar } : {})}
           onClose={() => setViewingStories(null)}
           onStoryUpdate={onStoryUpdate}
         />
@@ -158,7 +158,7 @@ export default function StoriesBar({
         petId={currentUserPetId}
         petName={currentUserPetName}
         petPhoto={currentUserPetPhoto}
-        userAvatar={currentUserAvatar}
+        {...(currentUserAvatar !== undefined ? { userAvatar: currentUserAvatar } : {})}
         onStoryCreated={onStoryCreated}
       />
     </>

@@ -1,4 +1,8 @@
 import { createLogger } from '@/lib/logger'
+import type {
+  LayoutShiftEntry,
+  PerformanceWithMemory
+} from '@/lib/types/performance-api'
 import { sentryConfig } from './sentry-config'
 
 const logger = createLogger('PerformanceMonitor')
@@ -42,16 +46,18 @@ class PerformanceMonitorImpl {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
         this.observers.push(lcpObserver)
       } catch (e) {
-        logger.warn('LCP observer not supported')
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('LCP observer not supported', err)
       }
 
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
-        entries.forEach((entry: any) => {
+        entries.forEach((entry) => {
+          const fidEntry = entry as PerformanceEntry & { processingStart: number }
           this.recordMetric({
             name: 'web_vitals.fid',
-            value: entry.processingStart - entry.startTime,
+            value: fidEntry.processingStart - fidEntry.startTime,
             unit: 'ms',
             timestamp: Date.now()
           })
@@ -62,16 +68,18 @@ class PerformanceMonitorImpl {
         fidObserver.observe({ entryTypes: ['first-input'] })
         this.observers.push(fidObserver)
       } catch (e) {
-        logger.warn('FID observer not supported')
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('FID observer not supported', err)
       }
 
       // Cumulative Layout Shift
       let clsValue = 0
       const clsObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
-        entries.forEach((entry: any) => {
-          if (!entry.hadRecentInput) {
-            clsValue += entry.value
+        entries.forEach((entry) => {
+          const clsEntry = entry as LayoutShiftEntry
+          if (!clsEntry.hadRecentInput) {
+            clsValue += clsEntry.value
           }
         })
         
@@ -87,7 +95,8 @@ class PerformanceMonitorImpl {
         clsObserver.observe({ entryTypes: ['layout-shift'] })
         this.observers.push(clsObserver)
       } catch (e) {
-        logger.warn('CLS observer not supported')
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('CLS observer not supported', err)
       }
     }
   }
@@ -97,31 +106,32 @@ class PerformanceMonitorImpl {
       const resourceObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         
-        entries.forEach((entry: any) => {
+        entries.forEach((entry) => {
+          const resourceEntry = entry as PerformanceResourceTiming
           // Monitor slow resources
-          if (entry.duration > 1000) {
+          if (resourceEntry.duration > 1000) {
             this.recordMetric({
               name: 'resource.slow_load',
-              value: entry.duration,
+              value: resourceEntry.duration,
               unit: 'ms',
               timestamp: Date.now(),
               tags: {
-                resource_type: entry.initiatorType,
-                resource_name: entry.name.split('/').pop() || 'unknown'
+                resource_type: resourceEntry.initiatorType,
+                resource_name: resourceEntry.name.split('/').pop() || 'unknown'
               }
             })
           }
 
           // Monitor large resources
-          if (entry.transferSize > 1000000) { // 1MB
+          if (resourceEntry.transferSize > 1000000) { // 1MB
             this.recordMetric({
               name: 'resource.large_size',
-              value: entry.transferSize,
+              value: resourceEntry.transferSize,
               unit: 'bytes',
               timestamp: Date.now(),
               tags: {
-                resource_type: entry.initiatorType,
-                resource_name: entry.name.split('/').pop() || 'unknown'
+                resource_type: resourceEntry.initiatorType,
+                resource_name: resourceEntry.name.split('/').pop() || 'unknown'
               }
             })
           }
@@ -132,7 +142,8 @@ class PerformanceMonitorImpl {
         resourceObserver.observe({ entryTypes: ['resource'] })
         this.observers.push(resourceObserver)
       } catch (e) {
-        logger.warn('Resource observer not supported')
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('Resource observer not supported', err)
       }
     }
   }
@@ -145,7 +156,7 @@ class PerformanceMonitorImpl {
         entries.forEach((entry) => {
           this.recordMetric({
             name: `user_timing.${entry.name}`,
-            value: entry.duration || (entry as any).startTime,
+            value: entry.duration || entry.startTime,
             unit: 'ms',
             timestamp: Date.now()
           })
@@ -156,7 +167,8 @@ class PerformanceMonitorImpl {
         userTimingObserver.observe({ entryTypes: ['measure', 'mark'] })
         this.observers.push(userTimingObserver)
       } catch (e) {
-        logger.warn('User timing observer not supported')
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('User timing observer not supported', err)
       }
     }
   }
@@ -164,8 +176,9 @@ class PerformanceMonitorImpl {
   private setupMemoryMonitoring(): void {
     // Monitor memory usage
     setInterval(() => {
-      if ('memory' in performance) {
-        const memory = (performance as any).memory
+      const performanceWithMemory = performance as PerformanceWithMemory
+      if (performanceWithMemory.memory) {
+        const memory = performanceWithMemory.memory
         
         this.recordMetric({
           name: 'memory.used_heap_size',
@@ -245,7 +258,8 @@ class PerformanceMonitorImpl {
       try {
         performance.measure(name, startMark, endMark)
       } catch (e) {
-        logger.warn('Failed to create performance measure', { name, startMark, endMark })
+        const err = e instanceof Error ? e : new Error(String(e))
+        logger.warn('Failed to create performance measure', err, { name, startMark, endMark })
       }
     }
   }
@@ -287,7 +301,7 @@ class PerformanceMonitorImpl {
     })
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       logger.debug('Performance metric recorded', metric)
     }
 

@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
-  Alert,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import * as Location from 'expo-location';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('LocationShare');
 
 interface LocationData {
   latitude: number;
@@ -73,20 +76,23 @@ export const LocationShare: React.FC<LocationShareProps> = ({
 
         if (addresses.length > 0) {
           const addr = addresses[0];
-          const formattedAddress = [
-            addr.street,
-            addr.city,
-            addr.region,
-            addr.country,
-          ]
-            .filter(Boolean)
-            .join(', ');
-          setAddress(formattedAddress);
-          locationData.address = formattedAddress;
-          setLocation(locationData);
+          if (addr) {
+            const formattedAddress = [
+              addr.street,
+              addr.city,
+              addr.region,
+              addr.country,
+            ]
+              .filter(Boolean)
+              .join(', ');
+            setAddress(formattedAddress);
+            locationData.address = formattedAddress;
+            setLocation(locationData);
+          }
         }
       } catch (error) {
-        console.log('Failed to get address:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to get address', err, { context: 'reverseGeocode', latitude: position.coords.latitude, longitude: position.coords.longitude });
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to get your location');

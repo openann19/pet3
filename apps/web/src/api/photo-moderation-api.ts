@@ -5,21 +5,21 @@
  * Uses strict optional semantics for updates.
  */
 
-import type { OptionalWithUndef } from '@/types/optional-with-undef'
-import { createLogger } from '@/lib/logger'
-import { photoModerationStorage } from '@/core/services/photo-moderation-storage'
-import { photoModerationQueue } from '@/core/services/photo-moderation-queue'
-import { photoScanningService } from '@/core/services/photo-scanning'
+import type {
+  PhotoModerationAction,
+  PhotoModerationMetadata,
+  PhotoModerationRecord,
+  PhotoModerationStatus
+} from '@/core/domain/photo-moderation'
+import { isPhotoVisible, isValidStatusTransition } from '@/core/domain/photo-moderation'
 import { photoModerationAudit } from '@/core/services/photo-moderation-audit'
 import { photoModerationEvents } from '@/core/services/photo-moderation-events'
+import { photoModerationQueue } from '@/core/services/photo-moderation-queue'
+import { photoModerationStorage } from '@/core/services/photo-moderation-storage'
+import { photoScanningService } from '@/core/services/photo-scanning'
 import { getKYCStatus } from '@/lib/kyc-service'
-import type {
-  PhotoModerationRecord,
-  PhotoModerationStatus,
-  PhotoModerationAction,
-  PhotoModerationMetadata
-} from '@/core/domain/photo-moderation'
-import { isValidStatusTransition, isPhotoVisible } from '@/core/domain/photo-moderation'
+import { createLogger } from '@/lib/logger'
+import type { OptionalWithUndef } from '@/types/optional-with-undef'
 
 const logger = createLogger('PhotoModerationAPI')
 
@@ -179,13 +179,20 @@ export class PhotoModerationAPI {
       }
 
       // Update record
+      const updateData: {
+        status: PhotoModerationStatus
+        moderatedBy: string
+        rejectionReason?: string
+      } = {
+        status: newStatus,
+        moderatedBy: request.performedBy,
+      }
+      if (request.rejectionReason !== undefined) {
+        updateData.rejectionReason = request.rejectionReason
+      }
       const updatedRecord = await photoModerationStorage.updateRecord(
         request.photoId,
-        {
-          status: newStatus,
-          moderatedBy: request.performedBy,
-          rejectionReason: request.rejectionReason
-        }
+        updateData
       )
 
       // Update queue
@@ -196,17 +203,34 @@ export class PhotoModerationAPI {
       }
 
       // Log audit
-      await photoModerationAudit.logEvent({
+      const auditMetadata: {
+        rejectionReason?: string
+      } = {}
+      if (request.rejectionReason !== undefined) {
+        auditMetadata.rejectionReason = request.rejectionReason
+      }
+      const auditLogOptions: {
+        photoId: string
+        action: PhotoModerationAction
+        performedBy: string
+        previousStatus: PhotoModerationStatus
+        newStatus: PhotoModerationStatus
+        metadata: {
+          rejectionReason?: string
+        }
+        reason?: string
+      } = {
         photoId: request.photoId,
         action: request.action,
         performedBy: request.performedBy,
-        reason: request.reason,
         previousStatus,
         newStatus,
-        metadata: {
-          rejectionReason: request.rejectionReason
-        }
-      })
+        metadata: auditMetadata
+      }
+      if (request.reason !== undefined) {
+        auditLogOptions.reason = request.reason
+      }
+      await photoModerationAudit.logEvent(auditLogOptions)
 
       // Emit event
       await photoModerationEvents.emitStateChange(

@@ -27,6 +27,10 @@ export function Announcer({
       
       return () => clearTimeout(timeout);
     }
+    
+    return (): void => {
+      // No cleanup needed when clearDelay is 0 or message is empty
+    };
   }, [message, clearDelay]);
 
   return (

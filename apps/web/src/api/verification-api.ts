@@ -6,19 +6,9 @@
 
 import { APIClient } from '@/lib/api-client'
 import { createLogger } from '@/lib/logger'
+import type { VerificationRequest, VerificationStatus } from '@/lib/verification-types'
 
 const logger = createLogger('VerificationAPI')
-
-export interface VerificationRequest {
-  id: string
-  petId: string
-  userId: string
-  status: 'pending' | 'approved' | 'rejected'
-  submittedAt: string
-  reviewedAt?: string
-  reviewedBy?: string
-  notes?: string
-}
 
 export interface GetVerificationRequestsResponse {
   requests: VerificationRequest[]
@@ -41,7 +31,7 @@ class VerificationApiImpl {
    */
   async getVerificationRequests(
     filters?: {
-      status?: VerificationRequest['status'][]
+      status?: VerificationStatus[]
       petId?: string
       userId?: string
     }
@@ -78,7 +68,9 @@ class VerificationApiImpl {
       const request: UpdateVerificationStatusRequest = {
         status,
         reviewedBy,
-        notes
+      }
+      if (notes !== undefined) {
+        request.notes = notes
       }
 
       const response = await APIClient.post<UpdateVerificationStatusResponse>(

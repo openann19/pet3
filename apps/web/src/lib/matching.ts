@@ -188,3 +188,12 @@ function generateFallbackReasoning(userPet: Pet, otherPet: Pet, factors: Compati
 
   return reasoning
 }
+
+/**
+ * Synchronous match reasons generator - returns immediate results without LLM
+ * Use this when you need instant match reasons without waiting for AI
+ */
+export function generateMatchReasonsSync(userPet: Pet, otherPet: Pet): string[] {
+  const factors = getCompatibilityFactors(userPet, otherPet)
+  return generateFallbackReasoning(userPet, otherPet, factors)
+}

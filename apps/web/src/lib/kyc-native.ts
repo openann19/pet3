@@ -102,8 +102,9 @@ export const kycNative = new KycNativeService();
 // Usage example:
 // import { kycNative } from '@/lib/kyc-native';
 //
+// Example usage:
 // const subscription = kycNative.onProgress((progress) => {
-//   console.log(`KYC progress: ${progress.progress}% - ${progress.stage}`);
+//   // Progress updates handled via callback
 // });
 //
 // try {
@@ -111,10 +112,10 @@ export const kycNative = new KycNativeService();
 //     userId: 'user123',
 //     token: 'kyc_token',
 //     locale: 'en'
-//   });
-//   console.log('KYC session started:', result.sessionId);
+// });
+//   // Session started successfully
 // } catch (error) {
-//   console.error('KYC error:', error);
+//   // Error handling should be implemented
 // } finally {
 //   subscription.remove();
 // }

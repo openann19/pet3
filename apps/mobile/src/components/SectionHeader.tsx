@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native'
 import { colors } from '@mobile/theme/colors'
+import { StyleSheet, Text, View } from 'react-native'
 
 type SectionHeaderProps = {
   title: string
   description?: string
 }
 
-export function SectionHeader({ title, description }: SectionHeaderProps) {
+export function SectionHeader({ title, description }: SectionHeaderProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>

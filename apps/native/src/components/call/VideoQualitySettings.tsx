@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('VideoQualitySettings');
 
 type QualityPreset = '4K' | '1080p' | '720p' | '480p';
 
@@ -33,6 +37,17 @@ export const VideoQualitySettings: React.FC = () => {
   useEffect(() => {
     loadSettings();
     checkNetworkQuality();
+
+    // Subscribe to network changes
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        checkNetworkQuality();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const loadSettings = async () => {
@@ -42,7 +57,8 @@ export const VideoQualitySettings: React.FC = () => {
         setSelectedQuality(saved as QualityPreset);
       }
     } catch (error) {
-      console.error('Failed to load quality settings:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load quality settings', err);
     }
   };
 
@@ -51,14 +67,56 @@ export const VideoQualitySettings: React.FC = () => {
       await AsyncStorage.setItem(STORAGE_KEY, quality);
       setSelectedQuality(quality);
     } catch (error) {
-      console.error('Failed to save quality settings:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to save quality settings', err);
     }
   };
 
-  const checkNetworkQuality = () => {
-    // TODO: Implement actual network quality check
-    // For now, just set a default recommendation
-    setNetworkRecommendation('720p');
+  const checkNetworkQuality = async () => {
+    try {
+      // Use NetInfo to detect network type and speed
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const NetInfo = require('@react-native-community/netinfo')
+      const state = await NetInfo.fetch()
+      
+      if (!state.isConnected) {
+        setNetworkRecommendation('480p')
+        return
+      }
+
+      const connectionType = state.type
+      const isWifi = connectionType === 'wifi'
+      const isEthernet = connectionType === 'ethernet'
+      const isCellular = connectionType === 'cellular'
+
+      // Check if detailed info is available
+      const details = state.details as { effectiveType?: string; downlink?: number } | undefined
+
+      if (isWifi || isEthernet) {
+        // WiFi/Ethernet: recommend 1080p or 4K
+        if (details?.downlink && details.downlink > 10) {
+          setNetworkRecommendation('4K')
+        } else {
+          setNetworkRecommendation('1080p')
+        }
+      } else if (isCellular) {
+        // Cellular: check connection quality
+        if (details?.effectiveType === '4g' && details?.downlink && details.downlink > 5) {
+          setNetworkRecommendation('1080p')
+        } else if (details?.effectiveType === '4g' || details?.effectiveType === '3g') {
+          setNetworkRecommendation('720p')
+        } else {
+          setNetworkRecommendation('480p')
+        }
+      } else {
+        // Unknown connection: default to 720p
+        setNetworkRecommendation('720p')
+      }
+    } catch (error) {
+      logger.error('Failed to check network quality', error instanceof Error ? error : new Error(String(error)))
+      // Default to 720p on error
+      setNetworkRecommendation('720p')
+    }
   };
 
   const getQualityDescription = (preset: QualityPreset): string => {

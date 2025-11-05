@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useStorage } from '@/hooks/useStorage'
 import {
-  MagnifyingGlass,
-  ListBullets,
+  CheckCircle,
   Flag,
-  ShieldCheck,
+  ListBullets,
+  MagnifyingGlass,
   Prohibit,
-  CheckCircle
+  ShieldCheck
 } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
 
 interface AuditEntry {
   id: string
@@ -22,7 +22,7 @@ interface AuditEntry {
   action: string
   targetType: string
   targetId: string
-  details?: any
+  details?: Record<string, unknown>
   timestamp: string
 }
 
@@ -168,7 +168,8 @@ function ActionIcon({ action }: { action: string }) {
 }
 
 function ActionBadge({ action }: { action: string }) {
-  const variants: Record<string, { variant: any; label: string }> = {
+  type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+  const variants: Record<string, { variant: BadgeVariant; label: string }> = {
     resolve_report: { variant: 'default', label: 'Resolved Report' },
     suspend_user: { variant: 'secondary', label: 'Suspended User' },
     ban_user: { variant: 'destructive', label: 'Banned User' },

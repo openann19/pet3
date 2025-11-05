@@ -1,6 +1,20 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
+/**
+ * Seeded Random Number Generator
+ * Xorshift32 algorithm for deterministic random number generation.
+ */
+function makeRng(seed: number): () => number {
+  let s = seed >>> 0
+  return (): number => {
+    s ^= s << 13
+    s ^= s >>> 17
+    s ^= s << 5
+    return (s >>> 0) / 4294967296
+  }
+}
+
 interface Particle {
   id: number
   x: number
@@ -27,17 +41,20 @@ export function ParticleEffect({
   useEffect(() => {
     if (triggerKey === 0) return
 
+    const seed = triggerKey * 1000 + Date.now()
+    const rng = makeRng(seed)
+
     const newParticles: Particle[] = Array.from({ length: count }, (_, i) => {
-      const colorIndex = Math.floor(Math.random() * colors.length)
+      const colorIndex = Math.floor(rng() * colors.length)
       const selectedColor = colors[colorIndex]
       return {
         id: i + triggerKey * 1000,
-        x: Math.random() * 100 - 50,
-        y: Math.random() * -100 - 50,
-        size: Math.random() * 12 + 4,
+        x: rng() * 100 - 50,
+        y: rng() * -100 - 50,
+        size: rng() * 12 + 4,
         color: selectedColor ?? '#F97316',
-        duration: Math.random() * 1.5 + 1,
-        delay: Math.random() * 0.3
+        duration: rng() * 1.5 + 1,
+        delay: rng() * 0.3
       }
     })
 

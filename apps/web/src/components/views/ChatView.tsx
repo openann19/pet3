@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
 import ChatRoomsList from '@/components/ChatRoomsList'
 import ChatWindow from '@/components/ChatWindowNew'
-import type { ChatRoom } from '@/lib/chat-types'
-import type { Match, Pet } from '@/lib/types'
-import { createChatRoom } from '@/lib/chat-utils'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { useApp } from '@/contexts/AppContext'
-import { createLogger } from '@/lib/logger'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { useStorage } from '@/hooks/useStorage'
 import { getRoomMessages } from '@/lib/chat-service'
+import type { ChatRoom } from '@/lib/chat-types'
+import { createChatRoom } from '@/lib/chat-utils'
+import { createLogger } from '@/lib/logger'
+import type { Match, Pet } from '@/lib/types'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
 const logger = createLogger('ChatView')
 
@@ -80,8 +80,8 @@ export default function ChatView() {
 
               return {
                 ...room,
-                lastMessage,
-                unreadCount,
+                ...(lastMessage && { lastMessage }),
+                ...(unreadCount !== undefined && { unreadCount }),
                 updatedAt: lastMessage?.timestamp ?? room.updatedAt
               }
             }
@@ -163,7 +163,7 @@ export default function ChatView() {
               <ChatRoomsList
                 rooms={chatRooms || []}
                 onSelectRoom={handleSelectRoom}
-                selectedRoomId={selectedRoom?.id}
+                {...(selectedRoom?.id && { selectedRoomId: selectedRoom.id })}
               />
             </motion.div>
           )}
@@ -183,7 +183,7 @@ export default function ChatView() {
                 currentUserId={userPet.id}
                 currentUserName={userPet.name}
                 currentUserAvatar={userPet.photo}
-                onBack={isMobile ? handleBack : undefined}
+                {...(isMobile && { onBack: handleBack })}
               />
             </motion.div>
           )}

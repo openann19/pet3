@@ -1,31 +1,31 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Heart,
-  Syringe,
-  Calendar,
-  Bell,
-  Plus,
-  FileText,
-  Warning,
-  CheckCircle,
-  ClockCountdown,
-  X
-} from '@phosphor-icons/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { Pet } from '@/lib/types'
+import { useStorage } from '@/hooks/useStorage'
 import type {
-  VaccinationRecord,
-  HealthRecord,
-  VetReminder,
-  PetHealthSummary
+    HealthRecord,
+    PetHealthSummary,
+    VaccinationRecord,
+    VetReminder
 } from '@/lib/health-types'
-import { format, differenceInDays, isPast } from 'date-fns'
+import type { Pet } from '@/lib/types'
+import {
+    Bell,
+    Calendar,
+    CheckCircle,
+    ClockCountdown,
+    FileText,
+    Heart,
+    Plus,
+    Syringe,
+    Warning,
+    X
+} from '@phosphor-icons/react'
+import { differenceInDays, format, isPast } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface PetHealthDashboardProps {
@@ -86,14 +86,17 @@ export default function PetHealthDashboard({ pet, onClose }: PetHealthDashboardP
         ? 'due-soon'
         : 'up-to-date'
 
-    setHealthSummary({
+    const summary: PetHealthSummary = {
       petId: pet.id,
-      lastCheckup,
       upcomingVaccinations,
       activeReminders,
       recentRecords,
       vaccinationStatus
-    })
+    }
+    if (lastCheckup !== undefined) {
+      summary.lastCheckup = lastCheckup
+    }
+    setHealthSummary(summary)
   }
 
   const getStatusColor = (status: PetHealthSummary['vaccinationStatus']) => {

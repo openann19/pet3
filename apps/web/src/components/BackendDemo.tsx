@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
-import { db } from '@/lib/database'
-import { Database, User, CheckCircle, XCircle, ArrowsClockwise, Trash, Eye } from '@phosphor-icons/react'
-import { toast } from 'sonner'
+import { db, type QueryOptions } from '@/lib/database'
 import { logger } from '@/lib/logger'
+import { ArrowsClockwise, CheckCircle, Database, Eye, Trash, User, XCircle } from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface DemoRecord {
   id: string
@@ -39,12 +39,15 @@ export default function BackendDemo() {
   const loadRecords = async () => {
     setIsLoading(true)
     try {
-      const result = await db.findMany<DemoRecord>('demo_records', {
-        filter: user ? { ownerId: user.id } : undefined,
+      const queryOptions: QueryOptions<DemoRecord> = {
         sortBy: 'createdAt',
         sortOrder: 'desc',
         limit: 10
-      })
+      }
+      if (user) {
+        queryOptions.filter = { ownerId: user.id }
+      }
+      const result = await db.findMany<DemoRecord>('demo_records', queryOptions)
       setRecords(result.data)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))

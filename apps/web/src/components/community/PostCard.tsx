@@ -1,28 +1,29 @@
-import { useState, useEffect, memo } from 'react'
-import { motion } from 'framer-motion'
-import { Heart, ChatCircle, BookmarkSimple, Share, DotsThree, MapPin, Tag, Flag } from '@phosphor-icons/react'                                                        
-import { Button } from '@/components/ui/button'
+import { communityAPI } from '@/api/community-api'
 import { Avatar } from '@/components/ui/avatar'
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Post } from '@/lib/community-types'
-import { communityAPI } from '@/api/community-api'
-import { communityService } from '@/lib/community-service'
-import { triggerHaptic } from '@/lib/haptics'
-import { toast } from 'sonner'
-import { formatDistanceToNow } from 'date-fns'
 import { useApp } from '@/contexts/AppContext'
-import { CommentsSheet } from './CommentsSheet'
-import { MediaViewer } from './MediaViewer'
-import { ReportDialog } from './ReportDialog'
-import { PostDetailView } from './PostDetailView'
+import { communityService } from '@/lib/community-service'
+import type { Post } from '@/lib/community-types'
+import { triggerHaptic } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
+import { BookmarkSimple, ChatCircle, DotsThree, Flag, Heart, MapPin, Share, Tag } from '@phosphor-icons/react'
+import { formatDistanceToNow } from 'date-fns'
+import { motion } from 'framer-motion'
+import { memo, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { CommentsSheet } from './CommentsSheet'
+import type { MediaItem } from './MediaViewer'
+import { MediaViewer } from './MediaViewer'
+import { PostDetailView } from './PostDetailView'
+import { ReportDialog } from './ReportDialog'
 
 const logger = createLogger('PostCard')
 
@@ -154,19 +155,22 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps) 
         url: item,
         thumbnail: item,
         type: 'photo' as const,
-        width: undefined,
-        height: undefined
       }
     } else {
       // It's already a PostMedia object
-      return {
+      const mediaItem: MediaItem = {
         id: item.id || `media-${index}`,
         url: item.url,
         thumbnail: item.thumbnail || item.url,
         type: item.type,
-        width: item.width,
-        height: item.height
       }
+      if (item.width !== undefined) {
+        mediaItem.width = item.width
+      }
+      if (item.height !== undefined) {
+        mediaItem.height = item.height
+      }
+      return mediaItem
     }
   })
 
@@ -416,7 +420,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps) 
         open={showPostDetail}
         onOpenChange={setShowPostDetail}
         postId={post.id}
-        onAuthorClick={onAuthorClick}
+        {...(onAuthorClick ? { onAuthorClick } : {})}
       />
     </>
   )

@@ -1,5 +1,5 @@
-import type { OwnerPreferences, PetProfile } from '@pet/domain/pet-model'
 import { DEFAULT_HARD_GATES, DEFAULT_MATCHING_WEIGHTS } from '@pet/domain/matching-config'
+import type { OwnerPreferences, PetProfile } from '@pet/domain/pet-model'
 
 export const samplePets: PetProfile[] = [
   {
@@ -90,7 +90,6 @@ export const samplePets: PetProfile[] = [
       lastVetCheck: '2024-09-18',
       specialNeeds: ['daily agility training'],
       aggressionFlags: false,
-      aggressionReason: undefined,
       biteHistory: false,
       attackHistory: false
     },
@@ -149,7 +148,7 @@ export const sampleOwnerPreferences: OwnerPreferences = {
   allowCrossSpecies: false,
   sizesCompatible: ['medium', 'large'],
   intentsAllowed: ['playdate', 'companionship', 'adoption'],
-  lifeStageMin: 'adolescent',
+  lifeStageMin: 'young',
   lifeStageMax: 'senior',
   requireVaccinations: true,
   scheduleWindows: [

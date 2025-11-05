@@ -1,18 +1,20 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, MapPin, Sparkle, ChartBar, ChatCircle, Calendar, VideoCamera } from '@phosphor-icons/react'
+import CallInterface from '@/components/call/CallInterface'
+import CompatibilityBreakdown from '@/components/CompatibilityBreakdown'
+import { DetailedPetAnalytics } from '@/components/enhanced/DetailedPetAnalytics'
+import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
+import PlaydateScheduler from '@/components/playdate/PlaydateScheduler'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import type { Pet, Match } from '@/lib/types'
-import { getCompatibilityFactors } from '@/lib/matching'
-import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
-import CompatibilityBreakdown from '@/components/CompatibilityBreakdown'
-import PlaydateScheduler from '@/components/playdate/PlaydateScheduler'
-import CallInterface from '@/components/call/CallInterface'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useApp } from '@/contexts/AppContext'
 import { useCall } from '@/hooks/useCall'
 import { useMatches } from '@/hooks/useMatches'
-import { useApp } from '@/contexts/AppContext'
 import { haptics } from '@/lib/haptics'
+import { calculateCompatibility, getCompatibilityFactors } from '@/lib/matching'
+import type { Match, Pet } from '@/lib/types'
+import { Calendar, ChartBar, ChatCircle, Heart, MapPin, Sparkle, VideoCamera } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
 
 interface MatchesViewProps {
   onNavigateToChat?: () => void
@@ -31,7 +33,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
     clearSelection,
   } = useMatches()
 
-  const [breakdownPet, setBreakdownPet] = useState<Pet | null>(null)
+  const [breakdownPet, setBreakdownPet] = useState<(Pet & { match: Match }) | null>(null)
   const [playdatePet, setPlaydatePet] = useState<Pet & { match: Match } | null>(null)
 
   const {
@@ -260,7 +262,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
           <EnhancedPetDetailView
             pet={selectedPet}
             onClose={clearSelection}
-            onChat={onNavigateToChat}
+            {...(onNavigateToChat ? { onChat: onNavigateToChat } : {})}
             compatibilityScore={selectedMatch.compatibilityScore}
             matchReasons={matchReasoning}
             showActions={false}
@@ -269,16 +271,32 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
       </AnimatePresence>
 
       <Dialog open={!!breakdownPet} onOpenChange={(open) => !open && setBreakdownPet(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {breakdownPet && userPet && (
             <div>
               <div className="mb-4">
                 <h3 className="text-2xl font-bold">{breakdownPet.name}</h3>
                 <p className="text-muted-foreground">{t.matches.compatibilityWith} {userPet.name}</p>
               </div>
-              <CompatibilityBreakdown 
-                factors={getCompatibilityFactors(userPet, breakdownPet)}
-              />
+              <Tabs defaultValue="analytics" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
+                </TabsList>
+                <TabsContent value="analytics" className="mt-4">
+                  <DetailedPetAnalytics
+                    pet={breakdownPet}
+                    {...(breakdownPet.trustProfile ? { trustProfile: breakdownPet.trustProfile } : {})}
+                    compatibilityScore={calculateCompatibility(userPet, breakdownPet)}
+                    matchReasons={breakdownPet.match.reasoning || []}
+                  />
+                </TabsContent>
+                <TabsContent value="breakdown" className="mt-4">
+                  <CompatibilityBreakdown 
+                    factors={getCompatibilityFactors(userPet, breakdownPet)}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </DialogContent>

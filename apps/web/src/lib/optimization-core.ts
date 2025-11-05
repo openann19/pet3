@@ -55,14 +55,14 @@ export function useThrottle<T>(value: T, limit: number = 100): T {
   return throttledValue
 }
 
-export function useMemoizedCallback<T extends (...args: any[]) => any>(
+export function useMemoizedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: React.DependencyList
 ): T {
   return useCallback(callback, deps)
 }
 
-export function useStableCallback<T extends (...args: any[]) => any>(callback: T): T {
+export function useStableCallback<T extends (...args: unknown[]) => unknown>(callback: T): T {
   const callbackRef = useRef(callback)
 
   useEffect(() => {

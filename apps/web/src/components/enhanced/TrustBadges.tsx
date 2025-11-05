@@ -1,6 +1,6 @@
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { CheckCircle, Heart, Lightning, Sparkle, Star, Trophy } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
-import { CheckCircle, Heart, Star, Lightning, Trophy, Sparkle } from '@phosphor-icons/react'
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 
 interface TrustBadge {
   type: 'verified' | 'health' | 'responsive' | 'experienced' | 'top-rated' | 'favorite'
@@ -88,14 +88,16 @@ export function TrustBadges({ badges, size = 'md', animated = true }: TrustBadge
           const content = (
             <motion.div
               key={badge.type}
-              initial={animated ? { scale: 0, opacity: 0 } : undefined}
-              animate={animated ? { scale: 1, opacity: 1 } : undefined}
-              transition={animated ? {
-                type: 'spring',
-                stiffness: 500,
-                damping: 30,
-                delay: index * 0.05
-              } : undefined}
+              {...(animated ? {
+                initial: { scale: 0, opacity: 0 },
+                animate: { scale: 1, opacity: 1 },
+                transition: {
+                  type: 'spring',
+                  stiffness: 500,
+                  damping: 30,
+                  delay: index * 0.05
+                }
+              } : {})}
               whileHover={{ scale: 1.1, y: -2 }}
               className={`
                 ${sizeConfig.containerClass}

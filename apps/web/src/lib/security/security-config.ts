@@ -155,15 +155,15 @@ class SecurityConfigImpl {
   }
 
   // Privacy Controls
-  anonymizeData<T extends Record<string, any>>(
+  anonymizeData<T extends Record<string, unknown>>(
     data: T,
     fields: (keyof T)[]
   ): T {
-    const anonymized = { ...data }
+    const anonymized = { ...data } as T
     
     fields.forEach(field => {
       if (typeof anonymized[field] === 'string') {
-        anonymized[field] = '***REDACTED***' as any
+        anonymized[field] = '***REDACTED***' as T[keyof T]
       } else {
         delete anonymized[field]
       }

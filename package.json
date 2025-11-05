@@ -1,0 +1,29 @@
+{
+  "name": "petspark-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:all": "pnpm install",
+    "typecheck": "pnpm --filter './apps/*' --filter './packages/*' typecheck",
+    "tsc:web": "cd apps/web && pnpm typecheck",
+    "tsc:mobile": "cd apps/mobile && pnpm typecheck",
+    "lint": "pnpm --filter './apps/*' --filter './packages/*' lint",
+    "test": "pnpm --filter './apps/*' --filter './packages/*' test:run",
+    "ci": "pnpm tsc:web && pnpm tsc:mobile && pnpm lint && pnpm test && pnpm --filter './apps/mobile' verify:ultra && pnpm --filter './apps/mobile' verify:parity && pnpm --filter './apps/mobile' verify:budget"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "dependencies": {
+    "@react-native-community/netinfo": "^11.4.1",
+    "@shopify/flash-list": "^1.8.3",
+    "expo-background-fetch": "^14.0.7",
+    "expo-task-manager": "^14.0.8",
+    "zod": "^3.25.76"
+  }
+}

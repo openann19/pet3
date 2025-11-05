@@ -27,18 +27,20 @@ export function GlowingBadge({
   return (
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ 
-        scale: 1, 
+      animate={{
+        scale: 1,
         opacity: 1,
-        boxShadow: glow ? [
-          '0 0 10px rgba(var(--primary), 0.3)',
-          '0 0 20px rgba(var(--primary), 0.5)',
-          '0 0 10px rgba(var(--primary), 0.3)',
-        ] : undefined
+        ...(glow ? {
+          boxShadow: [
+            '0 0 10px rgba(var(--primary), 0.3)',
+            '0 0 20px rgba(var(--primary), 0.5)',
+            '0 0 10px rgba(var(--primary), 0.3)',
+          ]
+        } : {})
       }}
-      transition={{ 
+      transition={{
         duration: 0.3,
-        boxShadow: { duration: 2, repeat: Infinity }
+        ...(glow ? { boxShadow: { duration: 2, repeat: Infinity } } : {})
       }}
       className={cn(
         'inline-flex items-center gap-1 px-3 py-1 rounded-full',

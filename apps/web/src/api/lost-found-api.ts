@@ -4,11 +4,11 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
 import type {
-  CreateLostAlertData,
-  CreateSightingData,
-  LostAlert,
-  LostAlertFilters,
-  Sighting,
+    CreateLostAlertData,
+    CreateSightingData,
+    LostAlert,
+    LostAlertFilters,
+    Sighting,
 } from '@/lib/lost-found-types'
 import { notificationsService } from '@/lib/notifications-service'
 
@@ -74,7 +74,7 @@ export class LostFoundAPI {
         ...data,
         ownerId: data.ownerId,
         ownerName: data.ownerName,
-        ownerAvatar: data.ownerAvatar
+        ...(data.ownerAvatar ? { ownerAvatar: data.ownerAvatar } : {})
       }
 
       const response = await APIClient.post<CreateAlertResponse>(
@@ -260,7 +260,7 @@ export class LostFoundAPI {
         ...data,
         reporterId: data.reporterId,
         reporterName: data.reporterName,
-        reporterAvatar: data.reporterAvatar
+        ...(data.reporterAvatar ? { reporterAvatar: data.reporterAvatar } : {})
       }
 
       const response = await APIClient.post<CreateSightingResponse>(

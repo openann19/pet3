@@ -6,9 +6,9 @@
 
 import { api } from './api'
 import { config } from './config'
-import { generateCorrelationId } from './utils'
-import { createLogger } from './logger'
 import type { APIError } from './contracts'
+import { createLogger } from './logger'
+import { generateCorrelationId } from './utils'
 
 const logger = createLogger('MediaUploadService')
 
@@ -302,6 +302,159 @@ export class MediaUploadService {
 
       video.src = url
     })
+  }
+
+  /**
+   * Upload file using chunked upload with pause/resume support
+   * 
+   * Flow:
+   * 1. POST to create upload → returns { uploadId, putUrl }
+   * 2. PUT chunks with Content-Range headers
+   * 3. POST to complete upload
+   * 
+   * @param file - File to upload
+   * @param createUrl - URL endpoint to create upload session
+   * @param chunkSize - Size of each chunk in bytes (default: 5MB)
+   * @returns Upload completion response
+   */
+  async uploadChunked(
+    file: File,
+    createUrl: string,
+    chunkSize: number = 5 * 1024 * 1024
+  ): Promise<UploadCompletionResponse> {
+    const correlationId = generateCorrelationId()
+    
+    try {
+      logger.debug('Starting chunked upload', {
+        fileName: file.name,
+        fileSize: file.size,
+        chunkSize,
+        correlationId
+      })
+
+      // Step 1: Create upload session
+      const createResponse = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId
+        },
+        body: JSON.stringify({
+          size: file.size,
+          name: file.name,
+          contentType: file.type
+        })
+      })
+
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text()
+        throw new Error(`Failed to create upload session: ${createResponse.status} ${errorText}`)
+      }
+
+      const meta = await createResponse.json() as {
+        uploadId: string
+        putUrl: string
+      }
+      const { uploadId, putUrl } = meta
+
+      logger.info('Upload session created', {
+        uploadId,
+        correlationId
+      })
+
+      // Step 2: Upload chunks with Content-Range
+      let offset = 0
+      let part = 0
+      const totalChunks = Math.ceil(file.size / chunkSize)
+
+      while (offset < file.size) {
+        const end = Math.min(offset + chunkSize, file.size)
+        const chunk = file.slice(offset, end)
+        part++
+
+        logger.debug('Uploading chunk', {
+          uploadId,
+          part,
+          offset,
+          end,
+          totalChunks,
+          chunkSize: chunk.size,
+          correlationId
+        })
+
+        const chunkResponse = await fetch(`${putUrl}?part=${part}`, {
+          method: 'PUT',
+          body: chunk,
+          headers: {
+            'Content-Range': `bytes ${offset}-${end - 1}/${file.size}`,
+            'Content-Type': file.type,
+            'X-Correlation-ID': correlationId
+          }
+        })
+
+        if (!chunkResponse.ok) {
+          const errorText = await chunkResponse.text()
+          throw new Error(`Chunk ${part} upload failed: ${chunkResponse.status} ${errorText}`)
+        }
+
+        // Check for ETag in response (for resume support)
+        const etag = chunkResponse.headers.get('ETag')
+        if (etag) {
+          logger.debug('Chunk uploaded with ETag', {
+            uploadId,
+            part,
+            etag,
+            correlationId
+          })
+        }
+
+        offset = end
+      }
+
+      logger.info('All chunks uploaded', {
+        uploadId,
+        totalParts: part,
+        correlationId
+      })
+
+      // Step 3: Finalize upload
+      const finalizeResponse = await fetch(`${putUrl}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId
+        },
+        body: JSON.stringify({
+          uploadId,
+          parts: part,
+          totalSize: file.size
+        })
+      })
+
+      if (!finalizeResponse.ok) {
+        const errorText = await finalizeResponse.text()
+        throw new Error(`Failed to finalize upload: ${finalizeResponse.status} ${errorText}`)
+      }
+
+      const completion = await finalizeResponse.json() as UploadCompletionResponse
+
+      logger.info('Chunked upload completed successfully', {
+        uploadId,
+        mediaId: completion.mediaId,
+        cdnUrl: completion.cdnUrl,
+        correlationId
+      })
+
+      return completion
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Chunked upload failed', err, {
+        fileName: file.name,
+        fileSize: file.size,
+        correlationId
+      })
+      throw err
+    }
   }
 
   /**

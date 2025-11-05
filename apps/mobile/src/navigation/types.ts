@@ -1,7 +1,8 @@
 export type RootTabParamList = {
-  Home: undefined
-  Adoption: undefined
+  Feed: undefined
+  Chat: undefined
+  Matches: undefined
+  Adopt: undefined
   Community: undefined
-  Matching: undefined
   Profile: undefined
 }

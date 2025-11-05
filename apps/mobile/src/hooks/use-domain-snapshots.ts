@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { sampleHardGates, sampleMatchingWeights, sampleOwnerPreferences, samplePets } from '@mobile/data/mock-data'
 import {
   canEditListing,
   canReceiveApplications,
@@ -15,9 +15,9 @@ import {
   type CommentStatus,
   type PostStatus
 } from '@pet/domain/community'
-import { evaluateHardGates, calculateMatchScore } from '@pet/domain/matching-engine'
 import type { MatchScore } from '@pet/domain/matching-engine'
-import { sampleHardGates, sampleMatchingWeights, sampleOwnerPreferences, samplePets } from '@mobile/data/mockData'
+import { calculateMatchScore, evaluateHardGates } from '@pet/domain/matching-engine'
+import { useMemo } from 'react'
 
 export interface AdoptionSnapshot {
   canEditActiveListing: boolean
@@ -49,8 +49,12 @@ export function useDomainSnapshots(): DomainSnapshots {
   return useMemo(() => {
     const [petAlpha, petBravo] = samplePets
 
+    if (!petAlpha || !petBravo) {
+      throw new Error('Sample pets not available')
+    }
+
     const adoptionStatuses: AdoptionListingStatus[] = ['adopted', 'withdrawn']
-    const applicationStatuses: AdoptionApplicationStatus[] = ['under_review', 'accepted', 'rejected']
+    const applicationStatuses: AdoptionApplicationStatus[] = ['under_review', 'accepted', 'rejected']                                                           
 
     const adoption: AdoptionSnapshot = {
       canEditActiveListing: canEditListing('active'),

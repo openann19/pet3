@@ -15,10 +15,10 @@ import {
   useGlowBorder,
   useBreathingAnimation,
 } from '@/effects/reanimated';
-import { Sparkle, Moon, Sun, Palette, Check } from '@phosphor-icons/react';
+import { Moon, Sun, Palette, Check } from '@phosphor-icons/react';
 
 export function UltraThemeSettings() {
-  const { theme, themePreset, setThemePreset } = useApp();
+  const { themePreset, setThemePreset } = useApp();
   const [previewTheme, setPreviewTheme] = useState<ThemePreset | null>(null);
 
   const currentTheme = previewTheme || themePreset;

@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
   Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import Animated, {
-  useSharedValue,
+  cancelAnimation,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  cancelAnimation,
 } from 'react-native-reanimated';
 
 const MAX_DURATION = 120; // 120 seconds max
@@ -28,6 +28,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [recording, setRecording] = useState<{ stopAndUnloadAsync: () => Promise<{ uri: string }> } | null>(null);
   const waveScale = useSharedValue(1);
 
   useEffect(() => {
@@ -61,27 +62,69 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   }, [isRecording, isPaused]);
 
   const handleStartRecording = async () => {
-    // Request permissions
     try {
+      // Request audio recording permissions
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { Audio } = require('expo-av')
+      
+      const { status } = await Audio.requestPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Audio recording permission is required')
+        return
+      }
+
+      // Configure audio mode for recording
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      })
+
+      // Start recording
+      const newRecording = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      )
+
+      // Store recording object for later use
+      setRecording(newRecording)
+
       setIsRecording(true);
       setDuration(0);
     } catch (error) {
-      Alert.alert('Error', 'Failed to start recording');
+      const err = error instanceof Error ? error : new Error(String(error))
+      Alert.alert('Error', `Failed to start recording: ${err.message}`);
     }
   };
 
   const handleStopRecording = async () => {
     setIsRecording(false);
-    if (duration > 0) {
-      // Generate a mock URI for the recording
-      const mockUri = `voice_${Date.now()}.m4a`;
-      onSendVoice(mockUri, duration);
+    if (duration > 0 && recording) {
+      try {
+        // Stop recording and get URI
+        const { uri } = await recording.stopAndUnloadAsync()
+        onSendVoice(uri, duration)
+        setRecording(null)
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        Alert.alert('Error', `Failed to stop recording: ${err.message}`)
+        // Fallback on error
+        const fallbackUri = `voice_${Date.now()}.m4a`
+        onSendVoice(fallbackUri, duration)
+        setRecording(null)
+      }
     }
     setDuration(0);
   };
 
-  const handleCancelRecording = () => {
+  const handleCancelRecording = async () => {
     setIsRecording(false);
+    if (recording) {
+      try {
+        await recording.stopAndUnloadAsync()
+      } catch {
+        // Ignore errors when canceling
+      }
+      setRecording(null)
+    }
     setDuration(0);
     onCancel();
   };

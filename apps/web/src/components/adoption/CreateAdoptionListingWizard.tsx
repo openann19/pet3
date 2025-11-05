@@ -59,8 +59,6 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
     microchipped: false,
     goodWithKids: true,
     goodWithPets: true,
-    goodWithCats: undefined,
-    goodWithDogs: undefined,
     energyLevel: 'medium',
     locationCountry: 'USA'
   })
@@ -233,7 +231,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                       <div className="space-y-2">
                         <Label htmlFor="petSpecies">Species *</Label>
                         <Select
-                          value={formData.petSpecies}
+                          value={formData.petSpecies || ''}
                           onValueChange={(value) => updateField('petSpecies', value as CreateAdoptionListingData['petSpecies'])}
                         >
                           <SelectTrigger>
@@ -277,7 +275,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                       <div className="space-y-2">
                         <Label htmlFor="petGender">Gender *</Label>
                         <Select
-                          value={formData.petGender}
+                          value={formData.petGender || ''}
                           onValueChange={(value) => updateField('petGender', value as CreateAdoptionListingData['petGender'])}
                         >
                           <SelectTrigger>
@@ -295,7 +293,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                       <div className="space-y-2">
                         <Label htmlFor="petSize">Size *</Label>
                         <Select
-                          value={formData.petSize}
+                          value={formData.petSize || ''}
                           onValueChange={(value) => updateField('petSize', value as CreateAdoptionListingData['petSize'])}
                         >
                           <SelectTrigger>
@@ -371,7 +369,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                     <div className="space-y-2">
                       <Label htmlFor="energyLevel">Energy Level *</Label>
                       <Select
-                        value={formData.energyLevel}
+                        value={formData.energyLevel || 'medium'}
                         onValueChange={(value) => updateField('energyLevel', value as CreateAdoptionListingData['energyLevel'])}
                       >
                         <SelectTrigger>
@@ -392,7 +390,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="goodWithKids"
-                            checked={formData.goodWithKids}
+                            {...(formData.goodWithKids !== undefined ? { checked: formData.goodWithKids } : {})}
                             onCheckedChange={(checked) => updateField('goodWithKids', !!checked)}
                           />
                           <Label htmlFor="goodWithKids" className="cursor-pointer">
@@ -402,7 +400,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="goodWithPets"
-                            checked={formData.goodWithPets}
+                            {...(formData.goodWithPets !== undefined ? { checked: formData.goodWithPets } : {})}
                             onCheckedChange={(checked) => updateField('goodWithPets', !!checked)}
                           />
                           <Label htmlFor="goodWithPets" className="cursor-pointer">
@@ -414,7 +412,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                             <div className="flex items-center space-x-2 ml-6">
                               <Checkbox
                                 id="goodWithDogs"
-                                checked={formData.goodWithDogs}
+                                {...(formData.goodWithDogs !== undefined ? { checked: formData.goodWithDogs } : {})}
                                 onCheckedChange={(checked) => updateField('goodWithDogs', !!checked)}
                               />
                               <Label htmlFor="goodWithDogs" className="cursor-pointer">
@@ -424,7 +422,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                             <div className="flex items-center space-x-2 ml-6">
                               <Checkbox
                                 id="goodWithCats"
-                                checked={formData.goodWithCats}
+                                {...(formData.goodWithCats !== undefined ? { checked: formData.goodWithCats } : {})}
                                 onCheckedChange={(checked) => updateField('goodWithCats', !!checked)}
                               />
                               <Label htmlFor="goodWithCats" className="cursor-pointer">
@@ -446,7 +444,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="vaccinated"
-                            checked={formData.vaccinated}
+                            {...(formData.vaccinated !== undefined ? { checked: formData.vaccinated } : {})}
                             onCheckedChange={(checked) => updateField('vaccinated', !!checked)}
                           />
                           <Label htmlFor="vaccinated" className="cursor-pointer">
@@ -456,7 +454,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="spayedNeutered"
-                            checked={formData.spayedNeutered}
+                            {...(formData.spayedNeutered !== undefined ? { checked: formData.spayedNeutered } : {})}
                             onCheckedChange={(checked) => updateField('spayedNeutered', !!checked)}
                           />
                           <Label htmlFor="spayedNeutered" className="cursor-pointer">
@@ -466,7 +464,7 @@ export function CreateAdoptionListingWizard({ onClose, onSuccess }: CreateAdopti
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="microchipped"
-                            checked={formData.microchipped}
+                            {...(formData.microchipped !== undefined ? { checked: formData.microchipped } : {})}
                             onCheckedChange={(checked) => updateField('microchipped', !!checked)}
                           />
                           <Label htmlFor="microchipped" className="cursor-pointer">

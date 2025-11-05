@@ -3,26 +3,26 @@
  * Allows users to report posts, comments, or users with moderation reasons
  */
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Warning } from '@phosphor-icons/react'
+import { communityAPI } from '@/api/community-api'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Textarea } from '@/components/ui/textarea'
 import type { ReportReason } from '@/lib/community-types'
-import { communityAPI } from '@/api/community-api'
 import { haptics } from '@/lib/haptics'
-import { toast } from 'sonner'
 import { usePrefersReducedMotion } from '@/utils/reduced-motion'
+import { Warning } from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface ReportDialogProps {
   open: boolean
@@ -72,13 +72,17 @@ export function ReportDialog({
 
     try {
       const user = await spark.user()
-      await communityAPI.reportContent({
+      const reportData: Parameters<typeof communityAPI.reportContent>[0] = {
         resourceType,
         resourceId,
         reason: selectedReason,
-        details: details.trim() || undefined,
         reporterId: user.id
-      })
+      }
+      const trimmedDetails = details.trim()
+      if (trimmedDetails) {
+        reportData.details = trimmedDetails
+      }
+      await communityAPI.reportContent(reportData)
 
       toast.success('Report submitted successfully. Our team will review it.', {
         duration: 3000

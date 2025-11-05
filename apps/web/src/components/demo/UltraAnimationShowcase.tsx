@@ -3,21 +3,21 @@
  * Interactive demo of all enhanced animation capabilities
  */
 
-import { useState } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useUltraCardReveal,
-  useMagneticHover,
-  useRippleEffect,
-  useElasticScale,
-  useMorphShape,
-  use3DFlipCard,
-  useGlowBorder,
-  useBreathingAnimation,
-  useWaveAnimation,
-  useConfettiBurst,
-} from '@/effects/reanimated';
 import { Button } from '@/components/ui/button';
+import {
+  use3DFlipCard,
+  useBreathingAnimation,
+  useConfettiBurst,
+  useElasticScale,
+  useGlowBorder,
+  useMagneticHover,
+  useMorphShape,
+  useRippleEffect,
+  useUltraCardReveal,
+  useWaveAnimation,
+} from '@/effects/reanimated';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useState } from 'react';
 
 export function UltraAnimationShowcase() {
   const [showDemo, setShowDemo] = useState(true);
@@ -132,7 +132,9 @@ export function UltraAnimationShowcase() {
                 key={r.id}
                 style={ripple.animatedStyle}
                 className="absolute rounded-full pointer-events-none"
-              />
+              >
+                <div />
+              </AnimatedView>
             ))}
           </div>
         </section>
@@ -234,7 +236,9 @@ export function UltraAnimationShowcase() {
               key={particle.id}
               style={confetti.createParticleStyle(particle)}
               className="absolute rounded-sm pointer-events-none"
-            />
+            >
+              <div />
+            </AnimatedView>
           ))}
         </section>
 

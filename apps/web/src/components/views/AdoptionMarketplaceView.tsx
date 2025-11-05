@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Heart, Plus, MagnifyingGlass, Funnel, Check, X } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service'
-import type { AdoptionListing, AdoptionListingFilters } from '@/lib/adoption-marketplace-types'
-import { AdoptionListingCard } from '@/components/adoption/AdoptionListingCard'
-import { CreateAdoptionListingDialog } from '@/components/adoption/CreateAdoptionListingDialog'
-import { AdoptionListingDetailDialog } from '@/components/adoption/AdoptionListingDetailDialog'
 import { AdoptionFiltersSheet } from '@/components/adoption/AdoptionFiltersSheet'
+import { AdoptionListingCard } from '@/components/adoption/AdoptionListingCard'
+import { AdoptionListingDetailDialog } from '@/components/adoption/AdoptionListingDetailDialog'
+import { CreateAdoptionListingDialog } from '@/components/adoption/CreateAdoptionListingDialog'
 import { MyAdoptionApplications } from '@/components/adoption/MyAdoptionApplications'
 import { MyAdoptionListings } from '@/components/adoption/MyAdoptionListings'
-import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service'
+import type { AdoptionListing, AdoptionListingFilters } from '@/lib/adoption-marketplace-types'
 import { haptics } from '@/lib/haptics'
 import { logger } from '@/lib/logger'
+import { Check, Funnel, Heart, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 type ViewTab = 'browse' | 'my-listings' | 'my-applications'
 
@@ -176,10 +176,18 @@ export default function AdoptionMarketplaceView() {
                   <X
                     size={14}
                     className="cursor-pointer hover:text-destructive"
-                    onClick={() => setFilters(prev => ({
-                      ...prev,
-                      breed: prev.breed?.filter(b => b !== breed)
-                    }))}
+                    onClick={() => {
+                      setFilters(prev => {
+                        const newBreed = prev.breed?.filter((b: string) => b !== breed)
+                        const updated = { ...prev }
+                        if (!newBreed || newBreed.length === 0) {
+                          delete updated.breed
+                        } else {
+                          updated.breed = newBreed
+                        }
+                        return updated
+                      })
+                    }}
                   />
                 </Badge>
               ))}
@@ -189,7 +197,13 @@ export default function AdoptionMarketplaceView() {
                   <X
                     size={14}
                     className="cursor-pointer hover:text-destructive"
-                    onClick={() => setFilters(prev => ({ ...prev, vaccinated: undefined }))}
+                    onClick={() => {
+                      setFilters(prev => {
+                        const updated = { ...prev }
+                        delete updated.vaccinated
+                        return updated
+                      })
+                    }}
                   />
                 </Badge>
               )}
@@ -199,7 +213,13 @@ export default function AdoptionMarketplaceView() {
                   <X
                     size={14}
                     className="cursor-pointer hover:text-destructive"
-                    onClick={() => setFilters(prev => ({ ...prev, spayedNeutered: undefined }))}
+                    onClick={() => {
+                      setFilters(prev => {
+                        const updated = { ...prev }
+                        delete updated.spayedNeutered
+                        return updated
+                      })
+                    }}
                   />
                 </Badge>
               )}

@@ -3,12 +3,15 @@
  * Provides type-safe localStorage access with React state management
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getStorageItem,
-  setStorageItem,
   removeStorageItem,
+  setStorageItem,
 } from '../lib/cache/local-storage';
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('useLocalStorage');
 
 interface UseLocalStorageOptions {
   ttl?: number;
@@ -36,7 +39,8 @@ export function useLocalStorage<T>(
         setStoredValue(valueToStore);
         setStorageItem(key, valueToStore, { ttl });
       } catch (error) {
-        console.error(`Error setting localStorage key "${key}":`, error);
+          const err = error instanceof Error ? error : new Error(String(error));
+        logger.error(`Error setting localStorage key`, err, { key });
       }
     },
     [key, storedValue, ttl]
@@ -48,7 +52,8 @@ export function useLocalStorage<T>(
       removeStorageItem(key);
       setStoredValue(initialValue);
     } catch (error) {
-      console.error(`Error removing localStorage key "${key}":`, error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error(`Error removing localStorage key`, err, { key });
     }
   }, [key, initialValue]);
 
@@ -62,7 +67,8 @@ export function useLocalStorage<T>(
           const parsed = JSON.parse(e.newValue);
           setStoredValue(parsed.value);
         } catch (error) {
-          console.error(`Error parsing storage change for key "${key}":`, error);
+          const err = error instanceof Error ? error : new Error(String(error));
+          logger.error('Error parsing storage change', err, { key });
         }
       }
     };

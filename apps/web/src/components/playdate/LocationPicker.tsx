@@ -1,31 +1,31 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  MapPin,
-  MagnifyingGlass,
-  MapTrifold,
-  ListBullets,
-  NavigationArrow,
-  Star,
-  Park,
-  Coffee,
-  House,
-  Path,
-  Buildings,
-  X
-} from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { PlaydateLocation } from '@/lib/playdate-types'
-import type { Location } from '@/lib/maps/types'
-import { getCurrentLocation, formatDistance } from '@/lib/maps/utils'
-import { searchNearbyPlaces, searchPlacesByQuery, type MapboxPlace } from '@/lib/maps/mapbox-places'
-import { toast } from 'sonner'
 import { haptics } from '@/lib/haptics'
+import { searchNearbyPlaces, searchPlacesByQuery, type MapboxPlace } from '@/lib/maps/mapbox-places'
+import type { Location } from '@/lib/maps/types'
+import { formatDistance, getCurrentLocation } from '@/lib/maps/utils'
+import type { PlaydateLocation } from '@/lib/playdate-types'
+import {
+    Buildings,
+    Coffee,
+    House,
+    ListBullets,
+    MagnifyingGlass,
+    MapPin,
+    MapTrifold,
+    NavigationArrow,
+    Park,
+    Path,
+    Star,
+    X
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface LocationPickerProps {
   value?: PlaydateLocation
@@ -94,15 +94,18 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
     setIsLoadingLocation(true)
     try {
       const places = await searchNearbyPlaces(userLocation, 5, 20)
-      const convertedPlaces: NearbyPlace[] = places.map((place: MapboxPlace) => ({
-        id: place.id,
-        name: place.name,
-        address: place.address,
-        type: place.type,
-        location: place.location,
-        distance: place.distance,
-        rating: place.rating
-      }))
+      const convertedPlaces: NearbyPlace[] = places.map((place: MapboxPlace) => {
+        const nearbyPlace: NearbyPlace = {
+          id: place.id,
+          name: place.name,
+          address: place.address,
+          type: place.type,
+          location: place.location
+        }
+        if (place.distance !== undefined) nearbyPlace.distance = place.distance
+        if (place.rating !== undefined) nearbyPlace.rating = place.rating
+        return nearbyPlace
+      })
       setNearbyPlaces(convertedPlaces)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
@@ -123,15 +126,18 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
     setIsSearching(true)
     try {
       const places = await searchPlacesByQuery(query, userLocation || undefined, 20)
-      const convertedPlaces: NearbyPlace[] = places.map((place: MapboxPlace) => ({
-        id: place.id,
-        name: place.name,
-        address: place.address,
-        type: place.type,
-        location: place.location,
-        distance: place.distance,
-        rating: place.rating
-      }))
+      const convertedPlaces: NearbyPlace[] = places.map((place: MapboxPlace) => {
+        const nearbyPlace: NearbyPlace = {
+          id: place.id,
+          name: place.name,
+          address: place.address,
+          type: place.type,
+          location: place.location
+        }
+        if (place.distance !== undefined) nearbyPlace.distance = place.distance
+        if (place.rating !== undefined) nearbyPlace.rating = place.rating
+        return nearbyPlace
+      })
       setNearbyPlaces(convertedPlaces)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))

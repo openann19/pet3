@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { X, Trash, PushPin, PushPinSlash } from '@phosphor-icons/react'
-import { useStorage } from '@/hooks/useStorage'
 import { Button } from '@/components/ui/button'
-import type { StoryHighlight } from '@/lib/stories-types'
-import StoryViewer from './StoryViewer'
+import { useStorage } from '@/hooks/useStorage'
 import { haptics } from '@/lib/haptics'
+import type { StoryHighlight } from '@/lib/stories-types'
+import { PushPin, PushPinSlash, Trash, X } from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { toast } from 'sonner'
+import StoryViewer from './StoryViewer'
 
 interface HighlightViewerProps {
   highlight: StoryHighlight
@@ -65,7 +65,7 @@ export default function HighlightViewer({
         initialIndex={selectedStoryIndex}
         currentUserId={currentUserId}
         currentUserName={currentUserName}
-        currentUserAvatar={currentUserAvatar}
+        {...(currentUserAvatar !== undefined ? { currentUserAvatar } : {})}
         onClose={() => setShowStoryViewer(false)}
       />
     )

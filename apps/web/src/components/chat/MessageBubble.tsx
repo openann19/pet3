@@ -5,50 +5,50 @@
  * Handles long BG strings, emojis, reactions, read receipts, and all content types.
  */
 
-import { useState, memo, useEffect, useRef } from 'react'
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
-import { 
-  Check, 
-  Checks, // Double check icon
-  Clock, 
-  X, 
-  Heart, 
-  Smiley, 
-  ThumbsUp, 
-  ThumbsDown, 
-  Fire, 
-  HandsPraying, 
-  Star,
-  Copy,
-  ArrowUUpLeft, // Reply icon alternative
-  Flag,
-  Trash,
-  Image as ImageIcon,
-  MapPin,
-  Waveform
-} from '@phosphor-icons/react'
-import type { Message, ReactionType } from '@/lib/chat-types'
-import { cn } from '@/lib/utils'
 import { useApp } from '@/contexts/AppContext'
-import { useMessageBubbleAnimation } from '@/hooks/use-message-bubble-animation'
-import { useVoiceWaveform } from '@/hooks/use-voice-waveform'
-import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt'
-import { useMessageDeliveryTransition } from '@/hooks/use-message-delivery-transition'
-import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal'
-import { useSmartHighlight } from '@/hooks/use-smart-highlight'
-import { useUndoSendAnimation } from '@/hooks/use-undo-send-animation'
-import { useNewMessageDrop } from '@/hooks/use-new-message-drop'
-import { useBubbleVariant } from '@/hooks/use-bubble-variant'
 import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
+import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal'
+import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt'
+import { useBubbleVariant } from '@/hooks/use-bubble-variant'
+import { useDeleteBubbleAnimation, type DeleteAnimationContext } from '@/hooks/use-delete-bubble-animation'
+import { useMessageBubbleAnimation } from '@/hooks/use-message-bubble-animation'
+import { useMessageDeliveryTransition } from '@/hooks/use-message-delivery-transition'
+import { useNewMessageDrop } from '@/hooks/use-new-message-drop'
+import { useParticleExplosionDelete } from '@/hooks/use-particle-explosion-delete'
+import { useSmartHighlight } from '@/hooks/use-smart-highlight'
+import { useUndoSendAnimation } from '@/hooks/use-undo-send-animation'
+import { useVoiceWaveform } from '@/hooks/use-voice-waveform'
+import type { Message, ReactionType } from '@/lib/chat-types'
+import { cn } from '@/lib/utils'
+import {
+  ArrowUUpLeft,
+  Check,
+  Checks, // Double check icon
+  Clock,
+  Copy,
+  Fire, // Reply icon alternative
+  Flag,
+  HandsPraying,
+  Heart,
+  Image as ImageIcon,
+  MapPin,
+  Smiley,
+  Star,
+  ThumbsDown,
+  ThumbsUp,
+  Trash,
+  Waveform,
+  X
+} from '@phosphor-icons/react'
+import { memo, useEffect, useRef, useState } from 'react'
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated'
+import { AnimatedAIWrapper, BubbleWrapperGodTier } from './bubble-wrapper-god-tier'
+import { useHapticFeedback } from './bubble-wrapper-god-tier/effects/useHapticFeedback'
+import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/useParticleBurstOnEvent'
 import { DeleteConfirmationModal } from './DeleteConfirmationModal'
 import { DeletedGhostBubble } from './DeletedGhostBubble'
 import { UndoDeleteChip } from './UndoDeleteChip'
-import { useParticleExplosionDelete } from '@/hooks/use-particle-explosion-delete'
-import { useDeleteBubbleAnimation, type DeleteAnimationContext } from '@/hooks/use-delete-bubble-animation'
-import { BubbleWrapperGodTier, AnimatedAIWrapper } from './bubble-wrapper-god-tier'
-import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/useParticleBurstOnEvent'
-import { useHapticFeedback } from './bubble-wrapper-god-tier/effects/useHapticFeedback'
 
 interface MessageBubbleProps {
   message: Message
@@ -127,7 +127,7 @@ function MessageBubble({
 
   const deliveryTransition = useMessageDeliveryTransition({
     status: message.status,
-    previousStatus: previousStatusRef.current
+    ...(previousStatusRef.current !== undefined ? { previousStatus: previousStatusRef.current } : {}),
   })
 
   const typingReveal = useAITypingReveal({

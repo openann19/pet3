@@ -1,5 +1,5 @@
 {
-  "name": "@pet3/shared",
+  "name": "@petspark/shared",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",

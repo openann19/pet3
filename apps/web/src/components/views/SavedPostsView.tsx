@@ -5,7 +5,6 @@ import { PostDetailView } from '@/components/community/PostDetailView'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useApp } from '@/contexts/AppContext'
 import { communityService } from '@/lib/community-service'
 import type { Post } from '@/lib/community-types'
 import { createLogger } from '@/lib/logger'
@@ -25,7 +24,6 @@ export default function SavedPostsView({
   onBack,
   onAuthorClick
 }: SavedPostsViewProps) {
-  const { t } = useApp()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
@@ -121,7 +119,7 @@ export default function SavedPostsView({
                 >
                   <PostCard
                     post={post}
-                    onAuthorClick={onAuthorClick}
+                    {...(onAuthorClick ? { onAuthorClick } : {})}
                   />
                 </div>
               </motion.div>
@@ -139,7 +137,7 @@ export default function SavedPostsView({
             if (!open) setSelectedPostId(null)
           }}
           postId={selectedPostId}
-          onAuthorClick={onAuthorClick}
+          {...(onAuthorClick ? { onAuthorClick } : {})}
         />
       )}
     </div>

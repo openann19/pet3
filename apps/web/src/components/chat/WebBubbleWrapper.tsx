@@ -1,8 +1,8 @@
 'use client'
 
-import { type ReactNode } from 'react'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
+import { type ReactNode } from 'react'
 import { TypingDotsWeb } from './TypingDotsWeb'
 
 export interface WebBubbleWrapperProps {
@@ -80,7 +80,7 @@ export function WebBubbleWrapper({
         stiffness: 100,
         damping: 15
       }}
-      style={enable3DTilt ? { rotateX, rotateY, transformStyle: 'preserve-3d' as const } : undefined}
+      {...(enable3DTilt ? { style: { rotateX, rotateY, transformStyle: 'preserve-3d' as const } } : undefined)}
     >
       <motion.div
         className={cn(
@@ -93,7 +93,7 @@ export function WebBubbleWrapper({
         style={{
           alignSelf: isIncoming ? 'flex-start' : 'flex-end'
         }}
-        whileHover={enable3DTilt ? { scale: 1.02 } : undefined}
+        {...(enable3DTilt ? { whileHover: { scale: 1.02 } } : undefined)}
         whileTap={{ scale: 0.98 }}
       >
         {showTyping ? (

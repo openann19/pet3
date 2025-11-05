@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, PaperPlaneRight, Heart, ArrowBendUpLeft, DotsThree } from '@phosphor-icons/react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Avatar } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Comment } from '@/lib/community-types'
-import { communityService } from '@/lib/community-service'
-import { formatDistanceToNow } from 'date-fns'
-import { toast } from 'sonner'
-import { haptics } from '@/lib/haptics'
+import { Textarea } from '@/components/ui/textarea'
 import { useApp } from '@/contexts/AppContext'
+import { communityService } from '@/lib/community-service'
+import type { Comment } from '@/lib/community-types'
+import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
+import { ArrowBendUpLeft, DotsThree, Heart, PaperPlaneRight, X } from '@phosphor-icons/react'
+import { formatDistanceToNow } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('CommentsSheet')
 
@@ -68,10 +68,14 @@ export function CommentsSheet({
     setSubmitting(true)
 
     try {
-      const newComment = await communityService.addComment(postId, {
+      const commentData: Parameters<typeof communityService.addComment>[1] = {
         text: commentText.trim(),
-        parentId: replyingTo?._id ?? replyingTo?.id
-      })
+      }
+      const parentId = replyingTo?._id ?? replyingTo?.id
+      if (parentId) {
+        commentData.parentId = parentId
+      }
+      const newComment = await communityService.addComment(postId, commentData)
 
       setComments((currentComments) => replyingTo 
         ? [...(currentComments || []), newComment]

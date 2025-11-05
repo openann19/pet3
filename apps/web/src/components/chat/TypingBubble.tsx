@@ -1,8 +1,8 @@
 'use client'
 
+import { cn } from '@/lib/utils'
 import { TypingDots } from './TypingDots'
 import { TypingDotsWeb } from './TypingDotsWeb'
-import { cn } from '@/lib/utils'
 
 export interface TypingBubbleProps {
   isIncoming?: boolean
@@ -39,12 +39,12 @@ export function TypingBubble({
     >
       {isMobile ? (
         <TypingDots
-          dotSize={dotSize}
+          {...(dotSize !== undefined ? { dotSize } : {})}
           dotColor={dotColor ?? '#aaa'}
         />
       ) : (
         <TypingDotsWeb
-          dotSize={dotSize}
+          {...(dotSize !== undefined ? { dotSize } : {})}
           dotColor={dotColor ?? '#9ca3af'}
         />
       )}

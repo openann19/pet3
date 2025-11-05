@@ -241,7 +241,7 @@ export function ReportSightingDialog({ open, alert, onClose, onSuccess }: Report
         <MapLocationPicker
           onSelect={handleLocationSelect}
           onClose={() => setShowMapPicker(false)}
-          initialLocation={selectedLocation || undefined}
+          {...(selectedLocation ? { initialLocation: selectedLocation } : {})}
         />
       )}
     </>

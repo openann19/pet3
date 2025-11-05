@@ -2,11 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
     "jsx": "react-native",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "esnext",
-    "lib": ["esnext"],
+    "lib": ["esnext", "DOM"],
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
@@ -15,9 +18,11 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,
+    "baseUrl": ".",
+    "types": [],
     "paths": {
       "@mobile/*": ["./src/*"],
-      "@pet/domain": ["../web/src/core/domain"],
+      "@pet/domain/*": ["../web/src/core/domain/*"],
       "@petspark/shared": ["../../packages/shared/src"]
     }
   },
@@ -30,8 +35,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    ".expo",
-    "**/*.test.ts",
-    "**/*.test.tsx"
+    ".expo"
   ]
 }

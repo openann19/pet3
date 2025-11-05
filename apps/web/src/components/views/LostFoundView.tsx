@@ -66,7 +66,7 @@ export default function LostFoundView() {
       setLoading(true)
       const filters: LostAlertFilters & { cursor?: string; limit?: number } = {
         limit: 50,
-        cursor: cursor
+        ...(cursor && { cursor })
       }
 
       if (viewMode === 'mine') {

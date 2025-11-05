@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 const logger = createLogger('PetProfileGenerator')
 
 interface GeneratedPet {
+  id?: string
   name: string
   breed: string
   age: number
@@ -92,7 +93,7 @@ JSON format:
 
       setGeneratedCount(data.pets.length)
 
-      const existingIds = new Set((pets || []).map((p: any) => p.id))
+      const existingIds = new Set((pets || []).map((p: GeneratedPet) => p.id))
       let newPetsAdded = 0
 
       const newPets = data.pets.map((pet: GeneratedPet) => {

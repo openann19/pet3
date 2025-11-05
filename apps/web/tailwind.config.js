@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -154,7 +154,8 @@ const loadCustomTheme = () => {
     const contents = fs.readFileSync(themePath, 'utf-8');
     return JSON.parse(contents);
   } catch (error) {
-    console.warn('Failed to parse custom Tailwind theme. Falling back to defaults.', error);
+    // Invalid theme file - return empty object to use defaults
+    // Errors are handled silently as theme.json is optional
     return {};
   }
 };

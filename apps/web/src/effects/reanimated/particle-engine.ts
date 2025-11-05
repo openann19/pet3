@@ -1,11 +1,12 @@
 'use client'
 
+import { makeRng } from '@petspark/shared'
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
   Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
   type SharedValue
 } from 'react-native-reanimated'
 
@@ -64,13 +65,15 @@ export function createParticle(
   startX: number,
   startY: number,
   angle: number,
-  config: Required<ParticleConfig>
+  config: Required<ParticleConfig>,
+  seed?: number
 ): Particle {
-  const id = `${Date.now()}-${Math.random()}`
-  const velocity = config.minVelocity + Math.random() * (config.maxVelocity - config.minVelocity)
-  const lifetime = config.minLifetime + Math.random() * (config.maxLifetime - config.minLifetime)
-  const size = config.minSize + Math.random() * (config.maxSize - config.minSize)
-  const colorIndex = Math.floor(Math.random() * config.colors.length)
+  const rng = makeRng(seed ?? Date.now())
+  const id = `${Date.now()}-${rng()}`
+  const velocity = config.minVelocity + rng() * (config.maxVelocity - config.minVelocity)
+  const lifetime = config.minLifetime + rng() * (config.maxLifetime - config.minLifetime)
+  const size = config.minSize + rng() * (config.maxSize - config.minSize)
+  const colorIndex = Math.floor(rng() * config.colors.length)
   const color = config.colors[colorIndex] ?? config.colors[0] ?? '#FF6B6B'
   const radians = (angle * Math.PI) / 180
 
@@ -96,7 +99,8 @@ export function createParticle(
 export function spawnParticles(
   originX: number,
   originY: number,
-  config: ParticleConfig = {}
+  config: ParticleConfig = {},
+  seed?: number
 ): Particle[] {
   const fullConfig: Required<ParticleConfig> = {
     ...DEFAULT_CONFIG,
@@ -105,10 +109,11 @@ export function spawnParticles(
 
   const particles: Particle[] = []
   const angleStep = fullConfig.spread / fullConfig.count
+  const rng = makeRng(seed ?? Date.now())
 
   for (let i = 0; i < fullConfig.count; i++) {
-    const angle = -fullConfig.spread / 2 + i * angleStep + (Math.random() - 0.5) * 20
-    const particle = createParticle(originX, originY, angle, fullConfig)
+    const angle = -fullConfig.spread / 2 + i * angleStep + (rng() - 0.5) * 20
+    const particle = createParticle(originX, originY, angle, fullConfig, seed)
     particles.push(particle)
   }
 
@@ -160,8 +165,9 @@ export function animateParticle(particle: Particle, config: Required<ParticleCon
     })
   )
 
+  const rotationRng = makeRng(particle.createdAt)
   particle.rotation.value = withTiming(
-    Math.random() * 360,
+    rotationRng() * 360,
     {
       duration: particle.lifetime,
       easing: Easing.linear

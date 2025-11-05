@@ -1,5 +1,5 @@
-import { generateCorrelationId } from './utils'
 import { createLogger } from './logger'
+import { generateCorrelationId } from './utils'
 
 const logger = createLogger('websocket-manager')
 
@@ -41,8 +41,8 @@ export class WebSocketManager {
   private reconnectInterval: number
   private heartbeatInterval: number
   private messageTimeout: number
-  private heartbeatTimer?: number
-  private reconnectTimer?: number
+  private heartbeatTimer: number | undefined = undefined
+  private reconnectTimer: number | undefined = undefined
   private pendingAcknowledgments: Map<string, number> = new Map()
 
   constructor(options: WebSocketManagerOptions) {
@@ -61,16 +61,54 @@ export class WebSocketManager {
     this.state = 'connecting'
     logger.info('Connecting', { url: this.url, token: accessToken.substring(0, 10) + '...' })
 
-    // Real WebSocket connection - no artificial delay
-    // In production, this would establish actual WebSocket connection
-    // For now using Spark KV as real backend storage
-    this.state = 'connected'
-    this.reconnectAttempts = 0
-    logger.info('Connected successfully')
-    
-    this.startHeartbeat()
-    this.flushMessageQueue()
-    this.emit('connection', { status: 'connected' })
+    // Attempt to establish WebSocket connection
+    try {
+      // Check if WebSocket is available (browser environment)
+      if (typeof WebSocket !== 'undefined') {
+        const ws = new WebSocket(`${this.url}?token=${encodeURIComponent(accessToken)}`)
+        
+        ws.onopen = () => {
+          this.state = 'connected'
+          this.reconnectAttempts = 0
+          logger.info('WebSocket connected successfully')
+          this.startHeartbeat()
+          this.flushMessageQueue()
+          this.emit('connection', { status: 'connected' })
+        }
+
+        ws.onerror = (error) => {
+          logger.error('WebSocket connection error', error instanceof Error ? error : new Error(String(error)))
+          this.state = 'disconnected'
+          this.emit('connection', { status: 'error', error })
+          this.reconnect()
+        }
+
+        ws.onclose = () => {
+          logger.warn('WebSocket connection closed')
+          this.state = 'disconnected'
+          this.emit('connection', { status: 'disconnected' })
+          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnect()
+          }
+        }
+
+        // Store WebSocket instance for message sending
+        ;(this as unknown as { ws: WebSocket }).ws = ws
+      } else {
+        // Fallback: simulate connection for environments without WebSocket
+        logger.warn('WebSocket not available, using simulated connection')
+        this.state = 'connected'
+        this.reconnectAttempts = 0
+        this.startHeartbeat()
+        this.flushMessageQueue()
+        this.emit('connection', { status: 'connected' })
+      }
+    } catch (error) {
+      logger.error('Failed to establish WebSocket connection', error instanceof Error ? error : new Error(String(error)))
+      this.state = 'disconnected'
+      this.emit('connection', { status: 'error', error })
+      this.reconnect()
+    }
   }
 
   disconnect(): void {
@@ -134,9 +172,20 @@ export class WebSocketManager {
 
     this.pendingAcknowledgments.set(message.id, timeoutTimer)
 
-    // Real message sending - acknowledge immediately
-    // In production, this would wait for actual server acknowledgment
-    this.handleAcknowledgment(message.id)
+    // Send message via WebSocket if available
+    const ws = (this as unknown as { ws?: WebSocket }).ws
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify(message))
+        // Wait for server acknowledgment (handled via receiveMessage)
+      } catch (error) {
+        logger.error('Failed to send WebSocket message', error instanceof Error ? error : new Error(String(error)))
+        this.handleMessageFailure(message)
+      }
+    } else {
+      // Fallback: acknowledge immediately if WebSocket not available
+      this.handleAcknowledgment(message.id)
+    }
   }
 
   private handleAcknowledgment(messageId: string): void {
@@ -199,7 +248,7 @@ export class WebSocketManager {
   }
 
   private stopHeartbeat(): void {
-    if (this.heartbeatTimer) {
+    if (this.heartbeatTimer !== undefined) {
       clearInterval(this.heartbeatTimer)
       this.heartbeatTimer = undefined
     }
@@ -229,7 +278,7 @@ export class WebSocketManager {
   }
 
   private clearReconnectTimer(): void {
-    if (this.reconnectTimer) {
+    if (this.reconnectTimer !== undefined) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = undefined
     }

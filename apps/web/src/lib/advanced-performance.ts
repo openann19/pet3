@@ -1,4 +1,5 @@
 import { createLogger } from './logger'
+import type { LayoutShiftEntry } from './types/performance-api'
 
 const logger = createLogger('AdvancedPerformance')
 
@@ -242,8 +243,9 @@ export class AdvancedPerformance {
       
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value
+          const layoutShiftEntry = entry as LayoutShiftEntry
+          if (!layoutShiftEntry.hadRecentInput) {
+            clsValue += layoutShiftEntry.value
           }
         }
       })
@@ -312,7 +314,7 @@ export function useVirtualList<T>(
   }
 }
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export function usePrefetch(url: string, condition: boolean = true) {
   useEffect(() => {

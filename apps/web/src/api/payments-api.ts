@@ -9,14 +9,14 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
 import type {
-  AuditLogEntry,
-  BillingIssue,
-  ConsumableKey,
-  PlanTier,
-  PlatformStore,
-  RevenueMetrics,
-  Subscription,
-  UserEntitlements,
+    AuditLogEntry,
+    BillingIssue,
+    ConsumableKey,
+    PlanTier,
+    PlatformStore,
+    RevenueMetrics,
+    Subscription,
+    UserEntitlements,
 } from '@/lib/payments-types'
 
 const logger = createLogger('PaymentsApi')
@@ -432,7 +432,7 @@ class PaymentsApiImpl {
     try {
       const request: IncrementUsageRequest = {
         type,
-        operationId
+        ...(operationId ? { operationId } : {})
       }
 
       const response = await APIClient.post<IncrementUsageResponse>(

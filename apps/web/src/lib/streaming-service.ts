@@ -1,15 +1,15 @@
-import type {
-  LiveStream,
-  StreamChatMessage,
-  CreateStreamData,
-  StreamStatus,
-  StreamReport
-} from './streaming-types'
-import type { LiveStream as LiveStreamAPI, LiveStreamChatMessage, CreateLiveStreamData } from './live-streaming-types'
 import { liveStreamingAPI } from '@/api/live-streaming-api'
 import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
+import type { CreateLiveStreamData, LiveStream as LiveStreamAPI, LiveStreamChatMessage } from './live-streaming-types'
 import { createLogger } from './logger'
+import type {
+    CreateStreamData,
+    LiveStream,
+    StreamChatMessage,
+    StreamReport,
+    StreamStatus
+} from './streaming-types'
 
 const logger = createLogger('StreamingService')
 
@@ -218,16 +218,11 @@ class StreamingService {
   }
 
   async incrementLikes(streamId: string): Promise<void> {
-    try {
-      // Send a reaction instead of incrementing likes
-      // This requires userId - using placeholder for now
-      // In real usage, userId should be passed in
-      logger.warn('IncrementLikes requires userId - use sendReaction instead', { streamId })
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to increment likes', err, { streamId })
-      throw err
-    }
+    // This method is deprecated - use sendReaction instead
+    // incrementLikes requires userId which is not available in this signature
+    // Clients should use sendReaction(streamId, userId, 'like') for proper functionality
+    logger.warn('IncrementLikes is deprecated - use sendReaction instead', { streamId })
+    throw new Error('incrementLikes requires userId - use sendReaction(streamId, userId, "like") instead')
   }
 
   async endStream(streamId: string): Promise<void> {

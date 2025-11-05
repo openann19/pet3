@@ -1,72 +1,99 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { FeatureCard } from '@mobile/components/FeatureCard'
-import { SectionHeader } from '@mobile/components/SectionHeader'
+import { PullableContainer } from '@mobile/components/PullableContainer'
+import { MatchCelebration } from '@mobile/components/swipe/MatchCelebration'
+import { SwipeCardStack } from '@mobile/components/swipe/SwipeCardStack'
+import { useDislikePet, useLikePet, usePets } from '@mobile/hooks/use-pets'
+import { useUserStore } from '@mobile/store/user-store'
 import { colors } from '@mobile/theme/colors'
-import { useDomainSnapshots } from '@mobile/hooks/useDomainSnapshots'
+import React, { useCallback, useMemo, useState } from 'react'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import type { ApiResponse } from '../types/api'
+import type { Match } from '../types/pet'
 
-export function MatchingScreen() {
-  const { matching } = useDomainSnapshots()
-  const factorEntries = Object.entries(matching.score.factorScores)
+export function MatchingScreen(): React.JSX.Element {
+  const [showMatch, setShowMatch] = useState(false)
+  const [matchPetNames, setMatchPetNames] = useState<[string, string]>(['', ''])
+  const { data, isLoading, error, refetch } = usePets()
+  const likePet = useLikePet()
+  const dislikePet = useDislikePet()
+  const { user } = useUserStore()
+
+  const handleRefresh = useCallback(async (): Promise<void> => {
+    await refetch()
+  }, [refetch])
+
+  const pets = useMemo(() => data?.items || [], [data?.items])
+
+  const handleSwipeLeft = useCallback(
+    (petId: string): void => {
+      dislikePet.mutate(petId)
+    },
+    [dislikePet]
+  )
+
+  const handleSwipeRight = useCallback(
+    (petId: string): void => {
+      likePet.mutate(petId, {
+        onSuccess: (response: ApiResponse<Match | null>) => {
+          if (response.data && 'id' in response.data) {
+            // Match occurred
+            const swipedPet = pets.find((p: { id: string }) => p.id === petId)
+            const userPet = user?.pets?.[0]
+            if (swipedPet && userPet) {
+              setMatchPetNames([userPet.name, swipedPet.name])
+              setShowMatch(true)
+            }
+          }
+        },
+      })
+    },
+    [likePet, pets, user]
+  )
+
+  const handleMatchComplete = useCallback((): void => {
+    setShowMatch(false)
+    setMatchPetNames(['', ''])
+  }, [])
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={styles.loadingText}>Loading pets...</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>
+            Error loading pets. Please try again.
+          </Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <SectionHeader
-          title="Matching intelligence"
-          description="Real-time scoring powered by the shared domain layer keeps decisions deterministic across clients."
-        />
-
-        <FeatureCard title="Hard gate evaluation">
-          <Text style={styles.bodyText}>
-            Result: {matching.hardGatesPassed ? 'Passed' : 'Blocked'}
-          </Text>
-          {matching.hardGateFailures.length > 0 ? (
-            <View style={styles.list}>
-              {matching.hardGateFailures.map(failure => (
-                <Text key={failure.code} style={styles.failureText}>
-                  {failure.code}: {failure.message}
-                </Text>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.successText}>No blocking issues detected.</Text>
-          )}
-        </FeatureCard>
-
-        <FeatureCard title="Factor weights" subtitle="Breakdown of the composite score">
-          {factorEntries.map(([key, value]) => (
-            <View key={key} style={styles.row}>
-              <Text style={styles.label}>{key}</Text>
-              <Text style={styles.value}>{value.toFixed(1)}</Text>
-            </View>
-          ))}
-          <View style={styles.row}>
-            <Text style={[styles.label, styles.totalLabel]}>Total</Text>
-            <Text style={[styles.value, styles.totalValue]}>{matching.score.totalScore.toFixed(1)}</Text>
-          </View>
-        </FeatureCard>
-
-        <FeatureCard title="Positive signals">
-          {matching.score.explanation.positive.map((item, index) => (
-            <Text key={`positive-${index}`} style={styles.successText}>
-              • {item.en}
-            </Text>
-          ))}
-        </FeatureCard>
-
-        <FeatureCard title="Negative signals">
-          {matching.score.explanation.negative.length === 0 ? (
-            <Text style={styles.successText}>No negative modifiers applied.</Text>
-          ) : (
-            matching.score.explanation.negative.map((item, index) => (
-              <Text key={`negative-${index}`} style={styles.bodyText}>
-                • {item.en}
-              </Text>
-            ))
-          )}
-        </FeatureCard>
-      </ScrollView>
+      <PullableContainer onRefresh={handleRefresh} refreshOptions={{ threshold: 100 }}>
+        <View style={styles.container}>
+          <SwipeCardStack
+            pets={pets}
+            onSwipeLeft={handleSwipeLeft}
+            onSwipeRight={handleSwipeRight}
+          />
+          <MatchCelebration
+            visible={showMatch}
+            petNames={matchPetNames}
+            onComplete={handleMatchComplete}
+          />
+        </View>
+      </PullableContainer>
     </SafeAreaView>
   )
 }
@@ -74,51 +101,28 @@ export function MatchingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.background,
   },
-  content: {
-    padding: 20
-  },
-  bodyText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  successText: {
-    color: colors.success,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  list: {
-    marginTop: 8,
-    gap: 6
-  },
-  failureText: {
-    color: colors.danger,
-    fontSize: 13,
-    lineHeight: 18
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  container: {
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  label: {
-    color: colors.textPrimary,
-    textTransform: 'capitalize'
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
-  value: {
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
     color: colors.textSecondary,
-    fontWeight: '600'
   },
-  totalLabel: {
-    fontWeight: '700'
+  errorText: {
+    fontSize: 16,
+    color: colors.danger,
+    textAlign: 'center',
   },
-  totalValue: {
-    color: colors.textPrimary,
-    fontSize: 16
-  }
 })

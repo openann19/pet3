@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { motion } from 'framer-motion'
-import {
-  Users,
-  Heart,
-  Flag,
-  CheckCircle,
-  TrendUp,
-  TrendDown,
-  ChatCircle,
-  Clock
-} from '@phosphor-icons/react'
-import { PetProfileGenerator } from '@/components/admin/PetProfileGenerator'
 import { adminApi } from '@/api/admin-api'
-import type { Pet, Match } from '@/lib/types'
+import { PetProfileGenerator } from '@/components/admin/PetProfileGenerator'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useStorage } from '@/hooks/useStorage'
+import type { Match, Pet } from '@/lib/types'
+import {
+  ChatCircle,
+  CheckCircle,
+  Clock,
+  Flag,
+  Heart,
+  TrendDown,
+  TrendUp,
+  Users
+} from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 
 interface Report {
   id: string
@@ -287,7 +288,15 @@ export default function DashboardView() {
   )
 }
 
-function ActivityItem({ icon: Icon, title, description, time, type }: any) {
+interface ActivityItemProps {
+  icon: React.ComponentType<{ size?: number; className?: string; weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone' }>
+  title: string
+  description: string
+  time: string
+  type: 'info' | 'success' | 'warning' | 'error'
+}
+
+function ActivityItem({ icon: Icon, title, description, time, type }: ActivityItemProps) {
   const colorMap = {
     info: 'text-blue-600',
     success: 'text-green-600',
@@ -297,7 +306,7 @@ function ActivityItem({ icon: Icon, title, description, time, type }: any) {
 
   return (
     <div className="flex items-start gap-4">
-      <div className={`p-2 rounded-lg bg-muted ${colorMap[type as keyof typeof colorMap]}`}>
+      <div className={`p-2 rounded-lg bg-muted ${colorMap[type]}`}>                                                                    
         <Icon size={16} weight="fill" />
       </div>
       <div className="flex-1 space-y-1">
@@ -309,11 +318,17 @@ function ActivityItem({ icon: Icon, title, description, time, type }: any) {
   )
 }
 
-function HealthItem({ service, status, uptime }: any) {
+interface HealthItemProps {
+  service: string;
+  status: 'operational' | 'down';
+  uptime: string;
+}
+
+function HealthItem({ service, status, uptime }: HealthItemProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className={`w-2 h-2 rounded-full ${status === 'operational' ? 'bg-green-600' : 'bg-red-600'}`} />
+        <div className={`w-2 h-2 rounded-full ${status === 'operational' ? 'bg-green-600' : 'bg-red-600'}`} />                                                  
         <span className="text-sm font-medium">{service}</span>
       </div>
       <div className="flex items-center gap-3">

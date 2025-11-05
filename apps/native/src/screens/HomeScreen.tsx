@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView } from 'react-native';
+import { generateCorrelationId, getAppEnvironment } from '@petspark/shared';
 import { StatusBar } from 'expo-status-bar';
-import { getAppEnvironment, generateCorrelationId } from '@pet3/shared';
+import React from 'react';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen(): React.JSX.Element {
   const environment = getAppEnvironment();

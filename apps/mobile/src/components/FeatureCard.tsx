@@ -1,6 +1,6 @@
-import { ReactNode } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
 import { colors } from '@mobile/theme/colors'
+import type { ReactNode } from 'react'
+import { StyleSheet, Text, View } from 'react-native'
 
 type FeatureCardProps = {
   title: string
@@ -8,7 +8,7 @@ type FeatureCardProps = {
   children?: ReactNode
 }
 
-export function FeatureCard({ title, subtitle, children }: FeatureCardProps) {
+export function FeatureCard({ title, subtitle, children }: FeatureCardProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>

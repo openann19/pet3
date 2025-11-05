@@ -4,20 +4,20 @@
  * Admin panel for reviewing reported messages and taking moderation actions.
  */
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Flag, Eye, Check, X } from '@phosphor-icons/react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { MessageReport } from '@/lib/chat-types'
-import { toast } from 'sonner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useStorage } from '@/hooks/useStorage'
+import type { MessageReport } from '@/lib/chat-types'
 import { createLogger } from '@/lib/logger'
 import type { User } from '@/lib/user-service'
+import { Check, Eye, Flag, X } from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('ChatModerationPanel')
 
@@ -76,8 +76,11 @@ export default function ChatModerationPanel() {
         const userKey = `users:${selectedReport.reportedUserId}`
         const user = await storage.get<Record<string, unknown>>(userKey)
         if (user) {
-          user.moderationStatus = action === 'suspend' ? 'suspended' : 'muted'
-          await storage.set(userKey, user)
+          const updatedUser: Record<string, unknown> = {
+            ...user,
+            ['moderationStatus']: action === 'suspend' ? 'suspended' : 'muted'
+          }
+          await storage.set(userKey, updatedUser)
         }
       }
 
@@ -270,7 +273,7 @@ export default function ChatModerationPanel() {
 
               <div>
                 <Label className="text-sm font-medium mb-2 block">Action</Label>
-                <Select value={action} onValueChange={(v: any) => setAction(v)}>
+                <Select value={action} onValueChange={(v) => setAction(v as typeof action)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

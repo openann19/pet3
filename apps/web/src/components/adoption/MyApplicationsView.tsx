@@ -1,27 +1,27 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { 
-  ClipboardText, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  Warning,
+import { useStorage } from '@/hooks/useStorage'
+import { adoptionService } from '@/lib/adoption-service'
+import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types'
+import { createLogger } from '@/lib/logger'
+import {
+  ArrowLeft,
+  CheckCircle,
+  ClipboardText,
+  Clock,
   EnvelopeSimple,
-  Phone,
   House,
   PawPrint,
-  ArrowLeft
+  Phone,
+  Warning,
+  XCircle
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
-import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types'
-import { adoptionService } from '@/lib/adoption-service'
-import { createLogger } from '@/lib/logger'
+import { useEffect, useState } from 'react'
 
 const logger = createLogger('MyApplicationsView')
 
@@ -48,10 +48,16 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
       const user = await spark.user()
       const userApps = await adoptionService.getUserApplications(user.id)
       
-      const appsWithProfiles: ApplicationWithProfile[] = userApps.map(app => ({
-        ...app,
-        profile: (profiles || []).find(p => p._id === app.adoptionProfileId)
-      }))
+      const appsWithProfiles: ApplicationWithProfile[] = userApps.map(app => {
+        const profile = (profiles || []).find(p => p._id === app.adoptionProfileId);
+        const result: ApplicationWithProfile = {
+          ...app,
+        };
+        if (profile) {
+          result.profile = profile;
+        }
+        return result;
+      })
       
       setApplications(appsWithProfiles.sort((a, b) => 
         new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()

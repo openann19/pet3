@@ -1,7 +1,7 @@
 'use client'
 
+import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import type { ReactNode, CSSProperties } from 'react'
 
 type AnimatedStyleReturn = {
   value: unknown
@@ -56,28 +56,28 @@ function convertToCSSProperties(style: unknown): CSSProperties {
   const cssStyle: CSSProperties = {}
   const styleObj = style as Record<string, unknown>
 
-  if (styleObj.transform && Array.isArray(styleObj.transform)) {
+  if (styleObj['transform'] && Array.isArray(styleObj['transform'])) {
     const transforms: string[] = []
-    styleObj.transform.forEach((t: unknown) => {
+    styleObj['transform'].forEach((t: unknown) => {
       if (t && typeof t === 'object') {
         const transform = t as Record<string, unknown>
-        if (transform.scale !== undefined) {
-          transforms.push(`scale(${transform.scale})`)
+        if (transform['scale'] !== undefined) {
+          transforms.push(`scale(${transform['scale']})`)
         }
-        if (transform.translateX !== undefined) {
-          transforms.push(`translateX(${transform.translateX}px)`)
+        if (transform['translateX'] !== undefined) {
+          transforms.push(`translateX(${transform['translateX']}px)`)
         }
-        if (transform.translateY !== undefined) {
-          transforms.push(`translateY(${transform.translateY}px)`)
+        if (transform['translateY'] !== undefined) {
+          transforms.push(`translateY(${transform['translateY']}px)`)
         }
-        if (transform.rotateX !== undefined) {
-          transforms.push(`rotateX(${transform.rotateX})`)
+        if (transform['rotateX'] !== undefined) {
+          transforms.push(`rotateX(${transform['rotateX']})`)
         }
-        if (transform.rotateY !== undefined) {
-          transforms.push(`rotateY(${transform.rotateY})`)
+        if (transform['rotateY'] !== undefined) {
+          transforms.push(`rotateY(${transform['rotateY']})`)
         }
-        if (transform.rotate !== undefined) {
-          transforms.push(`rotate(${transform.rotate}deg)`)
+        if (transform['rotate'] !== undefined) {
+          transforms.push(`rotate(${transform['rotate']}deg)`)
         }
       }
     })
@@ -86,14 +86,14 @@ function convertToCSSProperties(style: unknown): CSSProperties {
     }
   }
 
-  if (styleObj.opacity !== undefined) {
-    cssStyle.opacity = Number(styleObj.opacity)
+  if (styleObj['opacity'] !== undefined) {
+    cssStyle.opacity = Number(styleObj['opacity'])
   }
 
-  if (styleObj.shadowColor !== undefined) {
-    const shadowOffset = styleObj.shadowOffset as { width?: number; height?: number } | undefined
-    const shadowRadius = styleObj.shadowRadius as number | undefined
-    cssStyle.boxShadow = `${shadowOffset?.width || 0}px ${shadowOffset?.height || 0}px ${shadowRadius || 0}px ${styleObj.shadowColor}`
+  if (styleObj['shadowColor'] !== undefined) {
+    const shadowOffset = styleObj['shadowOffset'] as { width?: number; height?: number } | undefined
+    const shadowRadius = styleObj['shadowRadius'] as number | undefined
+    cssStyle.boxShadow = `${shadowOffset?.width || 0}px ${shadowOffset?.height || 0}px ${shadowRadius || 0}px ${styleObj['shadowColor']}`
   }
 
   return cssStyle

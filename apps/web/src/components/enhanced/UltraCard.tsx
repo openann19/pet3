@@ -3,16 +3,16 @@
  * Card with 3D transforms, hover effects, and smooth animations
  */
 
-import { type ReactNode, type HTMLAttributes } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import {
-  useUltraCardReveal,
-  useMagneticHover,
-  useHoverLift,
-  useParallaxTilt,
   useGlowBorder,
+  useHoverLift,
+  useMagneticHover,
+  useParallaxTilt,
+  useUltraCardReveal,
 } from '@/effects/reanimated';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
+import { type HTMLAttributes, type ReactNode } from 'react';
 
 export interface UltraCardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -60,8 +60,6 @@ export function UltraCard({
 
   const tilt = useParallaxTilt({
     maxTilt: 8,
-    glareEnabled: enableTilt,
-    scale: 1.02,
   });
 
   const glow = useGlowBorder({
@@ -70,6 +68,14 @@ export function UltraCard({
     intensity: 14,
     speed: 2500,
   });
+
+  const handleTiltMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!enableTilt) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    tilt.handleMove(x, y, rect.width, rect.height)
+  }
 
   const combinedStyle = {
     ...reveal.animatedStyle,
@@ -86,8 +92,8 @@ export function UltraCard({
     >
       <AnimatedView style={combinedStyle}>
         <div
-          onMouseMove={enableTilt ? tilt.handleMouseMove : undefined}
-          onMouseLeave={enableTilt ? tilt.handleMouseLeave : undefined}
+          onMouseMove={enableTilt ? handleTiltMove : undefined}
+          onMouseLeave={enableTilt ? tilt.handleLeave : undefined}
           className="relative"
         >
           <AnimatedView style={enableHoverLift ? hoverLift.animatedStyle : (enableTilt ? tilt.animatedStyle : {})}>

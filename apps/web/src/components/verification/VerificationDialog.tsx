@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useStorage } from '@/hooks/useStorage'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,34 +7,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  ShieldCheck, 
-  UploadSimple, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Info,
-  Star,
-  Certificate,
-  TrendUp
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
+import { useStorage } from '@/hooks/useStorage'
+import { cn } from '@/lib/utils'
 import { VerificationService } from '@/lib/verification-service'
-import {  
-  VERIFICATION_REQUIREMENTS,
-  DOCUMENT_TYPE_LABELS,
+import {
   DOCUMENT_TYPE_DESCRIPTIONS,
-  type VerificationRequest,
+  DOCUMENT_TYPE_LABELS,
+  VERIFICATION_REQUIREMENTS,
+  type DocumentType,
   type VerificationLevel,
-  type DocumentType
+  type VerificationRequest
 } from '@/lib/verification-types'
+import {
+  Certificate,
+  CheckCircle,
+  Clock,
+  Info,
+  ShieldCheck,
+  Star,
+  TrendUp,
+  UploadSimple,
+  XCircle
+} from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { DocumentUploadCard } from './DocumentUploadCard'
 import { VerificationLevelSelector } from './VerificationLevelSelector'
-import { cn } from '@/lib/utils'
 
 interface VerificationDialogProps {
   open: boolean
@@ -361,36 +361,42 @@ export function VerificationDialog({
 
                 <div className="space-y-3">
                   <h4 className="font-semibold">Required Documents</h4>
-                  {requirements.requiredDocuments.map((docType) => (
-                    <DocumentUploadCard
-                      key={docType}
-                      documentType={docType}
-                      label={DOCUMENT_TYPE_LABELS[docType]}
-                      description={DOCUMENT_TYPE_DESCRIPTIONS[docType]}
-                      existingDocument={VerificationService.getDocumentByType(activeRequest, docType)}
-                      onUpload={(file) => handleDocumentUpload(file, docType)}
-                      onDelete={handleDeleteDocument}
-                      disabled={activeRequest.status === 'verified' || activeRequest.status === 'pending'}
-                    />
-                  ))}
-                </div>
-
-                {requirements.optionalDocuments.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-muted-foreground">Optional Documents</h4>
-                    {requirements.optionalDocuments.map((docType) => (
+                  {requirements.requiredDocuments.map((docType) => {
+                    const existingDoc = VerificationService.getDocumentByType(activeRequest, docType)
+                    return (
                       <DocumentUploadCard
                         key={docType}
                         documentType={docType}
                         label={DOCUMENT_TYPE_LABELS[docType]}
                         description={DOCUMENT_TYPE_DESCRIPTIONS[docType]}
-                        existingDocument={VerificationService.getDocumentByType(activeRequest, docType)}
+                        {...(existingDoc && { existingDocument: existingDoc })}
                         onUpload={(file) => handleDocumentUpload(file, docType)}
                         onDelete={handleDeleteDocument}
-                        optional
                         disabled={activeRequest.status === 'verified' || activeRequest.status === 'pending'}
                       />
-                    ))}
+                    )
+                  })}
+                </div>
+
+                {requirements.optionalDocuments.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-muted-foreground">Optional Documents</h4>
+                    {requirements.optionalDocuments.map((docType) => {
+                      const existingDoc = VerificationService.getDocumentByType(activeRequest, docType)
+                      return (
+                        <DocumentUploadCard
+                          key={docType}
+                          documentType={docType}
+                          label={DOCUMENT_TYPE_LABELS[docType]}
+                          description={DOCUMENT_TYPE_DESCRIPTIONS[docType]}
+                          {...(existingDoc && { existingDocument: existingDoc })}
+                          onUpload={(file) => handleDocumentUpload(file, docType)}
+                          onDelete={handleDeleteDocument}
+                          optional
+                          disabled={activeRequest.status === 'verified' || activeRequest.status === 'pending'}
+                        />
+                      )
+                    })}
                   </div>
                 )}
 

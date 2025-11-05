@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  Alert,
   Image,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { AnimatedCard } from '../components/AnimatedCard';
@@ -14,10 +15,15 @@ import { FadeInView } from '../components/FadeInView';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { useStorage } from '../hooks/useStorage';
 import type { Post } from '../types';
+import { communityApi } from '../utils/api-client';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('SavedPostsScreen');
 
 export default function SavedPostsScreen() {
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [storedSavedPostIds, setStoredSavedPostIds] = useStorage<string[]>(
     'savedPostIds',
     []
@@ -25,54 +31,51 @@ export default function SavedPostsScreen() {
 
   useEffect(() => {
     loadSavedPosts();
-  }, []);
+  }, [storedSavedPostIds]);
 
   const loadSavedPosts = async () => {
-    // In production, fetch posts by saved IDs from API
-    // For now, use sample data
-    const samplePosts: Post[] = [
-      {
-        id: '1',
-        userId: 'user1',
-        userName: 'Sarah Johnson',
-        userAvatar: 'https://i.pravatar.cc/150?img=1',
-        content: 'Just adopted this beautiful Golden Retriever! Meet Buddy 🐕',
-        imageUrl: 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24',
-        timestamp: Date.now() - 3600000,
-        likes: 45,
-        comments: 12,
-        shares: 3,
-        liked: true,
-      },
-      {
-        id: '2',
-        userId: 'user2',
-        userName: 'Mike Chen',
-        userAvatar: 'https://i.pravatar.cc/150?img=12',
-        content: 'Best dog park in the city! 🌳 Anyone want to meet up for a playdate?',
-        imageUrl: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1',
-        timestamp: Date.now() - 86400000,
-        likes: 32,
-        comments: 8,
-        shares: 5,
-        liked: false,
-      },
-      {
-        id: '3',
-        userId: 'user3',
-        userName: 'Emma Davis',
-        userAvatar: 'https://i.pravatar.cc/150?img=5',
-        content: 'Tips for training your puppy 🎓 Check out this amazing guide I found!',
-        timestamp: Date.now() - 172800000,
-        likes: 67,
-        comments: 23,
-        shares: 15,
-        liked: true,
-      },
-    ];
+    try {
+      setLoading(true);
+      setError(null);
 
-    setSavedPosts(samplePosts.filter((p) => storedSavedPostIds.includes(p.id)));
-    setLoading(false);
+      if (storedSavedPostIds.length === 0) {
+        setSavedPosts([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch posts by saved IDs from API
+      const posts: Post[] = [];
+      for (const postId of storedSavedPostIds) {
+        try {
+          const postData = await communityApi.getPostById(postId);
+          posts.push({
+            id: postData.id,
+            userId: postData.authorId,
+            userName: postData.authorName,
+            userAvatar: postData.authorAvatar,
+            content: postData.content,
+            imageUrl: postData.images?.[0],
+            timestamp: new Date(postData.timestamp).getTime(),
+            likes: postData.likes,
+            comments: postData.comments,
+            shares: postData.shares,
+            liked: false,
+          });
+        } catch (err) {
+          logger.warn('Failed to fetch post', { postId, error: err });
+        }
+      }
+
+      setSavedPosts(posts);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load saved posts';
+      logger.error('Failed to load saved posts', err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const unsavePost = (postId: string) => {
@@ -99,6 +102,24 @@ export default function SavedPostsScreen() {
         <View style={styles.content}>
           <LoadingSkeleton height={200} />
           <LoadingSkeleton height={200} style={{ marginTop: 16 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>📖 Saved Posts</Text>
+        </View>
+        <View style={styles.content}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={loadSavedPosts} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -329,6 +350,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#6366f1',
   },
   exploreButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: '#6366f1',
+  },
+  retryButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',

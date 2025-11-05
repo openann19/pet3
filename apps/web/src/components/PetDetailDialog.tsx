@@ -1,14 +1,14 @@
-import { MapPin, Calendar, PawPrint, CaretLeft, CaretRight, X, Ruler, GenderMale, GenderFemale, ShieldCheck, Heart, ChatCircle, Star } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import type { Pet } from '@/lib/types'
-import { TrustBadges } from '@/components/TrustBadges'
 import { PetRatings } from '@/components/PetRatings'
+import { TrustBadges } from '@/components/TrustBadges'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 import { usePhotoCarousel } from '@/hooks/usePhotoCarousel'
 import { haptics } from '@/lib/haptics'
+import type { Pet } from '@/lib/types'
+import { Calendar, CaretLeft, CaretRight, ChatCircle, GenderFemale, GenderMale, Heart, MapPin, PawPrint, Ruler, ShieldCheck, Star, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 interface PetDetailDialogProps {
   pet: Pet | null
@@ -172,7 +172,10 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <PetRatings trustProfile={pet.trustProfile} ratings={pet.ratings} />
+                  <PetRatings 
+                    trustProfile={pet.trustProfile} 
+                    {...(pet.ratings !== undefined ? { ratings: pet.ratings } : {})}
+                  />
                 </motion.div>
               )}
 

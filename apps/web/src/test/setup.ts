@@ -25,6 +25,45 @@ vi.mock('@/config/env', () => ({
   },
 }));
 
+// Mock react-native for web tests
+vi.mock('react-native', () => ({
+  View: 'div',
+  Text: 'span',
+  Image: 'img',
+  StyleSheet: {
+    create: (styles: Record<string, unknown>) => styles,
+    hairlineWidth: 1,
+  },
+  Platform: {
+    OS: 'web',
+  },
+}));
+
+// Mock react-native-safe-area-context
+vi.mock('react-native-safe-area-context', () => ({
+  SafeAreaView: 'div',
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
+// Mock react-native-gesture-handler
+vi.mock('react-native-gesture-handler', () => ({
+  Gesture: {
+    Pan: () => ({
+      onChange: vi.fn(),
+      onEnd: vi.fn(),
+    }),
+    Simultaneous: vi.fn(),
+  },
+  GestureDetector: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock react-native-reanimated
+vi.mock('react-native-reanimated', () => {
+  const Reanimated = require('react-native-reanimated/mock');
+  Reanimated.default.call = () => {};
+  return Reanimated;
+});
+
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
 

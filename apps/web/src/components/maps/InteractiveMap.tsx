@@ -1,8 +1,8 @@
-import { useEffect, useRef, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import type { Location } from '@/lib/maps/types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Location } from '@/lib/maps/types';
+import { useEffect, useMemo, useRef } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
 interface InteractiveMapProps {
   center: Location;
@@ -159,7 +159,7 @@ export default function InteractiveMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapController center={center} zoom={zoom} onMapClick={onMapClick} />
+        <MapController center={center} zoom={zoom} {...(onMapClick ? { onMapClick } : {})} />
         {clusteredMarkers.map((marker) => (
           <Marker
             key={marker.id}
@@ -173,7 +173,7 @@ export default function InteractiveMap({
               },
             }}
           >
-            {marker.popup && <Popup>{marker.popup}</Popup>}
+            {marker.popup ? <Popup>{String(marker.popup)}</Popup> : null}
           </Marker>
         ))}
       </MapContainer>

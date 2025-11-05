@@ -1,10 +1,10 @@
-import { useStorage } from '@/hooks/useStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { useStorage } from '@/hooks/useStorage'
 import { toast } from 'sonner'
 
 interface FeatureFlags {
@@ -45,7 +45,7 @@ export default function SettingsView() {
     toast.success(`Feature ${value ? 'enabled' : 'disabled'}`)
   }
 
-  const handleSystemSettingChange = (key: keyof SystemSettings, value: any) => {
+  const handleSystemSettingChange = (key: keyof SystemSettings, value: number | boolean) => {
     setSystemSettings((current: SystemSettings) => ({ ...current, [key]: value }))
     toast.success('Setting updated')
   }
@@ -129,7 +129,11 @@ export default function SettingsView() {
                 <div className="flex items-center gap-4">
                   <Slider
                     value={[systemSettings?.maxReportsPerUser ?? 10]}
-                    onValueChange={([value]) => handleSystemSettingChange('maxReportsPerUser', value)}
+                    onValueChange={([value]) => {
+                      if (value !== undefined) {
+                        handleSystemSettingChange('maxReportsPerUser', value)
+                      }
+                    }}
                     min={1}
                     max={50}
                     step={1}
@@ -151,7 +155,11 @@ export default function SettingsView() {
                 <div className="flex items-center gap-4">
                   <Slider
                     value={[systemSettings?.matchDistanceRadius ?? 50]}
-                    onValueChange={([value]) => handleSystemSettingChange('matchDistanceRadius', value)}
+                    onValueChange={([value]) => {
+                      if (value !== undefined) {
+                        handleSystemSettingChange('matchDistanceRadius', value)
+                      }
+                    }}
                     min={1}
                     max={200}
                     step={5}

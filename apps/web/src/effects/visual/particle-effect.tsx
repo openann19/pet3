@@ -1,3 +1,4 @@
+import { makeRng } from '@petspark/shared'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
@@ -39,19 +40,21 @@ export function ParticleEffect({
 
     const [minSize, maxSize] = sizeRange
     const [minDuration, maxDuration] = durationRange
+    const seed = triggerKey * 1000 + Date.now()
+    const rng = makeRng(seed)
 
     const newParticles: Particle[] = Array.from({ length: count }, (_, i) => {
-      const color = colors[Math.floor(Math.random() * colors.length)] ?? '#F97316'
+      const color = colors[Math.floor(rng() * colors.length)] ?? '#F97316'
       return {
         id: i + triggerKey * 1000,
-        x: Math.random() * 300 - 150,
-        y: Math.random() * -300 - 100,
-        size: Math.random() * (maxSize - minSize) + minSize,
+        x: rng() * 300 - 150,
+        y: rng() * -300 - 100,
+        size: rng() * (maxSize - minSize) + minSize,
         color,
-        duration: Math.random() * (maxDuration - minDuration) + minDuration,
-        delay: Math.random() * 0.3,
-        rotation: Math.random() * 360,
-        blur: Math.random() * 2 + 0.5
+        duration: rng() * (maxDuration - minDuration) + minDuration,
+        delay: rng() * 0.3,
+        rotation: rng() * 360,
+        blur: rng() * 2 + 0.5
       }
     })
 

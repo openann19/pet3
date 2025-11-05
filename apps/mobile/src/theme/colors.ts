@@ -5,6 +5,7 @@ export const colors = {
   border: '#3E4C59',
   textPrimary: '#F0F4F8',
   textSecondary: '#BCD4E6',
+  primary: '#E89D5C',
   accent: '#F25C54',
   success: '#4CAF50',
   warning: '#FFB020',

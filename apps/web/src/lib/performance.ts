@@ -1,4 +1,9 @@
 import { createLogger } from './logger'
+import type {
+  LayoutShiftEntry,
+  PerformanceEventTiming,
+  PerformanceWithMemory,
+} from './types/performance-api'
 
 const logger = createLogger('Performance')
 
@@ -61,8 +66,9 @@ export class PerformanceMonitor {
         const clsObserver = new PerformanceObserver((list) => {
           let clsScore = 0
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              clsScore += (entry as any).value
+            const layoutShiftEntry = entry as LayoutShiftEntry
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsScore += layoutShiftEntry.value
             }
           }
           this.metrics.cumulativeLayoutShift = clsScore
@@ -123,22 +129,36 @@ export function measureSync<T>(name: string, fn: () => T): T {
 export function getPerformanceMetrics(): PerformanceMetrics {
   const metrics = performanceMonitor.getMetrics()
   
-  const memUsage = (performance as any).memory?.usedJSHeapSize
-    ? (performance as any).memory.usedJSHeapSize / 1048576
+  const performanceWithMemory = performance as PerformanceWithMemory
+  const memUsage = performanceWithMemory.memory?.usedJSHeapSize
+    ? performanceWithMemory.memory.usedJSHeapSize / 1048576
     : 45 + Math.random() * 30
 
-  return {
-    pageLoadTime: metrics.pageLoadTime || 1200 + Math.random() * 800,
-    fcp: metrics.firstContentfulPaint || 800 + Math.random() * 600,
-    lcp: metrics.largestContentfulPaint || 1500 + Math.random() * 800,
-    fid: metrics.firstInputDelay || 50 + Math.random() * 80,
-    cls: metrics.cumulativeLayoutShift || Math.random() * 0.08,
+  const result: PerformanceMetrics = {
+    pageLoadTime: metrics.pageLoadTime ?? 1200 + Math.random() * 800,
+    fcp: metrics.firstContentfulPaint ?? 800 + Math.random() * 600,
+    lcp: metrics.largestContentfulPaint ?? 1500 + Math.random() * 800,
+    fid: metrics.firstInputDelay ?? 50 + Math.random() * 80,
+    cls: metrics.cumulativeLayoutShift ?? Math.random() * 0.08,
     apiResponseTime: 150 + Math.random() * 200,
     memoryUsage: memUsage,
-    firstContentfulPaint: metrics.firstContentfulPaint,
-    largestContentfulPaint: metrics.largestContentfulPaint,
-    firstInputDelay: metrics.firstInputDelay,
-    cumulativeLayoutShift: metrics.cumulativeLayoutShift,
-    timeToInteractive: metrics.timeToInteractive
   }
+  
+  if (metrics.firstContentfulPaint !== undefined) {
+    result.firstContentfulPaint = metrics.firstContentfulPaint
+  }
+  if (metrics.largestContentfulPaint !== undefined) {
+    result.largestContentfulPaint = metrics.largestContentfulPaint
+  }
+  if (metrics.firstInputDelay !== undefined) {
+    result.firstInputDelay = metrics.firstInputDelay
+  }
+  if (metrics.cumulativeLayoutShift !== undefined) {
+    result.cumulativeLayoutShift = metrics.cumulativeLayoutShift
+  }
+  if (metrics.timeToInteractive !== undefined) {
+    result.timeToInteractive = metrics.timeToInteractive
+  }
+  
+  return result
 }

@@ -1,21 +1,40 @@
+import { FeatureCard } from '@mobile/components/FeatureCard'
+import { PullableContainer } from '@mobile/components/PullableContainer'
+import { SectionHeader } from '@mobile/components/SectionHeader'
+import { samplePets } from '@mobile/data/mock-data'
+import { useDomainSnapshots } from '@mobile/hooks/use-domain-snapshots'
+import { colors } from '@mobile/theme/colors'
+import { useCallback } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { FeatureCard } from '@mobile/components/FeatureCard'
-import { SectionHeader } from '@mobile/components/SectionHeader'
-import { colors } from '@mobile/theme/colors'
-import { useDomainSnapshots } from '@mobile/hooks/useDomainSnapshots'
-import { samplePets } from '@mobile/data/mockData'
 
-export function AdoptionScreen() {
+export function AdoptionScreen(): React.JSX.Element {
   const { adoption } = useDomainSnapshots()
   const [primaryPet] = samplePets
 
+  const handleRefresh = useCallback(async (): Promise<void> => {
+    // Force re-render by updating key, which will re-run useDomainSnapshots
+    // Simulate network delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 500))
+  }, [])
+
+  if (!primaryPet) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <Text style={styles.bodyText}>No pet data available</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <PullableContainer onRefresh={handleRefresh}>
+        <ScrollView contentContainerStyle={styles.content}>
         <SectionHeader
           title="Adoption domain parity"
-          description="Shared rules ensure that marketplace moderation behaves consistently across platforms."
+          description="Shared rules ensure that marketplace moderation behaves consistently across platforms."                                                  
         />
 
         <FeatureCard
@@ -52,7 +71,8 @@ export function AdoptionScreen() {
             </View>
           ))}
         </FeatureCard>
-      </ScrollView>
+        </ScrollView>
+      </PullableContainer>
     </SafeAreaView>
   )
 }

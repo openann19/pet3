@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  withTiming,
+  withSpring
 } from 'react-native-reanimated';
-import { FadeInView } from '../components/FadeInView';
-import { AnimatedCard } from '../components/AnimatedCard';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { SpringConfig } from '../animations/springConfigs';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { FadeInView } from '../components/FadeInView';
+import UltraIntegrationsPanel from '../components/UltraIntegrationsPanel';
 
 const { width } = Dimensions.get('window');
 
@@ -272,6 +272,11 @@ export const AdminConsoleScreen: React.FC = () => {
             ))}
           </View>
         )}
+
+        {/* Ultra Integrations */}
+        <FadeInView delay={100}>
+          <UltraIntegrationsPanel />
+        </FadeInView>
 
         <View style={{ height: 40 }} />
       </ScrollView>

@@ -27,11 +27,13 @@ export function PremiumCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-      whileHover={hover ? { 
-        y: -8, 
-        scale: 1.02,
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-      } : undefined}
+      {...(hover ? { 
+        whileHover: { 
+          y: -8, 
+          scale: 1.02,
+          transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
+        } 
+      } : {})}
       className={cn(
         'rounded-xl p-6 transition-all duration-300',
         variants[variant],

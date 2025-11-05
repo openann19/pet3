@@ -3,6 +3,10 @@
  * Provides safe access to localStorage with automatic serialization
  */
 
+import { createLogger } from '../logger';
+
+const logger = createLogger('LocalStorage');
+
 interface StorageOptions {
   ttl?: number; // Time to live in milliseconds
 }
@@ -35,7 +39,8 @@ export function getStorageItem<T>(key: string): T | null {
 
     return parsed.value;
   } catch (error) {
-    console.error(`Error reading from localStorage (key: ${key}):`, error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`Error reading from localStorage`, err, { key });
     return null;
   }
 }
@@ -57,7 +62,8 @@ export function setStorageItem<T>(
     localStorage.setItem(key, JSON.stringify(entry));
     return true;
   } catch (error) {
-    console.error(`Error writing to localStorage (key: ${key}):`, error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`Error writing to localStorage`, err, { key });
     return false;
   }
 }
@@ -70,7 +76,8 @@ export function removeStorageItem(key: string): boolean {
     localStorage.removeItem(key);
     return true;
   } catch (error) {
-    console.error(`Error removing from localStorage (key: ${key}):`, error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`Error removing from localStorage`, err, { key });
     return false;
   }
 }
@@ -97,7 +104,8 @@ export function clearExpiredStorage(): void {
       }
     });
   } catch (error) {
-    console.error('Error clearing expired storage:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error clearing expired storage', err);
   }
 }
 
@@ -116,7 +124,8 @@ export function getStorageSize(): number {
     });
     return size;
   } catch (error) {
-    console.error('Error calculating storage size:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error calculating storage size', err);
     return 0;
   }
 }

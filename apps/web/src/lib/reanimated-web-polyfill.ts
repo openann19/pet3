@@ -3,8 +3,8 @@
  * Provides web-compatible implementations of reanimated APIs using standard React hooks and CSS
  */
 
-import { useRef, useCallback, useMemo } from 'react';
 import type { CSSProperties } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 // Type definitions
 export interface SharedValue<T = number> {
@@ -26,6 +26,12 @@ export interface WithSpringConfig {
 export interface WithTimingConfig {
   duration?: number;
   easing?: (value: number) => number;
+}
+
+export interface WithDecayConfig {
+  velocity?: number;
+  deceleration?: number;
+  clamp?: [number, number];
 }
 
 // Extrapolation enum
@@ -60,6 +66,15 @@ export const Easing = {
   },
   out: (easing: (t: number) => number) => (t: number) => 1 - easing(1 - t),
   in: (easing: (t: number) => number) => easing,
+  elastic: (amplitude: number = 1) => {
+    return (t: number) => {
+      if (t === 0 || t === 1) return t;
+      const p = 0.3;
+      const s = p / 4;
+      const result = Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) * amplitude + 1;
+      return Math.max(0, Math.min(1, result));
+    };
+  },
 };
 
 // Shared value implementation
@@ -78,10 +93,29 @@ export function withSpring(toValue: number, _config?: WithSpringConfig): number 
   return toValue;
 }
 
-export function withTiming(toValue: number, _config?: WithTimingConfig): number {
+export function withTiming(toValue: number, _config?: WithTimingConfig): number {                                                                               
   // In web polyfill, we return the target value
   // The actual animation is handled by CSS transitions
   return toValue;
+}
+
+export function withDecay(config: WithDecayConfig): number {
+  // In web polyfill, we return the current value with decay applied
+  // The actual animation is handled by CSS transitions
+  const { velocity = 0, deceleration = 0.998, clamp } = config;
+  
+  // Calculate final position based on velocity and deceleration
+  // Simplified decay: v = v0 * (deceleration ^ t)
+  // For web, we'll use a simple approximation
+  let finalValue = velocity * (1 - deceleration);
+  
+  // Apply clamp if provided
+  if (clamp) {
+    const [min, max] = clamp;
+    finalValue = Math.max(min, Math.min(max, finalValue));
+  }
+  
+  return finalValue;
 }
 
 export function withDelay(_delayMs: number, animation: number): number {

@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  Alert,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { AnimatedCard } from '../components/AnimatedCard';
 import { FadeInView } from '../components/FadeInView';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { useStorage } from '../hooks/useStorage';
+import { notificationsApi } from '../utils/api-client';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('NotificationsScreen');
 
 interface Notification {
   id: string;
@@ -27,6 +32,7 @@ interface Notification {
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [storedNotifications, setStoredNotifications] = useStorage<Notification[]>(
     'notifications',
@@ -38,75 +44,81 @@ export default function NotificationsScreen() {
   }, []);
 
   const loadNotifications = async () => {
-    // In production, this would fetch from an API
-    // For now, use sample data
-    const sampleNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'like',
-        title: '❤️ New Like',
-        message: 'Sarah liked your post about Max',
-        timestamp: Date.now() - 300000, // 5 min ago
-        read: false,
-      },
-      {
-        id: '2',
-        type: 'comment',
-        title: '💬 New Comment',
-        message: 'John commented: "Beautiful dog!"',
-        timestamp: Date.now() - 3600000, // 1 hour ago
-        read: false,
-      },
-      {
-        id: '3',
-        type: 'match',
-        title: '💝 New Match',
-        message: 'You matched with Buddy!',
-        timestamp: Date.now() - 7200000, // 2 hours ago
-        read: true,
-      },
-      {
-        id: '4',
-        type: 'follow',
-        title: '👤 New Follower',
-        message: 'Emma started following you',
-        timestamp: Date.now() - 86400000, // 1 day ago
-        read: true,
-      },
-      {
-        id: '5',
-        type: 'mention',
-        title: '@ Mention',
-        message: 'Mike mentioned you in a comment',
-        timestamp: Date.now() - 172800000, // 2 days ago
-        read: true,
-      },
-    ];
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Merge with stored notifications
-    const merged = [
-      ...sampleNotifications,
-      ...storedNotifications.filter(
-        (sn) => !sampleNotifications.find((n) => n.id === sn.id)
-      ),
-    ].sort((a, b) => b.timestamp - a.timestamp);
+      const apiNotifications = await notificationsApi.list();
+      
+      const mappedNotifications: Notification[] = apiNotifications.map((n) => ({
+        id: n.id,
+        type: n.type as Notification['type'],
+        title: n.title,
+        message: n.message,
+        timestamp: n.timestamp,
+        read: n.read,
+        postId: n.postId,
+        userId: n.userId,
+      }));
 
-    setNotifications(merged);
-    setLoading(false);
+      // Merge with stored notifications (for offline support)
+      const merged = [
+        ...mappedNotifications,
+        ...storedNotifications.filter(
+          (sn) => !mappedNotifications.find((n) => n.id === sn.id)
+        ),
+      ].sort((a, b) => b.timestamp - a.timestamp);
+
+      setNotifications(merged);
+      setStoredNotifications(merged);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load notifications';
+      logger.error('Failed to load notifications', err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
+      
+      // Fallback to stored notifications if API fails
+      if (storedNotifications.length > 0) {
+        setNotifications(storedNotifications);
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const markAsRead = (id: string) => {
-    const updated = notifications.map((n) =>
-      n.id === id ? { ...n, read: true } : n
-    );
-    setNotifications(updated);
-    setStoredNotifications(updated);
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationsApi.markAsRead(id);
+      const updated = notifications.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      );
+      setNotifications(updated);
+      setStoredNotifications(updated);
+    } catch (err) {
+      logger.error('Failed to mark notification as read', err instanceof Error ? err : new Error(String(err)));
+      // Still update UI optimistically
+      const updated = notifications.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      );
+      setNotifications(updated);
+      setStoredNotifications(updated);
+    }
   };
 
-  const markAllAsRead = () => {
-    const updated = notifications.map((n) => ({ ...n, read: true }));
-    setNotifications(updated);
-    setStoredNotifications(updated);
+  const markAllAsRead = async () => {
+    try {
+      await notificationsApi.markAllAsRead();
+      const updated = notifications.map((n) => ({ ...n, read: true }));
+      setNotifications(updated);
+      setStoredNotifications(updated);
+    } catch (err) {
+      logger.error('Failed to mark all notifications as read', err instanceof Error ? err : new Error(String(err)));
+      // Still update UI optimistically
+      const updated = notifications.map((n) => ({ ...n, read: true }));
+      setNotifications(updated);
+      setStoredNotifications(updated);
+    }
   };
 
   const clearAll = () => {
@@ -157,6 +169,24 @@ export default function NotificationsScreen() {
           <LoadingSkeleton height={80} />
           <LoadingSkeleton height={80} style={{ marginTop: 12 }} />
           <LoadingSkeleton height={80} style={{ marginTop: 12 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (error && notifications.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>🔔 Notifications</Text>
+        </View>
+        <View style={styles.content}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={loadNotifications} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -416,6 +446,28 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: '#6366f1',
+  },
+  retryButtonText: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },

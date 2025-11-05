@@ -16,12 +16,12 @@ import { createLogger } from '@/lib/logger'
 import type { LostAlert } from '@/lib/lost-found-types'
 import { userService } from '@/lib/user-service'
 import {
-    ChatCircle,
-    CheckCircle,
-    Clock,
-    MapPin,
-    VideoCamera,
-    XCircle
+  ChatCircle,
+  CheckCircle,
+  Clock,
+  MapPin,
+  VideoCamera,
+  XCircle
 } from '@phosphor-icons/react'
 import { formatDistanceToNow } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -62,11 +62,15 @@ export function ContentModerationQueue() {
       const newItems: ModerationItem[] = []
 
       if (selectedType === 'lost-found') {
-        const filters: { limit: number; status?: LostAlertStatus[] } = { limit: 50 }
+        const queryParams: { limit: number; status?: LostAlertStatus[] } = { limit: 50 }
         if (selectedStatus === 'pending') {
-          filters.status = ['active']
+          queryParams.status = ['active']
         }
-        const result = await lostFoundAPI.queryAlerts({ limit: filters.limit, status: filters.status })
+        const result = await lostFoundAPI.queryAlerts(
+          queryParams.status !== undefined
+            ? { limit: queryParams.limit, status: queryParams.status }
+            : { limit: queryParams.limit }
+        )
         
         result.alerts.forEach(alert => {
           // Check if alert needs moderation (e.g., has been reported)

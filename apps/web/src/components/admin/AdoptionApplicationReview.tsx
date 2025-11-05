@@ -1,43 +1,61 @@
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
+import { adoptionApi } from '@/api/adoption-api'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Phone, 
-  EnvelopeSimple, 
-  House, 
+import { Textarea } from '@/components/ui/textarea'
+import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types'
+import { haptics } from '@/lib/haptics'
+import { createLogger } from '@/lib/logger'
+import {
   Calendar,
-  ClipboardText,
-  Warning,
-  ChatCircle,
-  MagnifyingGlass,
   CaretDown,
   CaretUp,
-  PawPrint
+  ChatCircle,
+  CheckCircle,
+  ClipboardText,
+  Clock,
+  EnvelopeSimple,
+  House,
+  MagnifyingGlass,
+  PawPrint,
+  Phone,
+  Warning,
+  XCircle
 } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { createLogger } from '@/lib/logger'
-import { adoptionApi } from '@/api/adoption-api'
-import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { haptics } from '@/lib/haptics'
-import { motion, AnimatePresence } from 'framer-motion'
 
 const logger = createLogger('AdoptionApplicationReview')
 
 type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn'
 
-interface ApplicationWithProfile extends AdoptionApplication {
+interface ApplicationWithProfile {
+  _id: string
+  adoptionProfileId: string
+  applicantId: string
+  applicantName: string
+  applicantEmail: string
+  applicantPhone: string
+  householdType: 'house' | 'apartment' | 'condo' | 'other'
+  hasYard: boolean
+  hasOtherPets: boolean
+  otherPetsDetails?: string
+  hasChildren: boolean
+  childrenAges?: string
+  experience: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn'
+  submittedAt: string
+  reviewedAt?: string
+  reviewNotes?: string
   profile?: AdoptionProfile
 }
 
@@ -74,10 +92,16 @@ export default function AdoptionApplicationReview() {
     loadData()
   }, [])
 
-  const applicationsWithProfiles: ApplicationWithProfile[] = applications.map(app => ({
-    ...app,
-    profile: profiles.find(p => p._id === app.adoptionProfileId)
-  }))
+  const applicationsWithProfiles: ApplicationWithProfile[] = applications.map(app => {
+    const profile = profiles.find(p => p._id === app.adoptionProfileId);
+    const result: ApplicationWithProfile = {
+      ...app,
+    };
+    if (profile !== undefined) {
+      result.profile = profile;
+    }
+    return result;
+  });
 
   const filteredApplications = () => {
     let list = applicationsWithProfiles
@@ -117,17 +141,31 @@ export default function AdoptionApplicationReview() {
     try {
       const newStatus = reviewAction === 'approve' ? 'approved' as const : 'rejected' as const
       
-      await adoptionApi.updateApplicationStatus(selectedApplication._id, {
+      const updateRequest: {
+        status: 'approved' | 'rejected'
+        reviewNotes?: string
+      } = {
         status: newStatus,
-        reviewNotes: reviewNotes || undefined
-      })
+      };
+      if (reviewNotes.trim()) {
+        updateRequest.reviewNotes = reviewNotes.trim();
+      }
+      
+      await adoptionApi.updateApplicationStatus(selectedApplication._id, updateRequest)
 
       // Update local state
-      setApplications(prev => prev.map(app => 
-        app._id === selectedApplication._id
-          ? { ...app, status: newStatus, reviewedAt: new Date().toISOString(), reviewNotes: reviewNotes || undefined }
-          : app
-      ))
+      setApplications(prev => prev.map(app => {
+        if (app._id === selectedApplication._id) {
+          const updated: AdoptionApplication = {
+            ...app,
+            status: newStatus,
+            reviewedAt: new Date().toISOString(),
+            ...(reviewNotes.trim() ? { reviewNotes: reviewNotes.trim() } : {}),
+          };
+          return updated;
+        }
+        return app;
+      }))
 
       // If approved, update profile status
       if (reviewAction === 'approve' && selectedApplication.profile) {

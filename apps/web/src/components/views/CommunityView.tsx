@@ -16,7 +16,7 @@ import { useApp } from '@/contexts/AppContext'
 import { filterPostsByFollows } from '@/core/services/follow-graph'
 import { useStorage } from '@/hooks/useStorage'
 import type { AdoptionProfile } from '@/lib/adoption-types'
-import type { Post } from '@/lib/community-types'
+import type { Post, PostFilters } from '@/lib/community-types'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import type { LostAlert } from '@/lib/lost-found-types'
@@ -222,9 +222,9 @@ export default function CommunityView() {
       
       const { userService } = await import('@/lib/user-service')
       const user = await userService.user()
-      const filters: any = {
+      const filters: PostFilters & { limit?: number; cursor?: string } = {
         limit: 20,
-        cursor: loadMore ? cursor : undefined
+        ...(loadMore && cursor ? { cursor } : {})
       }
 
       const response = await communityAPI.queryFeed(filters, user?.id)
@@ -264,7 +264,7 @@ export default function CommunityView() {
       const response = await adoptionApi.getAdoptionProfiles({ limit: 12 })
       
       if (loadMore) {
-        setAdoptionProfiles((currentProfiles) => [...(Array.isArray(currentProfiles) ? currentProfiles : []), ...(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile) => ({
+        setAdoptionProfiles((currentProfiles) => [...(Array.isArray(currentProfiles) ? currentProfiles : []), ...(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile): AdoptionProfile => ({
           _id: l._id,
           petId: l.petId,
           petName: l.petName,
@@ -284,18 +284,18 @@ export default function CommunityView() {
           goodWithKids: l.goodWithKids,
           goodWithPets: l.goodWithPets,
           energyLevel: l.energyLevel,
-          specialNeeds: l.specialNeeds,
+          ...(l.specialNeeds && { specialNeeds: l.specialNeeds }),
           adoptionFee: l.adoptionFee,
           postedDate: l.postedDate,
           personality: l.personality,
           photos: l.photos,
-          videoUrl: l.videoUrl,
+          ...(l.videoUrl && { videoUrl: l.videoUrl }),
           contactEmail: l.contactEmail,
-          contactPhone: l.contactPhone,
-          applicationUrl: l.applicationUrl
+          ...(l.contactPhone && { contactPhone: l.contactPhone }),
+          ...(l.applicationUrl && { applicationUrl: l.applicationUrl })
         })) : [])])
       } else {
-        setAdoptionProfiles(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile) => ({
+        setAdoptionProfiles(Array.isArray(response.profiles) ? response.profiles.map((l: AdoptionProfile): AdoptionProfile => ({
           _id: l._id,
           petId: l.petId,
           petName: l.petName,
@@ -315,15 +315,15 @@ export default function CommunityView() {
           goodWithKids: l.goodWithKids,
           goodWithPets: l.goodWithPets,
           energyLevel: l.energyLevel,
-          specialNeeds: l.specialNeeds,
+          ...(l.specialNeeds && { specialNeeds: l.specialNeeds }),
           adoptionFee: l.adoptionFee,
           postedDate: l.postedDate,
           personality: l.personality,
           photos: l.photos,
-          videoUrl: l.videoUrl,
+          ...(l.videoUrl && { videoUrl: l.videoUrl }),
           contactEmail: l.contactEmail,
-          contactPhone: l.contactPhone,
-          applicationUrl: l.applicationUrl
+          ...(l.contactPhone && { contactPhone: l.contactPhone }),
+          ...(l.applicationUrl && { applicationUrl: l.applicationUrl })
         })) : [])
       }
       
@@ -756,8 +756,8 @@ export default function CommunityView() {
                     photos: [],
                     contactMask: '',
                     reporterId: typeof currentUser.id === 'string' ? currentUser.id : '',
-                    reporterName: typeof currentUser.name === 'string' ? currentUser.name : 'Anonymous',
-                    reporterAvatar: currentUser.avatarUrl ?? undefined,
+                    reporterName: typeof currentUser['name'] === 'string' ? currentUser['name'] : 'Anonymous',
+                    ...(currentUser.avatarUrl && { reporterAvatar: currentUser.avatarUrl }),
                   });
                   toast.success(t.lostFound?.sightingSubmitted || 'Sighting reported');
                 } catch (error) {

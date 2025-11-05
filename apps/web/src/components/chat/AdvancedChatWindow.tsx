@@ -3,21 +3,21 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger
+  Popover,
+  PopoverContent,
+  PopoverTrigger
 } from '@/components/ui/popover'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTypingManager } from '@/hooks/use-typing-manager'
 import { useStorage } from '@/hooks/useStorage'
 import { blockService } from '@/lib/block-service'
-import type { ChatMessage, ChatRoom, MessageTemplate, ReactionType, SmartSuggestion } from '@/lib/chat-types'
+import type { ChatMessage, ChatRoom, MessageReaction, MessageTemplate, ReactionType, SmartSuggestion } from '@/lib/chat-types'
 import { MESSAGE_TEMPLATES, REACTION_EMOJIS } from '@/lib/chat-types'
 import {
-    CHAT_STICKERS,
-    formatChatTime,
-    generateMessageId,
-    groupMessagesByDate
+  CHAT_STICKERS,
+  formatChatTime,
+  generateMessageId,
+  groupMessagesByDate
 } from '@/lib/chat-utils'
 import { haptics } from '@/lib/haptics'
 import { buildLLMPrompt } from '@/lib/llm-prompt'
@@ -26,15 +26,15 @@ import { parseLLMError } from '@/lib/llm-utils'
 import { createLogger } from '@/lib/logger'
 import { realtime } from '@/lib/realtime'
 import {
-    ArrowLeft,
-    DotsThree,
-    MapPin,
-    Microphone,
-    PaperPlaneRight,
-    Smiley,
-    Sparkle,
-    Translate as TranslateIcon,
-    X
+  ArrowLeft,
+  DotsThree,
+  MapPin,
+  Microphone,
+  PaperPlaneRight,
+  Smiley,
+  Sparkle,
+  Translate as TranslateIcon,
+  X
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
@@ -117,15 +117,15 @@ export default function AdvancedChatWindow({
       roomId: room.id,
       senderId: currentUserId,
       senderName: currentUserName,
-      senderAvatar: currentUserAvatar,
+      ...(currentUserAvatar ? { senderAvatar: currentUserAvatar } : {}),
       content: type === 'text' ? content.trim() : content,
       type,
       timestamp: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       status: 'sent',
       reactions: [],
-      attachments,
-      metadata
+      ...(attachments ? { attachments } : {}),
+      ...(metadata ? { metadata } : {}),
     }
 
     setMessages((current) => [...(current || []), newMessage])
@@ -174,15 +174,16 @@ export default function AdvancedChatWindow({
               )
             }
           } else {
+            const newReaction: MessageReaction = {
+              emoji: emoji as ReactionType,
+              userId: currentUserId,
+              userName: currentUserName,
+              timestamp: new Date().toISOString(),
+              ...(currentUserAvatar !== undefined && currentUserAvatar !== null ? { userAvatar: currentUserAvatar } : {})
+            }
             return {
               ...msg,
-              reactions: [...reactions, {
-                emoji: emoji as ReactionType,
-                userId: currentUserId,
-                userName: currentUserName,
-                userAvatar: currentUserAvatar,
-                timestamp: new Date().toISOString()
-              }]
+              reactions: [...reactions, newReaction]
             }
           }
         }

@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
 import type { Playdate } from '../../components/playdate/PlaydateCard';
 import type { PlaydateData } from '../../components/playdate/PlaydateScheduler';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('usePlaydates');
 
 const STORAGE_KEY = '@playdates';
 
@@ -21,7 +24,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
         setPlaydates(parsedPlaydates);
       }
     } catch (error) {
-      console.error('Failed to load playdates:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load playdates', err, { context: 'loadPlaydates' });
     } finally {
       setIsLoading(false);
     }
@@ -32,7 +36,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newPlaydates));
       setPlaydates(newPlaydates);
     } catch (error) {
-      console.error('Failed to save playdates:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to save playdates', err, { context: 'savePlaydates' });
       throw error;
     }
   };
@@ -47,7 +52,7 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
           time: data.time.toISOString(),
           location: data.location,
           duration: data.duration,
-          notes: data.notes,
+          ...(data.notes !== undefined ? { notes: data.notes } : {}),
           attendees: data.attendees,
           status: 'pending',
           createdBy: currentUserId,
@@ -58,7 +63,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
 
         return { success: true, playdate: newPlaydate };
       } catch (error) {
-        console.error('Failed to create playdate:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to create playdate', err, { context: 'createPlaydate', userId: currentUserId });
         return { success: false, error: 'Failed to create playdate' };
       }
     },
@@ -75,7 +81,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to update playdate:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to update playdate', err, { context: 'updatePlaydate', playdateId });
         return { success: false, error: 'Failed to update playdate' };
       }
     },
@@ -90,7 +97,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to delete playdate:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to delete playdate', err, { context: 'deletePlaydate', playdateId });
         return { success: false, error: 'Failed to delete playdate' };
       }
     },
@@ -119,7 +127,8 @@ export const usePlaydates = (currentUserId: string = 'my-user-id') => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to update RSVP:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to update RSVP', err, { context: 'updateRSVP', playdateId, response });
         return { success: false, error: 'Failed to update RSVP' };
       }
     },

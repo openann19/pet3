@@ -10,7 +10,7 @@ import {
   type SharedValue
 } from 'react-native-reanimated'
 import { useCallback } from 'react'
-import { timingConfigs } from '@/effects/reanimated/transitions'
+import { timingConfigs, type TimingConfig } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
 
 export type DeleteAnimationContext =
@@ -66,18 +66,25 @@ export function useDeleteBubbleAnimation(
     runOnUI(() => {
       switch (context) {
         case 'self-delete': {
+          const easingFunc = timingConfigs.smooth.easing
+          const timingConfig1: TimingConfig = {
+            duration: duration * 0.1,
+            ...(easingFunc !== undefined ? { easing: easingFunc } : {})
+          }
+          const timingConfig2: TimingConfig = {
+            duration: duration * 0.9,
+            ...(easingFunc !== undefined ? { easing: easingFunc } : {})
+          }
+          const timingConfig3: TimingConfig = {
+            duration,
+            ...(easingFunc !== undefined ? { easing: easingFunc } : {})
+          }
           scale.value = withSequence(
-            withTiming(1.1, { duration: duration * 0.1, easing: timingConfigs.smooth.easing }),
-            withTiming(0, { duration: duration * 0.9, easing: timingConfigs.smooth.easing })
+            withTiming(1.1, timingConfig1),
+            withTiming(0, timingConfig2)
           )
-          translateY.value = withTiming(-40, {
-            duration,
-            easing: timingConfigs.smooth.easing
-          })
-          opacity.value = withTiming(0, {
-            duration,
-            easing: timingConfigs.smooth.easing
-          })
+          translateY.value = withTiming(-40, timingConfig3)
+          opacity.value = withTiming(0, timingConfig3)
           height.value = withTiming(
             0,
             { duration },

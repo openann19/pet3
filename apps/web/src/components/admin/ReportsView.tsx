@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Flag, CheckCircle, XCircle, Eye, Clock, Warning } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { generateULID } from '@/lib/utils'
 import { adminApi } from '@/api/admin-api'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { useStorage } from '@/hooks/useStorage'
+import { generateULID } from '@/lib/utils'
+import type { Icon } from '@phosphor-icons/react'
+import { CheckCircle, Clock, Eye, Flag, Warning, XCircle } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface Report {
   id: string
@@ -169,7 +170,7 @@ export default function ReportsView() {
 
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6">
-          <Tabs value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+          <Tabs value={filterStatus} onValueChange={(v: string) => setFilterStatus(v as 'all' | 'pending' | 'reviewing' | 'resolved')}>
             <TabsList>
               <TabsTrigger value="all">
                 All ({(reports || []).length})
@@ -332,14 +333,15 @@ export default function ReportsView() {
 }
 
 function PriorityBadge({ priority }: { priority: string }) {
-  const variants: Record<string, { variant: any; icon: any }> = {
+  type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+  const variants: Record<string, { variant: BadgeVariant; icon: Icon }> = {
     low: { variant: 'secondary', icon: Clock },
     medium: { variant: 'default', icon: Flag },
     high: { variant: 'default', icon: Warning },
     critical: { variant: 'destructive', icon: Warning }
   }
 
-  const config = variants[priority] || variants.medium
+  const config = variants[priority] ?? variants['medium']
   if (!config) return null
   const Icon = config.icon
 
@@ -352,14 +354,15 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { variant: any; label: string }> = {
+  type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+  const variants: Record<string, { variant: BadgeVariant; label: string }> = {
     pending: { variant: 'secondary', label: 'Pending' },
     reviewing: { variant: 'default', label: 'Reviewing' },
     resolved: { variant: 'default', label: 'Resolved' },
     dismissed: { variant: 'outline', label: 'Dismissed' }
   }
 
-  const config = variants[status] || variants.pending
+  const config = variants[status] ?? variants['pending']
   if (!config) return null
 
   return (

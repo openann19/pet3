@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 interface EnhancedCardProps {
   children: React.ReactNode
@@ -29,10 +29,12 @@ export default function EnhancedCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-      whileHover={hover ? { 
-        y: -4,
-        transition: { duration: 0.2 } 
-      } : undefined}
+      {...(hover ? {
+        whileHover: { 
+          y: -4,
+          transition: { duration: 0.2 } 
+        }
+      } : {})}
     >
       <Card 
         className={cn(

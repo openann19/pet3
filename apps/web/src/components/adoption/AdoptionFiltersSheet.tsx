@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
-import { X } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Slider } from '@/components/ui/slider'
 import type { AdoptionListingFilters, AdoptionListingStatus } from '@/lib/adoption-marketplace-types'
 import { haptics } from '@/lib/haptics'
+import { X } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 
 interface AdoptionFiltersSheetProps {
   open: boolean
@@ -36,7 +36,13 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
     const updated = current.includes(species)
       ? current.filter(s => s !== species)
       : [...current, species]
-    setLocalFilters({ ...localFilters, species: updated.length > 0 ? updated : undefined })
+    const newFilters = { ...localFilters }
+    if (updated.length > 0) {
+      newFilters.species = updated
+    } else {
+      delete newFilters.species
+    }
+    setLocalFilters(newFilters)
     haptics.impact('light')
   }
 
@@ -45,7 +51,13 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
     const updated = current.includes(size)
       ? current.filter(s => s !== size)
       : [...current, size]
-    setLocalFilters({ ...localFilters, size: updated.length > 0 ? updated : undefined })
+    const newFilters = { ...localFilters }
+    if (updated.length > 0) {
+      newFilters.size = updated
+    } else {
+      delete newFilters.size
+    }
+    setLocalFilters(newFilters)
     haptics.impact('light')
   }
 
@@ -54,7 +66,13 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
     const updated = current.includes(level)
       ? current.filter(l => l !== level)
       : [...current, level]
-    setLocalFilters({ ...localFilters, energyLevel: updated.length > 0 ? updated : undefined })
+    const newFilters = { ...localFilters }
+    if (updated.length > 0) {
+      newFilters.energyLevel = updated
+    } else {
+      delete newFilters.energyLevel
+    }
+    setLocalFilters(newFilters)
     haptics.impact('light')
   }
 
@@ -63,7 +81,13 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
     const updated = current.includes(status)
       ? current.filter(s => s !== status)
       : [...current, status]
-    setLocalFilters({ ...localFilters, status: updated.length > 0 ? updated : undefined })
+    const newFilters = { ...localFilters }
+    if (updated.length > 0) {
+      newFilters.status = updated
+    } else {
+      delete newFilters.status
+    }
+    setLocalFilters(newFilters)
     haptics.impact('light')
   }
 
@@ -152,10 +176,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                   min="0"
                   max="30"
                   value={localFilters.ageMin || ''}
-                  onChange={(e) => setLocalFilters({
-                    ...localFilters,
-                    ageMin: e.target.value ? Number(e.target.value) : undefined
-                  })}
+                  onChange={(e) => {
+                    const newFilters = { ...localFilters }
+                    if (e.target.value) {
+                      newFilters.ageMin = Number(e.target.value)
+                    } else {
+                      delete newFilters.ageMin
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                   placeholder="0"
                 />
               </div>
@@ -167,10 +196,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                   min="0"
                   max="30"
                   value={localFilters.ageMax || ''}
-                  onChange={(e) => setLocalFilters({
-                    ...localFilters,
-                    ageMax: e.target.value ? Number(e.target.value) : undefined
-                  })}
+                  onChange={(e) => {
+                    const newFilters = { ...localFilters }
+                    if (e.target.value) {
+                      newFilters.ageMax = Number(e.target.value)
+                    } else {
+                      delete newFilters.ageMax
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                   placeholder="30"
                 />
               </div>
@@ -183,10 +217,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
             <Input
               id="location"
               value={localFilters.location || ''}
-              onChange={(e) => setLocalFilters({
-                ...localFilters,
-                location: e.target.value || undefined
-              })}
+              onChange={(e) => {
+                const newFilters = { ...localFilters }
+                if (e.target.value) {
+                  newFilters.location = e.target.value
+                } else {
+                  delete newFilters.location
+                }
+                setLocalFilters(newFilters)
+              }}
               placeholder="City or zip code"
             />
           </div>
@@ -198,10 +237,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
               <div className="px-2">
                 <Slider
                   value={[localFilters.maxDistance || 50]}
-                  onValueChange={([value]) => setLocalFilters({
-                    ...localFilters,
-                    maxDistance: value
-                  })}
+                  onValueChange={([value]) => {
+                    const newFilters = { ...localFilters }
+                    if (value !== undefined) {
+                      newFilters.maxDistance = value
+                    } else {
+                      delete newFilters.maxDistance
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                   min={1}
                   max={100}
                   step={1}
@@ -223,10 +267,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                 <Checkbox
                   id="goodWithKids"
                   checked={localFilters.goodWithKids === true}
-                  onCheckedChange={(checked) => setLocalFilters({
-                    ...localFilters,
-                    goodWithKids: checked ? true : undefined
-                  })}
+                  onCheckedChange={(checked) => {
+                    const newFilters = { ...localFilters }
+                    if (checked) {
+                      newFilters.goodWithKids = true
+                    } else {
+                      delete newFilters.goodWithKids
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                 />
                 <Label htmlFor="goodWithKids" className="text-sm font-normal cursor-pointer">
                   Good with Kids
@@ -236,10 +285,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                 <Checkbox
                   id="goodWithPets"
                   checked={localFilters.goodWithPets === true}
-                  onCheckedChange={(checked) => setLocalFilters({
-                    ...localFilters,
-                    goodWithPets: checked ? true : undefined
-                  })}
+                  onCheckedChange={(checked) => {
+                    const newFilters = { ...localFilters }
+                    if (checked) {
+                      newFilters.goodWithPets = true
+                    } else {
+                      delete newFilters.goodWithPets
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                 />
                 <Label htmlFor="goodWithPets" className="text-sm font-normal cursor-pointer">
                   Good with Other Pets
@@ -249,10 +303,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                 <Checkbox
                   id="vaccinated"
                   checked={localFilters.vaccinated === true}
-                  onCheckedChange={(checked) => setLocalFilters({
-                    ...localFilters,
-                    vaccinated: checked ? true : undefined
-                  })}
+                  onCheckedChange={(checked) => {
+                    const newFilters = { ...localFilters }
+                    if (checked) {
+                      newFilters.vaccinated = true
+                    } else {
+                      delete newFilters.vaccinated
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                 />
                 <Label htmlFor="vaccinated" className="text-sm font-normal cursor-pointer">
                   Vaccinated
@@ -262,10 +321,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
                 <Checkbox
                   id="spayedNeutered"
                   checked={localFilters.spayedNeutered === true}
-                  onCheckedChange={(checked) => setLocalFilters({
-                    ...localFilters,
-                    spayedNeutered: checked ? true : undefined
-                  })}
+                  onCheckedChange={(checked) => {
+                    const newFilters = { ...localFilters }
+                    if (checked) {
+                      newFilters.spayedNeutered = true
+                    } else {
+                      delete newFilters.spayedNeutered
+                    }
+                    setLocalFilters(newFilters)
+                  }}
                 />
                 <Label htmlFor="spayedNeutered" className="text-sm font-normal cursor-pointer">
                   Spayed/Neutered
@@ -299,10 +363,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
               type="number"
               min="0"
               value={localFilters.feeMax || ''}
-              onChange={(e) => setLocalFilters({
-                ...localFilters,
-                feeMax: e.target.value ? Number(e.target.value) : undefined
-              })}
+              onChange={(e) => {
+                const newFilters = { ...localFilters }
+                if (e.target.value) {
+                  newFilters.feeMax = Number(e.target.value)
+                } else {
+                  delete newFilters.feeMax
+                }
+                setLocalFilters(newFilters)
+              }}
               placeholder="No limit"
             />
           </div>
@@ -352,10 +421,15 @@ export function AdoptionFiltersSheet({ open, onOpenChange, filters, onFiltersCha
             <Checkbox
               id="featured"
               checked={localFilters.featured === true}
-              onCheckedChange={(checked) => setLocalFilters({
-                ...localFilters,
-                featured: checked ? true : undefined
-              })}
+                  onCheckedChange={(checked) => {
+                    const newFilters = { ...localFilters }
+                    if (checked) {
+                      newFilters.featured = true
+                    } else {
+                      delete newFilters.featured
+                    }
+                    setLocalFilters(newFilters)
+                  }}
             />
             <Label htmlFor="featured" className="text-sm font-normal cursor-pointer">
               Featured Listings Only

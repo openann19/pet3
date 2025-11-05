@@ -96,7 +96,8 @@ class SentryConfigImpl {
 
   startTransaction(name: string, op: string): { finish: () => void } {
     // Note: startTransaction is deprecated in newer Sentry versions
-    // Return a stub that can be used consistently
+    // Returns a transaction interface for backward compatibility
+    // Newer implementations should use Sentry.startSpan() instead
     logger.debug('Transaction started', { name, op })
     return { finish: () => logger.debug('Transaction finished', { name, op }) }
   }

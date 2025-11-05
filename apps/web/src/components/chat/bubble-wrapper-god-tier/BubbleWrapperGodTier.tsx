@@ -68,10 +68,14 @@ export function BubbleWrapperGodTier({
     enabled
   })
 
-  const deleteAnimation = useDeleteBubbleAnimation({
+  const deleteAnimationOptions: {
+    context: 'self-delete' | 'admin-delete' | 'emoji-media' | 'group-chat'
+    onFinish?: () => void
+  } = {
     context: deleteContext,
-    onFinish: onDeleteFinish
-  })
+    ...(onDeleteFinish !== undefined ? { onFinish: onDeleteFinish } : {})
+  }
+  const deleteAnimation = useDeleteBubbleAnimation(deleteAnimationOptions)
 
   const bubbleRef = useRef<HTMLDivElement>(null)
   

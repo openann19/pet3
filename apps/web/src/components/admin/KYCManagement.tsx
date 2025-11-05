@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { kycApi } from '@/api/kyc-api'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  CheckCircle, XCircle, Clock, ShieldCheck,
-  User, Calendar, Warning, ArrowRight
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import type { KYCRejectReason, KYCStatus, KYCSubmission } from '@/lib/kyc-types'
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock, ShieldCheck,
+  User,
+  Warning,
+  XCircle
 } from '@phosphor-icons/react'
-import { kycApi } from '@/api/kyc-api'
-import type { KYCSubmission, KYCStatus, KYCRejectReason } from '@/lib/kyc-types'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export function KYCManagement() {
@@ -166,7 +171,7 @@ export function KYCManagement() {
         </Card>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)} className="w-full">
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as typeof selectedTab)} className="w-full">
         <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="not_started">Not Started</TabsTrigger>

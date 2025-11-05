@@ -246,7 +246,7 @@ export default function NotificationsView({
                   `}
                 >
                   <Avatar
-                    src={notification.actorAvatar || undefined}
+                    {...(notification.actorAvatar && { src: notification.actorAvatar })}
                     alt={notification.actorName}
                     className="w-12 h-12"
                   >

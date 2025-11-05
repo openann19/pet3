@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Dimensions,
+    Dimensions,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -58,12 +58,12 @@ export const CallInterface: React.FC<CallInterfaceProps> = ({
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => !prev);
-    // TODO: Implement actual mute functionality with WebRTC
+    // NOTE: WebRTC mute implementation pending - currently updates UI state only
   }, []);
 
   const toggleCamera = useCallback(() => {
     setIsCameraOn((prev) => !prev);
-    // TODO: Implement actual camera toggle with WebRTC
+    // NOTE: WebRTC camera toggle implementation pending - currently updates UI state only
   }, []);
 
   const handleEndCall = useCallback(() => {

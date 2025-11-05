@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import { useStorage } from '@/hooks/useStorage'
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { useStorage } from '@/hooks/useStorage';
 import { useMapProviderConfig } from '@/lib/maps/provider-config';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
-import { Slider } from '@/components/ui/slider'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
-import { MapPin, Plus, Trash, Pencil } from '@phosphor-icons/react'
-import type { PlaceCategory } from '@/lib/maps/types'
+import type { PlaceCategory } from '@/lib/maps/types';
+import { MapPin, Pencil, Plus, Trash } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface MapSettings {
   PRIVACY_GRID_METERS: number
@@ -90,7 +90,11 @@ export default function MapSettingsView() {
     color: '#000000',
   })
 
-  const handleSettingChange = (key: keyof MapSettings, value: any) => {
+  const handleSettingChange = <K extends keyof MapSettings>(
+    key: K,
+    value: MapSettings[K]
+  ): void => {
+    if (value === undefined) return
     setMapSettings((current) => ({
       ...current,
       [key]: value,
@@ -197,7 +201,11 @@ export default function MapSettingsView() {
                 <div className="flex items-center gap-4">
                   <Slider
                     value={[mapSettings?.PRIVACY_GRID_METERS ?? 1000]}
-                    onValueChange={([value]) => handleSettingChange('PRIVACY_GRID_METERS', value)}
+                    onValueChange={([value]) => {
+                      if (value !== undefined) {
+                        handleSettingChange('PRIVACY_GRID_METERS', value)
+                      }
+                    }}
                     min={100}
                     max={5000}
                     step={100}
@@ -228,9 +236,11 @@ export default function MapSettingsView() {
                 <div className="flex items-center gap-4">
                   <Slider
                     value={[mapSettings?.PRECISE_LOCATION_TIMEOUT_MINUTES ?? 60]}
-                    onValueChange={([value]) =>
-                      handleSettingChange('PRECISE_LOCATION_TIMEOUT_MINUTES', value)
-                    }
+                    onValueChange={([value]) => {
+                      if (value !== undefined) {
+                        handleSettingChange('PRECISE_LOCATION_TIMEOUT_MINUTES', value)
+                      }
+                    }}
                     min={5}
                     max={240}
                     step={5}
@@ -280,7 +290,12 @@ export default function MapSettingsView() {
                 <Label>Units</Label>
                 <Select
                   value={mapSettings?.UNITS ?? 'metric'}
-                  onValueChange={(value) => handleSettingChange('UNITS', value)}
+                  onValueChange={(value: string) => {
+                    if (value === 'metric' || value === 'imperial') {
+                      const unitValue: 'metric' | 'imperial' = value
+                      handleSettingChange('UNITS', unitValue)
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -387,7 +402,11 @@ export default function MapSettingsView() {
                 <div className="flex items-center gap-4">
                   <Slider
                     value={[mapSettings?.MAX_MARKERS_VISIBLE ?? 50]}
-                    onValueChange={([value]) => handleSettingChange('MAX_MARKERS_VISIBLE', value)}
+                    onValueChange={([value]) => {
+                      if (value !== undefined) {
+                        handleSettingChange('MAX_MARKERS_VISIBLE', value)
+                      }
+                    }}
                     min={10}
                     max={200}
                     step={10}

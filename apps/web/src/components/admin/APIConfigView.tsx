@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
-import { 
-  Key, 
-  Eye, 
+import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useStorage } from '@/hooks/useStorage'
+import {
+  Eye,
   EyeSlash,
+  Globe,
+  Image as ImageIcon,
+  Key,
   MapPin,
   Robot,
   ShieldCheck,
-  Image as ImageIcon,
-  Warning,
-  Globe,
   TestTube,
-  VideoCamera
+  VideoCamera,
+  Warning
 } from '@phosphor-icons/react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Switch } from '@/components/ui/switch'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export interface APIConfig {
   maps: {
@@ -160,7 +160,7 @@ export default function APIConfigView() {
     setShowSecrets(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const updateConfig = (section: keyof APIConfig, field: string, value: any) => {
+  const updateConfig = (section: keyof APIConfig, field: string, value: string | boolean | number) => {
     setConfig((current: APIConfig) => ({
       ...current,
       [section]: {

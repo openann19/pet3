@@ -46,9 +46,9 @@ export function VerificationReviewDashboard() {
   const loadVerificationRequests = async () => {
     try {
       setInitialLoading(true)
-      const requests = await verificationApi.getVerificationRequests({
-        status: selectedTab === 'all' ? undefined : [selectedTab as VerificationStatus]
-      })
+      const filters: { status?: VerificationStatus[] } | undefined = 
+        selectedTab !== 'all' ? { status: [selectedTab as VerificationStatus] } : undefined
+      const requests = await verificationApi.getVerificationRequests(filters)
       setVerificationRequests(requests)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
@@ -115,7 +115,7 @@ export function VerificationReviewDashboard() {
 
       await verificationApi.updateVerificationStatus(
         selectedRequest.id,
-        'approved',
+        'approved' as 'approved' | 'rejected',
         user.id,
         reviewNotes
       )
@@ -327,8 +327,8 @@ export function VerificationReviewDashboard() {
                                   {getStatusIcon(request.status)}
                                   <span className="ml-1.5 font-medium">{request.status.toUpperCase()}</span>
                                 </Badge>
-                                <Badge className={getLevelColor(request.level)} variant="outline">
-                                  {getLevelIcon(request.level)} {request.level.toUpperCase()}
+                                <Badge className={getLevelColor(request.verificationLevel)} variant="outline">
+                                  {getLevelIcon(request.verificationLevel)} {request.verificationLevel.toUpperCase()}
                                 </Badge>
                                 {request.trustScore && (
                                   <Badge variant="outline" className="bg-linear-to-r from-primary/10 to-accent/10">
@@ -423,8 +423,8 @@ export function VerificationReviewDashboard() {
                     <div>
                       <span className="text-sm text-muted-foreground">Level</span>
                       <div className="mt-1">
-                        <Badge className={getLevelColor(selectedRequest.level)}>
-                          {getLevelIcon(selectedRequest.level)} {selectedRequest.level}
+                        <Badge className={getLevelColor(selectedRequest.verificationLevel)}>
+                          {getLevelIcon(selectedRequest.verificationLevel)} {selectedRequest.verificationLevel}
                         </Badge>
                       </div>
                     </div>

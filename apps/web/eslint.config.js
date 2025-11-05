@@ -1,5 +1,3 @@
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 import js from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
 import promise from 'eslint-plugin-promise';
@@ -10,6 +8,8 @@ import security from 'eslint-plugin-security';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,8 +56,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
-      'no-console': ['error', { allow: ['error', 'warn'] }],
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],                                                                         
+      'no-console': 'error', // No console.* allowed in production code
       'no-debugger': 'error',
       eqeqeq: ['error', 'smart'],
       'prefer-const': 'error',
@@ -173,6 +173,12 @@ export default tseslint.config(
     files: ['**/*.d.ts'],
     rules: {
       '@typescript-eslint/consistent-type-imports': 'off',
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      'no-console': 'off',
     },
   },
 );

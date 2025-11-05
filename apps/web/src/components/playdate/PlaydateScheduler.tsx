@@ -1,28 +1,9 @@
-import { useState, lazy, Suspense } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  PawPrint,
-  X,
-  Plus,
-  Check,
-  Park,
-  Umbrella,
-  MapTrifold,
-  NavigationArrow,
-  ShareNetwork,
-  VideoCamera,
-  Phone
-} from '@phosphor-icons/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -30,13 +11,32 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { Match, Pet } from '@/lib/types'
-import type { Playdate, PlaydateType, PlaydateStatus, PlaydateLocation } from '@/lib/playdate-types'
-import { format, isPast, differenceInDays } from 'date-fns'
-import { toast } from 'sonner'
+import { Textarea } from '@/components/ui/textarea'
+import { useStorage } from '@/hooks/useStorage'
 import { haptics } from '@/lib/haptics'
+import type { Playdate, PlaydateLocation, PlaydateStatus, PlaydateType } from '@/lib/playdate-types'
+import type { Match, Pet } from '@/lib/types'
+import {
+  Calendar,
+  Check,
+  Clock,
+  MapPin,
+  MapTrifold,
+  NavigationArrow,
+  Park,
+  PawPrint,
+  Phone,
+  Plus,
+  ShareNetwork,
+  Umbrella,
+  VideoCamera,
+  X
+} from '@phosphor-icons/react'
+import { differenceInDays, format, isPast } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
+import { lazy, Suspense, useState } from 'react'
+import { toast } from 'sonner'
 
 const LocationPicker = lazy(() => import('./LocationPicker'))
 
@@ -616,7 +616,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
           </div>
         </div>}>
           <LocationPicker
-            value={selectedLocation || undefined}
+            {...(selectedLocation !== null ? { value: selectedLocation } : {})}
             onChange={handleLocationChange}
             onClose={() => setShowLocationPicker(false)}
           />

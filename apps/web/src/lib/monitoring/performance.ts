@@ -2,6 +2,11 @@
  * Performance monitoring utilities for tracking Core Web Vitals and custom metrics
  */
 
+import type { LayoutShiftEntry } from '@/lib/types/performance-api';
+import { createLogger } from '../logger';
+
+const logger = createLogger('PerformanceMonitoring')
+
 interface PerformanceMetric {
   name: string;
   value: number;
@@ -45,15 +50,18 @@ export function observeLCP(callback: MetricCallback): void {
 
   try {
     const observer = new PerformanceObserver((list) => {
-      const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      const lcp = lastEntry.startTime;
-      callback(createMetric('LCP', lcp, THRESHOLDS.LCP));
-    });
+      const entries = list.getEntries()
+      const lastEntry = entries[entries.length - 1]
+      if (lastEntry) {
+        const lcp = lastEntry.startTime
+        callback(createMetric('LCP', lcp, THRESHOLDS.LCP))
+      }
+    })
 
     observer.observe({ type: 'largest-contentful-paint', buffered: true });
   } catch (error) {
-    console.error('Error observing LCP:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error observing LCP', err);
   }
 }
 
@@ -78,7 +86,8 @@ export function observeFID(callback: MetricCallback): void {
 
     observer.observe({ type: 'first-input', buffered: true });
   } catch (error) {
-    console.error('Error observing FID:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error observing FID', err);
   }
 }
 
@@ -99,22 +108,24 @@ export function observeCLS(callback: MetricCallback): void {
       const entries = list.getEntries();
       
       entries.forEach((entry) => {
-        if ('value' in entry && !entry.hadRecentInput) {
-          const value = entry.value as number;
-          sessionValue += value;
-          sessionEntries.push(entry);
+        const layoutShiftEntry = entry as LayoutShiftEntry
+        if ('value' in layoutShiftEntry && !layoutShiftEntry.hadRecentInput) {
+          const value = layoutShiftEntry.value
+          sessionValue += value
+          sessionEntries.push(entry)
           
           if (sessionValue > clsValue) {
-            clsValue = sessionValue;
-            callback(createMetric('CLS', clsValue, THRESHOLDS.CLS));
+            clsValue = sessionValue
+            callback(createMetric('CLS', clsValue, THRESHOLDS.CLS))
           }
         }
-      });
+      })
     });
 
     observer.observe({ type: 'layout-shift', buffered: true });
   } catch (error) {
-    console.error('Error observing CLS:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error observing CLS', err);
   }
 }
 
@@ -138,7 +149,8 @@ export function observeFCP(callback: MetricCallback): void {
 
     observer.observe({ type: 'paint', buffered: true });
   } catch (error) {
-    console.error('Error observing FCP:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error observing FCP', err);
   }
 }
 
@@ -157,7 +169,8 @@ export function observeTTFB(callback: MetricCallback): void {
       callback(createMetric('TTFB', ttfb, THRESHOLDS.TTFB));
     }
   } catch (error) {
-    console.error('Error observing TTFB:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error observing TTFB', err);
   }
 }
 
@@ -187,7 +200,8 @@ export function trackMetric(name: string, value: number): void {
         duration: value,
       });
     } catch (error) {
-      console.error('Error tracking metric:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Error tracking metric', err, { metricName: name, value });
     }
   }
 }

@@ -11,7 +11,12 @@ import "./index.css";
 import "./main.css";
 import "./styles/theme.css";
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found. Make sure <div id="root"></div> exists in admin.html');
+}
+
+createRoot(rootElement).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <AppProvider>
       <div className="min-h-screen bg-background text-foreground">

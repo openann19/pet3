@@ -1,4 +1,5 @@
-import type { RippleOptions, ParticleOptions } from './types'
+import { makeRng } from '@petspark/shared'
+import type { ParticleOptions, RippleOptions } from './types'
 
 export class MicroInteractions {
   static createRipple(
@@ -216,6 +217,8 @@ export class MicroInteractions {
     const rect = container.getBoundingClientRect()
     const centerX = rect.width / 2
     const centerY = rect.height / 2
+    const seed = Date.now() + container.offsetLeft + container.offsetTop
+    const rng = makeRng(seed)
 
     for (let i = 0; i < count; i++) {
       const particle = document.createElement('div')
@@ -223,7 +226,7 @@ export class MicroInteractions {
       particle.style.width = `${size}px`
       particle.style.height = `${size}px`
       particle.style.borderRadius = '50%'
-      const color = colors[Math.floor(Math.random() * colors.length)]
+      const color = colors[Math.floor(rng() * colors.length)]
       if (color) {
         particle.style.backgroundColor = color
       }
@@ -234,7 +237,7 @@ export class MicroInteractions {
       container.appendChild(particle)
 
       const angle = (Math.PI * 2 * i) / count
-      const velocity = spread * (0.5 + Math.random() * 0.5)
+      const velocity = spread * (0.5 + rng() * 0.5)
       const tx = Math.cos(angle) * velocity
       const ty = Math.sin(angle) * velocity
 
@@ -244,7 +247,7 @@ export class MicroInteractions {
       ]
 
       particle.animate(keyframes, {
-        duration: duration + Math.random() * 500,
+        duration: duration + rng() * 500,
         easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
         fill: 'forwards'
       }).onfinish = () => particle.remove()

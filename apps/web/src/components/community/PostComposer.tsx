@@ -1,25 +1,25 @@
-import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Tag, Lock, Globe, Users, Camera, VideoCamera, Sparkle, Play, Pause, FilmSlate, CheckCircle, WarningCircle } from '@phosphor-icons/react'
+import { communityAPI } from '@/api/community-api'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { toast } from 'sonner'
-import { communityAPI } from '@/api/community-api'
-import type { PostVisibility, PostKind } from '@/lib/community-types'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import { useApp } from '@/contexts/AppContext'
-import { haptics } from '@/lib/haptics'
+import { checkDuplicateContent, moderatePost } from '@/core/services/content-moderation'
 import { useStorage } from '@/hooks/useStorage'
-import type { Pet } from '@/lib/types'
-import { VideoCompressor, type VideoMetadata, type CompressionProgress } from '@/lib/video-compression'
-import { createLogger } from '@/lib/logger'
-import type { Icon } from '@phosphor-icons/react'
-import { moderatePost, checkDuplicateContent } from '@/core/services/content-moderation'
+import type { PostKind, PostVisibility } from '@/lib/community-types'
+import { haptics } from '@/lib/haptics'
 import { uploadImage } from '@/lib/image-upload'
+import { createLogger } from '@/lib/logger'
+import type { Pet } from '@/lib/types'
+import { VideoCompressor, type CompressionProgress, type VideoMetadata } from '@/lib/video-compression'
+import type { Icon } from '@phosphor-icons/react'
+import { Camera, CheckCircle, FilmSlate, Globe, Lock, Pause, Play, Sparkle, Tag, Users, VideoCamera, WarningCircle, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('PostComposer')
 
@@ -338,22 +338,27 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
         toast.info('Your post is under review and will be visible once approved.')
       }
       
-      await communityAPI.createPost({
+      const postData: Parameters<typeof communityAPI.createPost>[0] = {
         authorId: user.id,
         authorName: user.login || 'User',
         authorAvatar: user.avatarUrl,
         kind: 'post' as PostKind,
         text: text.trim(),
         media: videoState.file ? [] : images,
-        tags: tags.length > 0 ? tags : undefined,
-        location: location ? {
+        visibility
+      }
+      if (tags.length > 0) {
+        postData.tags = tags
+      }
+      if (location) {
+        postData.location = {
           city: location.placeName?.split(',')[0] || 'Unknown',
           country: location.placeName?.split(',').pop()?.trim() || 'Unknown',
           lat: location.lat,
           lon: location.lng
-        } : undefined,
-        visibility
-      })
+        }
+      }
+      await communityAPI.createPost(postData)
       
       haptics.success()
       toast.success(t.community?.postCreated || 'Post created successfully!')

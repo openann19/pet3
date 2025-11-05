@@ -8,8 +8,8 @@ import { motion } from 'framer-motion'
 // Using inline SVGs for Google and Apple logos
 import { Button } from '@/components/ui/button'
 import { useApp } from '@/contexts/AppContext'
-import { haptics } from '@/lib/haptics'
 import { analytics } from '@/lib/analytics'
+import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 
 // Google Logo SVG component
@@ -77,7 +77,7 @@ export default function OAuthButtons({
       // Use Apple Sign In API if available
       if (window.AppleID && window.AppleID.auth) {
         await window.AppleID.auth.init({
-          clientId: import.meta.env.VITE_APPLE_CLIENT_ID,
+          clientId: import.meta.env['VITE_APPLE_CLIENT_ID'],
           scope: 'name email',
           redirectURI: window.location.origin + '/api/v1/auth/oauth/apple/callback',
           usePopup: true,

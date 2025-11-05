@@ -1,16 +1,17 @@
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { lostFoundAPI } from '@/api/lost-found-api'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { MapPin, Upload, CurrencyDollar, X, Plus } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { lostFoundAPI } from '@/api/lost-found-api'
-import { MapLocationPicker } from './MapLocationPicker'
+import { Textarea } from '@/components/ui/textarea'
 import { createLogger } from '@/lib/logger'
+import type { LastSeenLocation, PetSummary } from '@/lib/lost-found-types'
+import { CurrencyDollar, MapPin, Plus, Upload, X } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { MapLocationPicker } from './MapLocationPicker'
 
 interface CreateLostAlertDialogProps {
   open: boolean
@@ -91,31 +92,35 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
 
       const whenISO = new Date(`${lastSeenDate}T${lastSeenTime}`).toISOString()
 
+      const petSummary: PetSummary = {
+        name: petName,
+        species,
+        size
+      }
+      if (breed) petSummary.breed = breed
+      if (color) petSummary.color = color
+      if (distinctiveFeatures.length > 0) petSummary.distinctiveFeatures = distinctiveFeatures
+      if (microchipId) petSummary.microchipId = microchipId
+
+      const lastSeen: LastSeenLocation = {
+        whenISO,
+        radiusM
+      }
+      if (selectedLocation?.lat !== undefined) lastSeen.lat = selectedLocation.lat
+      if (selectedLocation?.lon !== undefined) lastSeen.lon = selectedLocation.lon
+      if (locationDescription) lastSeen.description = locationDescription
+      if (landmarks) lastSeen.landmarks = [landmarks]
+
       await lostFoundAPI.createAlert({
         ownerId: user.id,
-        ownerName: user.name || 'Unknown',
-        ownerAvatar: user.avatarUrl || undefined,
-        petSummary: {
-          name: petName,
-          species,
-          breed: breed || undefined,
-          color: color || undefined,
-          size,
-          distinctiveFeatures: distinctiveFeatures.length > 0 ? distinctiveFeatures : undefined,
-          microchipId: microchipId || undefined
-        },
-        lastSeen: {
-          whenISO,
-          lat: selectedLocation?.lat,
-          lon: selectedLocation?.lon,
-          radiusM,
-          description: locationDescription || undefined,
-          landmarks: landmarks ? [landmarks] : undefined
-        },
-        reward,
+        ownerName: (typeof user['name'] === 'string' ? user['name'] : undefined) ?? 'Unknown',                                                                  
+        ...(user.avatarUrl ? { ownerAvatar: user.avatarUrl } : {}),
+        petSummary,
+        lastSeen,
+        ...(reward !== undefined && reward !== null ? { reward } : {}),
         contactMask: maskContactInfo(contactInfo),
         photos,
-        description: locationDescription || undefined
+        ...(locationDescription ? { description: locationDescription } : {})
       })
 
       toast.success('Lost pet alert created successfully!')
@@ -157,7 +162,7 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="species">Species *</Label>
-                  <Select value={species} onValueChange={(v) => setSpecies(v as any)}>
+                  <Select value={species} onValueChange={(v) => setSpecies(v as typeof species)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -193,7 +198,7 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
 
               <div className="space-y-2">
                 <Label htmlFor="size">Size</Label>
-                <Select value={size} onValueChange={(v) => setSize(v as any)}>
+                <Select value={size} onValueChange={(v) => setSize(v as typeof size)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -385,7 +390,7 @@ export function CreateLostAlertDialog({ open, onClose, onSuccess }: CreateLostAl
         <MapLocationPicker
           onSelect={handleLocationSelect}
           onClose={() => setShowMapPicker(false)}
-          initialLocation={selectedLocation || undefined}
+          {...(selectedLocation ? { initialLocation: selectedLocation } : {})}
         />
       )}
     </>

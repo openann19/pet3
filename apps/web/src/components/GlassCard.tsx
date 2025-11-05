@@ -1,7 +1,7 @@
+import { cn } from '@/lib/utils';
 import type { HTMLMotionProps } from 'framer-motion';
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
-import type { ReactNode } from 'react'
+import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 
 interface GlassCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   children: ReactNode
@@ -27,12 +27,14 @@ export default function GlassCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={enableHover ? {
-        scale: 1.02,
-        y: -6,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        transition: { type: 'spring', stiffness: 400, damping: 20 }
-      } : undefined}
+      {...(enableHover ? {
+        whileHover: {
+          scale: 1.02,
+          y: -6,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          transition: { type: 'spring', stiffness: 400, damping: 20 }
+        }
+      } : {})}
       className={cn(
         'rounded-3xl border shadow-xl transition-all duration-300',
         intensityClasses[intensity],

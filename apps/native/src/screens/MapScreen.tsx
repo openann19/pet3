@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
   Alert,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import * as Location from 'expo-location';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { AnimatedCard } from '../components/AnimatedCard';
 import { FadeInView } from '../components/FadeInView';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('MapScreen');
 
 interface MapMarker {
   id: string;
@@ -32,63 +35,102 @@ export default function MapScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'pets' | 'places' | 'lost'>('all');
   const [preciseSharingEnabled, setPreciseSharingEnabled] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Location permission is required to use the map feature.'
-        );
-        setLoading(false);
-        return;
-      }
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            'Permission Denied',
+            'Location permission is required to use the map feature.'
+          );
+          setLoading(false);
+          return;
+        }
 
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc);
-      
-      // Load sample markers near user location
-      loadNearbyMarkers(loc.coords.latitude, loc.coords.longitude);
-      setLoading(false);
+        const loc = await Location.getCurrentPositionAsync({});
+        setLocation(loc);
+        
+        await loadNearbyMarkers(loc.coords.latitude, loc.coords.longitude);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
+        logger.error('Failed to get location', err instanceof Error ? err : new Error(String(err)));
+        setError(errorMessage);
+        Alert.alert('Error', errorMessage);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
-  const loadNearbyMarkers = (lat: number, lon: number) => {
-    // Sample data - in production this would come from an API
-    const sampleMarkers: MapMarker[] = [
-      {
-        id: '1',
-        name: 'Buddy',
-        type: 'pet',
-        latitude: lat + 0.01,
-        longitude: lon + 0.01,
-        distance: 1.2,
-        photo: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e',
-      },
-      {
-        id: '2',
-        name: 'Central Park',
-        type: 'place',
-        latitude: lat - 0.01,
-        longitude: lon + 0.02,
-        distance: 2.5,
-      },
-      {
-        id: '3',
-        name: 'Lost Golden Retriever',
-        type: 'lost-pet',
-        latitude: lat + 0.02,
-        longitude: lon - 0.01,
-        distance: 3.1,
-      },
-    ];
-    setMarkers(sampleMarkers);
+  const loadNearbyMarkers = async (lat: number, lon: number) => {
+    try {
+      setError(null);
+      const markers: MapMarker[] = [];
+
+      // Fetch lost pet alerts
+      if (selectedCategory === 'all' || selectedCategory === 'lost') {
+        try {
+          const alerts = await lostFoundApi.getAlertsNearby(lat, lon, 10);
+          alerts.forEach((alert) => {
+            markers.push({
+              id: `lost-${alert.id}`,
+              name: alert.petName,
+              type: 'lost-pet',
+              latitude: alert.latitude,
+              longitude: alert.longitude,
+              distance: alert.distance,
+              photo: alert.photo,
+            });
+          });
+        } catch (err) {
+          logger.warn('Failed to fetch lost pet alerts', { error: err });
+        }
+      }
+
+      // Fetch adoption listings
+      if (selectedCategory === 'all' || selectedCategory === 'pets') {
+        try {
+          const listings = await adoptionApi.getListingsNearby(lat, lon, 10);
+          listings.forEach((listing) => {
+            markers.push({
+              id: `adoption-${listing.id}`,
+              name: listing.petName,
+              type: 'pet',
+              latitude: listing.latitude,
+              longitude: listing.longitude,
+              distance: listing.distance,
+              photo: listing.photo,
+            });
+          });
+        } catch (err) {
+          logger.warn('Failed to fetch adoption listings', { error: err });
+        }
+      }
+
+      setMarkers(markers);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load markers';
+      logger.error('Failed to load markers', err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
+    }
   };
 
+  useEffect(() => {
+    if (location && !loading) {
+      loadNearbyMarkers(location.coords.latitude, location.coords.longitude);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
   const filteredMarkers = markers.filter((marker) => {
-    if (selectedCategory !== 'all' && marker.type !== selectedCategory.replace('s', '')) {
-      return false;
+    if (selectedCategory !== 'all') {
+      const categoryType = selectedCategory.replace('s', '');
+      if (marker.type !== categoryType) {
+        return false;
+      }
     }
     if (searchQuery && !marker.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -110,6 +152,29 @@ export default function MapScreen() {
           <LoadingSkeleton height={200} />
           <LoadingSkeleton height={80} style={{ marginTop: 16 }} />
           <LoadingSkeleton height={80} style={{ marginTop: 16 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>🗺️ Map</Text>
+        </View>
+        <View style={styles.content}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            {location && (
+              <TouchableOpacity
+                onPress={() => loadNearbyMarkers(location.coords.latitude, location.coords.longitude)}
+                style={styles.retryButton}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -418,5 +483,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'center',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: '#6366f1',
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

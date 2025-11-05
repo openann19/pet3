@@ -25,7 +25,18 @@ if (import.meta.env.PROD) {
   registerServiceWorker();
 }
 
-createRoot(document.getElementById('root')!).render(
+// Initialize refresh rate detection
+import { detectRefreshRate } from './lib/refresh-rate';
+if (typeof window !== 'undefined') {
+  detectRefreshRate()
+}
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found. Make sure <div id="root"></div> exists in index.html');
+}
+
+createRoot(rootElement).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <BrowserRouter>
       <AppProvider>
@@ -38,3 +49,9 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
    </ErrorBoundary>
 )
+
+
+// --- ultra: sw register ---
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
+}

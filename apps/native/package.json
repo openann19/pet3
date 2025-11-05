@@ -16,7 +16,7 @@
   "dependencies": {
     "@expo/metro-config": "^0.18.11",
     "@livekit/react-native": "^2.0.0",
-    "@pet3/shared": "*",
+    "@petspark/shared": "workspace:*",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-community/datetimepicker": "^8.0.0",
     "@react-navigation/bottom-tabs": "^6.6.1",

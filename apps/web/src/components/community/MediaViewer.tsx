@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
-import type { PanInfo} from 'framer-motion';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
-import { X, CaretLeft, CaretRight, DownloadSimple, Share, DotsThree, Play, Pause, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import type { PostMedia, PostVideo } from '@/lib/community-types'
-import { haptics } from '@/lib/haptics'
-import { toast } from 'sonner'
-import { useApp } from '@/contexts/AppContext'
-import { createLogger } from '@/lib/logger'
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { useApp } from '@/contexts/AppContext';
+import type { PostMedia, PostVideo } from '@/lib/community-types';
+import { haptics } from '@/lib/haptics';
+import { createLogger } from '@/lib/logger';
+import { CaretLeft, CaretRight, DotsThree, DownloadSimple, Pause, Play, Share, SpeakerHigh, SpeakerSlash, X } from '@phosphor-icons/react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import type { PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const logger = createLogger('MediaViewer')
 
-type MediaItem = PostMedia | (PostVideo & { type: 'video' })
+export type MediaItem = PostMedia | (PostVideo & { type: 'video' })
 
 interface MediaViewerProps {
   open: boolean

@@ -3,6 +3,10 @@
  * Handles PWA service worker lifecycle
  */
 
+import { createLogger } from '../logger';
+
+const logger = createLogger('ServiceWorkerRegistration');
+
 interface ServiceWorkerConfig {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
@@ -17,13 +21,13 @@ export async function registerServiceWorker(
 ): Promise<ServiceWorkerRegistration | null> {
   // Check if service workers are supported
   if (!('serviceWorker' in navigator)) {
-    console.warn('Service workers are not supported in this browser');
+    logger.warn('Service workers are not supported in this browser');
     return null;
   }
 
   // Only register in production
   if (import.meta.env.DEV) {
-    console.log('Service worker registration skipped in development');
+    logger.debug('Service worker registration skipped in development');
     return null;
   }
 
@@ -55,7 +59,7 @@ export async function registerServiceWorker(
     return registration;
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    console.error('Service worker registration failed:', err);
+    logger.error('Service worker registration failed', err);
     config.onError?.(err);
     return null;
   }
@@ -76,7 +80,8 @@ export async function unregisterServiceWorker(): Promise<boolean> {
     }
     return false;
   } catch (error) {
-    console.error('Service worker unregistration failed:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Service worker unregistration failed', err);
     return false;
   }
 }
@@ -113,7 +118,8 @@ export async function promptPWAInstall(
     const result = await promptEvent.userChoice;
     return result;
   } catch (error) {
-    console.error('PWA install prompt failed:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('PWA install prompt failed', err);
     return null;
   }
 }

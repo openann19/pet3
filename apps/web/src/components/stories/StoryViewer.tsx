@@ -1,37 +1,37 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
-import { 
-  X, 
-  Heart, 
-  PaperPlaneRight, 
-  Pause, 
-  Play,
-  SpeakerHigh,
-  SpeakerSlash,
-  DotsThree,
-  BookmarkSimple,
-  ArrowsOut,
-  ArrowsIn
-} from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Story } from '@/lib/stories-types'
-import { formatStoryTime, addStoryView } from '@/lib/stories-utils'
-import { STORY_REACTION_EMOJIS } from '@/lib/stories-types'
+import { Input } from '@/components/ui/input'
+import { useFullscreen } from '@/hooks/use-fullscreen'
+import { useStoryAnalytics } from '@/hooks/use-story-analytics'
+import { useStoryGestures } from '@/hooks/use-story-gestures'
 import { haptics } from '@/lib/haptics'
+import type { Story } from '@/lib/stories-types'
+import { STORY_REACTION_EMOJIS } from '@/lib/stories-types'
+import { addStoryView, formatStoryTime } from '@/lib/stories-utils'
+import { usePrefersReducedMotion } from '@/utils/reduced-motion'
+import {
+  ArrowsIn,
+  ArrowsOut,
+  BookmarkSimple,
+  DotsThree,
+  Heart,
+  PaperPlaneRight,
+  Pause,
+  Play,
+  SpeakerHigh,
+  SpeakerSlash,
+  X
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import SaveToHighlightDialog from './SaveToHighlightDialog'
-import { useStoryGestures } from '@/hooks/use-story-gestures'
-import { useStoryAnalytics } from '@/hooks/use-story-analytics'
-import { useFullscreen } from '@/hooks/use-fullscreen'
-import { usePrefersReducedMotion } from '@/utils/reduced-motion'
 
 interface StoryViewerProps {
   stories: Story[]
@@ -90,7 +90,7 @@ export default function StoryViewer({
         currentUserName,
         viewDuration,
         completedView,
-        currentUserAvatar
+        currentUserAvatar || undefined
       )
       onStoryUpdate?.(updatedStory)
     }
@@ -247,7 +247,7 @@ export default function StoryViewer({
             emoji,
             userId: currentUserId,
             userName: currentUserName,
-            userAvatar: currentUserAvatar,
+            ...(currentUserAvatar !== undefined ? { userAvatar: currentUserAvatar } : {}),
             timestamp: new Date().toISOString()
           }
         ]

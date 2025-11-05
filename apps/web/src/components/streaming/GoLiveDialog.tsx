@@ -1,17 +1,17 @@
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { liveStreamingAPI } from '@/api/live-streaming-api'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
-import { VideoCamera, ChatCircle, Tag, X } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { liveStreamingAPI } from '@/api/live-streaming-api'
+import { Textarea } from '@/components/ui/textarea'
 import type { LiveStreamCategory } from '@/lib/live-streaming-types'
 import { createLogger } from '@/lib/logger'
+import { ChatCircle, Tag, VideoCamera, X } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('GoLiveDialog')
 
@@ -76,11 +76,10 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
         hostName: user.login || 'User',
         hostAvatar: user.avatarUrl,
         title: title.trim(),
-        description: description.trim() || undefined,
+        ...(description.trim() ? { description: description.trim() } : {}),
         category,
         allowChat,
-        maxDuration,
-        scheduledAt: undefined
+        maxDuration
       })
 
       toast.success('Going live!')

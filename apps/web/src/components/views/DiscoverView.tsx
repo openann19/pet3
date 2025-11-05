@@ -1,37 +1,37 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Heart, Sparkle, MapPin, Info, ChartBar, SquaresFour, BookmarkSimple, NavigationArrow, PawPrint } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { toast } from 'sonner'
-import type { Pet, Match, SwipeAction } from '@/lib/types'
-import type { Story } from '@/lib/stories-types'
-import type { VerificationRequest } from '@/lib/verification-types'
-import type { AdoptionProfile } from '@/lib/adoption-types'
-import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
+import { adoptionApi } from '@/api/adoption-api'
 import CompatibilityBreakdown from '@/components/CompatibilityBreakdown'
-import DiscoveryFilters, { type DiscoveryPreferences } from '@/components/DiscoveryFilters'
-import MatchCelebration from '@/components/MatchCelebration'
-import StoriesBar from '@/components/stories/StoriesBar'
 import DiscoverMapMode from '@/components/DiscoverMapMode'
-import { createLogger } from '@/lib/logger'
 import SavedSearchesManager from '@/components/discovery/SavedSearchesManager'
+import DiscoveryFilters, { type DiscoveryPreferences } from '@/components/DiscoveryFilters'
+import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
+import MatchCelebration from '@/components/MatchCelebration'
 import { PetRatings } from '@/components/PetRatings'
+import StoriesBar from '@/components/stories/StoriesBar'
 import { TrustBadges } from '@/components/TrustBadges'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { VerificationBadge } from '@/components/VerificationBadge'
 import { useApp } from '@/contexts/AppContext'
-import { haptics } from '@/lib/haptics'
-import { parseLocation, getDistanceBetweenLocations, formatDistance } from '@/lib/distance'
-import { adoptionApi } from '@/api/adoption-api'
-import { usePetDiscovery } from '@/hooks/usePetDiscovery'
+import { useDialog } from '@/hooks/useDialog'
 import { useMatching } from '@/hooks/useMatching'
+import { usePetDiscovery } from '@/hooks/usePetDiscovery'
+import { useStorage } from '@/hooks/useStorage'
+import { useStories } from '@/hooks/useStories'
 import { useSwipe } from '@/hooks/useSwipe'
 import { useViewMode } from '@/hooks/useViewMode'
-import { useDialog } from '@/hooks/useDialog'
-import { useStories } from '@/hooks/useStories'
+import type { AdoptionProfile } from '@/lib/adoption-types'
+import { formatDistance, getDistanceBetweenLocations, parseLocation } from '@/lib/distance'
+import { haptics } from '@/lib/haptics'
+import { createLogger } from '@/lib/logger'
 import { generateMatchReasoning } from '@/lib/matching'
+import type { Story } from '@/lib/stories-types'
+import type { Match, Pet, SwipeAction } from '@/lib/types'
+import type { VerificationRequest } from '@/lib/verification-types'
+import { BookmarkSimple, ChartBar, Heart, Info, MapPin, NavigationArrow, PawPrint, Sparkle, SquaresFour, X } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const logger = createLogger('DiscoverView')
 
@@ -115,7 +115,7 @@ export default function DiscoverView() {
   const userPet = Array.isArray(userPets) && userPets.length > 0 ? userPets[0] : undefined
 
   const { stories, addStory, updateStory } = useStories({
-    currentPetId: userPet?.id,
+    ...(userPet?.id && { currentPetId: userPet.id }),
   })
 
   useEffect(() => {
@@ -172,7 +172,7 @@ export default function DiscoverView() {
     nextPet,
     markAsSwiped,
   } = usePetDiscovery({
-    userPet,
+    ...(userPet && { userPet }),
     preferences: {
       minAge: prefs.minAge,
       maxAge: prefs.maxAge,
@@ -191,10 +191,11 @@ export default function DiscoverView() {
   const availablePets = discoveryPets.map(pet => {
     if (userPet?.location && pet.location) {
       const distance = getDistanceBetweenLocations(userPet.location, pet.location)
+      const coordinates = pet.coordinates || parseLocation(pet.location)
       return {
         ...pet,
-        distance: distance ?? undefined,
-        coordinates: pet.coordinates || parseLocation(pet.location) || undefined
+        ...(distance !== undefined && { distance }),
+        ...(coordinates && { coordinates })
       }
     }
     return pet
@@ -210,8 +211,8 @@ export default function DiscoverView() {
     compatibilityFactors,
     matchReasoning: reasoning,
   } = useMatching({
-    userPet,
-    otherPet: currentPet,
+    ...(userPet && { userPet }),
+    ...(currentPet && { otherPet: currentPet }),
     autoCalculate: true,
   })
 
@@ -485,7 +486,7 @@ export default function DiscoverView() {
 
       {viewMode === 'map' ? (
         <DiscoverMapMode 
-          pets={availablePets}
+          pets={availablePets as Pet[]}
           userPet={userPet}
           onSwipe={(pet, action) => {
             const tempIndex = currentIndex

@@ -1,26 +1,27 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  X,
-  Heart,
-  ChatCircle,
-  MapPin,
-  Calendar,
-  Star,
-  ShieldCheck,
-  TrendUp,
-  Users,
-  Lightning,
-  PawPrint
-} from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { Pet } from '@/lib/types'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useSwipeGesture } from '@/hooks/use-swipe-gesture'
 import { haptics } from '@/lib/haptics'
+import type { Pet } from '@/lib/types'
+import {
+  Calendar,
+  ChatCircle,
+  Heart,
+  Lightning,
+  MapPin,
+  PawPrint,
+  ShieldCheck,
+  Star,
+  TrendUp,
+  Users,
+  X
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useCallback, useState } from 'react'
 
 interface EnhancedPetDetailViewProps {
   pet: Pet
@@ -44,7 +45,34 @@ export function EnhancedPetDetailView({
   showActions = true
 }: EnhancedPetDetailViewProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
   const photos = pet.photos && pet.photos.length > 0 ? pet.photos : [pet.photo]
+
+  const handleNextPhoto = useCallback((): void => {
+    setIsLoading(true)
+    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)
+    haptics.impact('light')
+  }, [photos.length])
+
+  const handlePrevPhoto = useCallback((): void => {
+    setIsLoading(true)
+    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
+    haptics.impact('light')
+  }, [photos.length])
+
+  const swipeGesture = useSwipeGesture({
+    onSwipeLeft: handleNextPhoto,
+    onSwipeRight: handlePrevPhoto,
+    threshold: 50
+  })
+
+  const handleImageLoad = useCallback((): void => {
+    setIsLoading(false)
+  }, [])
+
+  const handleImageError = useCallback((): void => {
+    setIsLoading(false)
+  }, [])
 
   const handleLike = () => {
     haptics.impact('medium')
@@ -102,7 +130,15 @@ export function EnhancedPetDetailView({
 
           <ScrollArea className="flex-1">
             {/* Photo Gallery */}
-            <div className="relative h-96 bg-muted">
+            <div 
+              className="relative h-96 bg-muted"
+              {...swipeGesture.handlers}
+            >
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
               <AnimatePresence mode="wait">
                 <motion.img
                   key={currentPhotoIndex}
@@ -110,9 +146,17 @@ export function EnhancedPetDetailView({
                   alt={pet.name}
                   className="w-full h-full object-cover"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  animate={{ opacity: isLoading ? 0 : 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  style={{
+                    transform: swipeGesture.isSwiping 
+                      ? `translateX(${swipeGesture.swipeDistance}px)` 
+                      : undefined,
+                    transition: swipeGesture.isSwiping ? 'none' : 'transform 0.3s ease-out'
+                  }}
                 />
               </AnimatePresence>
 
@@ -140,10 +184,14 @@ export function EnhancedPetDetailView({
                     {photos.map((_, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setCurrentPhotoIndex(idx)}
+                        onClick={() => {
+                          setIsLoading(true)
+                          setCurrentPhotoIndex(idx)
+                        }}
                         className={`w-2 h-2 rounded-full transition-all ${
-                          idx === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50'
+                          idx === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50'                                                                            
                         }`}
+                        aria-label={`Go to photo ${idx + 1}`}
                       />
                     ))}
                   </div>

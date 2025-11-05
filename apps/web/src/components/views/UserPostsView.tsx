@@ -1,18 +1,17 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowLeft, User } from '@phosphor-icons/react'
+import { communityAPI } from '@/api/community-api'
+import { PostCard } from '@/components/community/PostCard'
+import { PostDetailView } from '@/components/community/PostDetailView'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Avatar } from '@/components/ui/avatar'
-import { PostCard } from '@/components/community/PostCard'
-import { PostDetailView } from '@/components/community/PostDetailView'
-import { communityAPI } from '@/api/community-api'
 import type { Post } from '@/lib/community-types'
-import { useApp } from '@/contexts/AppContext'
 import { createLogger } from '@/lib/logger'
+import { ArrowLeft, User } from '@phosphor-icons/react'
+import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 const logger = createLogger('UserPostsView')
@@ -32,7 +31,6 @@ export default function UserPostsView({
   onBack,
   onAuthorClick
 }: UserPostsViewProps) {
-  const { t } = useApp()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
@@ -73,22 +71,25 @@ export default function UserPostsView({
       loadingRef.current = true
       setLoading(true)
 
-      const response = await communityAPI.queryFeed(
-        {
-          authorId: userId,
-          limit: 20,
-          cursor: loadMore ? cursor : undefined
-        }
-      )
+      const feedFilters: Parameters<typeof communityAPI.queryFeed>[0] = {
+        authorId: userId,
+        limit: 20,
+      }
+      if (loadMore && cursor) {
+        feedFilters.cursor = cursor
+      }
+      const response = await communityAPI.queryFeed(feedFilters)
 
       // Extract author info from first post if available
       if (response.posts.length > 0 && !userName) {
         const firstPost = response.posts[0]
-        if (firstPost.authorName) {
-          setAuthorName(firstPost.authorName)
-        }
-        if (firstPost.authorAvatar) {
-          setAuthorAvatar(firstPost.authorAvatar)
+        if (firstPost) {
+          if (firstPost.authorName) {
+            setAuthorName(firstPost.authorName)
+          }
+          if (firstPost.authorAvatar) {
+            setAuthorAvatar(firstPost.authorAvatar)
+          }
         }
       }
 
@@ -130,7 +131,7 @@ export default function UserPostsView({
         )}
         <div className="flex items-center gap-3 flex-1">
           <Avatar
-            src={authorAvatar}
+            {...(authorAvatar && { src: authorAvatar })}
             alt={authorName}
             className="w-10 h-10"
           >
@@ -186,7 +187,7 @@ export default function UserPostsView({
                 >
                   <PostCard
                     post={post}
-                    onAuthorClick={onAuthorClick}
+                    {...(onAuthorClick && { onAuthorClick })}
                   />
                 </div>
               </motion.div>
@@ -209,7 +210,7 @@ export default function UserPostsView({
             if (!open) setSelectedPostId(null)
           }}
           postId={selectedPostId}
-          onAuthorClick={onAuthorClick}
+          {...(onAuthorClick ? { onAuthorClick } : {})}
         />
       )}
     </div>

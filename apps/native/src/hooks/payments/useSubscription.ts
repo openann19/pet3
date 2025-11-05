@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('useSubscription');
 
 interface Subscription {
   plan: 'free' | 'premium' | 'elite';
@@ -68,7 +71,8 @@ export const useSubscription = () => {
         setSubscription(parsedSubscription);
       }
     } catch (error) {
-      console.error('Failed to load subscription:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load subscription', err, { context: 'loadSubscription' });
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +86,8 @@ export const useSubscription = () => {
         setBillingIssue(parsedIssue);
       }
     } catch (error) {
-      console.error('Failed to load billing issue:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to load billing issue', err, { context: 'loadBillingIssue' });
     }
   };
 
@@ -94,7 +99,8 @@ export const useSubscription = () => {
       );
       setSubscription(newSubscription);
     } catch (error) {
-      console.error('Failed to save subscription:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to save subscription', err, { context: 'saveSubscription' });
       throw error;
     }
   };
@@ -108,7 +114,8 @@ export const useSubscription = () => {
       }
       setBillingIssue(issue);
     } catch (error) {
-      console.error('Failed to save billing issue:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to save billing issue', err, { context: 'saveBillingIssue' });
     }
   };
 
@@ -139,7 +146,8 @@ export const useSubscription = () => {
 
         return { success: true };
       } catch (error) {
-        console.error('Failed to subscribe:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to subscribe', err, { context: 'subscribe', plan, billingPeriod });
         return { success: false, error: 'Failed to process subscription' };
       }
     },
@@ -157,7 +165,8 @@ export const useSubscription = () => {
 
       return { success: true };
     } catch (error) {
-      console.error('Failed to cancel subscription:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to cancel subscription', err, { context: 'cancelSubscription' });
       return { success: false, error: 'Failed to cancel subscription' };
     }
   }, [subscription]);
@@ -178,7 +187,8 @@ export const useSubscription = () => {
 
       return { success: true };
     } catch (error) {
-      console.error('Failed to update payment method:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to update payment method', err, { context: 'updatePaymentMethod' });
       return { success: false, error: 'Failed to update payment method' };
     }
   }, [subscription]);

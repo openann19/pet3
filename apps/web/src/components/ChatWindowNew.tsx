@@ -1,30 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  PaperPlaneRight, 
-  Smiley, 
-  X, 
-  ArrowLeft,
-  DotsThree,
-  Heart,
-  Microphone,
-  Sparkle,
-  ChatCentered,
-  Check,
-  Checks,
-  Play,
-  Pause,
-  Phone,
-  VideoCamera
-} from '@phosphor-icons/react'
+import CallInterface from '@/components/call/CallInterface'
+import IncomingCallNotification from '@/components/call/IncomingCallNotification'
+import VoiceRecorder from '@/components/chat/VoiceRecorder'
+import { WebBubbleWrapper } from '@/components/chat/WebBubbleWrapper'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
 } from '@/components/ui/popover'
 import {
   Tabs,
@@ -32,24 +16,40 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs'
-import type { ChatRoom, ChatMessage, MessageReaction } from '@/lib/chat-types'
-import { 
-  formatChatTime, 
-  groupMessagesByDate, 
+import { useTypingManager } from '@/hooks/use-typing-manager'
+import { useCall } from '@/hooks/useCall'
+import { useStorage } from '@/hooks/useStorage'
+import type { ChatMessage, ChatRoom, MessageReaction } from '@/lib/chat-types'
+import { MESSAGE_TEMPLATES, REACTION_EMOJIS } from '@/lib/chat-types'
+import {
+  CHAT_STICKERS,
+  formatChatTime,
   generateMessageId,
   getReactionsArray,
-  CHAT_STICKERS 
+  groupMessagesByDate
 } from '@/lib/chat-utils'
-import { MESSAGE_TEMPLATES, REACTION_EMOJIS } from '@/lib/chat-types'
-import { toast } from 'sonner'
 import { haptics } from '@/lib/haptics'
-import VoiceRecorder from '@/components/chat/VoiceRecorder'
-import CallInterface from '@/components/call/CallInterface'
-import IncomingCallNotification from '@/components/call/IncomingCallNotification'                                                                               
-import { useCall } from '@/hooks/useCall'
-import { useTypingManager } from '@/hooks/use-typing-manager'
 import { realtime } from '@/lib/realtime'
-import { WebBubbleWrapper } from '@/components/chat/WebBubbleWrapper'
+import {
+  ArrowLeft,
+  ChatCentered,
+  Check,
+  Checks,
+  DotsThree,
+  Heart,
+  Microphone,
+  PaperPlaneRight,
+  Pause,
+  Phone,
+  Play,
+  Smiley,
+  Sparkle,
+  VideoCamera,
+  X
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 interface ChatWindowProps {
   room: ChatRoom
@@ -130,13 +130,15 @@ export default function ChatWindow({
       roomId: room.id,
       senderId: currentUserId,
       senderName: currentUserName,
-      senderAvatar: currentUserAvatar,
       content: type === 'text' ? content.trim() : content,
       type,
       timestamp: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       status: 'sent',
       reactions: []
+    }
+    if (currentUserAvatar !== undefined) {
+      newMessage.senderAvatar = currentUserAvatar
     }
 
     setMessages((current) => [...(current || []), newMessage])
@@ -222,13 +224,15 @@ export default function ChatWindow({
         roomId: room.id,
         senderId: currentUserId,
         senderName: currentUserName,
-        senderAvatar: currentUserAvatar,
         content: `Voice message (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
         type: 'voice',
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         status: 'sent',
         reactions: []
+      }
+      if (currentUserAvatar !== undefined) {
+        newMessage.senderAvatar = currentUserAvatar
       }
 
       setMessages((current) => [...(current || []), newMessage])
@@ -320,7 +324,7 @@ export default function ChatWindow({
           <IncomingCallNotification
             call={incomingCall}
             callerName={room.matchedPetName ?? ''}
-            callerAvatar={room.matchedPetPhoto || undefined}
+            {...(room.matchedPetPhoto ? { callerAvatar: room.matchedPetPhoto } : {})}
             onAccept={answerCall}
             onDecline={declineCall}
           />

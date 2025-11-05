@@ -31,8 +31,8 @@ export default function MapLibreMap({
     center,
     zoom,
     markers,
-    onMarkerClick,
-    onMapClick,
+    ...(onMarkerClick ? { onMarkerClick } : {}),
+    ...(onMapClick ? { onMapClick } : {}),
     clusterMarkers,
   });
 

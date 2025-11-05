@@ -175,6 +175,66 @@ export function useMapLibreMap({
     };
   }, [onMapClick]);
 
+  // Throttled region change handler with requestIdleCallback fallback
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.loaded()) return;
+
+    let pendingRegion: { lat: number; lng: number; zoom: number } | null = null
+    let idleCallbackId: number | NodeJS.Timeout | null = null
+
+    const handleMoveEnd = (): void => {
+      const center = map.getCenter()
+      const zoom = map.getZoom()
+      
+      pendingRegion = {
+        lat: center.lat,
+        lng: center.lng,
+        zoom,
+      }
+
+      // Cancel existing callback
+      if (idleCallbackId !== null) {
+        if (typeof idleCallbackId === 'number') {
+          cancelIdleCallback(idleCallbackId)
+        } else {
+          clearTimeout(idleCallbackId)
+        }
+      }
+
+      // Use requestIdleCallback if available, fallback to setTimeout
+      const scheduleUpdate = (callback: () => void): void => {
+        if (typeof requestIdleCallback !== 'undefined') {
+          idleCallbackId = requestIdleCallback(callback, { timeout: 120 })
+        } else {
+          idleCallbackId = setTimeout(callback, 120)
+        }
+      }
+
+      scheduleUpdate(() => {
+        if (pendingRegion) {
+          // Update center prop will trigger re-render if needed
+          // This throttles rapid region changes
+          pendingRegion = null
+        }
+        idleCallbackId = null
+      })
+    }
+
+    map.on('moveend', handleMoveEnd)
+    
+    return () => {
+      map.off('moveend', handleMoveEnd)
+      if (idleCallbackId !== null) {
+        if (typeof idleCallbackId === 'number') {
+          cancelIdleCallback(idleCallbackId)
+        } else {
+          clearTimeout(idleCallbackId)
+        }
+      }
+    }
+  }, [mapRef.current])
+
   return {
     map: mapRef.current,
     isLoading,

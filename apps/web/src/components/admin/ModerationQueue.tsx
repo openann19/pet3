@@ -1,19 +1,27 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  CheckCircle, XCircle, Clock, Eye, ShieldCheck, Warning, 
-  User, Dog, Image as ImageIcon, Calendar 
-} from '@phosphor-icons/react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import { moderationService, photoService } from '@/lib/backend-services'
-import type { ModerationTask, PhotoRecord, ModerationReason } from '@/lib/backend-types'
+import type { ModerationReason, ModerationTask, PhotoRecord } from '@/lib/backend-types'
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  Dog,
+  Eye,
+  Image as ImageIcon,
+  ShieldCheck,
+  User,
+  Warning,
+  XCircle
+} from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export function ModerationQueue() {
@@ -84,13 +92,14 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service')
       const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
+      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator'
       await moderationService.makeDecision(
         selectedTask.id,
         'approve',
         undefined,
         'Photo meets all quality and safety standards',
         user.id,
-        user.name || 'Moderator'
+        moderatorName
       )
       toast.success('Photo approved!')
       await loadQueue()
@@ -112,13 +121,14 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service')
       const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
+      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator'
       await moderationService.makeDecision(
         selectedTask.id,
         'reject',
         decisionReason,
         decisionText,
         user.id,
-        user.name || 'Moderator'
+        moderatorName
       )
       toast.success('Photo rejected')
       await loadQueue()
@@ -141,13 +151,14 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service')
       const user = await userService.user()
       if (!user) throw new Error('Not authenticated')
+      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator'
       await moderationService.makeDecision(
         selectedTask.id,
         'hold_for_kyc',
         undefined,
         'Content requires KYC verification before publishing',
         user.id,
-        user.name || 'Moderator'
+        moderatorName
       )
       toast.success('Photo held for KYC')
       await loadQueue()
@@ -190,7 +201,7 @@ export function ModerationQueue() {
         </Button>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)} className="w-full">
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as typeof selectedTab)} className="w-full">
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="pending">
             Pending ({tasks.filter(t => t.status === 'pending').length})

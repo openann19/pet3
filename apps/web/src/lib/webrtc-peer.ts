@@ -6,9 +6,9 @@
  */
 
 import SimplePeer from 'simple-peer'
+import { createLogger } from './logger'
 import type { WebRTCSignalData } from './realtime'
 import { realtime } from './realtime'
-import { createLogger } from './logger'
 
 const logger = createLogger('WebRTCPeer')
 
@@ -48,11 +48,14 @@ function getIceServers(): RTCIceServer[] {
     turnUrls.forEach((turn: string) => {
       const parts = turn.trim().split(':')
       if (parts.length >= 2) {
-        servers.push({
+        const server: RTCIceServer = {
           urls: parts[0] as string,
-          username: parts[1],
           credential: parts[2] || ''
-        })
+        }
+        if (parts[1]) {
+          server.username = parts[1]
+        }
+        servers.push(server)
       }
     })
   }
@@ -165,9 +168,9 @@ export class WebRTCPeer {
         const parsed: unknown = JSON.parse(signalData)
         if (typeof parsed === 'object' && parsed !== null) {
           const parsedObj = parsed as Record<string, unknown>
-          if (parsedObj.type === 'offer') return 'offer'
-          if (parsedObj.type === 'answer') return 'answer'
-          if (parsedObj.candidate !== undefined) return 'candidate'
+          if (parsedObj['type'] === 'offer') return 'offer'
+          if (parsedObj['type'] === 'answer') return 'answer'
+          if (parsedObj['candidate'] !== undefined) return 'candidate'
         }
       } catch {
         // Fall through

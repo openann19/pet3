@@ -21,7 +21,6 @@ const baseAlert: LostAlert = {
   id: 'alert-1',
   ownerId: 'owner-1',
   ownerName: 'Jess',
-  ownerAvatar: undefined,
   petSummary: {
     name: 'Paws',
     species: 'dog',
@@ -30,21 +29,14 @@ const baseAlert: LostAlert = {
     whenISO: new Date().toISOString(),
     radiusM: 100,
   },
-  reward: undefined,
-  rewardCurrency: undefined,
   contactMask: '***-***-4242',
   photos: [],
   status: 'active',
   description: 'Missing near the lake',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-  foundAt: undefined,
-  archivedAt: undefined,
   viewsCount: 0,
   sightingsCount: 0,
-  notificationsSent: undefined,
-  reviewedAt: undefined,
-  reviewedBy: undefined,
 }
 
 const baseSightingInput = {
@@ -56,7 +48,6 @@ const baseSightingInput = {
   contactMask: 'anon@spark.io',
   reporterId: 'user-42',
   reporterName: 'Scout',
-  reporterAvatar: undefined,
 }
 
 let server: ReturnType<typeof createServer>
@@ -100,7 +91,7 @@ beforeAll(async () => {
         alertId: payload.alertId,
         reporterId: payload.reporterId,
         reporterName: payload.reporterName,
-        reporterAvatar: payload.reporterAvatar,
+        ...(payload.reporterAvatar ? { reporterAvatar: payload.reporterAvatar } : {}),
         whenISO: payload.whenISO,
         radiusM: payload.radiusM,
         description: payload.description,
@@ -136,7 +127,7 @@ interface CreateSightingPayload {
   whenISO: string
   radiusM: number
   description: string
-  photos: unknown[]
+  photos: string[]
   contactMask: string
   reporterId: string
   reporterName: string

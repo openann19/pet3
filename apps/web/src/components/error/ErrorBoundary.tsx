@@ -1,6 +1,10 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from '@phosphor-icons/react';
+import { createLogger } from '@/lib/logger';
+import { Warning } from '@phosphor-icons/react';
+import type { ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+
+const logger = createLogger('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
@@ -30,9 +34,12 @@ export class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to monitoring service
-    console.error('ErrorBoundary caught error:', error, errorInfo);
+    logger.error('ErrorBoundary caught error', error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+    });
     
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -48,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.props.onReset?.();
   };
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (this.state.hasError) {
       // Use custom fallback if provided
       if (this.props.fallback) {
@@ -61,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md text-center space-y-6">
             <div className="flex justify-center">
               <div className="rounded-full bg-destructive/10 p-6">
-                <AlertTriangle size={48} weight="bold" className="text-destructive" />
+                <Warning size={48} weight="bold" className="text-destructive" />
               </div>
             </div>
             
@@ -74,7 +81,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {this.state.error && process.env.NODE_ENV === 'development' && (
+            {this.state.error && import.meta.env.DEV && (
               <details className="text-left">
                 <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
                   Error details

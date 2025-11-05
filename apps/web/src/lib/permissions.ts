@@ -1,4 +1,5 @@
 import { createLogger } from './logger'
+import type { ExtendedPermissionDescriptor } from './types/performance-api'
 
 const logger = createLogger('Permissions')
 
@@ -42,7 +43,9 @@ class PermissionsManager {
   private async checkMediaPermission(kind: 'camera' | 'microphone'): Promise<PermissionStatus> {
     try {
       const permissionName = kind === 'camera' ? 'camera' : 'microphone'
-      const result = await navigator.permissions.query({ name: permissionName as any })
+      const descriptor: ExtendedPermissionDescriptor = { name: permissionName }
+      // Type assertion needed because ExtendedPermissionDescriptor uses non-standard permission names
+      const result = await navigator.permissions.query(descriptor as PermissionDescriptor)
       
       return {
         granted: result.state === 'granted',
@@ -89,7 +92,9 @@ class PermissionsManager {
 
   private async checkStoragePermission(): Promise<PermissionStatus> {
     try {
-      const result = await navigator.permissions.query({ name: 'persistent-storage' as any })
+      const descriptor: ExtendedPermissionDescriptor = { name: 'persistent-storage' }
+      // Type assertion needed because ExtendedPermissionDescriptor uses non-standard permission names
+      const result = await navigator.permissions.query(descriptor as PermissionDescriptor)
       return {
         granted: result.state === 'granted',
         denied: result.state === 'denied',

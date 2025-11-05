@@ -2,12 +2,12 @@ import { compositeStreamToHLS, deleteLiveKitRoom } from '@/core/services/token-s
 import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import type {
-  CreateLiveStreamData,
-  LiveStream,
-  LiveStreamChatMessage,
-  LiveStreamFilters,
-  LiveStreamReaction,
-  LiveStreamViewer
+    CreateLiveStreamData,
+    LiveStream,
+    LiveStreamChatMessage,
+    LiveStreamFilters,
+    LiveStreamReaction,
+    LiveStreamViewer
 } from '@/lib/live-streaming-types'
 import { createLogger } from '@/lib/logger'
 import { realtime } from '@/lib/realtime'
@@ -94,7 +94,7 @@ export class LiveStreamingAPI {
         ...data,
         hostId: data.hostId,
         hostName: data.hostName,
-        hostAvatar: data.hostAvatar
+        ...(data.hostAvatar ? { hostAvatar: data.hostAvatar } : {})
       }
 
       const response = await APIClient.post<CreateRoomResponse>(
@@ -342,7 +342,7 @@ export class LiveStreamingAPI {
           id: reaction.id,
           userId: reaction.userId,
           userName: reaction.userName,
-          userAvatar: reaction.userAvatar,
+          ...(reaction.userAvatar ? { userAvatar: reaction.userAvatar } : {}),
           emoji: reaction.emoji,
           createdAt: reaction.createdAt
         })
@@ -410,7 +410,7 @@ export class LiveStreamingAPI {
           id: message.id,
           userId: message.userId,
           userName: message.userName,
-          userAvatar: message.userAvatar,
+          ...(message.userAvatar ? { userAvatar: message.userAvatar } : {}),
           text: message.text,
           createdAt: message.createdAt
         })

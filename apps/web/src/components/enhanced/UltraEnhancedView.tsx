@@ -46,7 +46,7 @@ export function UltraEnhancedView({
   });
 
   const combinedStyle = {
-    ...(enableTransition ? pageTransition.animatedStyle : {}),
+    ...(enableTransition ? pageTransition.style : {}),
     ...(enableParallax ? parallax.animatedStyle : {}),
     ...(enableBreathing ? breathing.animatedStyle : {}),
   };
