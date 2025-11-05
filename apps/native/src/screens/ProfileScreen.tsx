@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import type { UserProfile, Pet } from '../types';
 import { useStorage } from '../hooks/useStorage';
 import { useNavigation } from '@react-navigation/native';
+import { PricingModal, SubscriptionStatusCard, BillingIssueBanner } from '../components/payments';
+import { useSubscription } from '../hooks/payments/useSubscription';
 
 export default function ProfileScreen(): React.JSX.Element {
   const navigation = useNavigation();
@@ -23,6 +26,64 @@ export default function ProfileScreen(): React.JSX.Element {
     bio: 'Loving pet parent looking for playmates!',
   });
   const [userPets] = useStorage<Pet[]>('user-pets', []);
+  
+  // Subscription management
+  const {
+    subscription,
+    billingIssue,
+    subscribe,
+    cancelSubscription,
+    updatePaymentMethod,
+    dismissBillingIssue,
+  } = useSubscription();
+  const [showPricingModal, setShowPricingModal] = useState(false);
+
+  const handleSelectPlan = async (planId: string) => {
+    if (planId === 'free') {
+      // Downgrade/cancel subscription
+      const result = await cancelSubscription();
+      if (result.success) {
+        Alert.alert('Success', 'Subscription cancelled successfully');
+      }
+    } else {
+      // Upgrade to premium/elite
+      const result = await subscribe(planId as 'premium' | 'elite');
+      if (result.success) {
+        Alert.alert('Success', `Subscribed to ${planId} successfully!`);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to subscribe');
+      }
+    }
+  };
+
+  const handleManageSubscription = () => {
+    Alert.alert(
+      'Manage Subscription',
+      'Choose an action',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Cancel Subscription',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await cancelSubscription();
+            if (result.success) {
+              Alert.alert('Success', 'Subscription cancelled');
+            }
+          },
+        },
+        {
+          text: 'Update Payment',
+          onPress: async () => {
+            const result = await updatePaymentMethod();
+            if (result.success) {
+              Alert.alert('Success', 'Payment method updated');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const renderPetCard = (pet: Pet) => (
     <View key={pet.id} style={styles.petCard}>
@@ -47,6 +108,25 @@ export default function ProfileScreen(): React.JSX.Element {
         <Text style={styles.name}>{userProfile.name}</Text>
         <Text style={styles.location}>📍 {userProfile.location}</Text>
         {userProfile.bio && <Text style={styles.bio}>{userProfile.bio}</Text>}
+      </View>
+
+      {/* Billing Issue Banner */}
+      {billingIssue && (
+        <BillingIssueBanner
+          issue={billingIssue}
+          onUpdatePayment={updatePaymentMethod}
+          onDismiss={dismissBillingIssue}
+        />
+      )}
+
+      {/* Subscription Status */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Subscription</Text>
+        <SubscriptionStatusCard
+          subscription={subscription}
+          onManage={handleManageSubscription}
+          onUpgrade={() => setShowPricingModal(true)}
+        />
       </View>
 
       <View style={styles.section}>
@@ -116,6 +196,14 @@ export default function ProfileScreen(): React.JSX.Element {
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        visible={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        onSelectPlan={handleSelectPlan}
+        currentPlan={subscription.plan}
+      />
     </ScrollView>
   );
 }
