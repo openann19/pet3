@@ -19,6 +19,7 @@ import MapScreen from './src/screens/MapScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import SavedPostsScreen from './src/screens/SavedPostsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import { CallScreen } from './src/screens/CallScreen';
 import DataInitializer from './src/components/DataInitializer';
 import { useStorage } from './src/hooks/useStorage';
 
@@ -203,6 +204,14 @@ export default function App(): React.JSX.Element {
                     backgroundColor: '#6366f1',
                   },
                   headerTintColor: '#fff',
+                }}
+              />
+              <Stack.Screen
+                name="Call"
+                component={CallScreen}
+                options={{
+                  headerShown: false,
+                  presentation: 'fullScreenModal',
                 }}
               />
             </>
