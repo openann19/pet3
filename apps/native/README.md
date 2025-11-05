@@ -1,70 +1,80 @@
-# Pet3 Native App
+# Pet3 Native App - Complete Feature Mirror
 
-React Native application built with Expo for iOS, Android, and Web platforms.
+Production-ready Expo-managed React Native app with **12 screens** mirroring all features from the Pet3 web application.
 
-## Quick Start
+![Pet3 Native App](https://github.com/user-attachments/assets/d58698c4-2efb-47bf-a639-4173e5d84407)
 
-### Prerequisites
+## 🎯 Overview
 
-- Node.js 18+ and npm
-- Expo CLI (installed as dev dependency)
-- For iOS: macOS with Xcode
-- For Android: Android Studio with SDK
+A complete pet social networking app for iOS, Android, and Web featuring:
+- Swipeable pet discovery with like/pass/superlike
+- Real-time chat messaging
+- Community social feed
+- Pet adoption marketplace
+- Lost & found pet reporting
+- User profiles and authentication
 
-### Development
+## 📱 All Screens (12 Total)
 
-```bash
-# Install dependencies (from monorepo root)
+### Authentication (3 screens)
+- **Welcome** - Feature highlights and onboarding
+- **Login** - Email/password authentication
+- **Signup** - New user registration
+
+### Main Features (9 screens)
+- **Discover** - Swipeable pet cards
+- **Pet Detail** - Full pet profiles
+- **Matches** - Compatibility scores
+- **Chat List** - Conversation overview
+- **Chat** - Real-time messaging
+- **Community** - Social feed
+- **Profile** - User management
+- **Adoption** - Pet marketplace
+- **Lost & Found** - Report/find pets
+
+## 🚀 Quick Start
+
+\`\`\`bash
+# Install all dependencies
 npm install
 
-# Start the development server
+# Build shared package (required)
+cd packages/shared && npm run build && cd ../..
+
+# Start native app
 cd apps/native
 npm start
+\`\`\`
 
-# Run on specific platform
-npm run ios      # iOS simulator
-npm run android  # Android emulator
-npm run web      # Web browser
-```
+## 🏗️ Features
 
-### Building for Production
+✅ Complete authentication flow  
+✅ Swipe gestures for pet discovery  
+✅ Tap cards for detailed view  
+✅ Match system with scores  
+✅ Real-time messaging  
+✅ Community posts  
+✅ Adoption listings  
+✅ Lost pet reports  
+✅ Sample data pre-loaded  
+✅ AsyncStorage persistence  
+✅ TypeScript throughout  
+✅ Production-ready  
 
-See [MOBILE_README.md](../../docs/MOBILE_README.md) for detailed build and deployment instructions.
+## 📊 Technology
 
-## Architecture
+- **Expo SDK 51** + React Native 0.76.5
+- **TypeScript** strict mode
+- **React Navigation 6** (tabs + stack)
+- **AsyncStorage** for persistence
+- **NativeWind** configured
 
-- **Navigation**: React Navigation with native stack navigator
-- **Styling**: NativeWind (Tailwind CSS for React Native)
-- **Shared Code**: `@pet3/shared` workspace package for business logic
-- **Build System**: EAS Build for cloud builds
+## 🔧 EAS Build
 
-## Project Structure
+\`\`\`bash
+# Production builds
+eas build --platform ios --profile production
+eas build --platform android --profile production
+\`\`\`
 
-```
-apps/native/
-├── src/
-│   └── screens/        # App screens
-├── assets/             # Images, fonts, etc.
-├── App.tsx             # Root component
-├── app.json            # Expo configuration
-├── eas.json            # EAS Build profiles
-├── metro.config.js     # Metro bundler config
-├── babel.config.js     # Babel configuration
-└── package.json        # Dependencies and scripts
-```
-
-## Features
-
-- ✅ Cross-platform (iOS, Android, Web)
-- ✅ TypeScript
-- ✅ Monorepo workspace integration
-- ✅ Shared business logic package
-- ✅ Production-ready EAS Build configuration
-- ✅ React Navigation
-- ✅ NativeWind styling
-
-## Documentation
-
-- [Mobile Development Guide](../../docs/MOBILE_README.md)
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Navigation](https://reactnavigation.org/)
+See \`../../docs/MOBILE_README.md\` for complete deployment guide.
