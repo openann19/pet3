@@ -35,3 +35,18 @@ export { PremiumErrorState, type PremiumErrorStateProps } from './states/Premium
 // Effects
 export { ShimmerEffect, type ShimmerEffectProps } from './effects/ShimmerEffect.native'
 export { RippleEffect, type RippleEffectProps } from './effects/RippleEffect.native'
+
+// Enhanced Components
+export { EnhancedButton, type EnhancedButtonProps } from './EnhancedButton.native'
+export { PetAnalyticsSkeleton } from './PetAnalyticsSkeleton.native'
+export { PetDetailSkeleton } from './PetDetailSkeleton.native'
+export { UltraEnhancedView, type UltraEnhancedViewProps } from './UltraEnhancedView.native'
+export { AdvancedFilterPanel, type AdvancedFilterPanelProps } from './AdvancedFilterPanel.native'
+export { DetailedPetAnalytics, type DetailedPetAnalyticsProps } from './DetailedPetAnalytics.native'
+export { EnhancedCarousel, type EnhancedCarouselProps } from './EnhancedCarousel.native'
+export { EnhancedPetDetailView, type EnhancedPetDetailViewProps } from './EnhancedPetDetailView.native'
+export { PremiumCard, type PremiumCardProps } from './PremiumCard.native'
+export { SmartSearch } from './SmartSearch.native'
+export type { SmartSearchProps } from './SmartSearch.native'
+export { UltraButton, type UltraButtonProps } from './UltraButton.native'
+export { UltraCard, type UltraCardProps } from './UltraCard.native'

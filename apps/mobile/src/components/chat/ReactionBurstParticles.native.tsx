@@ -7,7 +7,7 @@
  * Location: apps/mobile/src/components/chat/ReactionBurstParticles.native.tsx
  */
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { View, StyleSheet } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -17,6 +17,7 @@ import Animated, {
   withDelay,
   Easing,
   runOnJS,
+  type SharedValue,
 } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng'
@@ -32,6 +33,64 @@ export interface ReactionBurstParticlesProps {
   staggerMs?: number
 }
 
+interface Particle {
+  progress: SharedValue<number>
+  scale: SharedValue<number>
+  opacity: SharedValue<number>
+  tx: number
+  ty: number
+  delay: number
+}
+
+function useParticles(
+  count: number,
+  radius: number,
+  seed: number | string,
+  staggerMs: number
+): { particles: Particle[]; finished: SharedValue<number> } {
+  const particlesRef = useRef<Particle[]>([])
+  const finishedRef = useRef<SharedValue<number> | null>(null)
+
+  if (finishedRef.current === null) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    finishedRef.current = useSharedValue(0)
+  }
+
+  const finished = finishedRef.current
+
+  if (particlesRef.current.length !== count) {
+    const rng = createSeededRNG(seed)
+    const newParticles: Particle[] = []
+
+    for (let i = 0; i < count; i++) {
+      const base = (i / count) * Math.PI * 2 + rng.range(-0.08, 0.08)
+      const tx = Math.cos(base) * radius * rng.range(0.9, 1.05)
+      const ty = Math.sin(base) * radius * rng.range(0.9, 1.05)
+
+      // Reanimated's useSharedValue is designed to be called in loops
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const progress = useSharedValue(0)
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const scale = useSharedValue(0.7)
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const opacity = useSharedValue(0)
+
+      newParticles.push({
+        progress,
+        scale,
+        opacity,
+        tx,
+        ty,
+        delay: i * staggerMs,
+      })
+    }
+
+    particlesRef.current = newParticles
+  }
+
+  return { particles: particlesRef.current, finished }
+}
+
 export function ReactionBurstParticles({
   enabled = true,
   onComplete,
@@ -41,50 +100,34 @@ export function ReactionBurstParticles({
   color = '#3B82F6',
   size = 6,
   staggerMs = 8,
-}: ReactionBurstParticlesProps) {
+}: ReactionBurstParticlesProps): React.ReactElement {
   const reduced = useReducedMotion()
   const dur = getReducedMotionDuration(600, reduced)
-
-  const { particles, finished } = useMemo(() => {
-    const rng = createSeededRNG(seed)
-    const arr = Array.from({ length: count }, (_, i) => {
-      const base = (i / count) * Math.PI * 2 + rng.range(-0.08, 0.08)
-      const tx = Math.cos(base) * radius * rng.range(0.9, 1.05)
-      const ty = Math.sin(base) * radius * rng.range(0.9, 1.05)
-      return {
-        progress: useSharedValue(0),
-        scale: useSharedValue(0.7),
-        opacity: useSharedValue(0),
-        tx,
-        ty,
-        delay: i * staggerMs,
-      }
-    })
-    return { particles: arr, finished: useSharedValue(0) }
-  }, [count, radius, seed, staggerMs])
+  const { particles, finished } = useParticles(count, radius, seed, staggerMs)
 
   useEffect(() => {
     if (!enabled) return
 
-    particles.forEach((p) => {
+    for (let i = 0; i < particles.length; i++) {
+      const particle = particles[i]
       if (reduced) {
-        p.opacity.value = withTiming(1, { duration: 0 })
-        p.scale.value = withTiming(1, { duration: 0 })
-        p.progress.value = withTiming(1, { duration: getReducedMotionDuration(120, true) }, () => {
+        particle.opacity.value = withTiming(1, { duration: 0 })
+        particle.scale.value = withTiming(1, { duration: 0 })
+        particle.progress.value = withTiming(1, { duration: getReducedMotionDuration(120, true) }, () => {
           finished.value += 1
           if (finished.value === particles.length && onComplete) {
             runOnJS(onComplete)()
           }
         })
-        return
+        continue
       }
 
-      p.opacity.value = withDelay(p.delay, withTiming(1, { duration: Math.max(80, dur * 0.25) }))
-      p.scale.value = withDelay(p.delay, withSpring(1, { stiffness: 220, damping: 22 }))
-      p.progress.value = withDelay(
-        p.delay,
+      particle.opacity.value = withDelay(particle.delay, withTiming(1, { duration: Math.max(80, dur * 0.25) }))
+      particle.scale.value = withDelay(particle.delay, withSpring(1, { stiffness: 220, damping: 22 }))
+      particle.progress.value = withDelay(
+        particle.delay,
         withTiming(1, { duration: dur, easing: Easing.out(Easing.cubic) }, () => {
-          p.opacity.value = withTiming(0, { duration: Math.max(100, dur * 0.35) }, () => {
+          particle.opacity.value = withTiming(0, { duration: Math.max(100, dur * 0.35) }, () => {
             finished.value += 1
             if (finished.value === particles.length && onComplete) {
               runOnJS(onComplete)()
@@ -92,22 +135,23 @@ export function ReactionBurstParticles({
           })
         })
       )
-    })
+    }
   }, [enabled, particles, dur, reduced, finished, onComplete])
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {particles.map((p, i) => {
+      {particles.map((particle, i) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const style = useAnimatedStyle(() => ({
           position: 'absolute',
           left: '50%',
           top: '50%',
           transform: [
-            { translateX: p.progress.value * p.tx },
-            { translateY: p.progress.value * p.ty },
-            { scale: p.scale.value },
+            { translateX: particle.progress.value * particle.tx },
+            { translateY: particle.progress.value * particle.ty },
+            { scale: particle.scale.value },
           ],
-          opacity: p.opacity.value,
+          opacity: particle.opacity.value,
           width: size,
           height: size,
           borderRadius: size / 2,

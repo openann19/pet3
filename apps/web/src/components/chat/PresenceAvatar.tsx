@@ -10,6 +10,7 @@ import React, { useMemo } from 'react'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 
 export interface PresenceAvatarProps {
   src?: string
@@ -42,7 +43,7 @@ export function PresenceAvatar({
   const ring = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rot.value}deg` }],
     opacity: status === 'offline' ? 0 : 1,
-  }))
+  })) as AnimatedStyle
 
   const ringColors =
     status === 'online'
@@ -62,7 +63,7 @@ export function PresenceAvatar({
 
       {status !== 'offline' && (
         <Animated.div
-          style={ring as any}
+          style={ring}
           className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${ringColors} blur-[2px] opacity-80`}
         />
       )}

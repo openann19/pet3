@@ -1,197 +1,123 @@
-import React from 'react'
-import { Pressable, Text, StyleSheet, ActivityIndicator, View } from 'react-native'
-import type { ViewStyle, TextStyle } from 'react-native'
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { MotionView } from '@petspark/motion'
-import { haptics } from '@/lib/haptics'
+/**
+ * UltraButton - Mobile Native Implementation
+ * Location: apps/mobile/src/components/enhanced/UltraButton.native.tsx
+ */
 
-interface UltraButtonProps {
-  title: string
-  onPress?: () => void
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  loading?: boolean
-  disabled?: boolean
+import React from 'react'
+import { Pressable, Text, StyleSheet, type ViewStyle, type PressableProps } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
+import { usePressBounce } from '@petspark/motion'
+import { springConfigs } from '@/effects/reanimated/transitions'
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
+export interface UltraButtonProps extends PressableProps {
+  children: React.ReactNode
+  enableElastic?: boolean
+  enableGlow?: boolean
+  glowColor?: string
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary'
+  size?: 'sm' | 'md' | 'lg'
   style?: ViewStyle
-  textStyle?: TextStyle
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
 }
 
 export function UltraButton({
-  title,
-  onPress,
-  variant = 'primary',
+  children,
+  enableElastic = true,
+  enableGlow = false,
+  glowColor = 'rgba(99, 102, 241, 0.5)',
+  variant = 'default',
   size = 'md',
-  loading = false,
-  disabled = false,
+  onPress,
   style,
-  textStyle,
-  leftIcon,
-  rightIcon,
-}: UltraButtonProps) {
-  const opacity = useSharedValue(1)
+  ...props
+}: UltraButtonProps): React.JSX.Element {
+  const elastic = usePressBounce(0.96)
+  const glowOpacity = useSharedValue(0)
 
-  const handlePress = () => {
-    if (disabled || loading) return
-
-    haptics.impact('light')
-    opacity.value = withTiming(0.8, { duration: 100 }, () => {
-      opacity.value = withTiming(1, { duration: 100 })
-    })
-
-    onPress?.()
-  }
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
   }))
 
-  const containerStyles = [
-    styles.container,
-    styles[variant],
-    styles[size],
-    disabled && styles.disabled,
-    style,
-  ]
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    if (enableGlow) {
+      glowOpacity.value = withSpring(1, springConfigs.bouncy)
+      setTimeout(() => {
+        glowOpacity.value = withSpring(0, springConfigs.smooth)
+      }, 200)
+    }
+    onPress?.({} as any)
+  }
 
-  const textStyles = [
-    styles.text,
-    styles[`${variant}Text`],
-    styles[`${size}Text`],
-    disabled && styles.disabledText,
-    textStyle,
-  ]
+  const variantStyles: Record<string, ViewStyle> = {
+    default: { backgroundColor: '#3b82f6' },
+    destructive: { backgroundColor: '#ef4444' },
+    outline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#3b82f6' },
+    secondary: { backgroundColor: '#64748b' },
+  }
+
+  const sizeStyles: Record<string, ViewStyle> = {
+    sm: { paddingHorizontal: 16, paddingVertical: 8, minHeight: 40 },
+    md: { paddingHorizontal: 24, paddingVertical: 12, minHeight: 48 },
+    lg: { paddingHorizontal: 32, paddingVertical: 16, minHeight: 56 },
+  }
 
   return (
-    <MotionView animatedStyle={animatedStyle}>
-      <Pressable
-        style={containerStyles}
-        onPress={handlePress}
-        disabled={disabled || loading}
-      >
-        {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={variant === 'primary' ? '#ffffff' : '#3b82f6'}
-          />
-        ) : (
-          <>
-            {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-            <Text style={textStyles}>{title}</Text>
-            {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
-          </>
-        )}
-      </Pressable>
-    </MotionView>
+    <AnimatedPressable
+      onPress={handlePress}
+      onPressIn={enableElastic ? elastic.onPressIn : undefined}
+      onPressOut={enableElastic ? elastic.onPressOut : undefined}
+      style={[
+        styles.button,
+        variantStyles[variant],
+        sizeStyles[size],
+        enableElastic && elastic.animatedStyle,
+        enableGlow && styles.glow,
+        style,
+      ]}
+      {...props}
+    >
+      {enableGlow && (
+        <AnimatedPressable style={[styles.glowOverlay, { backgroundColor: glowColor }, glowStyle]} />
+      )}
+      {typeof children === 'string' ? (
+        <Text style={styles.text}>{children}</Text>
+      ) : (
+        children
+      )}
+    </AnimatedPressable>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
+  button: {
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    overflow: 'hidden',
+    position: 'relative',
   },
-
-  // Variants
-  primary: {
-    backgroundColor: '#3b82f6',
-    borderWidth: 0,
+  glow: {
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  secondary: {
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
+  glowOverlay: {
+    position: 'absolute',
+    inset: 0,
   },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#3b82f6',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-  },
-  destructive: {
-    backgroundColor: '#ef4444',
-    borderWidth: 0,
-  },
-
-  // Sizes
-  sm: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minHeight: 36,
-  },
-  md: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 44,
-  },
-  lg: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    minHeight: 50,
-  },
-  xl: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    minHeight: 56,
-  },
-
-  // Disabled state
-  disabled: {
-    opacity: 0.5,
-  },
-
-  // Text styles
   text: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-
-  primaryText: {
-    color: '#ffffff',
-  },
-  secondaryText: {
-    color: '#374151',
-  },
-  outlineText: {
-    color: '#3b82f6',
-  },
-  ghostText: {
-    color: '#374151',
-  },
-  destructiveText: {
-    color: '#ffffff',
-  },
-
-  smText: {
-    fontSize: 14,
-  },
-  mdText: {
     fontSize: 16,
-  },
-  lgText: {
-    fontSize: 18,
-  },
-  xlText: {
-    fontSize: 20,
-  },
-
-  disabledText: {
-    opacity: 0.7,
-  },
-
-  // Icon styles
-  leftIcon: {
-    marginRight: 8,
-  },
-  rightIcon: {
-    marginLeft: 8,
+    fontWeight: '600',
+    color: '#ffffff',
+    zIndex: 1,
   },
 })

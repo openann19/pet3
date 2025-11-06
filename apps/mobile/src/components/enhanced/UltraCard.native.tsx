@@ -1,115 +1,126 @@
-import React from 'react'
-import { StyleSheet, Pressable } from 'react-native'
-import type { ViewStyle } from 'react-native'
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { MotionView } from '@petspark/motion'
+/**
+ * UltraCard - Mobile Native Implementation
+ * Location: apps/mobile/src/components/enhanced/UltraCard.native.tsx
+ */
 
-interface UltraCardProps {
+import React, { useEffect } from 'react'
+import { View, StyleSheet, type ViewStyle, type ViewProps } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
+
+const AnimatedView = Animated.createAnimatedComponent(View)
+
+export interface UltraCardProps extends ViewProps {
   children: React.ReactNode
+  index?: number
+  enableReveal?: boolean
+  enableHoverLift?: boolean
+  enableGlow?: boolean
+  glowColor?: string
   style?: ViewStyle
-  variant?: 'default' | 'elevated' | 'outlined' | 'filled'
-  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
-  onPress?: () => void
 }
 
 export function UltraCard({
   children,
+  index = 0,
+  enableReveal = true,
+  enableHoverLift = true,
+  enableGlow = false,
+  glowColor = 'rgba(99, 102, 241, 0.4)',
   style,
-  variant = 'default',
-  padding = 'md',
-  onPress,
-}: UltraCardProps) {
-  const scale = useSharedValue(1)
+  ...props
+}: UltraCardProps): React.JSX.Element {
+  const opacity = useSharedValue(0)
+  const translateY = useSharedValue(30)
+  const rotateY = useSharedValue(-12)
+  const hoverLift = useHoverLift({ scale: 1.03, translateY: -6 })
+  const glowOpacity = useSharedValue(0)
 
-  const handlePress = () => {
-    if (onPress) {
-      scale.value = withTiming(0.98, { duration: 100 }, () => {
-        scale.value = withTiming(1, { duration: 100 })
-      })
-      onPress()
+  useEffect(() => {
+    if (enableReveal) {
+      const delay = index * 50
+      opacity.value = withTiming(1, { duration: 300, delay })
+      translateY.value = withSpring(0, { ...springConfigs.smooth, delay })
+      rotateY.value = withSpring(0, { ...springConfigs.smooth, delay })
+    } else {
+      opacity.value = 1
+      translateY.value = 0
+      rotateY.value = 0
     }
-  }
+  }, [enableReveal, index, opacity, translateY, rotateY])
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+  const revealStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [
+      { translateY: translateY.value },
+      { rotateY: `${rotateY.value}deg` },
+    ],
   }))
 
-  const cardStyles = StyleSheet.flatten([
-    styles.container,
-    styles[variant],
-    styles[padding],
-    style,
-  ])
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+  }))
 
-  const content = (
-    <MotionView animatedStyle={animatedStyle} style={cardStyles}>
+  const combinedStyle = enableHoverLift
+    ? [revealStyle, hoverLift.animatedStyle]
+    : revealStyle
+
+  return (
+    <AnimatedView
+      style={[
+        styles.card,
+        combinedStyle,
+        enableGlow && styles.glow,
+        style,
+      ]}
+      onTouchStart={enableHoverLift ? hoverLift.handleEnter : undefined}
+      onTouchEnd={enableHoverLift ? hoverLift.handleLeave : undefined}
+      {...props}
+    >
+      {enableGlow && (
+        <AnimatedView
+          style={[
+            styles.glowOverlay,
+            { backgroundColor: glowColor },
+            glowStyle,
+          ]}
+        />
+      )}
       {children}
-    </MotionView>
+    </AnimatedView>
   )
-
-  if (onPress) {
-    return (
-      <Pressable onPress={handlePress} style={styles.pressable}>
-        {content}
-      </Pressable>
-    )
-  }
-
-  return content
 }
 
 const styles = StyleSheet.create({
-  container: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-
-  pressable: {
-    borderRadius: 16,
-  },
-
-  // Variants
-  default: {
+  card: {
     backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  elevated: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
+    shadowRadius: 12,
     elevation: 8,
   },
-  outlined: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+  glow: {
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
   },
-  filled: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-  },
-
-  // Padding variants
-  none: {
-    padding: 0,
-  },
-  sm: {
-    padding: 12,
-  },
-  md: {
-    padding: 16,
-  },
-  lg: {
-    padding: 20,
-  },
-  xl: {
-    padding: 24,
+  glowOverlay: {
+    position: 'absolute',
+    inset: 0,
+    borderRadius: 16,
+    opacity: 0.2,
   },
 })

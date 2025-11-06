@@ -12,3 +12,12 @@ export { haptic } from './recipes/haptic';
 
 export { usePageTransitions, Presence } from './transitions/presence';
 export { motion } from './tokens';
+
+// Reduced motion utilities
+export {
+  useReducedMotion,
+  useReducedMotionSV,
+  isReduceMotionEnabled,
+  getReducedMotionDuration,
+  getReducedMotionMultiplier,
+} from './reduced-motion';

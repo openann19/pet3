@@ -13,11 +13,14 @@
     "web-dev": "pnpm --filter spark-template dev",
     "mobile-start": "pnpm --filter petspark-mobile start",
     "mobile-android": "pnpm --filter petspark-mobile android",
-    "mobile-ios": "pnpm --filter petspark-mobile ios"
+    "mobile-ios": "pnpm --filter petspark-mobile ios",
+    "check:parity": "tsx scripts/check-mobile-parity.ts"
   },
   "devDependencies": {
     "tsx": "^4.20.6",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "ts-morph": "^23.0.0",
+    "globby": "^14.0.0"
   },
   "engines": {
     "node": ">=18",

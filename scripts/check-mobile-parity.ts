@@ -1,158 +1,140 @@
 #!/usr/bin/env tsx
 /**
- * Mobile Parity Checker
+ * Mobile Prop Parity Checker (ts-morph)
  * 
  * Checks that all web components have corresponding .native.tsx files
- * and verifies prop signature compatibility using AST analysis.
+ * and verifies exported component name and destructured prop key parity.
  * 
- * Usage: tsx scripts/check-mobile-parity.ts
+ * Usage: ts-node scripts/check-mobile-parity.ts
  */
 
-import { readdirSync, readFileSync, existsSync } from 'fs';
-import { join, dirname, basename } from 'path';
-import { fileURLToPath } from 'url';
+import { Project, SyntaxKind, SourceFile, Node } from 'ts-morph'
+import { globby } from 'globby'
+import * as path from 'node:path'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const ROOT = join(__dirname, '..');
+const WEB_ROOT = 'apps/web/src/components'
+const MOB_ROOT = 'apps/mobile/src/components'
 
-const WEB_COMPONENTS_DIR = join(ROOT, 'apps/web/src/components');
-const MOBILE_COMPONENTS_DIR = join(ROOT, 'apps/mobile/src/components');
+const project = new Project({ tsConfigFilePath: 'tsconfig.json' })
 
-// Files to ignore
-const IGNORE_PATTERNS = [
-  /\.test\.tsx?$/,
-  /\.stories\.tsx?$/,
-  /\.native\.tsx?$/,
-  /index\.tsx?$/,
-];
-
-interface ComponentInfo {
-  webPath: string;
-  mobilePath: string;
-  name: string;
-}
-
-function walkComponents(dir: string, baseDir: string): string[] {
-  const files: string[] = [];
-  try {
-    const entries = readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        files.push(...walkComponents(fullPath, baseDir));
-      } else if (entry.isFile() && /\.tsx?$/.test(entry.name)) {
-        // Skip ignored files
-        if (!IGNORE_PATTERNS.some(pattern => pattern.test(entry.name))) {
-          files.push(fullPath.replace(baseDir + '/', ''));
-        }
+function getExportedComponentName(sf: SourceFile): string | null {
+  // Prefer first exported function with PascalCase name
+  const exports = sf.getExportedDeclarations()
+  for (const [name, decs] of exports) {
+    for (const d of decs) {
+      if (Node.isFunctionDeclaration(d) || Node.isVariableDeclaration(d)) {
+        const nm = name || (Node.isFunctionDeclaration(d) ? d.getName() : d.getName())
+        if (nm && /^[A-Z]/.test(nm)) return nm
       }
     }
-  } catch {
-    // Ignore errors
   }
-  return files;
+  // default export fallback: try to infer identifier
+  const def = sf.getDefaultExportSymbol()
+  if (def) {
+    const decl = def.getDeclarations()[0]
+    if (Node.isFunctionDeclaration(decl) && decl.getName()) return decl.getName()!
+  }
+  return null
 }
 
-function extractPropsType(content: string): string | null {
-  // Try to find interface or type definition for props
-  const interfaceMatch = content.match(/interface\s+(\w+Props)\s*\{[\s\S]*?\}/);
-  if (interfaceMatch) {
-    return interfaceMatch[1];
-  }
-  
-  const typeMatch = content.match(/type\s+(\w+Props)\s*=\s*\{[\s\S]*?\}/);
-  if (typeMatch) {
-    return typeMatch[1];
-  }
-  
-  // Try to find props in function signature
-  const funcMatch = content.match(/function\s+\w+\s*\([^)]*props:\s*(\w+Props)[^)]*\)/);
-  if (funcMatch) {
-    return funcMatch[1];
-  }
-  
-  return null;
-}
-
-function checkParity(): { missing: ComponentInfo[]; propMismatches: ComponentInfo[] } {
-  const webFiles = walkComponents(WEB_COMPONENTS_DIR, WEB_COMPONENTS_DIR);
-  const missing: ComponentInfo[] = [];
-  const propMismatches: ComponentInfo[] = [];
-
-  for (const webFile of webFiles) {
-    const webPath = join(WEB_COMPONENTS_DIR, webFile);
-    const fileName = basename(webFile, '.tsx').replace('.ts', '');
-    const dir = dirname(webFile);
-    
-    // Expected mobile path
-    const mobileFile = join(dir, `${fileName}.native.tsx`);
-    const mobilePath = join(MOBILE_COMPONENTS_DIR, mobileFile);
-
-    if (!existsSync(mobilePath)) {
-      missing.push({
-        webPath: webFile,
-        mobilePath: mobileFile,
-        name: fileName,
-      });
-      continue;
-    }
-
-    // Check prop types if both files exist
-    try {
-      const webContent = readFileSync(webPath, 'utf-8');
-      const mobileContent = readFileSync(mobilePath, 'utf-8');
-      
-      const webProps = extractPropsType(webContent);
-      const mobileProps = extractPropsType(mobileContent);
-      
-      if (webProps && mobileProps && webProps !== mobileProps) {
-        // Try to find the actual type definitions to compare
-        const webPropsDef = webContent.match(
-          new RegExp(`(interface|type)\\s+${webProps}\\s*=\\s*\\{([\\s\\S]*?)\\}`)
-        );
-        const mobilePropsDef = mobileContent.match(
-          new RegExp(`(interface|type)\\s+${mobileProps}\\s*=\\s*\\{([\\s\\S]*?)\\}`)
-        );
-        
-        if (webPropsDef && mobilePropsDef && webPropsDef[2] !== mobilePropsDef[2]) {
-          propMismatches.push({
-            webPath: webFile,
-            mobilePath: mobileFile,
-            name: fileName,
-          });
-        }
+function getDestructuredPropKeys(sf: SourceFile, compName: string): string[] {
+  // Find the exported function component and read its first parameter destructuring keys
+  const funcs = sf.getFunctions().filter(f => f.isExported() || f.isDefaultExport() || f.getName() === compName)
+  const vars  = sf.getVariableDeclarations().filter(v => v.isExported() || v.getName() === compName)
+  const candidates = [...funcs.map(f => f), ...vars.map(v => v)]
+  for (const c of candidates) {
+    // Function form
+    if (Node.isFunctionDeclaration(c)) {
+      const p = c.getParameters()[0]
+      if (!p) continue
+      const binding = p.getBindingPattern()
+      if (binding) {
+        return binding.getElements().map(el => el.getNameNode().getText())
       }
-    } catch (error) {
-      // Ignore parsing errors for now
-      console.warn(`Warning: Could not parse props for ${webFile}:`, error);
+      // If typed param without destructuring, skip (cannot infer easily)
+    }
+    // const Comp = ({ x, y }: Props) => ...
+    if (Node.isVariableDeclaration(c)) {
+      const init = c.getInitializer()
+      if (!init) continue
+      const arrow = init.getFirstDescendantByKind(SyntaxKind.ArrowFunction)
+      if (!arrow) continue
+      const p = arrow.getParameters()[0]
+      if (!p) continue
+      const binding = p.getBindingPattern()
+      if (binding) {
+        return binding.getElements().map(el => el.getNameNode().getText())
+      }
+    }
+  }
+  return []
+}
+
+function nativePathFor(webPath: string): string {
+  const rel = path.relative(WEB_ROOT, webPath)
+  const out = path.join(MOB_ROOT, rel).replace(/\.tsx$/, '.native.tsx')
+  return out
+}
+
+async function main(): Promise<void> {
+  const webFiles = await globby(`${WEB_ROOT}/**/[A-Z]*.tsx`, {
+    ignore: ['**/*.native.tsx', '**/*.stories.tsx', '**/*.test.tsx'],
+  })
+
+  let failures = 0
+
+  for (const wf of webFiles) {
+    const native = nativePathFor(wf)
+    const web = project.addSourceFileAtPathIfExists(wf)
+    const mob = project.addSourceFileAtPathIfExists(native)
+
+    if (!mob) {
+      console.error(`❌ Missing mobile file for: ${path.relative(process.cwd(), wf)} -> ${native}`)
+      failures++
+      continue
+    }
+
+    if (!web) {
+      console.error(`❌ Cannot read web file: ${wf}`)
+      failures++
+      continue
+    }
+
+    const webName = getExportedComponentName(web)
+    const mobName = getExportedComponentName(mob)
+    if (!webName || !mobName) {
+      console.error(`❌ Cannot determine export names: ${wf} / ${native}`)
+      failures++
+      continue
+    }
+    if (webName !== mobName) {
+      console.error(`❌ Export name mismatch: ${path.basename(wf)} exports "${webName}" but native has "${mobName}"`)
+      failures++
+    }
+
+    // Compare destructured props (order-insensitive)
+    const webKeys = new Set(getDestructuredPropKeys(web, webName))
+    const mobKeys = new Set(getDestructuredPropKeys(mob, mobName))
+
+    // Only validate when both sides destructure (non-empty)
+    if (webKeys.size && mobKeys.size) {
+      const aOnly = [...webKeys].filter(k => !mobKeys.has(k))
+      const bOnly = [...mobKeys].filter(k => !webKeys.has(k))
+      if (aOnly.length || bOnly.length) {
+        console.error(`❌ Prop key mismatch for ${webName}:\n  Web-only: ${aOnly.join(', ') || '—'}\n  Mobile-only: ${bOnly.join(', ') || '—'}`)
+        failures++
+      }
     }
   }
 
-  return { missing, propMismatches };
-}
-
-// Main execution
-const { missing, propMismatches } = checkParity();
-
-if (missing.length > 0) {
-  console.error('❌ Missing mobile components:');
-  for (const comp of missing) {
-    console.error(`  - ${comp.webPath} → Expected: ${comp.mobilePath}`);
+  if (failures) {
+    console.error(`\n⛔ Mobile parity check failed with ${failures} issue(s).`)
+    process.exit(1)
   }
+  console.log('✅ Mobile parity OK (files + names + destructured prop keys)')
 }
 
-if (propMismatches.length > 0) {
-  console.error('❌ Prop signature mismatches:');
-  for (const comp of propMismatches) {
-    console.error(`  - ${comp.name}: Props differ between web and mobile`);
-  }
-}
-
-if (missing.length === 0 && propMismatches.length === 0) {
-  console.log('✅ Mobile parity OK');
-  process.exit(0);
-} else {
-  process.exit(1);
-}
-
+main().catch((e) => { 
+  console.error(e)
+  process.exit(1)
+})

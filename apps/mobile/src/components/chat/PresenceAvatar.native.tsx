@@ -29,11 +29,8 @@ export interface PresenceAvatarProps {
 }
 
 export function PresenceAvatar({
-  src,
-  fallback,
-  status = 'online',
-  size = 40,
-}: PresenceAvatarProps) {
+  src, fallback, status = 'online', size = 40,
+}: { src?: string; alt?: string; fallback?: string; status?: 'online'|'away'|'busy'|'offline'; size?: number; className?: string }) {
   const reduced = useReducedMotion()
   const rot = useSharedValue(0)
   const dur = getReducedMotionDuration(3600, reduced)

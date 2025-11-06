@@ -107,3 +107,96 @@ export interface CompatibilityFactors {
   ageCompatibility: number
   locationProximity: number
 }
+
+// Adoption types
+export interface AdoptionApplication {
+  _id: string
+  id?: string
+  adoptionProfileId: string
+  petId?: string
+  applicantId: string
+  applicantName: string
+  applicantEmail: string
+  applicantPhone: string
+  householdType: 'house' | 'apartment' | 'condo' | 'other'
+  hasYard: boolean
+  hasOtherPets: boolean
+  otherPetsDetails?: string
+  hasChildren: boolean
+  childrenAges?: string
+  experience: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'submitted' | 'under_review' | 'accepted'
+  submittedAt: string
+  reviewedAt?: string
+  reviewNotes?: string
+}
+
+export interface AdoptionProcess {
+  applicationId: string
+  status: string
+  steps: Array<{
+    name: string
+    status: 'pending' | 'completed' | 'in_progress'
+    completedAt?: string
+  }>
+  nextStep?: string
+  meetingScheduled?: {
+    dateTime: string
+    location: string
+    meetingId: string
+  }
+}
+
+// Community types
+export type PostKind = 'text' | 'photo' | 'video' | 'event'
+export type PostVisibility = 'public' | 'matches' | 'followers' | 'private'
+export type PostStatus = 'active' | 'pending_review' | 'rejected' | 'archived'
+
+export interface CommunityPost {
+  id: string
+  _id?: string
+  authorId: string
+  authorName: string
+  authorAvatar?: string
+  kind: PostKind
+  title?: string
+  text?: string
+  content?: string
+  media?: string[]
+  petIds?: string[]
+  tags?: string[]
+  category?: string
+  location?: {
+    city?: string
+    country?: string
+    lat?: number
+    lon?: number
+    lng?: number
+  }
+  visibility: PostVisibility
+  status: PostStatus
+  createdAt: string
+  updatedAt: string
+  viewsCount?: number
+  reactionsCount?: number
+  likesCount?: number
+  commentsCount?: number
+  sharesCount?: number
+  liked?: boolean
+}
+
+export interface CommunityComment {
+  id: string
+  _id?: string
+  postId: string
+  authorId: string
+  authorName: string
+  authorAvatar?: string
+  text: string
+  content?: string
+  status: 'active' | 'deleted' | 'hidden'
+  createdAt: string
+  updatedAt: string
+  reactionsCount?: number
+}

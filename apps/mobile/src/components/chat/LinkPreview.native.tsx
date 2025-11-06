@@ -22,12 +22,10 @@ export interface LinkPreviewProps {
 }
 
 export function LinkPreview({
-  url,
-  title,
-  description,
-  image,
-  isLoading = false,
-}: LinkPreviewProps) {
+  url, title, description, image, isLoading = false,
+}: {
+  url: string; title?: string; description?: string; image?: string; isLoading?: boolean; className?: string
+}) {
   const reduced = useReducedMotion()
   const showContent = !isLoading && (!!title || !!image)
   const s = useSharedValue(showContent ? 1 : 0)

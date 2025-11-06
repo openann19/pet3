@@ -1,24 +1,34 @@
-'use client'
+/**
+ * EnhancedPetDetailView - Mobile Native Implementation
+ * Location: apps/mobile/src/components/enhanced/EnhancedPetDetailView.native.tsx
+ */
 
 import React, { useCallback, useState } from 'react'
 import {
-  Calendar,
-  ChatCircle,
-  Heart,
-  Lightning,
-  MapPin,
-  PawPrint,
-  ShieldCheck,
-  Star,
-  TrendUp,
-  Users,
-  X
-} from '@phosphor-icons/react'
-import { MotionView, usePressBounce, haptic } from '@petspark/motion'
-import type { Pet } from '@petspark/shared'
-import { TouchableOpacity, StyleSheet, Dimensions, Image, View, Text, ScrollView } from 'react-native'
+  View,
+  Text,
+  ScrollView,
+  Image,
+  Pressable,
+  StyleSheet,
+  Modal,
+  type ViewStyle,
+} from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
+import { useSwipeGesture } from '@/hooks/use-swipe-gesture'
+import { PremiumCard } from './PremiumCard.native'
+import { PremiumButton } from './PremiumButton.native'
+import type { Pet } from '@/lib/types'
+import { timingConfigs, springConfigs } from '@/effects/reanimated/transitions'
 
-const { width: screenWidth } = Dimensions.get('window')
+const AnimatedView = Animated.createAnimatedComponent(View)
+const AnimatedImage = Animated.createAnimatedComponent(Image)
 
 export interface EnhancedPetDetailViewProps {
   pet: Pet
@@ -39,932 +49,347 @@ export function EnhancedPetDetailView({
   onChat,
   compatibilityScore,
   matchReasons,
-  showActions = true
+  showActions = true,
 }: EnhancedPetDetailViewProps): React.JSX.Element {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isVisible, setIsVisible] = useState(true)
   const photos = pet.photos && pet.photos.length > 0 ? pet.photos : [pet.photo]
 
+  const modalOpacity = useSharedValue(0)
+  const modalScale = useSharedValue(0.95)
+  const imageOpacity = useSharedValue(1)
+
+  React.useEffect(() => {
+    modalOpacity.value = withTiming(1, timingConfigs.smooth)
+    modalScale.value = withSpring(1, springConfigs.smooth)
+  }, [modalOpacity, modalScale])
+
+  const modalStyle = useAnimatedStyle(() => ({
+    opacity: modalOpacity.value,
+    transform: [{ scale: modalScale.value }],
+  }))
+
+  const imageStyle = useAnimatedStyle(() => ({
+    opacity: imageOpacity.value,
+  }))
+
   const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
+    modalOpacity.value = withTiming(0, timingConfigs.fast)
+    modalScale.value = withTiming(0.95, timingConfigs.fast)
+    setTimeout(() => {
+      setIsVisible(false)
+      onClose()
+    }, 200)
+  }, [onClose, modalOpacity, modalScale])
 
-  const handleNextPhoto = useCallback((): void => {
-    setIsLoading(true)
-    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)
-    haptic.light()
-  }, [photos.length])
+  const handleNextPhoto = useCallback(() => {
+    imageOpacity.value = withTiming(0, { duration: 150 })
+    setTimeout(() => {
+      setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)
+      imageOpacity.value = withTiming(1, { duration: 150 })
+    }, 150)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+  }, [photos.length, imageOpacity])
 
-  const handlePrevPhoto = useCallback((): void => {
-    setIsLoading(true)
-    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
-    haptic.light()
-  }, [photos.length])
+  const handlePrevPhoto = useCallback(() => {
+    imageOpacity.value = withTiming(0, { duration: 150 })
+    setTimeout(() => {
+      setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
+      imageOpacity.value = withTiming(1, { duration: 150 })
+    }, 150)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+  }, [photos.length, imageOpacity])
 
-  const handleImageLoad = useCallback((): void => {
-    setIsLoading(false)
-  }, [])
-
-  const handleImageError = useCallback((): void => {
-    setIsLoading(false)
-  }, [])
+  const swipeGesture = useSwipeGesture({
+    onSwipeLeft: handleNextPhoto,
+    onSwipeRight: handlePrevPhoto,
+    threshold: 50,
+  })
 
   const handleLike = useCallback(() => {
-    haptic.medium()
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     onLike?.()
   }, [onLike])
 
   const handlePass = useCallback(() => {
-    haptic.light()
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     onPass?.()
   }, [onPass])
 
   const handleChat = useCallback(() => {
-    haptic.light()
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     onChat?.()
   }, [onChat])
 
-  const trustScore = pet.trustScore ?? 0
-  const getTrustLevel = useCallback((score: number) => {
-    if (score >= 80) return { label: 'Highly Trusted', color: '#22c55e' }
-    if (score >= 60) return { label: 'Trusted', color: '#3b82f6' }
-    if (score >= 40) return { label: 'Established', color: '#eab308' }
-    return { label: 'New', color: '#6b7280' }
-  }, [])
-
-  const trustLevel = getTrustLevel(trustScore)
+  if (!isVisible) {
+    return null
+  }
 
   return (
-    <View style={styles.backdrop}>
-      <View style={styles.modal}>
-        <View style={styles.header}>
-          <CloseButton onClose={handleClose} />
-        </View>
-
-        <ScrollView style={styles.scrollArea}>
-          {/* Photo Gallery */}
-          <View style={styles.photoContainer}>
-            {isLoading && (
-              <View style={styles.loadingContainer}>
-                <View style={styles.spinner} />
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+    >
+      <Pressable style={styles.overlay} onPress={handleClose}>
+        <AnimatedView style={[styles.modal, modalStyle]}>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+              {/* Photo Gallery */}
+              <View style={styles.imageContainer} {...swipeGesture.handlers}>
+                <AnimatedImage
+                  source={{ uri: photos[currentPhotoIndex] }}
+                  style={[styles.image, imageStyle]}
+                  resizeMode="cover"
+                />
+                {photos.length > 1 && (
+                  <View style={styles.photoIndicator}>
+                    <Text style={styles.photoIndicatorText}>
+                      {currentPhotoIndex + 1} / {photos.length}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
-            <Image
-              source={{ uri: photos[currentPhotoIndex] }}
-              style={styles.photoImage}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
 
-            {photos.length > 1 && (
-              <>
-                <View style={styles.navButtons}>
-                  <PhotoNavButton onClick={handlePrevPhoto} />
-                  <PhotoNavButton onClick={handleNextPhoto} />
+              {/* Content */}
+              <View style={styles.body}>
+                <View style={styles.header}>
+                  <Text style={styles.name}>{pet.name}</Text>
+                  {pet.verified && (
+                    <View style={styles.verifiedBadge}>
+                      <Text style={styles.verifiedText}>✓</Text>
+                    </View>
+                  )}
                 </View>
-                <View style={styles.indicators}>
-                  {photos.map((_: string, idx: number) => (
-                    <PhotoIndicator
-                      key={idx}
-                      index={idx}
-                      isActive={idx === currentPhotoIndex}
-                      onClick={() => {
-                        setIsLoading(true)
-                        setCurrentPhotoIndex(idx)
-                      }}
-                    />
-                  ))}
+
+                <Text style={styles.location}>{pet.location}</Text>
+
+                {compatibilityScore !== undefined && (
+                  <PremiumCard variant="elevated" style={styles.compatibilityCard}>
+                    <Text style={styles.compatibilityScore}>{compatibilityScore}%</Text>
+                    <Text style={styles.compatibilityLabel}>Compatibility</Text>
+                  </PremiumCard>
+                )}
+
+                {matchReasons && matchReasons.length > 0 && (
+                  <PremiumCard variant="default" style={styles.reasonsCard}>
+                    <Text style={styles.sectionTitle}>Why you match</Text>
+                    {matchReasons.map((reason, index) => (
+                      <Text key={index} style={styles.reasonText}>
+                        • {reason}
+                      </Text>
+                    ))}
+                  </PremiumCard>
+                )}
+
+                <PremiumCard variant="default" style={styles.infoCard}>
+                  <Text style={styles.sectionTitle}>About</Text>
+                  <Text style={styles.infoText}>
+                    {pet.breed} • {pet.age} years • {pet.gender}
+                  </Text>
+                  {pet.personality && pet.personality.length > 0 && (
+                    <View style={styles.tagsContainer}>
+                      {pet.personality.map((trait, index) => (
+                        <View key={index} style={styles.tag}>
+                          <Text style={styles.tagText}>{trait}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </PremiumCard>
+              </View>
+
+              {/* Actions */}
+              {showActions && (
+                <View style={styles.actions}>
+                  <PremiumButton
+                    variant="ghost"
+                    onPress={handlePass}
+                    style={styles.actionButton}
+                  >
+                    Pass
+                  </PremiumButton>
+                  {onChat && (
+                    <PremiumButton
+                      variant="secondary"
+                      onPress={handleChat}
+                      style={styles.actionButton}
+                    >
+                      Chat
+                    </PremiumButton>
+                  )}
+                  <PremiumButton
+                    variant="primary"
+                    onPress={handleLike}
+                    style={styles.actionButton}
+                  >
+                    Like
+                  </PremiumButton>
                 </View>
-              </>
-            )}
+              )}
+            </ScrollView>
+          </Pressable>
 
-            {compatibilityScore !== undefined && (
-              <CompatibilityBadge score={compatibilityScore} />
-            )}
-          </View>
-
-          {/* Content */}
-          <View style={styles.content}>
-            {/* Header Info */}
-            <PetHeader pet={pet} trustScore={trustScore} trustLevel={trustLevel} />
-
-            {/* Match Reasons */}
-            {matchReasons && matchReasons.length > 0 && (
-              <MatchReasonsCard reasons={matchReasons} />
-            )}
-
-            {/* Tabs */}
-            <PetTabs pet={pet} />
-          </View>
-        </ScrollView>
-
-        {/* Actions */}
-        {showActions && (
-          <ActionButtons
-            onLike={onLike ? handleLike : undefined}
-            onPass={onPass ? handlePass : undefined}
-            onChat={onChat ? handleChat : undefined}
-          />
-        )}
-      </View>
-    </View>
-  )
-}
-
-interface CloseButtonProps {
-  onClose: () => void
-}
-
-function CloseButton({ onClose }: CloseButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
-
-  const handlePress = useCallback(() => {
-    haptic.light()
-    onClose()
-  }, [onClose])
-
-  return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={styles.closeButton}
-    >
-      <MotionView style={bounce.animatedStyle}>
-        <X size={24} weight="bold" color="#000" />
-      </MotionView>
-    </TouchableOpacity>
-  )
-}
-
-interface PhotoNavButtonProps {
-  onClick: () => void
-}
-
-function PhotoNavButton({ onClick }: PhotoNavButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
-
-  const handlePress = useCallback(() => {
-    haptic.light()
-    onClick()
-  }, [onClick])
-
-  return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={styles.navButton}
-    >
-      <MotionView style={bounce.animatedStyle}>
-        <PawPrint size={20} weight="fill" color="#fff" />
-      </MotionView>
-    </TouchableOpacity>
-  )
-}
-
-interface PhotoIndicatorProps {
-  index: number
-  isActive: boolean
-  onClick: () => void
-}
-
-function PhotoIndicator({ isActive, onClick }: PhotoIndicatorProps): React.JSX.Element {
-  return (
-    <TouchableOpacity
-      onPress={onClick}
-      style={[styles.indicator, isActive && styles.indicatorActive]}
-    >
-      <View style={styles.indicatorInner} />
-    </TouchableOpacity>
-  )
-}
-
-interface CompatibilityBadgeProps {
-  score: number
-}
-
-function CompatibilityBadge({ score }: CompatibilityBadgeProps): React.JSX.Element {
-  return (
-    <View style={styles.compatibilityBadge}>
-      <View style={styles.compatibilityContent}>
-        <TrendUp size={20} weight="bold" color="#fff" />
-        <Text style={styles.compatibilityText}>{score}% Match</Text>
-      </View>
-    </View>
-  )
-}
-
-interface PetHeaderProps {
-  pet: Pet
-  trustScore: number
-  trustLevel: { label: string; color: string }
-}
-
-function PetHeader({ pet, trustScore, trustLevel }: PetHeaderProps): React.JSX.Element {
-  return (
-    <View style={styles.petHeader}>
-      <View style={styles.petTitle}>
-        <Text style={styles.petName}>{pet.name}</Text>
-        <Text style={styles.petBreed}>
-          {pet.breed} • {pet.age} {pet.age === 1 ? 'year' : 'years'}
-        </Text>
-      </View>
-      {trustScore > 0 && (
-        <View style={styles.trustContainer}>
-          <ShieldCheck size={20} color={trustLevel.color} weight="fill" />
-          <Text style={[styles.trustLabel, { color: trustLevel.color }]}>
-            {trustLevel.label}
-          </Text>
-          <Text style={styles.trustScore}>Trust Score: {trustScore}</Text>
-        </View>
-      )}
-
-      <View style={styles.locationContainer}>
-        <MapPin size={16} weight="fill" color="#6b7280" />
-        <Text style={styles.locationText}>{pet.location}</Text>
-      </View>
-    </View>
-  )
-}
-
-interface MatchReasonsCardProps {
-  reasons: string[]
-}
-
-function MatchReasonsCard({ reasons }: MatchReasonsCardProps): React.JSX.Element {
-  return (
-    <View style={styles.matchReasonsCard}>
-      <View style={styles.matchReasonsContent}>
-        <Text style={styles.matchReasonsTitle}>
-          <Star size={20} color="#f59e0b" weight="fill" /> Why This Match Works
-        </Text>
-        <View style={styles.reasonsList}>
-          {reasons.map((reason, idx) => (
-            <MatchReasonItem key={idx} reason={reason} index={idx} />
-          ))}
-        </View>
-      </View>
-    </View>
-  )
-}
-
-interface MatchReasonItemProps {
-  reason: string
-  index: number
-}
-
-function MatchReasonItem({ reason }: MatchReasonItemProps): React.JSX.Element {
-  return (
-    <View style={styles.reasonItem}>
-      <Heart size={14} color="#dc2626" weight="fill" />
-      <Text style={styles.reasonText}>{reason}</Text>
-    </View>
-  )
-}
-
-interface PetTabsProps {
-  pet: Pet
-}
-
-function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState('about')
-
-  return (
-    <View style={styles.tabsContainer}>
-      <View style={styles.tabList}>
-        <TouchableOpacity
-          style={[styles.tabTrigger, activeTab === 'about' && styles.tabActive]}
-          onPress={() => setActiveTab('about')}
-        >
-          <Text style={[styles.tabText, activeTab === 'about' && styles.tabTextActive]}>
-            About
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabTrigger, activeTab === 'personality' && styles.tabActive]}
-          onPress={() => setActiveTab('personality')}
-        >
-          <Text style={[styles.tabText, activeTab === 'personality' && styles.tabTextActive]}>
-            Personality
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabTrigger, activeTab === 'stats' && styles.tabActive]}
-          onPress={() => setActiveTab('stats')}
-        >
-          <Text style={[styles.tabText, activeTab === 'stats' && styles.tabTextActive]}>
-            Stats
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {activeTab === 'about' && (
-        <View style={styles.tabContent}>
-          <Text style={styles.sectionTitle}>Bio</Text>
-          <Text style={styles.bioText}>{pet.bio}</Text>
-
-          {pet.interests && pet.interests.length > 0 && (
-            <View>
-              <Text style={styles.sectionTitle}>Interests</Text>
-              <View style={styles.interestsContainer}>
-                {pet.interests.map((interest: string, idx: number) => (
-                  <Text key={idx} style={styles.interestBadge}>
-                    {interest}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {pet.lookingFor && pet.lookingFor.length > 0 && (
-            <View>
-              <Text style={styles.sectionTitle}>Looking For</Text>
-              <View style={styles.interestsContainer}>
-                {pet.lookingFor.map((item: string, idx: number) => (
-                  <Text key={idx} style={styles.interestBadge}>
-                    {item}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          )}
-        </View>
-      )}
-
-      {activeTab === 'personality' && (
-        <View style={styles.tabContent}>
-          {pet.personality && pet.personality.length > 0 && (
-            <View>
-              <Text style={styles.sectionTitle}>Personality Traits</Text>
-              <View style={styles.personalityGrid}>
-                {pet.personality.map((trait: string, idx: number) => (
-                  <PersonalityTrait key={idx} trait={trait} index={idx} />
-                ))}
-              </View>
-            </View>
-          )}
-
-          <View>
-            <Text style={styles.sectionTitle}>Activity Level</Text>
-            <View style={styles.activityContainer}>
-              <Text style={styles.activityLabel}>Energy</Text>
-              <Text style={styles.activityValue}>{pet.activityLevel ?? 'Moderate'}</Text>
-            </View>
-            <View style={styles.progressBar} />
-          </View>
-        </View>
-      )}
-
-      {activeTab === 'stats' && (
-        <View style={styles.tabContent}>
-          <View style={styles.statsGrid}>
-            <StatCard
-              icon={Users}
-              label="Playdates"
-              value={String(pet.playdateCount ?? 0)}
-              color="#10b981"
-            />
-            <StatCard
-              icon={Star}
-              label="Rating"
-              value={pet.overallRating?.toFixed(1) ?? 'N/A'}
-              color="#f59e0b"
-            />
-            <StatCard
-              icon={Lightning}
-              label="Response Rate"
-              value={`${Math.round((pet.responseRate ?? 0) * 100)}%`}
-              color="#6366f1"
-            />
-            <StatCard
-              icon={Calendar}
-              label="Member Since"
-              value={String(new Date(pet.createdAt ?? Date.now()).getFullYear())}
-              color="#8b5cf6"
-            />
-          </View>
-
-          {pet.badges && pet.badges.length > 0 && (
-            <View>
-              <Text style={styles.sectionTitle}>Trust Badges</Text>
-              <View style={styles.badgesContainer}>
-                {pet.badges.map((badge: { label: string }, idx: number) => (
-                  <TrustBadgeItem key={idx} badge={badge} index={idx} />
-                ))}
-              </View>
-            </View>
-          )}
-        </View>
-      )}
-    </View>
-  )
-}
-
-interface PersonalityTraitProps {
-  trait: string
-  index: number
-}
-
-function PersonalityTrait({ trait }: PersonalityTraitProps): React.JSX.Element {
-  return (
-    <View style={styles.personalityTrait}>
-      <PawPrint size={24} color="#3b82f6" weight="fill" />
-      <Text style={styles.traitText}>{trait}</Text>
-    </View>
-  )
-}
-
-interface StatCardProps {
-  icon: React.ComponentType<any>
-  label: string
-  value: string
-  color: string
-}
-
-function StatCard({ icon: Icon, label, value, color }: StatCardProps): React.JSX.Element {
-  return (
-    <View style={styles.statCard}>
-      <View style={styles.statContent}>
-        <View style={styles.statHeader}>
-          <View style={[styles.statIcon, { backgroundColor: color }]}>
-            <Icon size={24} weight="duotone" color="#fff" />
-          </View>
-          <View>
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={styles.statValue}>{value}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  )
-}
-
-interface TrustBadgeItemProps {
-  badge: { label: string }
-  index: number
-}
-
-function TrustBadgeItem({ badge }: TrustBadgeItemProps): React.JSX.Element {
-  return (
-    <View style={styles.trustBadge}>
-      <ShieldCheck size={14} color="#10b981" weight="fill" />
-      <Text style={styles.badgeText}>{badge.label}</Text>
-    </View>
-  )
-}
-
-interface ActionButtonsProps {
-  onLike?: (() => void) | undefined
-  onPass?: (() => void) | undefined
-  onChat?: (() => void) | undefined
-}
-
-function ActionButtons({ onLike, onPass, onChat }: ActionButtonsProps): React.JSX.Element {
-  return (
-    <View style={styles.actionButtons}>
-      <View style={styles.buttonRow}>
-        {onPass && (
-          <ActionButton
-            variant="outline"
-            icon={X}
-            label="Pass"
-            onClick={onPass}
-          />
-        )}
-        {onChat && (
-          <ActionButton
-            variant="secondary"
-            icon={ChatCircle}
-            label="Chat"
-            onClick={onChat}
-          />
-        )}
-        {onLike && (
-          <ActionButton
-            variant="primary"
-            icon={Heart}
-            label="Like"
-            onClick={onLike}
-            style={styles.likeButton}
-          />
-        )}
-      </View>
-    </View>
-  )
-}
-
-interface ActionButtonProps {
-  variant: 'outline' | 'secondary' | 'primary'
-  icon: React.ComponentType<any>
-  label: string
-  onClick: () => void
-  style?: any
-}
-
-function ActionButton({ variant, icon: Icon, label, onClick, style }: ActionButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
-
-  const handlePress = useCallback(() => {
-    haptic.light()
-    onClick()
-  }, [onClick])
-
-  const buttonStyle = [
-    styles.actionButton,
-    variant === 'primary' && styles.primaryButton,
-    variant === 'secondary' && styles.secondaryButton,
-    variant === 'outline' && styles.outlineButton,
-    style
-  ]
-
-  return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={buttonStyle}
-    >
-      <View style={bounce.animatedStyle}>
-        <Icon size={20} weight={variant === 'primary' ? 'fill' : 'bold'} color="#fff" />
-        <Text style={styles.buttonText}>{label}</Text>
-      </View>
-    </TouchableOpacity>
+          <Pressable style={styles.closeButton} onPress={handleClose}>
+            <Text style={styles.closeText}>✕</Text>
+          </Pressable>
+        </AnimatedView>
+      </Pressable>
+    </Modal>
   )
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
   },
   modal: {
-    width: screenWidth * 0.95,
+    width: '90%',
     maxHeight: '90%',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 16,
     overflow: 'hidden',
   },
-  header: {
+  content: {
+    flex: 1,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 400,
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  photoIndicator: {
     position: 'absolute',
     top: 16,
     right: 16,
-    zIndex: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  photoIndicatorText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '500',
   },
-  scrollArea: {
-    flex: 1,
-  },
-  photoContainer: {
-    height: 300,
-    backgroundColor: '#f3f4f6',
-    overflow: 'hidden',
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  spinner: {
-    width: 48,
-    height: 48,
-    borderWidth: 4,
-    borderColor: '#3b82f6',
-    borderTopColor: 'transparent',
-    borderRadius: 24,
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
-  },
-  photoImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  navButtons: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    pointerEvents: 'box-none',
-  },
-  navButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  indicators: {
-    position: 'absolute',
-    bottom: 16,
-    left: '50%',
-    transform: [{ translateX: -50 }],
-    flexDirection: 'row',
-    gap: 8,
-  },
-  indicator: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  indicatorActive: {
-    width: 24,
-  },
-  indicatorInner: {
-    height: '100%',
-    borderRadius: 4,
-    backgroundColor: '#fff',
-  },
-  compatibilityBadge: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-  },
-  compatibilityContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
-  },
-  compatibilityText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  content: {
+  body: {
     padding: 24,
-    gap: 24,
   },
-  petHeader: {
-    gap: 8,
-  },
-  petTitle: {
-    gap: 4,
-  },
-  petName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  petBreed: {
-    fontSize: 18,
-    color: '#6b7280',
-  },
-  trustContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  trustLabel: {
-    fontSize: 16,
-    fontWeight: 'semibold',
-  },
-  trustScore: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  matchReasonsCard: {
-    borderColor: 'rgba(59, 130, 246, 0.2)',
-    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-  },
-  matchReasonsContent: {
-    padding: 16,
     gap: 12,
+    marginBottom: 8,
   },
-  matchReasonsTitle: {
-    fontSize: 16,
-    fontWeight: 'semibold',
-    flexDirection: 'row',
+  name: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  verifiedBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#3b82f6',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  reasonsList: {
-    gap: 12,
-  },
-  reasonItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  reasonText: {
+  verifiedText: {
+    color: '#ffffff',
     fontSize: 14,
-    color: '#374151',
-    flex: 1,
+    fontWeight: '700',
   },
-  tabsContainer: {
-    width: '100%',
+  location: {
+    fontSize: 16,
+    color: '#64748b',
+    marginBottom: 24,
   },
-  tabList: {
-    flexDirection: 'row',
-    width: '100%',
+  compatibilityCard: {
     marginBottom: 16,
-  },
-  tabTrigger: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    padding: 24,
   },
-  tabActive: {
-    borderBottomColor: '#3b82f6',
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  tabTextActive: {
+  compatibilityScore: {
+    fontSize: 48,
+    fontWeight: '700',
     color: '#3b82f6',
-    fontWeight: 'semibold',
+    marginBottom: 8,
   },
-  tabContent: {
-    gap: 16,
+  compatibilityLabel: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  reasonsCard: {
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'semibold',
-    marginBottom: 8,
-    color: '#000',
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 12,
   },
-  bioText: {
+  reasonText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#475569',
+    marginBottom: 8,
     lineHeight: 20,
   },
-  interestsContainer: {
+  infoCard: {
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#475569',
+    marginBottom: 16,
+  },
+  tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  interestBadge: {
-    marginBottom: 4,
-  },
-  personalityGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  personalityTrait: {
-    width: '48%',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(243, 244, 246, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    alignItems: 'center',
-    gap: 8,
-  },
-  traitText: {
-    fontSize: 14,
-    fontWeight: 'medium',
-    color: '#000',
-    textAlign: 'center',
-  },
-  activityContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  activityLabel: {
-    fontSize: 14,
-    color: '#374151',
-  },
-  activityValue: {
-    fontSize: 14,
-    fontWeight: 'medium',
-    color: '#000',
-  },
-  progressBar: {
-    height: 8,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  statCard: {
-    width: '48%',
-  },
-  statContent: {
-    padding: 16,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  badgesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  trustBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  tag: {
     paddingHorizontal: 12,
     paddingVertical: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 16,
   },
-  badgeText: {
-    fontSize: 12,
-    color: '#000',
+  tagText: {
+    fontSize: 14,
+    color: '#475569',
   },
-  actionButtons: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-    padding: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  },
-  buttonRow: {
+  actions: {
     flexDirection: 'row',
     gap: 12,
-    maxWidth: 400,
-    alignSelf: 'center',
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'row',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 24,
+    zIndex: 10,
   },
-  primaryButton: {
-    backgroundColor: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
-  },
-  secondaryButton: {
-    backgroundColor: '#6b7280',
-  },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-  },
-  likeButton: {
-    backgroundColor: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'semibold',
-    color: '#fff',
+  closeText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '600',
   },
 })

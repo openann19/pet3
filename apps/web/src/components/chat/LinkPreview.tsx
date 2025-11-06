@@ -10,6 +10,7 @@
 import React, { useMemo } from 'react'
 import Animated, { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 
 export interface LinkPreviewProps {
   url: string
@@ -38,8 +39,8 @@ export function LinkPreview({
     s.value = withTiming(showContent ? 1 : 0, { duration: dur })
   }, [showContent, dur, s])
 
-  const skeletonStyle = useAnimatedStyle(() => ({ opacity: 1 - s.value }))
-  const contentStyle = useAnimatedStyle(() => ({ opacity: s.value }))
+  const skeletonStyle = useAnimatedStyle(() => ({ opacity: 1 - s.value })) as AnimatedStyle
+  const contentStyle = useAnimatedStyle(() => ({ opacity: s.value })) as AnimatedStyle
 
   return (
     <div
@@ -48,7 +49,7 @@ export function LinkPreview({
       aria-live="polite"
     >
       {/* Skeleton */}
-      <Animated.div style={skeletonStyle as any} className="absolute inset-0">
+      <Animated.div style={skeletonStyle} className="absolute inset-0">
         <div className="flex gap-3 p-3">
           {image && (
             <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -67,7 +68,7 @@ export function LinkPreview({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          style={contentStyle as any}
+          style={contentStyle}
           className="relative flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
         >
           {image && (

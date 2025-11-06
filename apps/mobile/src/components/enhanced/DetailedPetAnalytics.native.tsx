@@ -1,423 +1,388 @@
-import { useEffect } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { MotionView } from '@petspark/motion'
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item'
-import { TrendUp, Heart, Users, Clock, Star, Lightning } from '@phosphor-icons/react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import type { Pet, PetTrustProfile } from '@/lib/types'
+/**
+ * DetailedPetAnalytics - Mobile Native Implementation
+ * Location: apps/mobile/src/components/enhanced/DetailedPetAnalytics.native.tsx
+ */
 
-interface DetailedPetAnalyticsProps {
-  pet: Pet
-  trustProfile?: PetTrustProfile
-  compatibilityScore?: number
-  matchReasons?: string[]
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+
+type TrustBadge = {
+  readonly type: string
+  readonly label: string
+  readonly description: string
+}
+
+interface PetTrustProfile {
+  readonly overallRating?: number
+  readonly playdateCount?: number
+  readonly responseRate?: number
+  readonly responseTime?: string
+  readonly totalReviews?: number
+  readonly ratingBreakdown?: Record<number, number>
+  readonly badges?: TrustBadge[]
+}
+
+interface PetSummary {
+  readonly name: string
+  readonly breed?: string
+  readonly age?: number
+  readonly gender?: string
+  readonly personality?: string[]
+  readonly interests?: string[]
+  readonly trustProfile?: PetTrustProfile
+}
+
+export interface DetailedPetAnalyticsProps {
+  readonly pet: PetSummary
+  readonly trustProfile?: PetTrustProfile
+  readonly compatibilityScore?: number
+  readonly matchReasons?: string[]
 }
 
 export function DetailedPetAnalytics({
   pet,
   trustProfile,
   compatibilityScore,
-  matchReasons
+  matchReasons,
 }: DetailedPetAnalyticsProps) {
+  const profile = trustProfile ?? pet.trustProfile ?? {}
+
   const stats = [
     {
-      icon: Heart,
+      icon: '❤️',
       label: 'Overall Rating',
-      value: trustProfile?.overallRating?.toFixed(1) || 'N/A',
-      max: '5.0',
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      borderColor: 'border-primary/20'
+      value: profile.overallRating?.toFixed(1) ?? 'N/A',
+      suffix: '/5.0',
     },
     {
-      icon: Users,
+      icon: '👥',
       label: 'Playdates',
-      value: trustProfile?.playdateCount || 0,
+      value: String(profile.playdateCount ?? 0),
       suffix: ' completed',
-      color: 'text-secondary',
-      bgColor: 'bg-secondary/10',
-      borderColor: 'border-secondary/20'
     },
     {
-      icon: Lightning,
+      icon: '⚡️',
       label: 'Response Rate',
-      value: `${Math.round((trustProfile?.responseRate || 0) * 100)}%`,
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
-      borderColor: 'border-accent/20'
+      value: `${Math.round((profile.responseRate ?? 0) * 100)}%`,
     },
     {
-      icon: Clock,
+      icon: '⏱️',
       label: 'Avg Response',
-      value: trustProfile?.responseTime || 'N/A',
-      color: 'text-lavender',
-      bgColor: 'bg-lavender/10',
-      borderColor: 'border-lavender/20'
-    }
+      value: profile.responseTime ?? 'N/A',
+    },
   ]
 
-  const personalityTraits = pet.personality || []
-  const interests = pet.interests || []
+  const personalityTraits = pet.personality ?? []
+  const interests = pet.interests ?? []
 
   return (
     <View style={styles.container}>
       {compatibilityScore !== undefined && (
-        <AnimatedCard delay={0}>
-          <Card style={styles.compatibilityCard}>
-            <CardHeader>
-              <CardTitle style={styles.cardTitle}>
-                <TrendUp size={24} color="#3b82f6" weight="duotone" />
-                <Text style={styles.titleText}>Compatibility Score</Text>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <View style={styles.scoreContainer}>
-                <Text style={styles.scoreText}>
-                  {compatibilityScore}%
+        <View style={[styles.card, styles.comparisonCard]}>
+          <Text style={styles.cardTitle}>Compatibility Score</Text>
+          <View style={styles.compatibilityRow}>
+            <Text style={styles.compatibilityValue}>{compatibilityScore}%</Text>
+            <View style={styles.badge}>{renderCompatibilityBadge(compatibilityScore)}</View>
+          </View>
+          <ProgressBar value={compatibilityScore} />
+          {matchReasons && matchReasons.length > 0 && (
+            <View style={styles.reasonList}>
+              <Text style={styles.sectionLabel}>Why this match works:</Text>
+              {matchReasons.map((reason, idx) => (
+                <Text key={idx} style={styles.reasonItem}>
+                  • {reason}
                 </Text>
-                <Badge
-                  variant={compatibilityScore >= 85 ? 'default' : compatibilityScore >= 70 ? 'secondary' : 'outline'}
-                  style={styles.scoreBadge}
-                >
-                  {compatibilityScore >= 85 ? 'Perfect Match' :
-                   compatibilityScore >= 70 ? 'Great Fit' :
-                   compatibilityScore >= 55 ? 'Good Potential' : 'Worth Exploring'}
-                </Badge>
-              </View>
-              <Progress value={compatibilityScore} style={styles.progress} />
-
-              {matchReasons && matchReasons.length > 0 && (
-                <View style={styles.reasonsContainer}>
-                  <Text style={styles.reasonsTitle}>Why this match works:</Text>
-                  {matchReasons.map((reason, idx) => (
-                    <AnimatedListItem key={idx} index={idx}>
-                      <View style={styles.reasonItem}>
-                        <Star size={16} color="#f59e0b" weight="fill" />
-                        <Text style={styles.reasonText}>{reason}</Text>
-                      </View>
-                    </AnimatedListItem>
-                  ))}
-                </View>
-              )}
-            </CardContent>
-          </Card>
-        </AnimatedCard>
-      )}
-
-      <AnimatedCard delay={0.1}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Social Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.statsGrid}>
-              {stats.map((stat, idx) => (
-                <AnimatedStatCard key={idx} index={idx}>
-                  <View style={[styles.statCard, { backgroundColor: 'rgba(59, 130, 246, 0.1)', borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
-                    <View style={styles.statIcon}>
-                      <stat.icon size={24} color="#3b82f6" weight="duotone" />
-                    </View>
-                    <View style={styles.statContent}>
-                      <Text style={styles.statLabel}>{stat.label}</Text>
-                      <Text style={[styles.statValue, { color: '#3b82f6' }]}>
-                        {stat.value}
-                        {stat.suffix && <Text style={styles.statSuffix}>{stat.suffix}</Text>}
-                      </Text>
-                    </View>
-                  </View>
-                </AnimatedStatCard>
               ))}
             </View>
-          </CardContent>
-        </Card>
-      </AnimatedCard>
-
-      {trustProfile && trustProfile.totalReviews > 0 && (
-        <AnimatedCard delay={0.2}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Rating Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {[5, 4, 3, 2, 1].map((rating) => {
-                const count = trustProfile.ratingBreakdown?.[rating as keyof typeof trustProfile.ratingBreakdown] || 0
-                const percentage = trustProfile.totalReviews > 0
-                  ? (count / trustProfile.totalReviews) * 100
-                  : 0
-
-                return (
-                  <View key={rating} style={styles.ratingRow}>
-                    <View style={styles.ratingLabel}>
-                      <Text style={styles.ratingNumber}>{rating}</Text>
-                      <Star size={14} color="#f59e0b" weight="fill" />
-                    </View>
-                    <View style={styles.ratingBar}>
-                      <Progress value={percentage} style={styles.ratingProgress} />
-                    </View>
-                    <Text style={styles.ratingCount}>{count}</Text>
-                  </View>
-                )
-              })}
-            </CardContent>
-          </Card>
-        </AnimatedCard>
+          )}
+        </View>
       )}
 
-      <AnimatedCard delay={0.3}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Personality & Interests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {personalityTraits.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Personality</Text>
-                <View style={styles.tagsContainer}>
-                  {personalityTraits.map((trait, idx) => (
-                    <AnimatedBadge key={idx} index={idx}>
-                      <Badge variant="secondary" style={styles.tag}>
-                        {trait}
-                      </Badge>
-                    </AnimatedBadge>
-                  ))}
-                </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Social Stats</Text>
+        <View style={styles.statGrid}>
+          {stats.map((stat) => (
+            <View key={stat.label} style={styles.statCard}>
+              <Text style={styles.statIcon}>{stat.icon}</Text>
+              <View style={styles.statTextBlock}>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+                <Text style={styles.statValue}>
+                  {stat.value}
+                  {stat.suffix && <Text style={styles.statSuffix}>{stat.suffix}</Text>}
+                </Text>
               </View>
-            )}
+            </View>
+          ))}
+        </View>
+      </View>
 
-            {interests.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Interests</Text>
-                <View style={styles.tagsContainer}>
-                  {interests.map((interest, idx) => (
-                    <AnimatedBadge key={idx} index={idx}>
-                      <Badge variant="outline" style={styles.tag}>
-                        {interest}
-                      </Badge>
-                    </AnimatedBadge>
-                  ))}
-                </View>
+      {profile.totalReviews && profile.totalReviews > 0 && profile.ratingBreakdown && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Rating Distribution</Text>
+          {[5, 4, 3, 2, 1].map((rating) => {
+            const count = profile.ratingBreakdown?.[rating] ?? 0
+            const percentage = profile.totalReviews
+              ? Math.round((count / profile.totalReviews) * 100)
+              : 0
+            return (
+              <View key={rating} style={styles.ratingRow}>
+                <Text style={styles.ratingLabel}>{rating}★</Text>
+                <ProgressBar value={percentage} height={6} />
+                <Text style={styles.ratingCount}>{count}</Text>
               </View>
-            )}
-          </CardContent>
-        </Card>
-      </AnimatedCard>
+            )
+          })}
+        </View>
+      )}
+
+      {(personalityTraits.length > 0 || interests.length > 0) && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Personality & Interests</Text>
+          {personalityTraits.length > 0 && (
+            <View style={styles.tagSection}>
+              <Text style={styles.sectionLabel}>Personality</Text>
+              <View style={styles.tagList}>
+                {personalityTraits.map((trait) => (
+                  <View key={trait} style={styles.tagPill}>
+                    <Text style={styles.tagText}>{trait}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          {interests.length > 0 && (
+            <View style={styles.tagSection}>
+              <Text style={styles.sectionLabel}>Interests</Text>
+              <View style={styles.tagList}>
+                {interests.map((interest) => (
+                  <View key={interest} style={[styles.tagPill, styles.tagOutline]}>
+                    <Text style={[styles.tagText, styles.tagOutlineText]}>{interest}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      )}
+
+      {profile.badges && profile.badges.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Trust Badges</Text>
+          <View style={styles.badgeRow}>
+            {profile.badges.slice(0, 4).map((badge) => (
+              <View key={badge.type} style={styles.badgePill}>
+                <Text style={styles.badgeTitle}>{badge.label}</Text>
+                <Text style={styles.badgeDescription}>{badge.description}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>About {pet.name}</Text>
+        <Text style={styles.aboutText}>
+          {[pet.breed, pet.age ? `${pet.age} yrs` : undefined, pet.gender]
+            .filter(Boolean)
+            .join(' • ') || 'Details unavailable'}
+        </Text>
+      </View>
     </View>
   )
 }
 
-function AnimatedCard({ delay, children }: { delay: number; children: React.ReactNode }) {
-  const opacity = useSharedValue(0)
-  const translateY = useSharedValue(20)
-
-  useEffect(() => {
-    opacity.value = withTiming(1, { duration: 400 })
-    translateY.value = withTiming(0, { duration: 400 })
-  }, [opacity, translateY])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }))
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>
+function renderCompatibilityBadge(score: number) {
+  if (score >= 85) {
+    return <Text style={styles.badgeText}>Perfect Match</Text>
+  }
+  if (score >= 70) {
+    return <Text style={styles.badgeText}>Great Fit</Text>
+  }
+  if (score >= 55) {
+    return <Text style={styles.badgeText}>Good Potential</Text>
+  }
+  return <Text style={styles.badgeText}>Worth Exploring</Text>
 }
 
-function AnimatedListItem({ index, children }: { index: number; children: React.ReactNode }) {
-  const opacity = useSharedValue(0)
-  const translateX = useSharedValue(-10)
-
-  useEffect(() => {
-    const delay = index * 100
-    setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 300 })
-      translateX.value = withTiming(0, { duration: 300 })
-    }, delay)
-  }, [index, opacity, translateX])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateX: translateX.value }],
-  }))
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>
+interface ProgressBarProps {
+  readonly value: number
+  readonly height?: number
 }
 
-function AnimatedStatCard({ index, children }: { index: number; children: React.ReactNode }) {
-  const opacity = useSharedValue(0)
-  const scale = useSharedValue(0.9)
-
-  useEffect(() => {
-    const delay = index * 50
-    setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 300 })
-      scale.value = withTiming(1, { duration: 300 })
-    }, delay)
-  }, [index, opacity, scale])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value }],
-  }))
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>
-}
-
-function AnimatedBadge({ index, children }: { index: number; children: React.ReactNode }) {
-  const opacity = useSharedValue(0)
-  const scale = useSharedValue(0.8)
-
-  useEffect(() => {
-    const delay = index * 50
-    setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 300 })
-      scale.value = withTiming(1, { duration: 300 })
-    }, delay)
-  }, [index, opacity, scale])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value }],
-  }))
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>
+function ProgressBar({ value, height = 10 }: ProgressBarProps) {
+  const clamped = Math.max(0, Math.min(100, value))
+  return (
+    <View style={[styles.progressTrack, { height }]}>
+      <View style={[styles.progressFill, { width: `${clamped}%` }]} />
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    gap: 24,
+    gap: 16,
   },
-  compatibilityCard: {
-    borderColor: 'rgba(59, 130, 246, 0.2)',
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 12,
+  },
+  comparisonCard: {
     backgroundColor: 'rgba(59, 130, 246, 0.05)',
   },
   cardTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  titleText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  scoreContainer: {
+  compatibilityRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    alignItems: 'center',
   },
-  scoreText: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    backgroundColor: 'linear-gradient(to right, #3b82f6, #8b5cf6)',
-    backgroundClip: 'text',
-    color: 'transparent',
+  compatibilityValue: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#2563eb',
   },
-  scoreBadge: {
-    fontSize: 14,
+  badge: {
+    backgroundColor: '#1d4ed8',
+    borderRadius: 999,
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
-  progress: {
-    height: 12,
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
   },
-  reasonsContainer: {
-    marginTop: 16,
-    gap: 8,
+  progressTrack: {
+    width: '100%',
+    backgroundColor: '#e5e7eb',
+    borderRadius: 999,
+    overflow: 'hidden',
   },
-  reasonsTitle: {
+  progressFill: {
+    backgroundColor: '#2563eb',
+    height: '100%',
+    borderRadius: 999,
+  },
+  reasonList: {
+    gap: 6,
+  },
+  sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(0, 0, 0, 0.6)',
+    color: '#4b5563',
+    marginBottom: 4,
   },
   reasonItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
+    fontSize: 13,
+    color: '#374151',
   },
-  reasonText: {
-    fontSize: 14,
-    flex: 1,
-  },
-  statsGrid: {
+  statGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 12,
   },
   statCard: {
+    flexBasis: '48%',
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    borderRadius: 12,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    flex: 1,
-    minWidth: '45%',
   },
   statIcon: {
-    padding: 8,
-    borderRadius: 8,
+    fontSize: 18,
   },
-  statContent: {
+  statTextBlock: {
     flex: 1,
   },
   statLabel: {
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.6)',
+    color: '#4b5563',
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1f2937',
   },
   statSuffix: {
-    fontSize: 14,
-    fontWeight: 'normal',
+    fontSize: 12,
+    color: '#6b7280',
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 8,
   },
   ratingLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    width: 32,
-  },
-  ratingNumber: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  ratingBar: {
-    flex: 1,
-  },
-  ratingProgress: {
-    height: 8,
+    width: 44,
   },
   ratingCount: {
-    fontSize: 14,
-    color: 'rgba(0, 0, 0, 0.6)',
-    width: 24,
+    width: 30,
     textAlign: 'right',
+    color: '#4b5563',
   },
-  section: {
-    marginBottom: 16,
+  tagSection: {
+    gap: 6,
   },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(0, 0, 0, 0.6)',
-    marginBottom: 8,
-  },
-  tagsContainer: {
+  tagList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  tag: {
+  tagPill: {
+    backgroundColor: '#e0e7ff',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  tagText: {
+    fontSize: 13,
+    color: '#1e3a8a',
+    fontWeight: '600',
+  },
+  tagOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#1e3a8a',
+  },
+  tagOutlineText: {
+    color: '#1e3a8a',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  badgePill: {
+    backgroundColor: '#fef3c7',
+    borderRadius: 12,
+    padding: 12,
+    flexBasis: '48%',
+    gap: 4,
+  },
+  badgeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#92400e',
+  },
+  badgeDescription: {
+    fontSize: 12,
+    color: '#78350f',
+  },
+  aboutText: {
+    color: '#374151',
     fontSize: 14,
   },
 })
