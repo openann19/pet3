@@ -200,3 +200,57 @@ export interface CommunityComment {
   updatedAt: string
   reactionsCount?: number
 }
+
+// Chat types
+export type MessageType = 'text' | 'image' | 'video' | 'voice' | 'location' | 'sticker' | 'pet-card'
+export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+
+export interface MessageAttachment {
+  id: string
+  type: 'image' | 'video' | 'file'
+  url: string
+  thumbnail?: string
+  name?: string
+  size?: number
+  mimeType?: string
+}
+
+export interface Message {
+  id: string
+  roomId: string
+  chatRoomId?: string
+  senderId: string
+  senderName?: string
+  senderAvatar?: string
+  type: MessageType
+  content: string
+  status: MessageStatus
+  timestamp?: string
+  createdAt?: string
+  attachments?: MessageAttachment[]
+  metadata?: {
+    messageId?: string
+    translation?: {
+      originalLang: string
+      translatedText: string
+      targetLang: string
+    }
+    media?: {
+      url: string
+      thumbnail?: string
+      width?: number
+      height?: number
+      duration?: number
+    }
+  }
+  reactions?: Array<{
+    emoji: string
+    userId: string
+    userName?: string
+  }>
+  replyTo?: {
+    messageId: string
+    content: string
+    senderName?: string
+  }
+}

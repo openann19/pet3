@@ -19,7 +19,6 @@ import type {
 import { generateMessageId } from '@/lib/chat-utils'
 import { useTypingManager } from '@/hooks/use-typing-manager'
 import { useStorage } from '@/hooks/useStorage'
-import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { useScrollFabMagnetic } from '@/effects/chat/ui/use-scroll-fab-magnetic'
 import { Button } from '@/components/ui/button'
 import { PaperPlaneRight } from '@phosphor-icons/react'
@@ -55,7 +54,6 @@ export default function AdvancedChatWindow({
   const [showStickers, setShowStickers] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [isRecordingVoice, setIsRecordingVoice] = useState(false)
-  const [showSmartSuggestions, setShowSmartSuggestions] = useState(true)
   const [awayMode, setAwayMode] = useStorage<boolean>(`away-mode-${currentUserId}`, false)
   const [scrollFabVisible, setScrollFabVisible] = useState(false)
   const [previousBadgeCount, setPreviousBadgeCount] = useState(0)
@@ -143,7 +141,6 @@ export default function AdvancedChatWindow({
     setInputValue('')
     setShowStickers(false)
     setShowTemplates(false)
-    setShowSmartSuggestions(false)
     typingSend()
 
     toast.success('Message sent!', { duration: 1500, position: 'top-center' })
@@ -151,10 +148,6 @@ export default function AdvancedChatWindow({
     if (type === 'sticker' || type === 'pet-card') {
       setConfettiSeed((s) => s + 1)
     }
-
-    setTimeout(() => {
-      setShowSmartSuggestions(true)
-    }, 2000)
   }
 
   const onReaction = (messageId: string, emoji: string): void => {
@@ -246,7 +239,7 @@ export default function AdvancedChatWindow({
     <div className="flex flex-col h-full relative">
       <ChatHeader
         room={room}
-        onBack={onBack}
+        {...(onBack ? { onBack } : {})}
         awayMode={awayMode}
         setAwayMode={setAwayMode}
         typingIndicator={

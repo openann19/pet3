@@ -16,6 +16,7 @@ export * from './haptic-manager'
 export * from './performance'
 export * from './reanimated-skia'
 export * from './reduced-motion'
+export * from './seeded-rng'
 export * from './surface-cache'
 export * from './telemetry'
 

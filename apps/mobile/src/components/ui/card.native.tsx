@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import type { ComponentProps } from 'react'
 
 export interface CardProps extends ComponentProps<typeof View> {

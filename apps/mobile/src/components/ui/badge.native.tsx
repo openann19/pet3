@@ -2,9 +2,12 @@
 
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native'
 import type { ComponentProps } from 'react'
-import type { VariantProps } from 'class-variance-authority'
 
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+
+export interface BadgeVariantProps {
+  variant?: BadgeVariant
+}
 
 export interface BadgeProps extends ComponentProps<typeof View> {
   variant?: BadgeVariant

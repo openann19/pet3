@@ -3,7 +3,7 @@
  * Location: apps/mobile/src/components/enhanced/SmartSearch.native.tsx
  */
 
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   View,
   TextInput,
@@ -12,7 +12,6 @@ import {
   Pressable,
   StyleSheet,
   type ViewStyle,
-  type TextStyle,
 } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -203,7 +202,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
               <FlatList
                 data={searchHistory}
                 renderItem={renderHistoryItem}
-                keyExtractor={(item, index) => `history-${index}`}
+                keyExtractor={(_item, index) => `history-${index}`}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />
@@ -216,7 +215,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
               <FlatList
                 data={trendingSearches}
                 renderItem={renderTrendingItem}
-                keyExtractor={(item, index) => `trending-${index}`}
+                keyExtractor={(_item, index) => `trending-${index}`}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />

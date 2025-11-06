@@ -119,7 +119,7 @@ export function ConfettiBurst({
   }, [enabled, particles, dur, reduced, finished, onComplete])
 
   return (
-    <View pointerEvents="none" className={`fixed inset-0 z-50 ${className ?? ''}`}>
+    <div className={`fixed inset-0 z-50 pointer-events-none ${className ?? ''}`}>
       {particles.map((p, i) => {
         const style = useAnimatedStyle(() => ({
           position: 'absolute',
@@ -140,7 +140,7 @@ export function ConfettiBurst({
 
         return <Animated.View key={i} style={style} />
       })}
-    </View>
+    </div>
   )
 }
 

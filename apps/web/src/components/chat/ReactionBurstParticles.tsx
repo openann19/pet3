@@ -7,7 +7,7 @@
  * Location: apps/web/src/components/chat/ReactionBurstParticles.tsx
  */
 
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -100,7 +100,7 @@ export function ReactionBurstParticles({
   }, [enabled, dur, particles, onComplete, reduced, finishedCount])
 
   return (
-    <View pointerEvents="none" className={`absolute inset-0 ${className ?? ''}`}>
+    <div className={`absolute inset-0 pointer-events-none ${className ?? ''}`}>
       {particles.map((p, idx) => {
         const style = useAnimatedStyle(() => ({
           position: 'absolute',
@@ -121,7 +121,7 @@ export function ReactionBurstParticles({
 
         return <Animated.View key={idx} style={style} />
       })}
-    </View>
+    </div>
   )
 }
 

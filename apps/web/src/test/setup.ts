@@ -38,6 +38,7 @@ vi.mock('react-native', () => ({
   StyleSheet: {
     create: (styles: Record<string, unknown>) => styles,
     hairlineWidth: 1,
+    absoluteFillObject: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   },
   Platform: {
     OS: 'web',
@@ -87,6 +88,10 @@ vi.mock('react-native-reanimated', () => {
   
   // Make default export work as both component and namespace
   Object.assign(AnimatedComponent, AnimatedNamespace)
+  
+  // Also make AnimatedComponent itself have div and a properties for direct access
+  AnimatedComponent.div = AnimatedComponent
+  AnimatedComponent.a = AnimatedA
   
   return {
     default: AnimatedComponent,
@@ -145,9 +150,13 @@ Object.defineProperty(window, 'matchMedia', {
     media: query,
     matches: false,
     onchange: null,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     addEventListener: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     removeEventListener: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     addListener: () => {},    // deprecated
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     removeListener: () => {}, // deprecated
     dispatchEvent: () => false,
   }),
@@ -156,22 +165,30 @@ Object.defineProperty(window, 'matchMedia', {
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   root: Element | Document | null = null
-  rootMargin: string = ''
-  thresholds: ReadonlyArray<number> = []
+  rootMargin = ''
+  thresholds: readonly number[] = []
   
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   disconnect() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   observe() {}
   takeRecords() {
     return [];
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   unobserve() {}
 } as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   disconnect() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   observe() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   unobserve() {}
 } as unknown as typeof ResizeObserver;

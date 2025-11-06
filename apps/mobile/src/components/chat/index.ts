@@ -10,6 +10,8 @@
  * - ConfettiBurst
  * - LinkPreview
  * - PresenceAvatar
+ * - AdvancedChatWindow
+ * - TypingIndicator
  * 
  * Location: apps/mobile/src/components/chat/index.ts
  */
@@ -35,4 +37,9 @@ export type { PresenceAvatarProps } from './PresenceAvatar.native'
 
 export { LiquidDots } from './LiquidDots.native'
 export type { LiquidDotsProps } from './LiquidDots.native'
+
+export { default as TypingIndicator } from './TypingIndicator.native'
+
+export { default as AdvancedChatWindow } from './AdvancedChatWindow.native'
+export type { AdvancedChatWindowProps } from './AdvancedChatWindow.native'
 

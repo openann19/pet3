@@ -50,7 +50,7 @@ export function LinkPreview({
       aria-live="polite"
     >
       {/* Skeleton */}
-      <Animated.div style={skeletonStyle} className="absolute inset-0">
+      <AnimatedView style={skeletonStyle} className="absolute inset-0">
         <div className="flex gap-3 p-3">
           {image && (
             <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -61,36 +61,37 @@ export function LinkPreview({
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
           </div>
         </div>
-      </Animated.div>
+      </AnimatedView>
 
       {/* Content */}
       {showContent && (
-        <Animated.a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={contentStyle}
-          className="relative flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
-        >
-          {image && (
-            <img
-              src={image}
-              alt={title ?? new URL(url).hostname}
-              className="w-20 h-20 object-cover rounded"
-            />
-          )}
-          <div className="flex-1 min-w-0">
-            {title && (
-              <h4 className="text-sm font-semibold text-foreground line-clamp-1">{title}</h4>
+        <AnimatedView style={contentStyle} className="relative">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
+          >
+            {image && (
+              <img
+                src={image}
+                alt={title ?? new URL(url).hostname}
+                className="w-20 h-20 object-cover rounded"
+              />
             )}
-            {description && (
-              <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{description}</p>
-            )}
-            <p className="text-xs text-muted-foreground mt-1 truncate">
-              {new URL(url).hostname}
-            </p>
-          </div>
-        </Animated.a>
+            <div className="flex-1 min-w-0">
+              {title && (
+                <h4 className="text-sm font-semibold text-foreground line-clamp-1">{title}</h4>
+              )}
+              {description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{description}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1 truncate">
+                {new URL(url).hostname}
+              </p>
+            </div>
+          </a>
+        </AnimatedView>
       )}
     </div>
   )

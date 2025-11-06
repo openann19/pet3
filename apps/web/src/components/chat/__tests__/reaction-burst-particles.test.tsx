@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, waitFor, cleanup } from '@testing-library/react'
 import { ReactionBurstParticles } from '../ReactionBurstParticles'
 
@@ -9,11 +9,21 @@ vi.mock('@/effects/chat/core/reduced-motion', () => ({
 }))
 
 describe('ReactionBurstParticles', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    cleanup()
+  })
+
   it('calls onComplete under reduced-motion', async () => {
     const onComplete = vi.fn()
     render(<ReactionBurstParticles enabled count={6} onComplete={onComplete} />)
-    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1), { timeout: 2000 })
-    cleanup()
+    
+    // In reduced motion, onComplete should be called quickly
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1), { timeout: 500 })
   })
 
   it('re-renders with different seed without crashing', () => {

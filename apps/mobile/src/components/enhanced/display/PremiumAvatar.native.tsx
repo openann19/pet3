@@ -1,13 +1,10 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
-  withTiming,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
-import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import type { ReactNode } from 'react'
 
 export interface PremiumAvatarProps {
@@ -39,7 +36,6 @@ export function PremiumAvatar({
   style,
   testID = 'premium-avatar'
 }: PremiumAvatarProps): React.JSX.Element {
-  const reducedMotion = useReducedMotionSV()
   const scale = useSharedValue(1)
   const glowOpacity = useSharedValue(0)
 

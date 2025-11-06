@@ -13,7 +13,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(projectRoot, './src'),
       'react-native': 'react-native-web',
+      'react-native-reanimated': path.resolve(projectRoot, './src/lib/reanimated-web-polyfill.ts'),
     },
+    conditions: ['import', 'module', 'browser', 'default'],
+    extensions: ['.web.js', '.web.jsx', '.web.ts', '.web.tsx', '.jsx', '.js', '.tsx', '.ts', '.json'],
+    dedupe: ['react', 'react-dom'],
   },
   test: {
     globals: true,

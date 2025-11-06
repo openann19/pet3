@@ -58,8 +58,10 @@ const REPLACEMENTS = [
   },
   {
     from: /<motion\.(button|a|section|article|header|footer|nav|main|aside)/g,
-    to: (match: string) => {
-      const tag = match.match(/motion\.(\w+)/)?.[1];
+    isFunction: true,
+    replaceFn: (match) => {
+      const tagMatch = match.match(/motion\.(\w+)/);
+      const tag = tagMatch ? tagMatch[1] : 'div';
       return `<MotionView as="${tag}"`;
     },
     description: 'motion.* → MotionView',
@@ -78,14 +80,7 @@ const CSS_ANIMATION_PATTERNS = [
   { pattern: /transition:\s*(?!opacity|transform)[^;]+/g, name: 'CSS transition (non-opacity/transform)' },
 ];
 
-interface Report {
-  file: string;
-  changes: string[];
-  cssIssues: string[];
-  needsManualReview: boolean;
-}
-
-function shouldScanFile(filePath: string): boolean {
+function shouldScanFile(filePath) {
   if (!filePath.endsWith('.tsx') && !filePath.endsWith('.ts')) {
     return false;
   }
@@ -109,10 +104,10 @@ function shouldScanFile(filePath: string): boolean {
   return true;
 }
 
-function scanFile(filePath: string): Report | null {
+function scanFile(filePath) {
   const content = readFileSync(filePath, 'utf-8');
-  const changes: string[] = [];
-  const cssIssues: string[] = [];
+  const changes = [];
+  const cssIssues = [];
   let newContent = content;
   
   // Check for framer-motion usage
@@ -123,13 +118,13 @@ function scanFile(filePath: string): Report | null {
   
   // Apply replacements
   for (const replacement of REPLACEMENTS) {
-    if (typeof replacement.to === 'function') {
-      const matches = content.match(replacement.from);
-      if (matches) {
+    if (replacement.isFunction && replacement.replaceFn) {
+      const matches = [...content.matchAll(replacement.from)];
+      if (matches.length > 0) {
         matches.forEach((match) => {
-          const replacementText = replacement.to(match);
-          newContent = newContent.replace(match, replacementText);
-          changes.push(`${replacement.description}: ${match} → ${replacementText}`);
+          const replacementText = replacement.replaceFn(match[0]);
+          newContent = newContent.replace(match[0], replacementText);
+          changes.push(`${replacement.description}: ${match[0]} → ${replacementText}`);
         });
       }
     } else {
@@ -162,8 +157,8 @@ function scanFile(filePath: string): Report | null {
   };
 }
 
-function scanDirectory(dirPath: string): Report[] {
-  const reports: Report[] = [];
+function scanDirectory(dirPath) {
+  const reports = [];
   
   try {
     const entries = readdirSync(dirPath);
@@ -188,20 +183,18 @@ function scanDirectory(dirPath: string): Report[] {
   return reports;
 }
 
-function applyChanges(report: Report): void {
+function applyChanges(report) {
   const filePath = join(ROOT, report.file);
   const content = readFileSync(filePath, 'utf-8');
   let newContent = content;
   
   // Apply all replacements
   for (const replacement of REPLACEMENTS) {
-    if (typeof replacement.to === 'function') {
-      const matches = content.match(replacement.from);
-      if (matches) {
-        matches.forEach((match) => {
-          newContent = newContent.replace(match, replacement.to(match));
-        });
-      }
+    if (replacement.isFunction && replacement.replaceFn) {
+      const matches = [...content.matchAll(replacement.from)];
+      matches.forEach((match) => {
+        newContent = newContent.replace(match[0], replacement.replaceFn(match[0]));
+      });
     } else {
       newContent = newContent.replace(replacement.from, replacement.to);
     }
@@ -213,10 +206,10 @@ function applyChanges(report: Report): void {
   }
 }
 
-async function main(): Promise<void> {
+async function main() {
   console.log('🔍 Scanning for framer-motion imports and CSS animations...\n');
   
-  const allReports: Report[] = [];
+  const allReports = [];
   
   for (const scanPath of SCAN_PATHS) {
     const fullPath = join(ROOT, scanPath);

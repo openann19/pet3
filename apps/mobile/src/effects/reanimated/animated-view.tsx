@@ -1,6 +1,7 @@
 import React from 'react'
 import Animated from 'react-native-reanimated'
 import type { ViewProps } from 'react-native'
+import type { AnimatedStyle as ReanimatedAnimatedStyle } from 'react-native-reanimated'
 
 /**
  * Animated View wrapper for Reanimated
@@ -11,3 +12,9 @@ export const AnimatedView = Animated.createAnimatedComponent(
     <Animated.View ref={ref} {...props} />
   ))
 )
+
+/**
+ * Type alias for Reanimated animated styles
+ * Use this type when working with useAnimatedStyle return values
+ */
+export type AnimatedStyle = ReanimatedAnimatedStyle<ViewProps['style']>

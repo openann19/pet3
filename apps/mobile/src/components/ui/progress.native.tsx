@@ -1,6 +1,6 @@
 'use client'
 
-import { View, StyleSheet, type ViewStyle } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { useEffect } from 'react'
 import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
