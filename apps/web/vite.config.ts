@@ -159,11 +159,10 @@ export default defineConfig(async (): Promise<UserConfig> => {
   return {
     plugins,
     define: {
-      'process.env': {},
       'process.version': JSON.stringify(''),
       'process.platform': JSON.stringify('browser'),
-      'process.browser': true,
-      'process.nextTick': ((fn: () => void) => setTimeout(fn, 0)) as typeof process.nextTick,
+      'process.browser': 'true',
+      'process.nextTick': 'setTimeout',
     },
     resolve: {
       alias: {
@@ -176,8 +175,9 @@ export default defineConfig(async (): Promise<UserConfig> => {
     },
     esbuild: {
       include: [
+        /src\/.*\.[jt]sx?$/,
         /node_modules\/react-native-reanimated\/.*\.js$/,
-        /packages\/shared\/src\/.*\.ts$/
+        /packages\/shared\/src\/.*\.ts$/,
       ],
       loader: 'tsx',
       jsx: 'automatic',
