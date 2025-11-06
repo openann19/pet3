@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect } from 'react'
-import { View, StyleSheet, type ViewStyle, type ViewProps } from 'react-native'
+import { View, type ViewStyle, type ViewProps } from 'react-native'
 import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, withSpring, Easing } from 'react-native-reanimated'
 import Animated from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'

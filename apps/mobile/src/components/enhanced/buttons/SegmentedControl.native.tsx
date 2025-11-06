@@ -9,7 +9,6 @@ import Animated, {
   runOnUI,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
-import { usePressBounce } from '@petspark/motion'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)

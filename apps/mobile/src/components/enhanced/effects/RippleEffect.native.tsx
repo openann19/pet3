@@ -7,7 +7,6 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
-import { useRippleEffect } from '@/effects/reanimated/use-ripple-effect'
 
 export interface RippleEffectProps {
   color?: string

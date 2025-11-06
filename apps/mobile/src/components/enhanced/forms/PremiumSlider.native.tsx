@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { View, Text, StyleSheet, type ViewStyle } from 'react-native'
-import { Slider } from '@react-native-community/slider'
+import { View, Text, StyleSheet, type ViewStyle, PanResponder } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -106,27 +105,18 @@ export function PremiumSlider({
         )}
 
         <View style={styles.sliderWrapper}>
-          <Slider
-            value={value}
-            onValueChange={handleValueChange}
-            onSlidingStart={handleSlidingStart}
-            onSlidingComplete={handleSlidingComplete}
-            minimumValue={min}
-            maximumValue={max}
-            step={step}
-            disabled={disabled}
-            minimumTrackTintColor="#3b82f6"
-            maximumTrackTintColor="#e2e8f0"
-            thumbTintColor="#ffffff"
-            style={[
-              styles.slider,
-              {
-                height: trackHeight,
-              },
-            ]}
-            accessibilityLabel={accessibilityLabel}
-            accessibilityState={{ disabled }}
-          />
+          {/* Slider component requires @react-native-community/slider package */}
+          {/* For now, displaying value. TODO: Implement custom slider with Reanimated */}
+          <View style={[styles.track, { opacity: disabled ? 0.5 : 1 }]}>
+            <View 
+              style={[
+                styles.trackFill,
+                { 
+                  width: `${((value - min) / (max - min)) * 100}%`,
+                },
+              ]}
+            />
+          </View>
 
           {isDragging && (
             <AnimatedView
@@ -187,6 +177,18 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: 'rgba(100, 116, 139, 0.3)',
     borderRadius: 1,
+  },
+  track: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  trackFill: {
+    height: '100%',
+    backgroundColor: '#3b82f6',
+    borderRadius: 4,
   },
   sliderWrapper: {
     position: 'relative',

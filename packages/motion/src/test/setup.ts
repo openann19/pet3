@@ -9,20 +9,20 @@ vi.mock('react-native-reanimated', () => {
   const actual = vi.importActual('react-native-reanimated');
   return {
     ...actual,
-    useSharedValue: (initialValue) => ({
+    useSharedValue: (initialValue: unknown) => ({
       value: initialValue,
     }),
-    useAnimatedStyle: (updater) => updater(),
-    withSpring: (toValue, config) => toValue,
-    withTiming: (toValue, config) => toValue,
-    withRepeat: (animation, iterations, reverse) => animation,
-    withDelay: (delay, animation) => animation,
+    useAnimatedStyle: (updater: () => unknown) => updater(),
+    withSpring: (toValue: number, config?: unknown) => toValue,
+    withTiming: (toValue: number, config?: unknown) => toValue,
+    withRepeat: (animation: unknown, iterations?: number, reverse?: boolean) => animation,
+    withDelay: (delay: number, animation: unknown) => animation,
     Easing: {
-      out: (easing) => easing,
-      inOut: (easing) => easing,
-      poly: (n) => (t) => Math.pow(t, n),
-      exp: (t) => Math.pow(2, 10 * (t - 1)),
-      cubic: (t) => t * t * t,
+      out: (easing: (t: number) => number) => easing,
+      inOut: (easing: (t: number) => number) => easing,
+      poly: (n: number) => (t: number) => Math.pow(t, n),
+      exp: (t: number) => Math.pow(2, 10 * (t - 1)),
+      cubic: (t: number) => t * t * t,
     },
   };
 });
@@ -32,7 +32,7 @@ vi.mock('react-native', () => {
   return {
     Platform: {
       OS: 'web',
-      select: (obj) => obj.web || obj.default,
+      select: (obj: { web?: unknown; default?: unknown }) => obj.web || obj.default,
     },
     AccessibilityInfo: {
       isReduceMotionEnabled: () => Promise.resolve(false),
@@ -44,7 +44,7 @@ vi.mock('react-native', () => {
 // Mock window.matchMedia for reduced motion
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
