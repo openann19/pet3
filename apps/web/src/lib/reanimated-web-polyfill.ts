@@ -307,3 +307,15 @@ export function cancelAnimation(_sharedValue: SharedValue<unknown>): void {
 export function useClock(): SharedValue<number> {
   return useSharedValue(Date.now());
 }
+
+
+// Default export for Animated namespace
+const Animated = {
+  View: 'div',
+  Text: 'span',
+  ScrollView: 'div',
+  Image: 'img',
+  FlatList: 'div',
+};
+
+export default Animated;

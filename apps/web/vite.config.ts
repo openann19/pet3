@@ -76,9 +76,14 @@ const resolveReactNativePlugin = (): PluginOption => {
     name: 'resolve-react-native-workspace',
     enforce: 'pre',
     resolveId(id, importer) {
-      // Handle react-native imports from workspace packages
-      if (id === 'react-native' && importer && importer.includes('packages/')) {
+      // Handle react-native imports from workspace packages  
+      // During build, the path might be different - check for both packages/ and motion/
+      if (id === 'react-native' && importer && (importer.includes('packages/') || importer.includes('/motion/'))) {
         // Return a virtual module ID that we'll handle in load()
+        return '\0react-native-web-workspace'
+      }
+      // Also handle if somehow it's already transformed to react-native-web
+      if (id === 'react-native-web' && importer && (importer.includes('packages/') || importer.includes('/motion/'))) {
         return '\0react-native-web-workspace'
       }
       return null
@@ -86,18 +91,18 @@ const resolveReactNativePlugin = (): PluginOption => {
     load(id) {
       // Provide stubbed react-native-web content for workspace packages
       if (id === '\0react-native-web-workspace') {
-        // Complete stub for react-native exports - no re-export to avoid resolution issues
+        // Complete stub for react-native exports - pure JS, no TypeScript syntax
         return `
           export const Platform = {
             OS: 'web',
-            select: (obj: Record<string, unknown>) => obj.web ?? obj.default,
+            select: function(obj) { return obj.web !== undefined ? obj.web : obj.default; },
           };
           export const View = 'div';
           export const Text = 'span';
           export const ScrollView = 'div';
           export const StyleSheet = {
-            create: (styles: Record<string, unknown>) => styles,
-            flatten: (style: unknown) => style,
+            create: function(styles) { return styles; },
+            flatten: function(style) { return style; },
           };
           export const TouchableOpacity = 'button';
           export const TouchableHighlight = 'button';
@@ -106,8 +111,8 @@ const resolveReactNativePlugin = (): PluginOption => {
           export const Image = 'img';
           export const ActivityIndicator = 'div';
           export const Alert = {
-            alert: () => {},
-            prompt: () => {},
+            alert: function() {},
+            prompt: function() {},
           };
           export default {};
         `
@@ -155,6 +160,11 @@ const resolveWorkspacePackagePlugin = (): PluginOption => {
             const withTs = `${resolved}.ts`;
             if (existsSync(withTs)) {
               return withTs;
+            }
+            // If .ts doesn't exist, try index.ts in the directory
+            const indexTs = path.join(resolved, 'index.ts');
+            if (existsSync(indexTs)) {
+              return indexTs;
             }
           }
           
@@ -289,9 +299,16 @@ export default defineConfig(async (): Promise<UserConfig> => {
         },
       },
       rollupOptions: {
-        external: () => {
+        external: (id) => {
           // NSFWJS is loaded from CDN at runtime, not bundled
-          // Only externalize if explicitly needed for CDN loading
+          // Sentry is optional and dynamically imported
+          if (id.includes('@sentry/react')) {
+            return true;
+          }
+          // simple-peer for WebRTC (optional dependency)
+          if (id.includes('simple-peer')) {
+            return true;
+          }
           return false;
         },
         output: {
