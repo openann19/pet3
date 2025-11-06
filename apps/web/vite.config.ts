@@ -289,9 +289,16 @@ export default defineConfig(async (): Promise<UserConfig> => {
         },
       },
       rollupOptions: {
-        external: () => {
+        external: (id) => {
           // NSFWJS is loaded from CDN at runtime, not bundled
-          // Only externalize if explicitly needed for CDN loading
+          // Sentry is optional and dynamically imported
+          if (id.includes('@sentry/react')) {
+            return true;
+          }
+          // simple-peer for WebRTC (optional dependency)
+          if (id.includes('simple-peer')) {
+            return true;
+          }
           return false;
         },
         output: {

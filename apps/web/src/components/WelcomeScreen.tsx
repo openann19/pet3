@@ -180,36 +180,6 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
     }
   }, [isLoading, shouldReduceMotion, deepLinkMessage, isOnline, loadingOpacity, languageButtonOpacity, logoOpacity, logoScale, logoY, logoShadow, titleOpacity, titleY, proofItemsOpacity, proofItemsY, deepLinkOpacity, deepLinkY, offlineOpacity, offlineY, buttonsOpacity, buttonsY, legalOpacity, legalY])
 
-  const handleGetStarted = () => {
-    if (!isOnline) return
-    haptics.trigger('light')
-    track('welcome_get_started_clicked')
-    onGetStarted()
-  }
-
-  const handleSignIn = () => {
-    haptics.trigger('light')
-    track('welcome_sign_in_clicked')
-    onSignIn()
-  }
-
-  const handleExplore = () => {
-    haptics.trigger('light')
-    track('welcome_explore_clicked')
-    onExplore()
-  }
-
-  const handleLanguageToggle = () => {
-    haptics.trigger('selection')
-    const from = language || 'en'
-    const to = language === 'en' ? 'bg' : 'en'
-    track('welcome_language_changed', { from, to })
-  }
-
-  const handleLegalClick = (type: 'terms' | 'privacy') => {
-    track(`welcome_${type}_opened`)
-  }
-
   // Animated styles
   const loadingStyle = useAnimatedStyle(() => ({
     opacity: loadingOpacity.value

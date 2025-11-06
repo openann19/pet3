@@ -426,6 +426,7 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
             </div>
           </div>
         </AnimatedView>
+      )}
       </DialogContent>
     </Dialog>
   )
