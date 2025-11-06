@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { Presence } from '@petspark/motion'
+import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { cn } from '@/lib/utils'
+import { supportsWebP, supportsAVIF } from '@/lib/image-loader'
 
 interface ProgressiveImageProps {
   src: string
@@ -14,6 +15,10 @@ interface ProgressiveImageProps {
   aspectRatio?: string
   priority?: boolean
   sizes?: string
+  width?: number
+  height?: number
+  quality?: number
+  format?: 'webp' | 'avif' | 'auto'
   onLoad?: () => void
   onError?: (error: Error) => void
 }
@@ -28,31 +33,88 @@ export function ProgressiveImage({
   aspectRatio,
   priority = false,
   sizes,
+  width,
+  height,
+  quality = 85,
+  format = 'auto',
   onLoad,
   onError
 }: ProgressiveImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [currentSrc, setCurrentSrc] = useState(placeholderSrc || src)
   const [error, setError] = useState(false)
+  const [bestFormat, setBestFormat] = useState<'webp' | 'avif' | 'original'>('original')
   const imgRef = useRef<HTMLImageElement>(null)
+
+  // Detect best format support
+  useEffect(() => {
+    if (format === 'auto') {
+      supportsAVIF().then((avifSupported) => {
+        if (avifSupported) {
+          setBestFormat('avif')
+        } else if (supportsWebP()) {
+          setBestFormat('webp')
+        } else {
+          setBestFormat('original')
+        }
+      })
+    } else {
+      setBestFormat(format)
+    }
+  }, [format])
+
+  const getOptimizedSrc = useCallback((originalSrc: string): string => {
+    if (bestFormat === 'original') return originalSrc
+    
+    try {
+      const url = new URL(originalSrc, window.location.origin)
+      const params = new URLSearchParams(url.search)
+      
+      if (width) params.set('w', width.toString())
+      if (height) params.set('h', height.toString())
+      if (quality) params.set('q', quality.toString())
+      params.set('fm', bestFormat)
+      
+      return `${url.pathname}?${params.toString()}`
+    } catch {
+      return originalSrc
+    }
+  }, [bestFormat, width, height, quality])
 
   const loadImage = useCallback(() => {
     const img = new Image()
+    const optimizedSrc = getOptimizedSrc(src)
     
     img.onload = () => {
-      setCurrentSrc(src)
+      setCurrentSrc(optimizedSrc)
       setIsLoaded(true)
       onLoad?.()
     }
     
     img.onerror = () => {
-      const err = new Error(`Failed to load image: ${src}`)
-      setError(true)
-      onError?.(err)
+      // Fallback to original if optimized fails
+      if (optimizedSrc !== src) {
+        const fallbackImg = new Image()
+        fallbackImg.onload = () => {
+          setCurrentSrc(src)
+          setIsLoaded(true)
+          onLoad?.()
+        }
+        fallbackImg.onerror = () => {
+          const err = new Error(`Failed to load image: ${src}`)
+          setError(true)
+          onError?.(err)
+        }
+        fallbackImg.src = src
+      } else {
+        const err = new Error(`Failed to load image: ${src}`)
+        setError(true)
+        onError?.(err)
+      }
     }
     
-    img.src = src
-  }, [src, onLoad, onError])
+    img.src = optimizedSrc
+  }, [src, getOptimizedSrc, onLoad, onError])
 
   useEffect(() => {
     if (priority) {
@@ -104,20 +166,23 @@ export function ProgressiveImage({
       className={cn('relative overflow-hidden', containerClassName)}
       style={{ aspectRatio }}
     >
-      <Presence visible={!isLoaded && !!placeholderSrc}>
-        <AnimatedView
-          style={placeholderStyle}
-          className={cn('absolute inset-0 w-full h-full', className)}
-        >
-          <img
-            ref={imgRef}
-            src={placeholderSrc}
-            alt={alt}
-            className={cn('w-full h-full object-cover', className)}
-            style={{ filter: `blur(${blurAmount}px)` }}
-          />
-        </AnimatedView>
-      </Presence>
+      <AnimatePresence>
+        {!isLoaded && placeholderSrc && (
+          <AnimatedView
+            key="placeholder"
+            style={placeholderStyle}
+            className={cn('absolute inset-0 w-full h-full', className)}
+          >
+            <img
+              ref={imgRef}
+              src={placeholderSrc}
+              alt={alt}
+              className={cn('w-full h-full object-cover', className)}
+              style={{ filter: `blur(${blurAmount}px)` }}
+            />
+          </AnimatedView>
+        )}
+      </AnimatePresence>
 
       <AnimatedView style={imageStyle} className={cn('w-full h-full', className)}>
         <img
@@ -125,6 +190,10 @@ export function ProgressiveImage({
           alt={alt}
           className={cn('w-full h-full object-cover', className)}
           sizes={sizes}
+          width={width}
+          height={height}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
         />
       </AnimatedView>
 

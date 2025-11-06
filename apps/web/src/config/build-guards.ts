@@ -3,7 +3,7 @@
  */
 
 // Note: spark type is declared in vite-env.d.ts
-// Production builds should not use spark.kv - this is enforced via runtime guards below
+// Production builds should not use legacy KV mocks - this is enforced via runtime guards below
 
   // Feature flag validation
   const VITE_USE_MOCKS = import.meta.env['VITE_USE_MOCKS']
@@ -15,7 +15,7 @@
   Required Action:
   1. Set VITE_USE_MOCKS=false in production environment
   2. Ensure all API calls use real endpoints
-  3. Remove spark.kv imports from production bundle
+  3. Remove legacy KV imports from production bundle
 
   Build will fail until this is resolved.
   `)

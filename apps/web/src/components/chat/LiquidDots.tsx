@@ -101,7 +101,11 @@ export function LiquidDots({
         return (
           <Animated.View
             key={i}
-            style={[{ width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor } as any, style, glow as any]}
+            style={[
+              { width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor },
+              style,
+              glow
+            ] as unknown as React.CSSProperties}
           />
         )
       })}

@@ -39,7 +39,7 @@ export type AnimatedStyle =
   | undefined
 
 interface AnimatedViewProps {
-  children: ReactNode
+  children?: ReactNode
   style?: AnimatedStyle | Record<string, unknown> | unknown
   className?: string | undefined
   onMouseEnter?: MouseEventHandler<HTMLDivElement> | undefined

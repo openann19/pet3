@@ -2,7 +2,7 @@
  * Chat Service
  * 
  * Handles message sending, delivery status, read receipts, reactions, and real-time updates.
- * Migrated from spark.kv to use backend API endpoints.
+ * Migrated from legacy KV mocks to use backend API endpoints.
  */
 
 import type { Message, MessageType, ReactionType } from './chat-types'

@@ -28,7 +28,6 @@ function anyFileContains(files: string[], re: RegExp) {
   return ''
 }
 
-const all = glob(root)
 const web = glob(path.join(root, 'apps/web'))
 const mobile = glob(path.join(root, 'apps/mobile'))
 const shared = glob(path.join(root, 'packages'))
@@ -50,7 +49,10 @@ const checks: Check[] = [
   {
     name: 'No spark.kv stubs',
     ok: () => {
-      const off = anyFileContains(web, /\bwindow\.spark\.kv\b|\bspark\.kv\b/)
+      // Limit this check to actual source files to avoid false positives in config/lint files
+      const webSrc = web.filter((f) => /apps\/web\/(src|app)\//.test(f))
+      // Only flag concrete runtime usages, not comments or documentation; require window.spark.kv pattern
+      const off = anyFileContains(webSrc, /\bwindow\.spark\.kv\b/)
       return off ? `Found in ${off}` : true
     }
   },

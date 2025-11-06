@@ -12,7 +12,7 @@ export interface UltraButtonProps {
   disabled?: boolean
 }
 
-export const UltraButton = forwardRef<any, UltraButtonProps>(
+export const UltraButton = forwardRef<unknown, UltraButtonProps>(
   ({ children, onPress, style, disabled = false }, ref) => {
     const bounceAnimation = usePressBounce(0.96)
 

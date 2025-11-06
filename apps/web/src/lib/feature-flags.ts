@@ -16,6 +16,10 @@ export type FeatureFlagKey =
   | 'message_reactions_enabled'
   | 'typing_indicators_enabled'
   | 'read_receipts_enabled'
+  | 'chat.confetti'
+  | 'chat.reactionBurst'
+  | 'chat.auroraRing'
+  | 'chat.virtualization'
 
 export interface FeatureFlag {
   key: FeatureFlagKey
@@ -155,6 +159,42 @@ const DEFAULT_FLAGS: Record<FeatureFlagKey, FeatureFlag> = {
     rolloutPercentage: 100,
     environments: ['dev', 'staging', 'prod'],
     description: 'Message read receipts',
+    lastModified: new Date().toISOString(),
+    modifiedBy: 'system'
+  },
+  'chat.confetti': {
+    key: 'chat.confetti',
+    enabled: false,
+    rolloutPercentage: 0,
+    environments: ['dev', 'staging', 'prod'],
+    description: 'Confetti celebration effect for matches/likes',
+    lastModified: new Date().toISOString(),
+    modifiedBy: 'system'
+  },
+  'chat.reactionBurst': {
+    key: 'chat.reactionBurst',
+    enabled: false,
+    rolloutPercentage: 0,
+    environments: ['dev', 'staging', 'prod'],
+    description: 'Reaction burst animation with particles',
+    lastModified: new Date().toISOString(),
+    modifiedBy: 'system'
+  },
+  'chat.auroraRing': {
+    key: 'chat.auroraRing',
+    enabled: false,
+    rolloutPercentage: 0,
+    environments: ['dev', 'staging', 'prod'],
+    description: 'Aurora ring glow effect for active users',
+    lastModified: new Date().toISOString(),
+    modifiedBy: 'system'
+  },
+  'chat.virtualization': {
+    key: 'chat.virtualization',
+    enabled: false,
+    rolloutPercentage: 0,
+    environments: ['dev', 'staging', 'prod'],
+    description: 'Virtualized message list for 10k+ messages',
     lastModified: new Date().toISOString(),
     modifiedBy: 'system'
   }

@@ -50,7 +50,7 @@ export function ShimmerEffect({
     >
       <AnimatedView
         style={shimmerStyle}
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-1/2"
+        className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent w-1/2"
       />
     </div>
   )

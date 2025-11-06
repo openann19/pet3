@@ -27,6 +27,7 @@
     "ts-morph": "^23.0.0",
     "globby": "^14.0.0"
   },
+  "packageManager": "pnpm@10.18.3",
   "engines": {
     "node": ">=18",
     "pnpm": ">=8"

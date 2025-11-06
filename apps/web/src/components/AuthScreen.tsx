@@ -1,9 +1,12 @@
-import { useState } from 'react'
-import { MotionView, Presence } from '@petspark/motion'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Translate } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { useApp } from '@/contexts/AppContext'
 import { haptics } from '@/lib/haptics'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import SignInForm from './auth/SignInForm'
 import SignUpForm from './auth/SignUpForm'
 
@@ -15,9 +18,35 @@ type AuthScreenProps = {
   onSuccess: () => void
 }
 
-export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }: AuthScreenProps) {
+export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }: AuthScreenProps) {                                                            
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const { t, language, toggleLanguage } = useApp()
+
+  // Animation values for header
+  const headerOpacity = useSharedValue(0)
+  const headerY = useSharedValue(-20)
+  const languageButtonOpacity = useSharedValue(0)
+
+  // Initialize header animation
+  useEffect(() => {
+    headerOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+    headerY.value = withSpring(0, { damping: 20, stiffness: 300 })
+    languageButtonOpacity.value = withTiming(1, { duration: 400 })
+  }, [headerOpacity, headerY, languageButtonOpacity])
+
+  // Animated styles
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ translateY: headerY.value }]
+  })) as AnimatedStyle
+
+  const languageButtonStyle = useAnimatedStyle(() => ({
+    opacity: languageButtonOpacity.value
+  })) as AnimatedStyle
+
+  // Presence animation for form switching
+  const signInPresence = useAnimatePresence(mode === 'signin')
+  const signUpPresence = useAnimatePresence(mode === 'signup')
 
   const handleModeSwitch = (newMode: AuthMode) => {
     haptics.trigger('selection')
@@ -32,9 +61,8 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
   return (
     <div className="fixed inset-0 bg-background overflow-auto">
       <div className="min-h-screen flex flex-col">
-        <MotionView
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <AnimatedView
+          style={headerStyle}
           className="p-4 flex items-center justify-between"
         >
           <Button
@@ -46,11 +74,7 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
           >
             <ArrowLeft size={24} />
           </Button>
-          <MotionView
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
+          <AnimatedView style={languageButtonStyle}>
             <Button
               variant="outline"
               size="sm"
@@ -58,33 +82,36 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
                 haptics.trigger('selection')
                 toggleLanguage()
               }}
-              className="rounded-full h-11 px-4 border-[1.5px] font-semibold text-sm"
+              className="rounded-full h-11 px-4 border-[1.5px] font-semibold text-sm"                                                                           
               aria-pressed={language === 'bg'}
-              aria-label={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
+              aria-label={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}                                                                   
             >
               <Translate size={20} weight="bold" aria-hidden />
               <span>{language === 'en' ? 'БГ' : 'EN'}</span>
             </Button>
-          </MotionView>
-        </MotionView>
+          </AnimatedView>
+        </AnimatedView>
 
         <div className="flex-1 flex items-center justify-center px-6 pb-12">
           <div className="w-full max-w-md">
-            <Presence mode="wait">
-              {mode === 'signin' ? (
+            {signInPresence.isVisible && mode === 'signin' && (
+              <AnimatedView style={signInPresence.style}>
                 <SignInForm
                   key="signin"
                   onSuccess={onSuccess}
                   onSwitchToSignUp={() => handleModeSwitch('signup')}
                 />
-              ) : (
+              </AnimatedView>
+            )}
+            {signUpPresence.isVisible && mode === 'signup' && (
+              <AnimatedView style={signUpPresence.style}>
                 <SignUpForm
                   key="signup"
                   onSuccess={onSuccess}
                   onSwitchToSignIn={() => handleModeSwitch('signin')}
                 />
-              )}
-            </Presence>
+              </AnimatedView>
+            )}
           </div>
         </div>
       </div>

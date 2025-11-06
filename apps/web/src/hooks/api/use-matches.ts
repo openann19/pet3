@@ -3,8 +3,8 @@
  * Location: apps/web/src/hooks/api/use-matches.ts
  */
 
-import type { UseQueryResult } from '@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 
 export interface Match {
@@ -20,7 +20,7 @@ export interface Match {
   [key: string]: unknown
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.petspark.app'
+const API_BASE_URL = (import.meta.env['VITE_API_URL'] as string | undefined) || 'https://api.petspark.app'
 
 async function fetchMatches(): Promise<Match[]> {
   const response = await fetch(`${API_BASE_URL}/api/matches`, {
@@ -53,6 +53,30 @@ export function useMatch(matchId: string): UseQueryResult<Match> {
       return response.json()
     },
     enabled: !!matchId,
+  })
+}
+
+/**
+ * Example mutation for matches domain: dismiss a match
+ */
+export interface DismissMatchInput { id: string }
+
+async function dismissMatch(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/matches/${id}/dismiss`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error('Failed to dismiss match')
+}
+
+export function useDismissMatch(): UseMutationResult<void, Error, DismissMatchInput> {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: DismissMatchInput) => dismissMatch(input.id),
+    onSuccess: () => {
+      // Refresh lists/details after mutation
+      void qc.invalidateQueries({ queryKey: queryKeys.matches.list })
+    },
   })
 }
 

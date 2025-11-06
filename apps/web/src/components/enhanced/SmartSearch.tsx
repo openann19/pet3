@@ -22,7 +22,7 @@ interface SmartSearchProps<T> {
   maxResults?: number
 }
 
-export function SmartSearch<T extends Record<string, any>>({
+export function SmartSearch<T extends Record<string, unknown>>({
   placeholder = 'Search...',
   data,
   searchKeys,

@@ -25,8 +25,11 @@ const defaultFlags: FeatureFlags = {
  */
 export function getFeatureFlags(): FeatureFlags {
   // In production, could fetch from remote config
-  if (typeof window !== 'undefined' && (window as any).__FEATURE_FLAGS__) {
-    return { ...defaultFlags, ...(window as any).__FEATURE_FLAGS__ }
+  if (typeof window !== 'undefined' && '__FEATURE_FLAGS__' in window) {
+    const windowWithFlags = window as Window & { __FEATURE_FLAGS__?: Partial<FeatureFlags> }
+    if (windowWithFlags.__FEATURE_FLAGS__) {
+      return { ...defaultFlags, ...windowWithFlags.__FEATURE_FLAGS__ }
+    }
   }
   
   // Check environment variables

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import {
   Calendar,
   ChatCircle,
@@ -21,7 +21,11 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSwipeGesture } from '@/hooks/use-swipe-gesture'
-import { MotionView, usePressBounce, haptic } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
+import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { haptics } from '@/lib/haptics'
 import type { Pet } from '@/lib/types'
 
 export interface EnhancedPetDetailViewProps {
@@ -60,13 +64,13 @@ export function EnhancedPetDetailView({
   const handleNextPhoto = useCallback((): void => {
     setIsLoading(true)
     setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)
-    haptic.light()
+    haptics.trigger('light')
   }, [photos.length])
 
   const handlePrevPhoto = useCallback((): void => {
     setIsLoading(true)
     setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
-    haptic.light()
+    haptics.trigger('light')
   }, [photos.length])
 
   const swipeGesture = useSwipeGesture({
@@ -84,17 +88,17 @@ export function EnhancedPetDetailView({
   }, [])
 
   const handleLike = useCallback(() => {
-    haptic.medium()
+    haptics.trigger('medium')
     onLike?.()
   }, [onLike])
 
   const handlePass = useCallback(() => {
-    haptic.light()
+    haptics.trigger('light')
     onPass?.()
   }, [onPass])
 
   const handleChat = useCallback(() => {
-    haptic.light()
+    haptics.trigger('light')
     onChat?.()
   }, [onChat])
 
@@ -108,22 +112,57 @@ export function EnhancedPetDetailView({
 
   const trustLevel = getTrustLevel(trustScore)
 
+  // Animation hooks
+  const containerOpacity = useSharedValue(0)
+  const containerScale = useSharedValue(0.95)
+  const modalOpacity = useSharedValue(0)
+  const modalScale = useSharedValue(0.95)
+  const photoOpacity = useSharedValue(0)
+  
+  // Bounce hooks for buttons
+  const likeBounce = useBounceOnTap()
+  const passBounce = useBounceOnTap()
+  const chatBounce = useBounceOnTap()
+  
+  useEffect(() => {
+    if (isVisible) {
+      containerOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+      containerScale.value = withSpring(1, { damping: 20, stiffness: 300 })
+      modalOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+      modalScale.value = withSpring(1, { damping: 20, stiffness: 300 })
+    } else {
+      containerOpacity.value = withSpring(0, { damping: 20, stiffness: 300 })
+      modalScale.value = withSpring(0.95, { damping: 20, stiffness: 300 })
+    }
+  }, [isVisible])
+  
+  useEffect(() => {
+    photoOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+  }, [currentPhotoIndex])
+  
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: containerOpacity.value
+  })) as AnimatedStyle
+  
+  const modalStyle = useAnimatedStyle(() => ({
+    opacity: modalOpacity.value,
+    transform: [{ scale: modalScale.value }]
+  })) as AnimatedStyle
+  
+  const photoStyle = useAnimatedStyle(() => ({
+    opacity: photoOpacity.value
+  })) as AnimatedStyle
+
   return (
-    <MotionView
+    <AnimatedView
       className="fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex items-center justify-center p-4"
       onClick={handleClose}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      style={containerStyle}
     >
-      <MotionView
+      <AnimatedView
         className="w-full max-w-4xl max-h-[90vh] bg-card rounded-3xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        style={modalStyle}
       >
         <div className="relative h-full flex flex-col">
           {/* Header */}
@@ -142,12 +181,10 @@ export function EnhancedPetDetailView({
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
-              <MotionView
+              <AnimatedView
                 className="w-full h-full"
                 key={currentPhotoIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
+                style={photoStyle}
               >
                 <img
                   src={photos[currentPhotoIndex]}
@@ -156,7 +193,7 @@ export function EnhancedPetDetailView({
                   onLoad={handleImageLoad}
                   onError={handleImageError}
                 />
-              </MotionView>
+              </AnimatedView>
 
               {photos.length > 1 && (
                 <>
@@ -209,8 +246,8 @@ export function EnhancedPetDetailView({
             />
           )}
         </div>
-      </MotionView>
-    </MotionView>
+      </AnimatedView>
+    </AnimatedView>
   )
 }
 
@@ -219,10 +256,10 @@ interface CloseButtonProps {
 }
 
 function CloseButton({ onClose }: CloseButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
+  const bounce = useBounceOnTap()
 
   const handlePress = useCallback(() => {
-    haptic.light()
+    haptics.trigger('light')
     onClose()
   }, [onClose])
 
@@ -233,9 +270,9 @@ function CloseButton({ onClose }: CloseButtonProps): React.JSX.Element {
       onClick={handlePress}
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
     >
-      <MotionView style={bounce.animatedStyle}>
+      <AnimatedView style={bounce.animatedStyle}>
         <X size={24} weight="bold" />
-      </MotionView>
+      </AnimatedView>
     </Button>
   )
 }
@@ -245,10 +282,10 @@ interface PhotoNavButtonProps {
 }
 
 function PhotoNavButton({ onClick }: PhotoNavButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
+  const bounce = useBounceOnTap()
 
   const handlePress = useCallback(() => {
-    haptic.light()
+    haptics.trigger('light')
     onClick()
   }, [onClick])
 
@@ -259,9 +296,9 @@ function PhotoNavButton({ onClick }: PhotoNavButtonProps): React.JSX.Element {
       onClick={handlePress}
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background pointer-events-auto"
     >
-      <MotionView style={bounce.animatedStyle}>
+      <AnimatedView style={bounce.animatedStyle}>
         <PawPrint size={20} weight="fill" />
-      </MotionView>
+      </AnimatedView>
     </Button>
   )
 }
@@ -281,13 +318,12 @@ function PhotoIndicator({ index, isActive, onClick }: PhotoIndicatorProps): Reac
       }`}
       aria-label={`Go to photo ${index + 1}`}
     >
-      <MotionView
+      <AnimatedView
         className="h-full rounded-full bg-white"
-        animate={{
+        style={useAnimatedStyle(() => ({
           width: isActive ? 24 : 8,
           opacity: isActive ? 1 : 0.5
-        }}
-        transition={{ duration: 0.2 }}
+        })) as AnimatedStyle}
       />
     </button>
   )
@@ -298,17 +334,28 @@ interface CompatibilityBadgeProps {
 }
 
 function CompatibilityBadge({ score }: CompatibilityBadgeProps): React.JSX.Element {
+  const badgeOpacity = useSharedValue(0)
+  const badgeScale = useSharedValue(0.8)
+  
+  useEffect(() => {
+    badgeOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+    badgeScale.value = withSpring(1, { damping: 20, stiffness: 300 })
+  }, [])
+  
+  const badgeStyle = useAnimatedStyle(() => ({
+    opacity: badgeOpacity.value,
+    transform: [{ scale: badgeScale.value }]
+  })) as AnimatedStyle
+  
   return (
     <div className="absolute top-4 left-4">
-      <MotionView
-        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent backdrop-blur-sm"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+      <AnimatedView
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-primary to-accent backdrop-blur-sm"
+        style={badgeStyle}
       >
         <TrendUp size={20} weight="bold" className="text-white" />
         <span className="text-lg font-bold text-white">{score}% Match</span>
-      </MotionView>
+      </AnimatedView>
     </div>
   )
 }
@@ -354,7 +401,7 @@ interface MatchReasonsCardProps {
 
 function MatchReasonsCard({ reasons }: MatchReasonsCardProps): React.JSX.Element {
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+    <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-accent/5">
       <CardContent className="p-4 space-y-2">
         <h3 className="font-semibold flex items-center gap-2">
           <Star size={20} className="text-accent" weight="fill" />
@@ -376,16 +423,27 @@ interface MatchReasonItemProps {
 }
 
 function MatchReasonItem({ reason, index }: MatchReasonItemProps): React.JSX.Element {
+  const itemOpacity = useSharedValue(0)
+  const itemX = useSharedValue(-10)
+  
+  useEffect(() => {
+    itemOpacity.value = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }))
+    itemX.value = withDelay(index * 50, withSpring(0, { damping: 20, stiffness: 300 }))
+  }, [index])
+  
+  const itemStyle = useAnimatedStyle(() => ({
+    opacity: itemOpacity.value,
+    transform: [{ translateX: itemX.value }]
+  })) as AnimatedStyle
+  
   return (
-    <MotionView
+    <AnimatedView
       className="text-sm flex items-start gap-2"
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      style={itemStyle}
     >
-      <Heart size={14} className="text-primary mt-0.5 flex-shrink-0" weight="fill" />
+      <Heart size={14} className="text-primary mt-0.5 shrink-0" weight="fill" />
       <span>{reason}</span>
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -508,16 +566,27 @@ interface PersonalityTraitProps {
 }
 
 function PersonalityTrait({ trait, index }: PersonalityTraitProps): React.JSX.Element {
+  const traitOpacity = useSharedValue(0)
+  const traitScale = useSharedValue(0.9)
+  
+  useEffect(() => {
+    traitOpacity.value = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }))
+    traitScale.value = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }))
+  }, [index])
+  
+  const traitStyle = useAnimatedStyle(() => ({
+    opacity: traitOpacity.value,
+    transform: [{ scale: traitScale.value }]
+  })) as AnimatedStyle
+  
   return (
-    <MotionView
+    <AnimatedView
       className="p-3 rounded-lg bg-muted/50 border border-border text-center"
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      style={traitStyle}
     >
       <PawPrint size={24} className="text-primary mx-auto mb-1" weight="fill" />
       <span className="text-sm font-medium">{trait}</span>
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -559,17 +628,26 @@ interface TrustBadgeItemProps {
 }
 
 function TrustBadgeItem({ badge, index }: TrustBadgeItemProps): React.JSX.Element {
+  const badgeOpacity = useSharedValue(0)
+  const badgeScale = useSharedValue(0.8)
+  
+  useEffect(() => {
+    badgeOpacity.value = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }))
+    badgeScale.value = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }))
+  }, [index])
+  
+  const badgeStyle = useAnimatedStyle(() => ({
+    opacity: badgeOpacity.value,
+    transform: [{ scale: badgeScale.value }]
+  })) as AnimatedStyle
+  
   return (
-    <MotionView
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-    >
+    <AnimatedView style={badgeStyle}>
       <Badge className="px-3 py-1.5">
         <ShieldCheck size={14} className="mr-1" weight="fill" />
         {badge.label}
       </Badge>
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -622,10 +700,10 @@ interface ActionButtonProps {
 }
 
 function ActionButton({ variant, icon: Icon, label, onClick, className }: ActionButtonProps): React.JSX.Element {
-  const bounce = usePressBounce(0.95)
+  const bounce = useBounceOnTap()
 
   const handlePress = useCallback(() => {
-    haptic.light()
+    haptics.trigger('light')
     onClick()
   }, [onClick])
 
@@ -636,10 +714,10 @@ function ActionButton({ variant, icon: Icon, label, onClick, className }: Action
       onClick={handlePress}
       className={`flex-1 rounded-full ${className ?? ''}`}
     >
-      <MotionView style={bounce.animatedStyle} className="flex items-center">
+      <AnimatedView style={bounce.animatedStyle} className="flex items-center">
         <Icon size={20} weight={variant === 'primary' ? 'fill' : 'bold'} className="mr-2" />
         {label}
-      </MotionView>
+      </AnimatedView>
     </Button>
   )
 }

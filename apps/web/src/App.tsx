@@ -1,24 +1,5 @@
-import AdminConsole from '@/components/AdminConsole'
-import AuthScreen from '@/components/AuthScreen'
-import PetsDemoPage from '@/components/demo/PetsDemoPage'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
-import GenerateProfilesButton from '@/components/GenerateProfilesButton'
 import LoadingState from '@/components/LoadingState'
-import BottomNavBar from '@/components/navigation/BottomNavBar'
-import { NavButton } from '@/components/navigation/NavButton'
-import { OfflineIndicator } from '@/components/network/OfflineIndicator'
-import { PremiumNotificationBell } from '@/components/notifications/PremiumNotificationBell'
-import { BillingIssueBanner } from '@/components/payments/BillingIssueBanner'
-import { InstallPrompt } from '@/components/pwa/InstallPrompt'
-import QuickActionsMenu from '@/components/QuickActionsMenu'
-import SeedDataInitializer from '@/components/SeedDataInitializer'
-import { UltraThemeSettings } from '@/components/settings/UltraThemeSettings'
-import StatsCard from '@/components/StatsCard'
-import { SyncStatusIndicator } from '@/components/SyncStatusIndicator'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Toaster } from '@/components/ui/sonner'
-import WelcomeScreen from '@/components/WelcomeScreen'
 import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
@@ -31,21 +12,38 @@ import '@/lib/profile-generator-helper'; // Expose generateProfiles to window
 import type { Match, Pet, SwipeAction } from '@/lib/types'
 import HoloBackground from '@/components/chrome/HoloBackground'
 import GlowTrail from '@/effects/cursor/GlowTrail'
-import { ChatCircle, Heart, MapPin, Moon, Palette, ShieldCheck, Sparkle, Sun, Translate, User, Users } from '@phosphor-icons/react'
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
 
-const DiscoverView = lazy(() => import('@/components/views/DiscoverView'))
-const MatchesView = lazy(() => import('@/components/views/MatchesView'))
-const ProfileView = lazy(() => import('@/components/views/ProfileView'))
-const ChatView = lazy(() => import('@/components/views/ChatView'))
-const CommunityView = lazy(() => import('@/components/views/CommunityView'))
-const AdoptionView = lazy(() => import('@/components/views/AdoptionView'))
-const LostFoundView = lazy(() => import('@/components/views/LostFoundView'))
-const PlaydateMap = lazy(() => import('@/components/playdate/PlaydateMap'))
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Toaster } from '@/components/ui/sonner'
+import { NavButton } from '@/components/navigation/NavButton'
 
+// Route components - lazy loaded
+const DiscoverView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/DiscoverView'))
+const MatchesView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/MatchesView'))
+const ProfileView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/ProfileView'))
+const ChatView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/ChatView'))
+const CommunityView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/CommunityView'))
+const AdoptionView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/AdoptionView'))
+const LostFoundView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/LostFoundView'))
+const PlaydateMap = lazy(() => import(/* webpackPrefetch: true */ '@/components/playdate/PlaydateMap'))
 
-type View = 'discover' | 'matches' | 'chat' | 'community' | 'profile' | 'adoption' | 'lost-found' | 'admin'
+// Modal components - lazy loaded
+const AdminConsole = lazy(() => import('@/components/AdminConsole'))
+const AuthScreen = lazy(() => import('@/components/AuthScreen'))
+const PetsDemoPage = lazy(() => import('@/components/demo/PetsDemoPage'))
+const GenerateProfilesButton = lazy(() => import('@/components/GenerateProfilesButton'))
+const PremiumNotificationBell = lazy(() => import('@/components/notifications/PremiumNotificationBell'))
+const UltraThemeSettings = lazy(() => import('@/components/settings/UltraThemeSettings'))
+const StatsCard = lazy(() => import('@/components/StatsCard'))
+const SyncStatusIndicator = lazy(() => import('@/components/SyncStatusIndicator'))
+const WelcomeScreen = lazy(() => import('@/components/WelcomeScreen'))
+const QuickActionsMenu = lazy(() => import('@/components/QuickActionsMenu'))
+const BottomNavBar = lazy(() => import('@/components/navigation/BottomNavBar'))
+const BillingIssueBanner = lazy(() => import('@/components/payments/BillingIssueBanner'))
+const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'))
+const SeedDataInitializer = lazy(() => import('@/components/SeedDataInitializer'))
+const OfflineIndicator = lazy(() => import('@/components/network/OfflineIndicator'))
 type AppState = 'welcome' | 'auth' | 'main'
 
 function App() {
@@ -208,26 +206,38 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <OfflineIndicator />
-      <InstallPrompt />
+      <Suspense fallback={<LoadingState />}>
+        <OfflineIndicator />
+      </Suspense>
+      <Suspense fallback={null}>
+        <InstallPrompt />
+      </Suspense>
       <Routes>
-        <Route path="/demo/pets" element={<PetsDemoPage />} />
+        <Route path="/demo/pets" element={
+          <Suspense fallback={<LoadingState />}>
+            <PetsDemoPage />
+          </Suspense>
+        } />
         <Route path="*" element={
           <>
             {appState === 'welcome' && (
-            <WelcomeScreen 
-              onGetStarted={handleWelcomeGetStarted}
-              onSignIn={handleWelcomeSignIn}
-              onExplore={handleWelcomeExplore}
-              isOnline={isOnline} 
-            />
+            <Suspense fallback={<LoadingState />}>
+              <WelcomeScreen 
+                onGetStarted={handleWelcomeGetStarted}
+                onSignIn={handleWelcomeSignIn}
+                onExplore={handleWelcomeExplore}
+                isOnline={isOnline} 
+              />
+            </Suspense>
           )}
           {appState === 'auth' && (
-            <AuthScreen
-              initialMode={authMode}
-              onBack={handleAuthBack}
-              onSuccess={handleAuthSuccess}
-            />
+            <Suspense fallback={<LoadingState />}>
+              <AuthScreen
+                initialMode={authMode}
+                onBack={handleAuthBack}
+                onSuccess={handleAuthSuccess}
+              />
+            </Suspense>
           )}
                     {appState === 'main' && (
     <div className="min-h-screen pb-20 sm:pb-24 bg-background text-foreground relative overflow-hidden">                                                        
@@ -235,7 +245,9 @@ function App() {
       <HoloBackground intensity={0.6} />
       <GlowTrail />
       
-      <SeedDataInitializer />
+      <Suspense fallback={null}>
+        <SeedDataInitializer />
+      </Suspense>
       
       {/* Ultra-premium glassmorphic header with layered effects */}
       <AnimatedView 
@@ -280,7 +292,9 @@ function App() {
                 onMouseLeave={headerButton1.handleLeave}
                 onClick={headerButton1.handleTap}
               >
-                <SyncStatusIndicator />
+                <Suspense fallback={<div className="w-9 h-9" />}>
+                  <SyncStatusIndicator />
+                </Suspense>
               </AnimatedView>
               <AnimatedView 
                 style={headerButton2.buttonStyle}
@@ -288,7 +302,9 @@ function App() {
                 onMouseLeave={headerButton2.handleLeave}
                 onClick={headerButton2.handleTap}
               >
-                <PremiumNotificationBell />
+                <Suspense fallback={<div className="w-9 h-9" />}>
+                  <PremiumNotificationBell />
+                </Suspense>
               </AnimatedView>
               <AnimatedView 
                 style={headerButton3.buttonStyle}
@@ -384,7 +400,9 @@ function App() {
         </div>
       </AnimatedView>
 
-      <BillingIssueBanner />
+      <Suspense fallback={null}>
+        <BillingIssueBanner />
+      </Suspense>
 
       {/* Enhanced main content with premium transitions */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10">
@@ -502,15 +520,17 @@ function App() {
         </div>
       </AnimatedView>
 
-      <QuickActionsMenu
-        onCreatePet={() => setCurrentView('profile')}
-        onViewHealth={() => setCurrentView('profile')}
-        onSchedulePlaydate={() => setCurrentView('matches')}
-        onSavedSearches={() => setCurrentView('discover')}
-        onGenerateProfiles={() => setShowGenerateProfiles(true)}
-        onViewStats={() => setShowStats(true)}
-        onViewMap={() => setShowMap(true)}
-      />
+      <Suspense fallback={null}>
+        <QuickActionsMenu
+          onCreatePet={() => setCurrentView('profile')}
+          onViewHealth={() => setCurrentView('profile')}
+          onSchedulePlaydate={() => setCurrentView('matches')}
+          onSavedSearches={() => setCurrentView('discover')}
+          onGenerateProfiles={() => setShowGenerateProfiles(true)}
+          onViewStats={() => setShowStats(true)}
+          onViewMap={() => setShowMap(true)}
+        />
+      </Suspense>
 
       {showGenerateProfiles && (
         <AnimatedView
@@ -523,7 +543,9 @@ function App() {
             onClick={(e?: React.MouseEvent<Element>) => e?.stopPropagation()}
             className="bg-card p-6 rounded-2xl shadow-2xl max-w-md w-full border border-border/50"
           >
-            <GenerateProfilesButton />
+            <Suspense fallback={<LoadingState />}>
+              <GenerateProfilesButton />
+            </Suspense>
             <AnimatedView style={closeButtonBounce.animatedStyle}>
               <Button
                 variant="outline"
@@ -547,11 +569,13 @@ function App() {
             onClick={(e?: React.MouseEvent<Element>) => e?.stopPropagation()}
             className="max-w-2xl w-full"
           >
-            <StatsCard
-              totalMatches={totalMatches}
-              totalSwipes={totalSwipes}
-              successRate={successRate}
-            />
+            <Suspense fallback={<LoadingState />}>
+              <StatsCard
+                totalMatches={totalMatches}
+                totalSwipes={totalSwipes}
+                successRate={successRate}
+              />
+            </Suspense>
             <AnimatedView style={closeButtonBounce.animatedStyle}>
               <Button
                 variant="outline"
@@ -593,7 +617,9 @@ function App() {
             style={adminContent.style}
             className="h-full w-full"
           >
-            <AdminConsole onClose={() => setShowAdminConsole(false)} />
+            <Suspense fallback={<LoadingState />}>
+              <AdminConsole onClose={() => setShowAdminConsole(false)} />
+            </Suspense>
           </AnimatedView>
         </AnimatedView>
       )}
@@ -603,14 +629,18 @@ function App() {
           <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto p-0">
             <DialogTitle className="sr-only">Ultra Theme Settings</DialogTitle>
             <AnimatedView style={themeContent.style}>
-              <UltraThemeSettings />
+              <Suspense fallback={<LoadingState />}>
+                <UltraThemeSettings />
+              </Suspense>
             </AnimatedView>
           </DialogContent>
         </Dialog>
       )}
 
       <Toaster />
-      <BottomNavBar />
+      <Suspense fallback={null}>
+        <BottomNavBar />
+      </Suspense>
     </div>
                     )}
         </>

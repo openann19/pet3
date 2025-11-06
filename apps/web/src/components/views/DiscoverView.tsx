@@ -3,7 +3,11 @@ import CompatibilityBreakdown from '@/components/CompatibilityBreakdown'
 import DiscoverMapMode from '@/components/DiscoverMapMode'
 import SavedSearchesManager from '@/components/discovery/SavedSearchesManager'
 import DiscoveryFilters, { type DiscoveryPreferences } from '@/components/DiscoveryFilters'
-import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView'
+import React, { Suspense } from 'react'
+// Lazy load heavy detail view to reduce initial bundle size
+const EnhancedPetDetailView = React.lazy(() =>
+  import('@/components/enhanced/EnhancedPetDetailView').then((m) => ({ default: m.EnhancedPetDetailView }))
+)
 import MatchCelebration from '@/components/MatchCelebration'
 import { PetRatings } from '@/components/PetRatings'
 import StoriesBar from '@/components/stories/StoriesBar'
@@ -34,7 +38,7 @@ import { useEffect, useState } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, withDelay } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { Presence } from '@petspark/motion'
+import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { toast } from 'sonner'
@@ -694,9 +698,9 @@ export default function DiscoverView() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Presence visible={prefs.maxDistance < 100}>
+            <AnimatePresence>
               {prefs.maxDistance < 100 && (
-                <AnimatedView>
+                <AnimatedView key="distance-badge">
                   <Badge 
                     variant="outline" 
                     className="gap-1.5 text-xs font-semibold border-primary/30 bg-primary/5 text-primary px-2 py-1"                                               
@@ -706,7 +710,7 @@ export default function DiscoverView() {
                   </Badge>
                 </AnimatedView>
               )}
-            </Presence>
+            </AnimatePresence>
             <AnimatedView>
               <Badge
                 variant={showAdoptableOnly ? "default" : "outline"}
@@ -770,7 +774,7 @@ export default function DiscoverView() {
         />
       ) : (
         <div className="relative h-[500px] sm:h-[600px] flex items-center justify-center mb-6">                                                                 
-          <Presence visible={!!currentPet}>
+          <AnimatePresence mode="wait">
             {currentPet && (
               <AnimatedView
                 key={currentPet.id}
@@ -1013,7 +1017,7 @@ export default function DiscoverView() {
               </div>
             </AnimatedView>
           )}
-        </Presence>
+        </AnimatePresence>
         </div>
       )}
 
@@ -1023,25 +1027,28 @@ export default function DiscoverView() {
         </AnimatedView>
       )}
 
-      <Presence visible={selectedPetDialog.isOpen && !!currentPet}>
+      <AnimatePresence>
         {selectedPetDialog.isOpen && currentPet && (
-          <EnhancedPetDetailView
-            pet={currentPet}
-            onClose={selectedPetDialog.close}
-            onLike={() => {
-              handleSwipe('like')
-              selectedPetDialog.close()
-            }}
-            onPass={() => {
-              handleSwipe('pass')
-              selectedPetDialog.close()
-            }}
-            compatibilityScore={compatibilityScore}
-            matchReasons={reasoning}
-            showActions={true}
-          />
+          <Suspense fallback={null}>
+            <EnhancedPetDetailView
+              key={currentPet.id}
+              pet={currentPet}
+              onClose={selectedPetDialog.close}
+              onLike={() => {
+                handleSwipe('like')
+                selectedPetDialog.close()
+              }}
+              onPass={() => {
+                handleSwipe('pass')
+                selectedPetDialog.close()
+              }}
+              compatibilityScore={compatibilityScore}
+              matchReasons={reasoning}
+              showActions={true}
+            />
+          </Suspense>
         )}
-      </Presence>
+      </AnimatePresence>
 
       <MatchCelebration
         show={celebrationDialog.isOpen}

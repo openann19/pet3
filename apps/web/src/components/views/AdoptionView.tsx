@@ -13,7 +13,12 @@ import { useStorage } from '@/hooks/useStorage'
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types'
 import { createLogger } from '@/lib/logger'
 import { ClipboardText, Heart, MagnifyingGlass, Plus } from '@phosphor-icons/react'
-import { Presence, motion } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -34,6 +39,13 @@ export default function AdoptionView() {
   const [showDetailDialog, setShowDetailDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [_cursor, setCursor] = useState<string | undefined>()
+
+  // Animation hooks
+  const contentPresence = useAnimatePresence(!loading)
+  
+  // Interactive element hooks
+  const cardHover = useHoverLift()
+  const cardTap = useBounceOnTap()
 
   useEffect(() => {
     loadListings()
@@ -219,57 +231,57 @@ export default function AdoptionView() {
       </div>
 
       <ScrollArea className="h-[calc(100vh-320px)]">
-        <Presence mode="wait">
-          {filteredListings().length === 0 ? (
-            <MotionView
-              key="empty"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="flex flex-col items-center justify-center py-16"
-            >
-              <Heart size={64} className="text-muted-foreground mb-4" weight="thin" />
-              <h3 className="text-xl font-semibold mb-2">
-                {activeTab === 'favorites' 
-                  ? 'No Favorites Yet' 
-                  : searchQuery 
-                  ? 'No Results Found' 
-                  : 'No Pets Available'}
-              </h3>
-              <p className="text-muted-foreground text-center max-w-md">
-                {activeTab === 'favorites'
-                  ? 'Start adding pets to your favorites to see them here.'
-                  : searchQuery
-                  ? 'Try adjusting your search terms or filters.'
-                  : 'Check back soon for new pets looking for their forever homes.'}
-              </p>
-            </MotionView>
-          ) : (
-            <MotionView
-              key="grid"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6"
-            >
-              {filteredListings().map((listing, index) => (
-                <MotionView
-                  key={listing.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <AdoptionListingCard
-                    listing={listing}
-                    onSelect={handleSelectListing}
-                    onFavorite={handleToggleFavorite}
-                    isFavorited={Array.isArray(favorites) && favorites.includes(listing.id)}
-                  />
-                </MotionView>
-              ))}
-            </MotionView>
-          )}
-        </Presence>
+        {contentPresence.shouldRender && !loading && (
+          <AnimatedView style={contentPresence.animatedStyle}>
+            {filteredListings().length === 0 ? (
+              <AnimatedView
+                key="empty"
+                className="flex flex-col items-center justify-center py-16"
+              >
+                <Heart size={64} className="text-muted-foreground mb-4" weight="thin" />
+                <h3 className="text-xl font-semibold mb-2">
+                  {activeTab === 'favorites' 
+                    ? 'No Favorites Yet' 
+                    : searchQuery 
+                    ? 'No Results Found' 
+                    : 'No Pets Available'}
+                </h3>
+                <p className="text-muted-foreground text-center max-w-md">
+                  {activeTab === 'favorites'
+                    ? 'Start adding pets to your favorites to see them here.'
+                    : searchQuery
+                    ? 'Try adjusting your search terms or filters.'
+                    : 'Check back soon for new pets looking for their forever homes.'}
+                </p>
+              </AnimatedView>
+            ) : (
+              <AnimatedView
+                key="grid"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6"
+              >
+                {filteredListings().map((listing, index) => (
+                  <AnimatedView
+                    key={listing.id}
+                    style={[
+                      cardHover.animatedStyle,
+                      cardTap.animatedStyle
+                    ]}
+                    onMouseEnter={cardHover.handleEnter}
+                    onMouseLeave={cardHover.handleLeave}
+                    onMouseDown={cardTap.handlePress}
+                  >
+                    <AdoptionListingCard
+                      listing={listing}
+                      onSelect={handleSelectListing}
+                      onFavorite={handleToggleFavorite}
+                      isFavorited={Array.isArray(favorites) && favorites.includes(listing.id)}
+                    />
+                  </AnimatedView>
+                ))}
+              </AnimatedView>
+            )}
+          </AnimatedView>
+        )}
       </ScrollArea>
 
       <CreateAdoptionListingDialog

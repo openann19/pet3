@@ -42,8 +42,8 @@ function getDeviceHz(): number {
   
   // Try to detect refresh rate
   if (typeof window !== 'undefined' && 'screen' in window) {
-    const screen = window.screen as any
-    if (screen.refreshRate) {
+    const screen = window.screen
+    if ('refreshRate' in screen && typeof screen.refreshRate === 'number') {
       deviceHzCache = screen.refreshRate
       return deviceHzCache
     }

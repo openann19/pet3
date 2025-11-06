@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { X, Dog, Cat, Bird, Fish, Rabbit, PawPrint, ArrowLeft, ArrowRight, Check, Sparkle } from '@phosphor-icons/react'
-import { motion, Presence } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -9,9 +14,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import PetPhotoAnalyzer from '@/components/PetPhotoAnalyzer'
 import type { Pet } from '@/lib/types'
 import { getTemplatesByType, type PetType, type PetProfileTemplate } from '@/lib/pet-profile-templates'
+
+// Lazy load heavy components
+const PetPhotoAnalyzer = lazy(() => import('@/components/PetPhotoAnalyzer').then(module => ({ default: module.default })))
 
 type Step = 'type' | 'template' | 'basics' | 'characteristics' | 'personality' | 'preferences' | 'photo' | 'complete'
 
@@ -75,6 +82,68 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
   const [personality, setPersonality] = useState<string[]>([])
   const [interests, setInterests] = useState<string[]>([])
   const [lookingFor, setLookingFor] = useState<string[]>([])
+
+  // Animation hooks for step transitions
+  const stepOpacity = useSharedValue(1)
+  const stepX = useSharedValue(0)
+  
+  // Animation hooks for interactive elements
+  const petTypeButtonHover = useHoverLift()
+  const petTypeButtonTap = useBounceOnTap()
+  const templateButtonHover = useHoverLift()
+  const templateButtonTap = useBounceOnTap()
+  const actionButtonHover = useHoverLift()
+  const actionButtonTap = useBounceOnTap()
+  
+  // Animation for emoji rotation
+  const emojiRotation = useSharedValue(0)
+
+  useEffect(() => {
+    emojiRotation.value = withRepeat(
+      withSequence(
+        withTiming(10, { duration: 1000 }),
+        withTiming(-10, { duration: 1000 }),
+        withTiming(0, { duration: 1000 })
+      ),
+      -1,
+      false
+    )
+  }, [emojiRotation])
+
+  const emojiStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${emojiRotation.value}deg` }]
+  })) as AnimatedStyle
+
+  // Presence hooks for conditional rendering
+  const photoPresence = useAnimatePresence({ isVisible: !!photo })
+  const completeStepPresence = useAnimatePresence({ isVisible: currentStep !== 'complete' })
+
+  useEffect(() => {
+    // Animate step transitions
+    stepOpacity.value = withSpring(0, { damping: 20, stiffness: 300 })
+    stepX.value = withSpring(-20, { damping: 20, stiffness: 300 })
+    
+    setTimeout(() => {
+      stepOpacity.value = withSpring(1, { damping: 20, stiffness: 300 })
+      stepX.value = withSpring(0, { damping: 20, stiffness: 300 })
+    }, 50)
+  }, [currentStep])
+
+  const stepStyle = useAnimatedStyle(() => ({
+    opacity: stepOpacity.value,
+    transform: [{ translateX: stepX.value }]
+  })) as AnimatedStyle
+
+  // Progress bar animation
+  const progressWidth = useSharedValue(0)
+  
+  useEffect(() => {
+    progressWidth.value = withTiming(stepProgress(), { duration: 300 })
+  }, [currentStep, progressWidth])
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value}%`
+  })) as AnimatedStyle
 
   useEffect(() => {
     if (editingPet) {
@@ -227,11 +296,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
     switch (currentStep) {
       case 'type':
         return (
-          <MotionView
+          <AnimatedView
             key="type"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            style={stepStyle}
             className="space-y-6"
           >
             <div className="text-center mb-6">
@@ -242,50 +309,51 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               {PET_TYPES.map((type) => {
                 const Icon = type.icon
                 return (
-                  <MotionView as="button"
+                  <AnimatedView
                     key={type.value}
-                    type="button"
+                    style={petTypeButtonTap.animatedStyle}
                     onClick={() => {
                       setPetType(type.value)
                       setTimeout(() => handleNext(), 400)
                     }}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 ${
+                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
                       petType === type.value
                         ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
                         : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
                     }`}
+                    onMouseEnter={petTypeButtonHover.handleHover}
+                    onMouseLeave={petTypeButtonHover.handleLeave}
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <span className="text-4xl">{type.emoji}</span>
-                      <Icon size={32} weight="duotone" className="text-primary" />
-                      <span className="font-semibold text-lg">{type.label}</span>
-                    </div>
+                    <AnimatedView style={petTypeButtonHover.buttonStyle}>
+                      <div className="flex flex-col items-center gap-3">
+                        <span className="text-4xl">{type.emoji}</span>
+                        <Icon size={32} weight="duotone" className="text-primary" />
+                        <span className="font-semibold text-lg">{type.label}</span>
+                      </div>
+                    </AnimatedView>
                     {petType === type.value && (
-                      <MotionView
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
+                      <AnimatedView
+                        style={useAnimatedStyle(() => ({
+                          transform: [{ scale: 1 }]
+                        })) as AnimatedStyle}
                         className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1"
                       >
                         <Check size={16} weight="bold" />
-                      </MotionView>
+                      </AnimatedView>
                     )}
-                  </MotionView>
+                  </AnimatedView>
                 )
               })}
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'template': {
         const templates = getTemplatesByType(petType)
         return (
-          <MotionView
+          <AnimatedView
             key="template"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            style={stepStyle}
             className="space-y-6"
           >
             <div className="text-center mb-6">
@@ -294,15 +362,13 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
               {templates.map((template) => (
-                <MotionView as="button"
+                <AnimatedView
                   key={template.id}
                   type="button"
                   onClick={() => {
                     applyTemplate(template)
                     setTimeout(() => handleNext(), 300)
                   }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                   className={`relative p-4 rounded-xl border-2 text-left transition-all duration-300 ${
                     selectedTemplate?.id === template.id
                       ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
@@ -315,13 +381,11 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-base">{template.name}</h4>
                         {selectedTemplate?.id === template.id && (
-                          <MotionView
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
+                          <AnimatedView
                             className="bg-primary text-primary-foreground rounded-full p-1 shrink-0"
                           >
                             <Check size={14} weight="bold" />
-                          </MotionView>
+                          </AnimatedView>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
@@ -339,7 +403,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       </div>
                     </div>
                   </div>
-                </MotionView>
+                </AnimatedView>
               ))}
             </div>
             <Button
@@ -351,17 +415,14 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               <Sparkle size={16} className="mr-2" />
               Skip & Customize From Scratch
             </Button>
-          </MotionView>
+          </AnimatedView>
         )
       }
 
       case 'basics':
         return (
-          <MotionView
+          <AnimatedView
             key="basics"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
             <div className="text-center mb-6">
@@ -404,16 +465,13 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 />
               </div>
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'characteristics':
         return (
-          <MotionView
+          <AnimatedView
             key="characteristics"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
             <div className="text-center mb-6">
@@ -424,7 +482,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               <div>
                 <Label className="mb-3 block">Gender *</Label>
                 <div className="grid grid-cols-2 gap-4">
-                  <MotionView whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <AnimatedView>
                     <Button
                       type="button"
                       variant={gender === 'male' ? 'default' : 'outline'}
@@ -433,8 +491,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     >
                       ♂ Male
                     </Button>
-                  </MotionView>
-                  <MotionView whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  </AnimatedView>
+                  <AnimatedView>
                     <Button
                       type="button"
                       variant={gender === 'female' ? 'default' : 'outline'}
@@ -443,7 +501,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     >
                       ♀ Female
                     </Button>
-                  </MotionView>
+                  </AnimatedView>
                 </div>
               </div>
               <div>
@@ -451,7 +509,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <select
                   id="size"
                   value={size}
-                  onChange={(e) => setSize(e.target.value as any)}
+                  onChange={(e) => {
+                    const value = e.target.value as 'small' | 'medium' | 'large' | 'extra-large'
+                    if (['small', 'medium', 'large', 'extra-large'].includes(value)) {
+                      setSize(value)
+                    }
+                  }}
                   className="w-full px-4 py-3 border border-input rounded-lg bg-background hover:border-ring transition-colors text-lg"
                 >
                   <option value="small">Small</option>
@@ -471,31 +534,34 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 />
               </div>
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'photo':
         return (
-          <MotionView
+          <AnimatedView
             key="photo"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Add a photo of {name || 'your pet'}</h3>
               <p className="text-muted-foreground">A great photo helps others connect with your companion</p>
             </div>
-            <PetPhotoAnalyzer 
-              onAnalysisComplete={(result) => {
-                setPhoto(result.photo)
-                if (!breed) setBreed(result.breed)
-                if (!age) setAge(result.age.toString())
-                setSize(result.size)
-                setPersonality(result.personality)
-              }}
-            />
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            }>
+              <PetPhotoAnalyzer 
+                onAnalysisComplete={(result) => {
+                  setPhoto(result.photo)
+                  if (!breed) setBreed(result.breed)
+                  if (!age) setAge(result.age.toString())
+                  setSize(result.size)
+                  setPersonality(result.personality)
+                }}
+              />
+            </Suspense>
             <div>
               <Label htmlFor="photo">Photo URL *</Label>
               <Input
@@ -505,18 +571,14 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 placeholder="https://images.unsplash.com/photo-..."
                 className="mt-1"
               />
-              <Presence>
-                {photo && (
-                  <MotionView 
-                    className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                  >
-                    <img src={photo} alt="Preview" className="w-full h-full object-cover" />
-                  </MotionView>
-                )}
-              </Presence>
+              {photoPresence.shouldRender && photo && (
+                <AnimatedView 
+                  style={photoPresence.animatedStyle}
+                  className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"                                                                
+                >
+                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />                                                                    
+                </AnimatedView>
+              )}
             </div>
             <div>
               <Label htmlFor="bio">Bio (optional)</Label>
@@ -529,16 +591,13 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 className="mt-1"
               />
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'personality':
         return (
-          <MotionView
+          <AnimatedView
             key="personality"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
             <div className="text-center mb-6">
@@ -547,13 +606,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
             </div>
             <div className="flex flex-wrap gap-3 justify-center">
               {PERSONALITY_TRAITS[petType].map((trait, idx) => (
-                <MotionView
+                <AnimatedView
                   key={trait}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.03 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
+                  
                 >
                   <Badge
                     variant={personality.includes(trait) ? 'default' : 'outline'}
@@ -562,27 +617,21 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   >
                     {trait}
                     {personality.includes(trait) && (
-                      <MotionText
-                        initial={{ rotate: -90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                      >
+                      <span>
                         <X size={14} className="ml-2" weight="bold" />
-                      </MotionText>
+                      </span>
                     )}
                   </Badge>
-                </MotionView>
+                </AnimatedView>
               ))}
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'preferences':
         return (
-          <MotionView
+          <AnimatedView
             key="preferences"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="text-center mb-6">
@@ -594,13 +643,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Label className="text-lg mb-3 block">Interests</Label>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS[petType].map((interest, idx) => (
-                    <MotionView
+                    <AnimatedView
                       key={interest}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                      
                     >
                       <Badge
                         variant={interests.includes(interest) ? 'default' : 'outline'}
@@ -612,7 +657,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                           <X size={12} className="ml-1.5" weight="bold" />
                         )}
                       </Badge>
-                    </MotionView>
+                    </AnimatedView>
                   ))}
                 </div>
               </div>
@@ -620,13 +665,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Label className="text-lg mb-3 block">Looking For</Label>
                 <div className="flex flex-wrap gap-2">
                   {LOOKING_FOR[petType].map((item, idx) => (
-                    <MotionView
+                    <AnimatedView
                       key={item}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                      
                     >
                       <Badge
                         variant={lookingFor.includes(item) ? 'default' : 'outline'}
@@ -638,30 +679,26 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                           <X size={12} className="ml-1.5" weight="bold" />
                         )}
                       </Badge>
-                    </MotionView>
+                    </AnimatedView>
                   ))}
                 </div>
               </div>
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       case 'complete':
         return (
-          <MotionView
+          <AnimatedView
             key="complete"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
             className="space-y-6 text-center"
           >
-            <MotionView
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 0.5 }}
+            <AnimatedView
+              
               className="text-8xl mb-4"
             >
               🎉
-            </MotionView>
+            </AnimatedView>
             <h3 className="text-3xl font-bold">All set!</h3>
             <p className="text-lg text-muted-foreground">
               {name || 'Your pet'}'s profile is ready to go. Let's find some perfect companions!
@@ -688,7 +725,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <span className="font-semibold">{personality.length} traits</span>
               </div>
             </div>
-          </MotionView>
+          </AnimatedView>
         )
 
       default:
@@ -706,32 +743,29 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
-            <MotionText
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
+            <AnimatedView style={emojiStyle}>
               🐾
-            </MotionText>
+            </AnimatedView>
             {editingPet ? 'Edit Pet Profile' : 'Create Pet Profile'}
           </DialogTitle>
         </DialogHeader>
 
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-6">
-          <MotionView
-            className="h-full bg-gradient-to-r from-primary to-accent"
-            initial={{ width: 0 }}
-            animate={{ width: `${stepProgress()}%` }}
-            transition={{ duration: 0.3 }}
+          <AnimatedView
+            className="h-full bg-linear-to-r from-primary to-accent"
+            style={progressStyle}
           />
         </div>
 
-        <Presence mode="wait">
-          {renderStepContent()}
-        </Presence>
+        {completeStepPresence.shouldRender && currentStep !== 'complete' && (
+          <AnimatedView style={completeStepPresence.animatedStyle}>
+            {renderStepContent()}
+          </AnimatedView>
+        )}
 
         <div className="flex gap-3 pt-6 mt-6 border-t">
           {currentStep !== 'type' && currentStep !== 'complete' && (
-            <MotionView whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <AnimatedView>
               <Button
                 type="button"
                 variant="outline"
@@ -741,32 +775,32 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <ArrowLeft size={16} weight="bold" />
                 Back
               </Button>
-            </MotionView>
+            </AnimatedView>
           )}
           <div className="flex-1" />
           {currentStep !== 'complete' ? (
-            <MotionView whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <AnimatedView>
               <Button
                 type="button"
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className="gap-2 bg-gradient-to-r from-primary to-accent"
+                className="gap-2 bg-linear-to-r from-primary to-accent"
               >
                 Continue
                 <ArrowRight size={16} weight="bold" />
               </Button>
-            </MotionView>
+            </AnimatedView>
           ) : (
-            <MotionView whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <AnimatedView>
               <Button
                 type="button"
                 onClick={handleSubmit}
-                className="gap-2 bg-gradient-to-r from-primary to-accent"
+                className="gap-2 bg-linear-to-r from-primary to-accent"
               >
                 <Check size={16} weight="bold" />
                 {editingPet ? 'Save Changes' : 'Create Profile'}
               </Button>
-            </MotionView>
+            </AnimatedView>
           )}
         </div>
       </DialogContent>

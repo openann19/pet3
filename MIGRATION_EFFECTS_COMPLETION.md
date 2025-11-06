@@ -113,8 +113,11 @@
 
 ### Chat Components
 - ✅ SendPing integrated into `AdvancedChatWindow.tsx` handleSendMessage
-- ✅ MessagePeek ready for integration (can be added to MessageBubble long-press handlers)
-- ✅ SmartImage ready for use (can replace img tags in chat/media views)
+- ✅ MessagePeek integrated into `MessageBubble.tsx` long-press handler
+- ✅ SmartImage integrated into:
+  - `MessageBubble.tsx` (image messages)
+  - `MessageAttachments.tsx` (photo attachments)
+  - `LinkPreview.tsx` (link preview images)
 
 ### Mobile App (`apps/mobile/src/screens/ChatScreen.tsx`)
 - ✅ HoloBackground integrated
@@ -129,29 +132,17 @@ All files pass:
 - ✅ Accessibility support (ARIA labels, keyboard navigation)
 - ✅ Reduced motion compliance
 
-## Next Steps (Optional Integration)
+## Additional Integration Opportunities
 
-1. **MessagePeek Integration**: Add to MessageBubble long-press handlers:
-   ```typescript
-   const [peekVisible, setPeekVisible] = useState(false)
-   const [peekPosition, setPeekPosition] = useState<{x: number, y: number} | undefined>()
-   
-   const handleLongPress = (e: MouseEvent | TouchEvent) => {
-     setPeekPosition({ x: e.clientX, y: e.clientY })
-     setPeekVisible(true)
-   }
-   ```
+1. **SmartImage in Other Components**: Consider replacing `<img>` tags in:
+   - `PostCard.tsx` (community posts)
+   - `PostDetailView.tsx` (post media)
+   - `AdoptionListingCard.tsx` (pet photos)
+   - Other media-heavy components
 
-2. **SmartImage Integration**: Replace img tags in chat/media components:
-   ```typescript
-   <SmartImage 
-     src={imageUrl} 
-     lqip={thumbnailUrl}
-     alt={alt}
-   />
-   ```
+2. **MessagePeek on Mobile**: Integrate `MessagePeekNative` into mobile `MessageBubble.tsx` long-press handler
 
-3. **Effect Telemetry Integration**: Add to P0 effects:
+3. **Effect Telemetry Integration**: Add to P0 effects for performance monitoring:
    ```typescript
    const telemetry = useEffectTelemetry({ effectName: 'send-warp' })
    telemetry.start()
@@ -188,6 +179,9 @@ All files pass:
 - `apps/web/src/effects/reanimated/use-confetti-burst.ts` (Math.random → seeded RNG)
 - `apps/web/src/effects/reanimated/use-media-bubble.ts` (Math.random → seeded RNG)
 - `apps/web/src/components/chat/AdvancedChatWindow.tsx` (sendPing integration)
+- `apps/web/src/components/chat/MessageBubble.tsx` (MessagePeek + SmartImage integration)
+- `apps/web/src/components/chat/MessageAttachments.tsx` (SmartImage integration)
+- `apps/web/src/components/chat/LinkPreview.tsx` (SmartImage integration)
 - `apps/web/src/App.tsx` (HoloBackground + GlowTrail integration)
 - `apps/mobile/src/screens/ChatScreen.tsx` (HoloBackground integration)
 

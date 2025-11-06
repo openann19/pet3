@@ -101,7 +101,11 @@ export function NotificationCenter() {
           )}
         </div>
 
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="w-full">
+        <Tabs value={filter} onValueChange={(v) => {
+          if (v === 'all' || v === 'unread') {
+            setFilter(v)
+          }
+        }} className="w-full">
           <TabsList className="w-full grid grid-cols-2 px-4">
             <TabsTrigger value="all">
               All ({(notifications || []).length})

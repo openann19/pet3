@@ -2,9 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "paths": {
       "@/*": ["./src/*"],
-      "@design-system/*": ["./design-system/*"]
+      "@design-system/*": ["./design-system/*"],
+      "@petspark/chat-core": ["../../packages/chat-core/src/index.ts"],
+      "@petspark/config": ["../../packages/config/src/index.ts"]
     }
   },
   "include": [
@@ -26,6 +29,7 @@
     "coverage",
     "storybook-static",
     "src/lib/kyc-native.ts",
+    "src/components/ChatWindowNew.tsx",
     "**/*.stories.tsx"
   ]
 }

@@ -28,7 +28,9 @@ import {
   SpeakerSlash,
   X
 } from '@phosphor-icons/react'
-import { Presence, motion, useMotionValue, useTransform } from '@petspark/motion'
+import { AnimatePresence } from '@/effects/reanimated/animate-presence'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/reanimated'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import SaveToHighlightDialog from './SaveToHighlightDialog'
@@ -66,7 +68,7 @@ export default function StoryViewer({
   const progressIntervalRef = useRef<number | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaContainerRef = useRef<HTMLDivElement>(null)
-  const swipeProgress = useMotionValue(0)
+  const swipeProgress = useSharedValue(0)
 
   const currentStory = stories[currentIndex]
   const isOwn = currentStory?.userId === currentUserId
@@ -141,8 +143,25 @@ export default function StoryViewer({
     swipeThreshold: 50
   })
 
-  const swipeOpacity = useTransform(swipeProgress, [-1, 0, 1], [0.5, 1, 0.5])
-  const swipeScale = useTransform(swipeProgress, [-1, 0, 1], [0.95, 1, 0.95])
+  const swipeOpacityStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      swipeProgress.value,
+      [-1, 0, 1],
+      [0.5, 1, 0.5],
+      Extrapolation.CLAMP
+    )
+    return { opacity }
+  })
+
+  const swipeScaleStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      swipeProgress.value,
+      [-1, 0, 1],
+      [0.95, 1, 0.95],
+      Extrapolation.CLAMP
+    )
+    return { transform: [{ scale }] }
+  })
 
   const startProgress = useCallback(() => {
     if (progressIntervalRef.current) {
@@ -306,14 +325,52 @@ export default function StoryViewer({
     ? { duration: 0 } 
     : { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const }
 
-  if (!currentStory) return null
+  // Animation hooks for story viewer
+  const viewerEntry = useMotionVariants({
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: transitionConfig
+  })
+  
+  const reactionButtonHover = useHoverLift({ scale: 1.3, enabled: !prefersReducedMotion })
+  const reactionButtonTap = useBounceOnTap({ scale: 0.9, enabled: !prefersReducedMotion })
+  
+  const captionAnimation = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: transitionConfig
+  })
+  
+  const reactionsAnimation = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: transitionConfig
+  })
+  
+  const analyticsAnimation = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: transitionConfig
+  })
+  
+  const imageEntry = useMotionVariants({
+    initial: { scale: prefersReducedMotion ? 1 : 1.1, opacity: 0 },
+    animate: { scale: gestureState.pinchScale, opacity: 1 },
+    transition: transitionConfig
+  })
+  
+  const mediaContainerStyle = useAnimatedStyle(() => {
+    const opacity = gestureState.isSwiping ? 0.5 : 1
+    const scale = gestureState.isSwiping ? 0.95 : gestureState.pinchScale
+    return {
+      opacity,
+      transform: [{ scale }]
+    }
+  })
 
   return (
-    <MotionView
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={transitionConfig}
+    <AnimatedView
+      style={viewerEntry.animatedStyle}
       className="fixed inset-0 z-[100] bg-black"
       role="dialog"
       aria-modal="true"
@@ -334,13 +391,12 @@ export default function StoryViewer({
                 aria-valuemax={100}
                 aria-label={`Story ${idx + 1} of ${stories.length}`}
               >
-                <MotionView
+                <AnimatedView
                   className="h-full bg-white"
-                  initial={{ width: '0%' }}
-                  animate={{
-                    width: idx < currentIndex ? '100%' : idx === currentIndex ? `${progress}%` : '0%'                                                           
+                  style={{
+                    width: idx < currentIndex ? '100%' : idx === currentIndex ? `${progress}%` : '0%',
+                    transition: prefersReducedMotion ? 'none' : 'width 0.1s linear'
                   }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.1, ease: 'linear' }}
                 />
               </div>
             ))}
@@ -439,27 +495,23 @@ export default function StoryViewer({
         </div>
 
         {/* Media container with pinch-zoom support */}
-        <MotionView
+        <AnimatedView
           ref={mediaContainerRef}
           className="relative w-full h-full max-w-2xl mx-auto touch-none"
-          style={{
-            opacity: swipeOpacity,
-            scale: gestureState.isSwiping ? swipeScale : 1,
-            transformOrigin: 'center center'
-          }}
-          transition={transitionConfig}
+          style={[mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]}
         >
           {currentStory.type === 'photo' && (
-            <motion.img
+            <AnimatedView
               key={currentStory.id}
-              src={currentStory.mediaUrl}
-              alt={currentStory.caption || 'Story'}
-              className="w-full h-full object-contain select-none"
-              initial={{ scale: prefersReducedMotion ? 1 : 1.1, opacity: 0 }}
-              animate={{ scale: gestureState.pinchScale, opacity: 1 }}
-              transition={transitionConfig}
-              draggable={false}
-            />
+              style={imageEntry.animatedStyle}
+            >
+              <img
+                src={currentStory.mediaUrl}
+                alt={currentStory.caption || 'Story'}
+                className="w-full h-full object-contain select-none"
+                draggable={false}
+              />
+            </AnimatedView>
           )}
 
           {currentStory.type === 'video' && (
@@ -477,49 +529,50 @@ export default function StoryViewer({
 
           {currentStory.caption && (
             <div className="absolute bottom-24 left-0 right-0 px-4">
-              <MotionView
+              <AnimatedView
                 className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={transitionConfig}
+                style={captionAnimation.animatedStyle}
               >
                 <p className="text-white text-center">{currentStory.caption}</p>
-              </MotionView>
+              </AnimatedView>
             </div>
           )}
-        </MotionView>
+        </AnimatedView>
 
         {/* Interaction area */}
         {!isOwn && (
           <div className="absolute bottom-0 left-0 right-0 z-20 p-4 space-y-3">
-            <Presence>
+            <AnimatePresence>
               {showReactions && (
-                <MotionView
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={transitionConfig}
+                <AnimatedView
+                  key="reactions"
+                  style={reactionsAnimation.animatedStyle}
                   className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
                   role="dialog"
                   aria-label="React to story"
                 >
                   <div className="flex justify-center gap-4">
                     {STORY_REACTION_EMOJIS.map((emoji) => (
-                      <MotionView as="button"
+                      <AnimatedView
                         key={emoji}
-                        onClick={() => handleReaction(emoji)}
+                        as="button"
                         className="text-4xl focus:outline-none focus:ring-2 focus:ring-white rounded-lg p-2"
-                        whileHover={prefersReducedMotion ? {} : { scale: 1.3 }}
-                        whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+                        style={[reactionButtonHover.animatedStyle, reactionButtonTap.animatedStyle]}
+                        onMouseEnter={reactionButtonHover.handleEnter}
+                        onMouseLeave={reactionButtonHover.handleLeave}
+                        onClick={() => {
+                          reactionButtonTap.handlePress()
+                          handleReaction(emoji)
+                        }}
                         aria-label={`React with ${emoji}`}
                       >
                         {emoji}
-                      </MotionView>
+                      </AnimatedView>
                     ))}
                   </div>
-                </MotionView>
+                </AnimatedView>
               )}
-            </Presence>
+            </AnimatePresence>
 
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
@@ -563,11 +616,9 @@ export default function StoryViewer({
         {/* Analytics for story owner */}
         {isOwn && (
           <div className="absolute bottom-4 left-4 right-4 z-20">
-            <MotionView
+            <AnimatedView
               className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={transitionConfig}
+              style={analyticsAnimation.animatedStyle}
               role="region"
               aria-label="Story analytics"
             >
@@ -591,7 +642,7 @@ export default function StoryViewer({
                   View Insights
                 </Button>
               </div>
-            </MotionView>
+            </AnimatedView>
           </div>
         )}
       </div>
@@ -606,6 +657,6 @@ export default function StoryViewer({
           }}
         />
       )}
-    </MotionView>
+    </AnimatedView>
   )
 }

@@ -60,9 +60,6 @@ export class HapticManager {
             Haptics.notificationAsync?.(Haptics.NotificationFeedbackType.Success)
             break
         }
-      } else if (custom?.triggerHaptic) {
-        // Fallback to web haptics wrapper
-        custom.triggerHaptic(t)
       } else {
         // web/no-op
         return false

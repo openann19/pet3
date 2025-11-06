@@ -10,25 +10,6 @@ vi.mock('@/lib/haptics', () => ({
   }
 }))
 
-vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion')
-  return {
-    ...actual,
-    motion: {
-      div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-        <div {...props}>{children}</div>
-      ),
-      img: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
-        <img src={src} alt={alt} {...props} />
-      ),
-      li: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-        <li {...props}>{children}</li>
-      )
-    },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>
-  }
-})
-
 const mockPet: Pet = {
   id: 'pet-1',
   name: 'Buddy',

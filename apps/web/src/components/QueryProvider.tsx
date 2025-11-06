@@ -86,7 +86,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
         maxAge: 24 * 60 * 60 * 1000,
         // Dehydrate options
         dehydrateOptions: {
-          shouldDehydrateQuery: (query: any) => {
+          shouldDehydrateQuery: (query: { state: { status: string } }) => {
             // Only persist successful queries
             return query.state.status === 'success'
           },

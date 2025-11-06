@@ -1,4 +1,5 @@
 import { adminApi } from '@/api/admin-api'
+import { createLogger } from '@/lib/logger'
 import { PetProfileGenerator } from '@/components/admin/PetProfileGenerator'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -81,7 +82,9 @@ export default function DashboardView() {
         })
       } catch (error) {
         // Fallback to local calculations if API fails
-        console.warn('Failed to load system stats from API, falling back to local calculations:', error)
+        const logger = createLogger('DashboardView')
+        const err = error instanceof Error ? error : new Error(String(error))
+        logger.warn('Failed to load system stats from API, falling back to local calculations', err)
         const uniqueOwners = new Set((allPets || []).map(p => p.ownerId || p.ownerName))
         setStats({
           totalUsers: uniqueOwners.size,
@@ -289,8 +292,7 @@ export default function DashboardView() {
 }
 
 interface ActivityItemProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any
+  icon: React.ComponentType<{ size?: number | string; className?: string; weight?: string }>
   title: string
   description: string
   time: string

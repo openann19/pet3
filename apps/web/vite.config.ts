@@ -70,6 +70,54 @@ const handleJSXImportAnalysisPlugin = (): PluginOption => ({
   },
 });
 
+// Plugin to resolve react-native imports from workspace packages to react-native-web
+const resolveReactNativePlugin = (): PluginOption => {
+  return {
+    name: 'resolve-react-native-workspace',
+    enforce: 'pre',
+    resolveId(id, importer) {
+      // Handle react-native imports from workspace packages
+      if (id === 'react-native' && importer && importer.includes('packages/')) {
+        // Return a virtual module ID that we'll handle in load()
+        return '\0react-native-web-workspace'
+      }
+      return null
+    },
+    load(id) {
+      // Provide stubbed react-native-web content for workspace packages
+      if (id === '\0react-native-web-workspace') {
+        // Complete stub for react-native exports - no re-export to avoid resolution issues
+        return `
+          export const Platform = {
+            OS: 'web',
+            select: (obj: Record<string, unknown>) => obj.web ?? obj.default,
+          };
+          export const View = 'div';
+          export const Text = 'span';
+          export const ScrollView = 'div';
+          export const StyleSheet = {
+            create: (styles: Record<string, unknown>) => styles,
+            flatten: (style: unknown) => style,
+          };
+          export const TouchableOpacity = 'button';
+          export const TouchableHighlight = 'button';
+          export const TouchableWithoutFeedback = 'div';
+          export const Pressable = 'button';
+          export const Image = 'img';
+          export const ActivityIndicator = 'div';
+          export const Alert = {
+            alert: () => {},
+            prompt: () => {},
+          };
+          export default {};
+        `
+      }
+      return null
+    },
+  }
+}
+
+
 // Plugin to resolve @petspark/shared workspace package
 const resolveWorkspacePackagePlugin = (): PluginOption => {
   const sharedPackagePath = path.resolve(projectRoot, '../../packages/shared/src');
@@ -122,6 +170,7 @@ const resolveWorkspacePackagePlugin = (): PluginOption => {
 
 export default defineConfig(async (): Promise<UserConfig> => {
   const plugins: PluginOption[] = [
+    resolveReactNativePlugin(),
     resolveWorkspacePackagePlugin(),
     react({}),
     transformJSXInJSPlugin(),
@@ -199,6 +248,9 @@ export default defineConfig(async (): Promise<UserConfig> => {
     optimizeDeps: {
       exclude: ['react-native', 'react-native-reanimated', 'react-native-gesture-handler', 'nsfwjs'],
       include: [
+        'react-native-web',
+        'react',
+        'react-dom',
         '@petspark/shared',
       ],
       esbuildOptions: {
@@ -223,6 +275,19 @@ export default defineConfig(async (): Promise<UserConfig> => {
         strictRequires: true,
         defaultIsModuleExports: true,
       },
+      chunkSizeWarningLimit: 500,
+      reportCompressedSize: true,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        },
+        format: {
+          comments: false,
+        },
+      },
       rollupOptions: {
         external: () => {
           // NSFWJS is loaded from CDN at runtime, not bundled
@@ -232,6 +297,79 @@ export default defineConfig(async (): Promise<UserConfig> => {
         output: {
           // Ensure proper format
           format: 'es',
+          chunkSizeWarningLimit: 500,
+          manualChunks: (id): string | undefined => {
+            // Split large libraries into separate chunks
+            if (id.includes('node_modules')) {
+              // React core - combine react and react-dom
+              if (id.includes('react') && !id.includes('react-dom') && !id.includes('react-router')) {
+                return 'react-vendor'
+              }
+              if (id.includes('react-dom')) {
+                return 'react-vendor'
+              }
+              if (id.includes('react-router')) {
+                return 'react-vendor'
+              }
+              // Reanimated vendor - separate chunk for animation library
+              if (id.includes('react-native-reanimated')) {
+                return 'reanimated-vendor'
+              }
+              // UI libraries
+              if (id.includes('@radix-ui')) {
+                return 'ui-vendor'
+              }
+              // Icons
+              if (id.includes('@phosphor-icons') || id.includes('lucide-react')) {
+                return 'icons-vendor'
+              }
+              // Query library
+              if (id.includes('@tanstack/react-query')) {
+                return 'query-vendor'
+              }
+              // Utils - combine common utilities
+              if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority') || id.includes('zod') || id.includes('date-fns')) {
+                return 'utils-vendor'
+              }
+              // Map library - separate chunk for lazy loading
+              if (id.includes('maplibre-gl') || id.includes('leaflet')) {
+                return 'map-vendor'
+              }
+              // ML/TensorFlow - separate chunk for lazy loading
+              if (id.includes('@tensorflow/tfjs') || id.includes('@tensorflow-models')) {
+                return 'ml-vendor'
+              }
+              // Three.js - separate chunk for 3D features
+              if (id.includes('three')) {
+                return 'three-vendor'
+              }
+              // Other vendor code
+              return 'vendor'
+            }
+            // Split app code by feature
+            if (id.includes('/components/views/')) {
+              const viewMatch = id.match(/\/components\/views\/([^/]+)/)
+              if (viewMatch) {
+                return `view-${viewMatch[1]}`
+              }
+            }
+            if (id.includes('/components/chat/')) {
+              return 'feature-chat'
+            }
+            if (id.includes('/components/stories/')) {
+              return 'feature-stories'
+            }
+            if (id.includes('/components/community/')) {
+              return 'feature-community'
+            }
+            if (id.includes('/components/adoption/')) {
+              return 'feature-adoption'
+            }
+            if (id.includes('/components/admin/')) {
+              return 'feature-admin'
+            }
+            return undefined
+          },
         },
       },
     },

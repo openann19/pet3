@@ -150,7 +150,7 @@ export function FloatingActionButton({
       style={buttonCSSStyle}
       className={cn(
         'fixed bottom-24 right-6 z-50 flex items-center gap-3 rounded-full',
-        'bg-gradient-to-br from-primary via-accent to-secondary',
+        'bg-linear-to-br from-primary via-accent to-secondary',
         'text-primary-foreground shadow-2xl',
         'overflow-hidden',
         'cursor-pointer',
@@ -177,7 +177,7 @@ export function FloatingActionButton({
       {!reducedMotion && (
         <AnimatedView
           style={shimmerStyle}
-          className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 pointer-events-none"
+          className="absolute inset-0 bg-linear-to-r from-white/0 via-white/30 to-white/0 pointer-events-none"
         >
           {null}
         </AnimatedView>

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, interpolate } from 'react-native-reanimated'
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
+import { springConfigs } from '@/effects/reanimated/transitions'
 import { usePrefersReducedMotion } from '@/utils/reduced-motion'
 import { useFeatureFlags } from '@/config/feature-flags'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
@@ -17,6 +17,7 @@ export interface SmartImageProps {
   width?: number
   height?: number
   onLoad?: () => void
+  onClick?: () => void
 }
 
 /**
@@ -32,7 +33,8 @@ export function SmartImage({
   className = '',
   width,
   height,
-  onLoad
+  onLoad,
+  onClick
 }: SmartImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [showSharp, setShowSharp] = useState(false)
@@ -112,7 +114,9 @@ export function SmartImage({
           style={shimmerStyle}
           className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent animate-shimmer"
           aria-hidden="true"
-        />
+        >
+          <div />
+        </AnimatedView>
       )}
       
       {/* Sharp image */}
@@ -122,12 +126,14 @@ export function SmartImage({
         alt={alt}
         className={cn(
           'w-full h-full object-cover transition-opacity',
-          showSharp ? 'opacity-100' : 'opacity-0'
+          showSharp ? 'opacity-100' : 'opacity-0',
+          onClick ? 'cursor-pointer' : ''
         )}
         style={imageStyle as React.CSSProperties}
         width={width}
         height={height}
         onLoad={handleLoad}
+        onClick={onClick}
         loading="lazy"
         decoding="async"
       />

@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { MotionView, Presence } from '@petspark/motion'
+import { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated'
+import React from 'react'
 import {
   Plus,
   X,
@@ -107,93 +109,112 @@ export default function QuickActionsMenu({
 
   return (
     <div className="fixed bottom-24 right-6 z-40">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="flex flex-col gap-3 mb-4"
-          >
-            {actions.map((action, index) => (
-              <motion.div
-                key={action.label}
-                initial={{ opacity: 0, x: 50, scale: 0.8 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 50, scale: 0.8 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 500,
-                  damping: 30,
-                  delay: index * 0.05
-                }}
-              >
-                <MotionView as="button"
-                  whileHover={{ scale: 1.1, x: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    haptics.selection()
-                    action.onClick()
-                  }}
-                  className="group flex items-center gap-3 bg-card/95 backdrop-blur-md border border-border rounded-full px-4 py-3 shadow-lg hover:shadow-xl transition-all"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${action.color} flex items-center justify-center text-white shadow-md group-hover:shadow-lg transition-shadow`}
-                  >
-                    {action.icon}
-                  </div>
-                  <span className="font-medium text-sm pr-2">{action.label}</span>
-                </MotionView>
-              </MotionView>
-            ))}
-          </MotionView>
-        )}
-      </AnimatePresence>
+      <Presence visible={isOpen}>
+        <MotionView
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          className="flex flex-col gap-3 mb-4"
+        >
+          {actions.map((action, index) => {
+            const itemOpacity = useSharedValue(0);
+            const itemX = useSharedValue(50);
+            const itemScale = useSharedValue(0.8);
+            const hoverScale = useSharedValue(1);
+            const hoverX = useSharedValue(0);
 
-      <MotionView as="button"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+            React.useEffect(() => {
+              const delay = index * 50;
+              setTimeout(() => {
+                itemOpacity.value = withSpring(1, { stiffness: 500, damping: 30 });
+                itemX.value = withSpring(0, { stiffness: 500, damping: 30 });
+                itemScale.value = withSpring(1, { stiffness: 500, damping: 30 });
+              }, delay);
+            }, []);
+
+            const handleMouseEnter = React.useCallback(() => {
+              hoverScale.value = withTiming(1.1, { duration: 200 });
+              hoverX.value = withTiming(-5, { duration: 200 });
+            }, []);
+
+            const handleMouseLeave = React.useCallback(() => {
+              hoverScale.value = withTiming(1, { duration: 200 });
+              hoverX.value = withTiming(0, { duration: 200 });
+            }, []);
+
+            const animatedStyle = useAnimatedStyle(() => ({
+              opacity: itemOpacity.value,
+              transform: [
+                { translateX: itemX.value + hoverX.value },
+                { scale: itemScale.value * hoverScale.value }
+              ]
+            }));
+
+            return (
+              <MotionView
+                key={action.label}
+                animatedStyle={animatedStyle}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => {
+                  haptics.selection()
+                  action.onClick()
+                }}
+                className="group flex items-center gap-3 bg-card/95 backdrop-blur-md border border-border rounded-full px-4 py-3 shadow-lg hover:shadow-xl transition-all"
+              >
+                <div
+                  className={`w-10 h-10 rounded-full bg-linear-to-br ${action.color} flex items-center justify-center text-white shadow-md group-hover:shadow-lg transition-shadow`}
+                >
+                  {action.icon}
+                </div>
+                <span className="font-medium text-sm pr-2">{action.label}</span>
+              </MotionView>
+            )
+          })}
+        </MotionView>
+      </Presence>
+
+      <MotionView
         onClick={handleToggle}
-        className={`w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl hover:shadow-3xl transition-all ${
+        className={`w-14 h-14 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl hover:shadow-primary/50 transition-all ${
           isOpen ? 'rotate-45' : ''
         }`}
         style={{ transition: 'transform 0.3s ease' }}
       >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ opacity: 0, rotate: -90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: 90 }}
-              transition={{ duration: 0.2 }}
-            >
-              <X size={24} weight="bold" />
-            </MotionView>
-          ) : (
-            <motion.div
-              key="open"
-              initial={{ opacity: 0, rotate: 90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: -90 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Plus size={24} weight="bold" />
-            </MotionView>
-          )}
-        </AnimatePresence>
+        <Presence visible={!isOpen}>
+          <MotionView
+            key="open"
+            initial={{ opacity: 0, rotate: 90 }}
+            animate={{ opacity: 1, rotate: 0 }}
+            exit={{ opacity: 0, rotate: -90 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Plus size={24} weight="bold" />
+          </MotionView>
+        </Presence>
+        <Presence visible={isOpen}>
+          <MotionView
+            key="close"
+            initial={{ opacity: 0, rotate: -90 }}
+            animate={{ opacity: 1, rotate: 0 }}
+            exit={{ opacity: 0, rotate: 90 }}
+            transition={{ duration: 0.2 }}
+          >
+            <X size={24} weight="bold" />
+          </MotionView>
+        </Presence>
       </MotionView>
 
-      {isOpen && (
-        <motion.div
+      <Presence visible={isOpen}>
+        <MotionView
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={handleToggle}
           className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
         />
-      )}
+      </Presence>
     </div>
   )
 }

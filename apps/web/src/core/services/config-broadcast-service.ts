@@ -8,6 +8,7 @@
 import { adminApi } from '@/api/admin-api'
 import { createLogger } from '@/lib/logger'
 import { RealtimeClient } from '@/lib/realtime'
+import { adminSyncService } from './admin-sync-service'
 
 const logger = createLogger('ConfigBroadcastService')
 
@@ -88,6 +89,14 @@ class ConfigBroadcastService {
         await this.realtimeClient.emit(eventName, event)
         this.realtimeClient.trigger(eventName, event)
       }
+
+      // Broadcast via admin sync service for cross-platform sync
+      await adminSyncService.broadcastConfigUpdate(
+        configType,
+        changedBy,
+        changedBy, // adminName - could be fetched from user service
+        config
+      )
 
       // Notify local listeners
       this.notifyListeners(event)

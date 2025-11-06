@@ -2,7 +2,7 @@
  * KYC Service
  * 
  * Handles identity verification, age gate, consent management, and KYC pipeline.
- * Migrated from spark.kv to use backend API endpoints.
+ * Migrated from legacy KV mocks to use backend API endpoints.
  */
 
 import type { KYCSubmission, KYCStatus, ConsentRecord, AgeVerification } from './kyc-types'

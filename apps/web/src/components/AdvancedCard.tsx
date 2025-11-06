@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
-import type { HTMLMotionProps } from 'framer-motion';
-import { motion } from 'framer-motion';
+import { MotionView } from '@petspark/motion';
+import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import React from 'react';
 import type { ReactNode } from 'react';
 
 export type CardVariant = 'glass' | 'gradient' | 'neon' | 'holographic' | 'premium' | 'minimal' | 'floating'
 export type CardSize = 'sm' | 'md' | 'lg' | 'xl'
 
-interface AdvancedCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
+interface AdvancedCardProps {
   variant?: CardVariant
   size?: CardSize
   children: ReactNode
@@ -43,21 +44,45 @@ export default function AdvancedCard({
   className,
   ...props
 }: AdvancedCardProps) {
-  const hoverAnimation = enableHover ? {
-    scale: 1.02,
-    y: -4,
-    transition: { type: 'spring' as const, stiffness: 400, damping: 25 }
-  } : {}
+  const opacity = useSharedValue(0);
+  const y = useSharedValue(20);
+  const hoverScale = useSharedValue(1);
+  const hoverY = useSharedValue(0);
 
-  const tapAnimation = {
-    scale: 0.98,
-    transition: { duration: 0.1 }
-  }
+  // Entry animation
+  React.useEffect(() => {
+    opacity.value = withTiming(1, { duration: 400 });
+    y.value = withTiming(0, { duration: 400 });
+  }, []);
+
+  // Hover animation
+  const handleMouseEnter = React.useCallback(() => {
+    if (enableHover) {
+      hoverScale.value = withTiming(1.02, { duration: 200 });
+      hoverY.value = withTiming(-4, { duration: 200 });
+    }
+  }, [enableHover]);
+
+  const handleMouseLeave = React.useCallback(() => {
+    if (enableHover) {
+      hoverScale.value = withTiming(1, { duration: 200 });
+      hoverY.value = withTiming(0, { duration: 200 });
+    }
+  }, [enableHover]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [
+      { translateY: y.value + hoverY.value },
+      { scale: hoverScale.value }
+    ]
+  }));
 
   return (
-    <motion.div
-      whileHover={hoverAnimation}
-      whileTap={tapAnimation}
+    <MotionView
+      animatedStyle={animatedStyle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={cn(
         'rounded-2xl transition-all duration-300',
         variantClasses[variant],
@@ -72,22 +97,8 @@ export default function AdvancedCard({
       {...props}
     >
       {variant === 'holographic' && (
-        <motion.div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          animate={{
-            background: [
-              'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-              'linear-gradient(225deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-            ],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatType: 'reverse',
-          }}
-        />
+        <div className="absolute inset-0 opacity-30 pointer-events-none" />
       )}
-      
       {children}
     </MotionView>
   )

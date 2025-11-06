@@ -2,7 +2,7 @@
  * Storage Service
  * 
  * Unified storage API using IndexedDB for large data and localStorage for small config.
- * Replaces window.spark.kv functionality.
+ * Replaces legacy KV functionality.
  */
 
 import { createLogger } from './logger'

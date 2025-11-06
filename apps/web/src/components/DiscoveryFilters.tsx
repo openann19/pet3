@@ -428,7 +428,12 @@ export default function DiscoveryFilters() {
                           key={value}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => setCropSize(value as any)}
+                          onClick={() => {
+                            const cropSizeValue = value as 'any' | 'square' | 'portrait' | 'landscape'
+                            if (['any', 'square', 'portrait', 'landscape'].includes(cropSizeValue)) {
+                              setCropSize(cropSizeValue)
+                            }
+                          }}
                           className={`p-4 rounded-lg border-2 transition-all text-left ${
                             cropSize === value
                               ? 'border-primary bg-primary/10'
@@ -460,7 +465,12 @@ export default function DiscoveryFilters() {
                           key={value}
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
-                          onClick={() => setPhotoQuality(value as any)}
+                          onClick={() => {
+                            const photoQualityValue = value as 'any' | 'high' | 'verified'
+                            if (['any', 'high', 'verified'].includes(photoQualityValue)) {
+                              setPhotoQuality(photoQualityValue)
+                            }
+                          }}
                           className={`p-4 rounded-lg border-2 transition-all text-left ${
                             photoQuality === value
                               ? 'border-primary bg-primary/10'

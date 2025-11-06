@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
@@ -19,6 +19,7 @@ export interface MessagePeekProps {
   visible: boolean
   onClose: () => void
   position?: { x: number; y: number }
+  triggerRef?: React.RefObject<HTMLElement>
 }
 
 /**
@@ -26,15 +27,19 @@ export interface MessagePeekProps {
  * 
  * Long-press preview card with magnified message content
  * Opens within 120ms, respects reduced motion
+ * Manages focus: traps focus when open, returns to trigger on close
  */
 export function MessagePeek({
   message,
   visible,
   onClose,
-  position
+  position,
+  triggerRef
 }: MessagePeekProps) {
   const reducedMotion = usePrefersReducedMotion()
   const { enableMessagePeek } = useFeatureFlags()
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
   
   const scale = useSharedValue(0.9)
   const opacity = useSharedValue(0)
@@ -46,30 +51,82 @@ export function MessagePeek({
     }
     
     if (visible) {
+      // Store the previously focused element
+      previouslyFocusedRef.current = document.activeElement as HTMLElement
+      
       const duration = reducedMotion ? 120 : 180
       scale.value = withSpring(1, springConfigs.smooth)
       opacity.value = withTiming(1, { duration })
       backdropOpacity.value = withTiming(0.25, { duration })
+      
+      // Focus the close button after animation starts
+      setTimeout(() => {
+        closeButtonRef.current?.focus()
+      }, duration)
     } else {
       scale.value = withTiming(0.9, timingConfigs.fast)
       opacity.value = withTiming(0, timingConfigs.fast)
       backdropOpacity.value = withTiming(0, timingConfigs.fast)
+      
+      // Return focus to trigger element
+      if (previouslyFocusedRef.current) {
+        previouslyFocusedRef.current.focus()
+      } else if (triggerRef?.current) {
+        triggerRef.current.focus()
+      }
     }
-  }, [visible, reducedMotion, enableMessagePeek, scale, opacity, backdropOpacity])
+  }, [visible, reducedMotion, enableMessagePeek, scale, opacity, backdropOpacity, triggerRef])
   
   useEffect(() => {
     if (!visible || !enableMessagePeek) {
       return
     }
     
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         onClose()
+        e.preventDefault()
+      }
+    }
+    
+    // Trap focus within the modal
+    const handleTab = (e: KeyboardEvent): void => {
+      if (e.key !== 'Tab') return
+      
+      const dialog = closeButtonRef.current?.closest('[role="dialog"]')
+      if (!dialog) return
+      
+      const focusableElements = dialog.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as NodeListOf<HTMLElement>
+      
+      if (focusableElements.length === 0) return
+      
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement.focus()
+        }
       }
     }
     
     window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    window.addEventListener('keydown', handleTab)
+    
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+      window.removeEventListener('keydown', handleTab)
+    }
   }, [visible, onClose, enableMessagePeek])
   
   const cardStyle = useAnimatedStyle(() => ({
@@ -98,27 +155,28 @@ export function MessagePeek({
         aria-hidden="true"
       />
       <AnimatedView
-        style={cardStyle}
-        className="fixed z-50 bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-[90vw]"
         style={{ ...cardPosition, ...cardStyle }}
+        className="fixed z-50 bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-[90vw]"
         role="dialog"
         aria-modal="true"
-        aria-label="Message preview"
+        aria-labelledby="message-peek-title"
+        aria-describedby="message-peek-content"
       >
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="font-semibold text-sm text-foreground">{message.senderName}</p>
-            <p className="text-xs text-muted-foreground">{new Date(message.timestamp).toLocaleTimeString()}</p>
+            <p id="message-peek-title" className="font-semibold text-sm text-foreground">{message.senderName}</p>
+            <p className="text-xs text-muted-foreground">{message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : 'Unknown time'}</p>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-muted transition-colors"
+            className="p-1 rounded-full hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-label="Close preview"
           >
             <X size={20} />
           </button>
         </div>
-        <div className="text-base text-foreground whitespace-pre-wrap wrap-break-word">
+        <div id="message-peek-content" className="text-base text-foreground whitespace-pre-wrap wrap-break-word">
           {message.content}
         </div>
       </AnimatedView>

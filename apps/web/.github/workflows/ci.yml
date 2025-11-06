@@ -37,6 +37,9 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: Check mobile parity
+        run: npm run check:parity
+
       - name: Run tests with coverage
         run: npm run test:coverage
 

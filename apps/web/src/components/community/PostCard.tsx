@@ -159,13 +159,17 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
     triggerHaptic('selection')
     
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const spark = (window as any).spark
+      interface WindowWithSpark extends Window {
+        spark?: {
+          user: () => Promise<{ id: string; name: string; avatar?: string }>
+        }
+      }
+      const windowWithSpark = window as WindowWithSpark
+      const spark = windowWithSpark.spark
       if (!spark) {
         toast.error('User service not available')
         return
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const user = await spark.user()
       const result = await communityAPI.toggleReaction(
         post.id,

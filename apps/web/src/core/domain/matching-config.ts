@@ -118,6 +118,6 @@ export interface AuditLogEntry {
   action: string
   entity: string
   entityId: string
-  changes: Record<string, any>
-  previousValues: Record<string, any>
+  changes: Record<string, unknown>
+  previousValues: Record<string, unknown>
 }

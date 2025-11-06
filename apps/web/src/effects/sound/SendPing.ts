@@ -1,19 +1,22 @@
 /**
  * SendPing Audio Effect
  * 
- * Subtle audio feedback for message send
- * Volume-aware and feature-flagged
+ * Enhanced audio feedback for message send using professional audio engine
+ * Volume-aware, feature-flagged, with haptic feedback support
  */
+
+import { audioEngine } from './audio-engine'
 
 let featureFlags: { enableSendPing: boolean } | null = null
 
-function getFeatureFlags() {
+function getFeatureFlags(): { enableSendPing: boolean } {
   if (featureFlags) {
     return featureFlags
   }
   
   // Lazy load to avoid circular dependencies
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const flags = require('@/config/feature-flags')
     featureFlags = flags.getFeatureFlags()
     return featureFlags
@@ -24,8 +27,12 @@ function getFeatureFlags() {
 
 /**
  * Play send ping sound effect
+ * Uses advanced audio engine with spatial audio support
  */
-export function sendPing(): void {
+export async function sendPing(options: {
+  haptic?: boolean
+  volume?: number
+} = {}): Promise<void> {
   const flags = getFeatureFlags()
   
   if (!flags.enableSendPing) {
@@ -33,29 +40,17 @@ export function sendPing(): void {
   }
   
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const o = ctx.createOscillator()
-    const g = ctx.createGain()
-    
-    o.type = 'triangle'
-    o.frequency.value = 660
-    
-    g.gain.value = 0.0001
-    o.connect(g)
-    g.connect(ctx.destination)
-    
-    o.start()
-    
-    const now = ctx.currentTime
-    g.gain.exponentialRampToValueAtTime(0.05, now + 0.02)
-    o.frequency.exponentialRampToValueAtTime(990, now + 0.08)
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15)
-    
-    o.stop(now + 0.16)
+    await audioEngine.playSound('send', {
+      volume: options.volume,
+      haptic: options.haptic !== false, // Default to true
+      hapticType: 'light'
+    })
   } catch (error) {
     // Silently fail if audio context is not available
-    if (error instanceof Error && error.name !== 'NotAllowedError') {
+    const err = error instanceof Error ? error : new Error(String(error))
+    if (err.name !== 'NotAllowedError') {
       // Only log non-permission errors
+      // Audio engine handles logging internally
     }
   }
 }

@@ -1,4 +1,4 @@
-import { motion } from '@petspark/motion'
+import { MotionView, MotionText } from '@petspark/motion'
 import type { CompatibilityFactors } from '@/lib/types'
 import { useEffect, useState } from 'react'
 
@@ -50,11 +50,11 @@ export default function CompatibilityBreakdown({ factors, className }: Compatibi
 
   return (
     <div className={`rounded-3xl glass-strong premium-shadow backdrop-blur-2xl border border-white/20 ${className}`}>
-      <div className="p-6 bg-gradient-to-br from-white/20 to-white/10">
+      <div className="p-6 bg-linear-to-br from-white/20 to-white/10">
         <MotionView 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-lg font-bold mb-4 flex items-center gap-2 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
+          className="text-lg font-bold mb-4 flex items-center gap-2 bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
         >
           <MotionText
             animate={{ rotate: [0, 10, -10, 0] }}
@@ -101,7 +101,7 @@ export default function CompatibilityBreakdown({ factors, className }: Compatibi
                 <div className="relative">
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <MotionView
-                      className={`h-full bg-gradient-to-r ${colorClass} rounded-full relative overflow-hidden`}
+                      className={`h-full bg-linear-to-r ${colorClass} rounded-full relative overflow-hidden`}
                       initial={{ width: 0 }}
                       animate={{ width: `${animatedPercentage}%` }}
                       transition={{ delay: idx * 0.1 + 0.2, duration: 0.8, ease: 'easeOut' }}

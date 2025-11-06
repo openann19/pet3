@@ -301,7 +301,7 @@ export function useRAF(callback: () => void, enabled: boolean = true) {
   }, [enabled])
 }
 
-export function shallowEqual<T extends Record<string, any>>(objA: T, objB: T): boolean {
+export function shallowEqual<T extends Record<string, unknown>>(objA: T, objB: T): boolean {
   if (objA === objB) return true
 
   const keysA = Object.keys(objA)
@@ -352,7 +352,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
   return true
 }
 
-export function useShallowMemo<T extends Record<string, any>>(value: T): T {
+export function useShallowMemo<T extends Record<string, unknown>>(value: T): T {
   const ref = useRef<T>(value)
 
   if (!shallowEqual(ref.current, value)) {

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useStorage } from '@/hooks/useStorage'
-import { motion } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useMotionVariants, useStaggeredContainer, useHoverLift, useBounceOnTap, useGlowPulse, useIconRotation } from '@/effects/reanimated'
 import { Plus, PawPrint, Pencil, Heart } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +11,6 @@ import type { VideoQuality } from '@/lib/call-types'
 import type { ThemePreset } from '@/lib/theme-presets'
 import CreatePetDialog from '@/components/CreatePetDialog'
 import StatsCard from '@/components/StatsCard'
-import VisualAnalysisDemo from '@/components/VisualAnalysisDemo'
 import HighlightsBar from '@/components/stories/HighlightsBar'
 import VideoQualitySettings from '@/components/call/VideoQualitySettings'
 import ThemePresetSelector from '@/components/ThemePresetSelector'
@@ -18,6 +18,9 @@ import { SubscriptionStatusCard } from '@/components/payments/SubscriptionStatus
 import PetHealthDashboard from '@/components/health/PetHealthDashboard'
 import { VerificationButton } from '@/components/verification/VerificationButton'
 import { useApp } from '@/contexts/AppContext'
+
+// Lazy load heavy components
+const VisualAnalysisDemo = lazy(() => import('@/components/VisualAnalysisDemo').then(module => ({ default: module.default })))
 
 export default function ProfileView() {
   const { t, themePreset, setThemePreset } = useApp()
@@ -33,6 +36,61 @@ export default function ProfileView() {
   const totalSwipes = Array.isArray(swipeHistory) ? swipeHistory.length : 0
   const likeCount = Array.isArray(swipeHistory) ? swipeHistory.filter(s => s.action === 'like').length : 0
   const successRate = likeCount > 0 ? Math.round((totalMatches / likeCount) * 100) : 0
+
+  // Animation hooks for empty state
+  const emptyStateIcon = useMotionVariants({
+    initial: { scale: 0, rotate: -180 },
+    animate: { scale: 1, rotate: 0 },
+    transition: { type: 'spring', stiffness: 200, damping: 15 }
+  })
+  const emptyStatePulse = useGlowPulse({ duration: 2000, enabled: true })
+  const emptyStateTitle = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.2 }
+  })
+  const emptyStateDesc = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.3 }
+  })
+  const emptyStateButton = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.4 }
+  })
+  const emptyStateButtonHover = useHoverLift({ scale: 1.05 })
+  const emptyStateButtonTap = useBounceOnTap({ scale: 0.95 })
+
+  // Animation hooks for pet cards
+  const petCardsContainer = useStaggeredContainer({ delay: 0.08 })
+  
+  // Animation hooks for sections
+  const themeSection = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.05 }
+  })
+  const subscriptionSection = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.075 }
+  })
+  const highlightsSection = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.1 }
+  })
+  const analysisSection = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.2 }
+  })
+  const videoSection = useMotionVariants({
+    initial: { opacity: 0, translateY: 20 },
+    animate: { opacity: 1, translateY: 0 },
+    transition: { delay: 0.4 }
+  })
 
   const handleEdit = (pet: Pet) => {
     setEditingPet(pet)
@@ -55,48 +113,33 @@ export default function ProfileView() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-          <MotionView
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          <AnimatedView
+            style={emptyStateIcon.animatedStyle}
             className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-2xl relative"
           >
-            <MotionView
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
+            <AnimatedView style={emptyStatePulse.animatedStyle}>
               <PawPrint size={48} className="text-white" weight="fill" />
-            </MotionView>
-            <MotionView
-              className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent"
-              animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </MotionView>
-          <MotionView
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            </AnimatedView>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent animate-pulse opacity-50" />
+          </AnimatedView>
+          <AnimatedView
+            style={emptyStateTitle.animatedStyle}
             className="text-2xl font-bold mb-2"
           >
             {t.profile.createProfile}
-          </MotionView>
-          <MotionView
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+          </AnimatedView>
+          <AnimatedView
+            style={emptyStateDesc.animatedStyle}
             className="text-muted-foreground mb-6 max-w-md"
           >
             {t.profile.noPetsDesc}
-          </MotionView>
-          <MotionView
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <MotionView
-              whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}
-              whileTap={{ scale: 0.95 }}
+          </AnimatedView>
+          <AnimatedView style={emptyStateButton.animatedStyle}>
+            <AnimatedView
+              style={emptyStateButtonHover.animatedStyle}
+              onMouseEnter={emptyStateButtonHover.handleEnter}
+              onMouseLeave={emptyStateButtonHover.handleLeave}
+              onClick={emptyStateButtonTap.handlePress}
             >
               <Button 
                 size="lg" 
@@ -106,8 +149,8 @@ export default function ProfileView() {
                 <Plus size={20} weight="bold" className="mr-2" />
                 {t.profile.createProfileBtn}
               </Button>
-            </MotionView>
-          </MotionView>
+            </AnimatedView>
+          </AnimatedView>
         </div>
 
         <CreatePetDialog 
@@ -120,25 +163,21 @@ export default function ProfileView() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8 px-2 sm:px-4">
-      <MotionView
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
+      <AnimatedView
+        style={themeSection.animatedStyle}
         className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm py-2 sm:py-0 sm:bg-transparent sm:backdrop-blur-none"
       >
         <ThemePresetSelector 
           currentPreset={themePreset}
           onPresetChange={handleThemePresetChange}
         />
-      </MotionView>
+      </AnimatedView>
 
-      <MotionView
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.075 }}
+      <AnimatedView
+        style={subscriptionSection.animatedStyle}
       >
         <SubscriptionStatusCard />
-      </MotionView>
+      </AnimatedView>
 
       {totalSwipes > 0 && (
         <StatsCard
@@ -148,23 +187,25 @@ export default function ProfileView() {
         />
       )}
 
-      <MotionView
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+      <AnimatedView
+        style={highlightsSection.animatedStyle}
         className="glass-strong p-6 rounded-3xl border border-white/20"
       >
         <h3 className="text-lg font-bold mb-4">Story Highlights</h3>
         <HighlightsBar onlyOwn={true} />
-      </MotionView>
+      </AnimatedView>
 
-      <MotionView
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+      <AnimatedView
+        style={analysisSection.animatedStyle}
       >
-        <VisualAnalysisDemo />
-      </MotionView>
+        <Suspense fallback={
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        }>
+          <VisualAnalysisDemo />
+        </Suspense>
+      </AnimatedView>
       
       <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
@@ -180,39 +221,58 @@ export default function ProfileView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {(userPets || []).map((pet, idx) => (
-          <MotionView
-            key={pet.id}
-            initial={{ opacity: 0, y: 30, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: idx * 0.08, type: 'spring', stiffness: 300, damping: 30 }}
-            whileHover={{ y: -12, scale: 1.03 }}
-          >
-            <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl group relative border border-white/20">
-              <MotionView
-                className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-              />
-              <div className="relative h-64 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
-                <motion.img
-                  src={pet.photo}
-                  alt={pet.name}
-                  className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.12 }}
-                  transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                />
-                <MotionView
-                  className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                />
-                <MotionView as="button"
-                  onClick={() => handleEdit(pet)}
-                  className="absolute top-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl"
-                  whileHover={{ scale: 1.2, rotate: 360, borderColor: 'rgba(255, 255, 255, 0.6)' }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Pencil size={20} className="text-white drop-shadow-lg" weight="bold" />
-                </MotionView>
-              </div>
+        {(userPets || []).map((pet, idx) => {
+          const cardHover = useHoverLift({ scale: 1.03, translateY: -12 })
+          const cardEntry = useMotionVariants({
+            initial: { opacity: 0, translateY: 30, scale: 0.9 },
+            animate: { opacity: 1, translateY: 0, scale: 1 },
+            transition: { delay: idx * 0.08, type: 'spring', stiffness: 300, damping: 30 }
+          })
+          const imageHover = useHoverLift({ scale: 1.12 })
+          const editButtonHover = useHoverLift({ scale: 1.2 })
+          const editButtonRotation = useIconRotation({ enabled: false, targetRotation: 360 })
+          const editButtonTap = useBounceOnTap({ scale: 0.9 })
+          
+          return (
+            <AnimatedView
+              key={pet.id}
+              style={[cardEntry.animatedStyle, cardHover.animatedStyle]}
+              onMouseEnter={cardHover.handleEnter}
+              onMouseLeave={cardHover.handleLeave}
+            >
+              <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl group relative border border-white/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="relative h-64 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+                  <AnimatedView
+                    style={imageHover.animatedStyle}
+                    onMouseEnter={imageHover.handleEnter}
+                    onMouseLeave={imageHover.handleLeave}
+                  >
+                    <img
+                      src={pet.photo}
+                      alt={pet.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </AnimatedView>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <AnimatedView
+                    style={[editButtonHover.animatedStyle, editButtonRotation.style, editButtonTap.animatedStyle]}
+                    onMouseEnter={() => {
+                      editButtonHover.handleEnter()
+                    }}
+                    onMouseLeave={() => {
+                      editButtonHover.handleLeave()
+                    }}
+                    onClick={() => {
+                      editButtonTap.handlePress()
+                      handleEdit(pet)
+                    }}
+                    className="absolute top-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl cursor-pointer"
+                  >
+                    <Pencil size={20} className="text-white drop-shadow-lg" weight="bold" />
+                  </AnimatedView>
+                </div>
 
               <div className="p-5 bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-md">
                 <h3 className="text-xl font-bold mb-2 truncate">{pet.name}</h3>
@@ -267,22 +327,21 @@ export default function ProfileView() {
                     Health Dashboard
                   </Button>
                 </div>
+                </div>
               </div>
-            </div>
-          </MotionView>
-        ))}
+            </AnimatedView>
+          )
+        })}
       </div>
 
-      <MotionView
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+      <AnimatedView
+        style={videoSection.animatedStyle}
       >
         <VideoQualitySettings 
           currentQuality={preferredQuality}
           onQualityChange={setPreferredQuality}
         />
-      </MotionView>
+      </AnimatedView>
 
       <CreatePetDialog 
         open={showCreateDialog}

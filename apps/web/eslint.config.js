@@ -122,6 +122,23 @@ export default tseslint.config(
           message: '❌ PRODUCTION BLOCKER: spark.kv.delete() calls are banned. Use APIClient.delete() instead.',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'framer-motion',
+              message: 'Use @petspark/motion (Reanimated) instead. Framer Motion only allowed in apps/web/**/web-only/**',
+            },
+          ],
+          patterns: [
+            {
+              group: ['framer-motion'],
+              message: 'Use @petspark/motion (Reanimated) instead. Framer Motion only allowed in apps/web/**/web-only/**',
+            },
+          ],
+        },
+      ],
     },
   },
   {

@@ -117,6 +117,7 @@ export const queryKeys = {
     rooms: ['chat', 'rooms'] as const,
     room: (id: string) => ['chat', 'rooms', id] as const,
     messages: (roomId: string) => ['chat', 'rooms', roomId, 'messages'] as const,
+    voiceMessages: (roomId: string) => ['chat', 'rooms', roomId, 'voice-messages'] as const,
   },
 
   // Notifications

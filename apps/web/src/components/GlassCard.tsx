@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
-import type { HTMLMotionProps } from 'framer-motion';
-import { motion } from 'framer-motion';
+import { MotionView } from '@petspark/motion';
+import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import React from 'react';
 import type { ReactNode } from 'react';
 
-interface GlassCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
+interface GlassCardProps {
   children: ReactNode
   intensity?: 'light' | 'medium' | 'strong'
   enableHover?: boolean
@@ -23,18 +24,47 @@ export default function GlassCard({
   className,
   ...props
 }: GlassCardProps) {
+  const opacity = useSharedValue(0);
+  const y = useSharedValue(20);
+  const hoverScale = useSharedValue(1);
+  const hoverY = useSharedValue(0);
+
+  // Entry animation
+  React.useEffect(() => {
+    opacity.value = withTiming(1, { duration: 400 });
+    y.value = withTiming(0, { duration: 400 });
+  }, []);
+
+  // Hover animation
+  const handleMouseEnter = React.useCallback(() => {
+    if (enableHover) {
+      hoverScale.value = withTiming(1.02, { duration: 200 });
+      hoverY.value = withTiming(-6, { duration: 200 });
+    }
+  }, [enableHover]);
+
+  const handleMouseLeave = React.useCallback(() => {
+    if (enableHover) {
+      hoverScale.value = withTiming(1, { duration: 200 });
+      hoverY.value = withTiming(0, { duration: 200 });
+    }
+  }, [enableHover]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [
+      { translateY: y.value + hoverY.value },
+      { scale: hoverScale.value }
+    ],
+    boxShadow: enableHover && hoverY.value < 0 ?
+      '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : undefined
+  }));
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      {...(enableHover ? {
-        whileHover: {
-          scale: 1.02,
-          y: -6,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          transition: { type: 'spring', stiffness: 400, damping: 20 }
-        }
-      } : {})}
+    <MotionView
+      animatedStyle={animatedStyle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={cn(
         'rounded-3xl border shadow-xl transition-all duration-300',
         intensityClasses[intensity],

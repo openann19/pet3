@@ -49,6 +49,8 @@ import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/usePa
 import { DeleteConfirmationModal } from './DeleteConfirmationModal'
 import { DeletedGhostBubble } from './DeletedGhostBubble'
 import { UndoDeleteChip } from './UndoDeleteChip'
+import { MessagePeek } from './MessagePeek'
+import { SmartImage } from '@/components/media/SmartImage'
 
 interface MessageBubbleProps {
   message: Message
@@ -108,12 +110,14 @@ function MessageBubble({
   const { t } = useApp()
   const [showReactions, setShowReactions] = useState(false)
   const [showContextMenu, setShowContextMenu] = useState(false)
-  const [imageError, setImageError] = useState(false)
+  const [imageError] = useState(false)
   const [isPlayingVoice] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showUndo, setShowUndo] = useState(false)
   const [deletedMessage, setDeletedMessage] = useState<Message | null>(null)
+  const [showPeek, setShowPeek] = useState(false)
+  const [peekPosition, setPeekPosition] = useState<{ x: number; y: number } | undefined>()
   const bubbleRef = useRef<HTMLDivElement>(null)
   const previousStatusRef = useRef<Message['status'] | undefined>(previousStatus)
 
@@ -242,6 +246,17 @@ function MessageBubble({
 
   const handleLongPress = () => {
     if (isOwn && message.status === 'sending') return
+    
+    // Show MessagePeek if feature is enabled
+    if (bubbleRef.current) {
+      const rect = bubbleRef.current.getBoundingClientRect()
+      setPeekPosition({ 
+        x: rect.left + rect.width / 2, 
+        y: rect.top + rect.height / 2 
+      })
+      setShowPeek(true)
+    }
+    
     setShowContextMenu(true)
   }
 
@@ -593,16 +608,18 @@ function MessageBubble({
                 <ImageIcon size={32} className="text-muted-foreground" />
               </div>
             ) : (
-              <img
+              <SmartImage
                 src={message.metadata.media.url}
+                {...(message.metadata.media.thumbnail ? { lqip: message.metadata.media.thumbnail } : {})}
                 alt={message.content || 'Image'}
                 className="max-w-full h-auto rounded-lg cursor-pointer"
-                onError={() => setImageError(true)}
+                onLoad={() => {
+                  // Image loaded successfully
+                }}
                 onClick={() => {
                   // Open full-screen image
                   window.open(message.metadata!.media!.url, '_blank')
                 }}
-                loading="lazy"
               />
             )}
             {message.content && (
@@ -864,7 +881,7 @@ function MessageBubble({
 
     {/* Particle Explosion */}
     {particleExplosion.particles.length > 0 && (
-      <div className="fixed inset-0 pointer-events-none z-[9999]">
+      <div className="fixed inset-0 pointer-events-none z-9999">
         {particleExplosion.particles.map((particle) => (
           <AnimatedView
             key={particle.id}
@@ -874,6 +891,21 @@ function MessageBubble({
           </AnimatedView>
         ))}
       </div>
+    )}
+
+    {/* Message Peek */}
+    {showPeek && (
+      <MessagePeek
+        message={{
+          content: message.content,
+          senderName: isOwn ? (message.senderName || 'You') : (message.senderName || 'User'),
+          timestamp: message.timestamp || message.createdAt,
+          type: message.type,
+        }}
+        visible={showPeek}
+        onClose={() => setShowPeek(false)}
+        {...(peekPosition ? { position: peekPosition } : {})}
+      />
     )}
   </>
   )

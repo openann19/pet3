@@ -1,7 +1,8 @@
-import { configBroadcastService } from '@/core/services/config-broadcast-service'
+import { configBroadcastService } from '@/core/services/config-broadcast-service'                                                                               
 import { adminApi } from '@/api/admin-api'
 import { useStorage } from '@/hooks/useStorage'
 import type { User } from '@/lib/user-service'
+import { createLogger } from '@/lib/logger'
 import { Radio } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -206,7 +207,8 @@ export default function MapSettingsView() {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       toast.error('Failed to broadcast map settings')
-      console.error('Broadcast error:', err)
+      const logger = createLogger('MapSettingsView')
+      logger.error('Broadcast error', err, { configType: 'map' })
     } finally {
       setBroadcasting(false)
     }

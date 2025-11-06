@@ -153,7 +153,7 @@ export default function AuditLogView() {
 }
 
 function ActionIcon({ action }: { action: string }) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, React.ComponentType<{ size?: number | string; className?: string; weight?: string }>> = {
     resolve_report: Flag,
     suspend_user: Prohibit,
     ban_user: Prohibit,

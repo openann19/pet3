@@ -3,21 +3,6 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DetailedPetAnalytics } from '../DetailedPetAnalytics'
 
-vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion')
-  return {
-    ...actual,
-    motion: {
-      div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-        <div {...props}>{children}</div>
-      ),
-      li: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-        <li {...props}>{children}</li>
-      )
-    }
-  }
-})
-
 const mockPet: Pet = {
   id: 'pet-1',
   name: 'Buddy',

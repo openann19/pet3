@@ -54,10 +54,10 @@ export default function BottomNavBar() {
       <nav className="border-t border-border/40 bg-card/80 backdrop-blur-2xl shadow-2xl">
         <div className="relative overflow-hidden">
           {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-accent/5 via-transparent to-transparent pointer-events-none" />
           
           {/* Glassmorphism overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-background/40 backdrop-blur-xl pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-background/60 to-background/40 backdrop-blur-xl pointer-events-none" />
           
           <ul className="grid grid-cols-6 relative z-10">
             {items.map((item) => {

@@ -48,7 +48,7 @@ export function ChatInputBar({
   isRecordingVoice,
   setIsRecordingVoice,
   onSend,
-  onSuggestion,
+  onSuggestion: _onSuggestion,
   onShareLocation,
   onTemplate,
   onQuickReaction,

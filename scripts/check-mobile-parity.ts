@@ -5,7 +5,7 @@
  * Ensures web components have corresponding mobile implementations
  */
 
-import { Project, SyntaxKind } from 'ts-morph'
+import { Project, Node } from 'ts-morph'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
@@ -44,10 +44,24 @@ for (const f of webFiles) {
       fs.readFileSync(path.join(WEB_DIR, f), 'utf8'),
       { overwrite: true }
     )
-    const exp = src.getExportAssignments()[0] || src.getExportedDeclarations().values().next().value?.[0]
+    const exportAssignments = src.getExportAssignments()
+    const exportedDecls = src.getExportedDeclarations()
+    const firstNonTypeDecl = Array.from(exportedDecls.values())
+      .flat()
+      .find((d) => {
+        const k = d.getKindName()
+        return k !== 'InterfaceDeclaration' && k !== 'TypeAliasDeclaration'
+      })
+    const exp = exportAssignments[0] || firstNonTypeDecl
 
     if (exp) {
-      const name = exp.getName?.() || exp.getExpression?.()?.getText() || base
+      let name = base
+      if (Node.isExportAssignment(exp)) {
+        name = exp.getExpression().getText()
+      } else {
+        const maybeName = (exp as unknown as { getName?: () => string }).getName?.()
+        if (maybeName) name = maybeName
+      }
       const nsrc = project.createSourceFile(
         'tmp.native.tsx',
         fs.readFileSync(nativePath, 'utf8'),
@@ -57,7 +71,12 @@ for (const f of webFiles) {
       const hasExport = Array.from(nativeExports.values()).some((decls) =>
         decls.some((d) => {
           const text = d.getText()
-          return text.includes(`export default ${name}`) || text.includes(`export { ${name} }`) || text.includes(`export function ${name}`)
+          return (
+            text.includes(`export default ${name}`) ||
+            text.includes(`export { ${name} }`) ||
+            text.includes(`export function ${name}`) ||
+            text.includes(`export class ${name}`)
+          )
         })
       )
 

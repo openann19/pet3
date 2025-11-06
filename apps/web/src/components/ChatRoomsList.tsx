@@ -1,4 +1,4 @@
-import { motion } from '@petspark/motion'
+import { MotionView } from '@petspark/motion'
 import { ChatCircle, Check, Checks } from '@phosphor-icons/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { ChatRoom } from '@/lib/chat-types'
@@ -18,7 +18,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
+          className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
         >
           <MotionView
             animate={{ scale: [1, 1.2, 1] }}
@@ -27,7 +27,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
             <ChatCircle size={48} className="text-primary" weight="fill" />
           </MotionView>
           <MotionView
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
             animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
@@ -81,7 +81,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
             >
               {hasUnread && (
                 <MotionView
-                  className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5"
+                  className="absolute inset-0 bg-linear-to-r from-primary/5 to-accent/5"
                   animate={{ opacity: [0.5, 0.8, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
@@ -95,7 +95,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                   >
                     <Avatar className={`w-14 h-14 ${hasUnread ? 'ring-2 ring-primary' : 'ring-2 ring-white/30'}`}>
                       <AvatarImage src={room.matchedPetPhoto} alt={room.matchedPetName || 'Pet'} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
+                      <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
                         {room.matchedPetName?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
@@ -105,15 +105,15 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                     <MotionView
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 min-w-[24px] h-6 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shadow-lg px-2"
+                      className="absolute -top-1 -right-1 min-w-[24px] h-6 rounded-full bg-linear-to-br from-accent to-primary flex items-center justify-center shadow-lg px-2"
                     >
-                      <MotionText
+                      <MotionView
                         className="text-white text-xs font-bold"
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 1, repeat: Infinity }}
                       >
-                        {unreadValue > 99 ? '99+' : unreadValue}
-                      </MotionText>
+                        {unreadValue > 99 ? '99+' : String(unreadValue)}
+                      </MotionView>
                     </MotionView>
                   )}
                 </div>

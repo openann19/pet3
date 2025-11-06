@@ -143,7 +143,7 @@ export function EnhancedCarousel({
 
   return (
     <div className={cn('relative overflow-hidden rounded-xl', className)}>
-      <div className="relative aspect-[4/3] bg-muted">
+      <div className="relative aspect-4/3 bg-muted">
         <Presence visible={true}>
           <div
             key={currentIndex}

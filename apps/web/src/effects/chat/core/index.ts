@@ -1,17 +1,14 @@
 /**
- * Chat Effects Core Utilities
+ * Core Chat Effects Infrastructure
  * 
- * Central export point for core utilities:
+ * Exports all core utilities for chat effects:
  * - Reduced motion detection
- * - Telemetry tracking
- * - Haptic management
+ * - Haptic manager
  * - Seeded RNG
  * 
  * Location: apps/web/src/effects/chat/core/index.ts
  */
 
-export * from './reduced-motion'
-export * from './telemetry'
 export * from './haptic-manager'
+export * from './reduced-motion'
 export * from './seeded-rng'
-

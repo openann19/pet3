@@ -15,7 +15,7 @@ import { ErrorFallback } from './ErrorFallback';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UIProvider } from './contexts/UIContext';
-import { QueryProvider } from './components/QueryProvider';
+import { QueryProvider } from './providers/QueryProvider';
 
 import "./index.css";
 import "./main.css";
@@ -31,6 +31,18 @@ import { detectRefreshRate } from './lib/refresh-rate';
 if (typeof window !== 'undefined') {
   detectRefreshRate()
 }
+
+// Initialize Web Vitals collection
+import { initWebVitals } from './lib/web-vitals';
+if (import.meta.env.PROD) {
+  initWebVitals()
+}
+
+// Initialize error reporting
+import { initErrorReporting } from './lib/error-reporting';
+initErrorReporting({
+  enabled: import.meta.env.PROD,
+})
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

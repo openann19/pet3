@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { db, type QueryOptions } from '@/lib/database'
 import { logger } from '@/lib/logger'
 import { ArrowsClockwise, CheckCircle, Database, Eye, Trash, User, XCircle } from '@phosphor-icons/react'
-import { motion } from '@petspark/motion'
+import { MotionView } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 

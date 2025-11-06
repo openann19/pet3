@@ -13,6 +13,7 @@ import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { safeHref } from '@/lib/url-safety'
+import { SmartImage } from '@/components/media/SmartImage'
 
 export interface LinkPreviewProps {
   url: string
@@ -77,10 +78,12 @@ export function LinkPreview({
             className="flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
           >
             {image && (
-              <img
+              <SmartImage
                 src={image}
                 alt={title ?? new URL(url).hostname}
                 className="w-20 h-20 object-cover rounded"
+                width={80}
+                height={80}
               />
             )}
             <div className="flex-1 min-w-0">

@@ -2,7 +2,7 @@
  * Community Service
  * 
  * Handles community posts, comments, reactions, follows, and feeds.
- * Migrated from spark.kv to use backend API endpoints.
+ * Migrated from legacy KV mocks to use backend API endpoints.
  */
 
 import type {

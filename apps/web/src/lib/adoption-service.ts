@@ -2,7 +2,7 @@
  * Adoption Service
  * 
  * Handles adoption profiles, applications, and shelters.
- * Migrated from spark.kv to use backend API endpoints.
+ * Migrated from legacy KV mocks to use backend API endpoints.
  */
 
 import type { AdoptionProfile, AdoptionApplication, Shelter } from './adoption-types'

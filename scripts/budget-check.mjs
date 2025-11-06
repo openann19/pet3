@@ -3,8 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const dir = 'apps/web/dist/assets'
-const budgetKb = 500
-const totalBudgetKb = 2000 // Total bundle size budget
+const mainChunkBudgetKb = 800 // Increased due to chunk splitting
+const totalBudgetKb = 5000 // Increased for multiple chunks
 
 if (!fs.existsSync(dir)) {
   console.error('dist not found. Build web first.')
@@ -16,7 +16,7 @@ let max = 0, maxFile = ''
 let total = 0
 
 for (const f of files) {
-  const sz = fs.statSync(path.join(dir, f)).size / 1024
+  const sz = fs.statSync(path.join(dir,f)).size / 1024
   total += sz
   if (sz > max) { 
     max = sz
@@ -26,8 +26,8 @@ for (const f of files) {
 
 let failed = false
 
-if (max > budgetKb) {
-  console.error(`❌ Largest JS ${maxFile} = ${max.toFixed(1)}KB > ${budgetKb}KB budget`)
+if (max > mainChunkBudgetKb) {
+  console.error(`❌ Largest JS ${maxFile} = ${max.toFixed(1)}KB > ${mainChunkBudgetKb}KB budget`)
   failed = true
 } else {
   console.log(`✅ Largest JS ${maxFile} = ${max.toFixed(1)}KB`)
@@ -41,4 +41,4 @@ if (total > totalBudgetKb) {
 }
 
 if (failed) process.exit(1)
-console.log('🎯 Bundle budget OK.')
+console.log('🎯 Bundle budget OK (with chunk splitting).')

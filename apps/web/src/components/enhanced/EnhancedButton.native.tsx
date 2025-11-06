@@ -12,7 +12,7 @@ export interface EnhancedButtonProps {
   disabled?: boolean
 }
 
-export const EnhancedButton = forwardRef<any, EnhancedButtonProps>(
+export const EnhancedButton = forwardRef<unknown, EnhancedButtonProps>(
   ({ onPress, style, children, disabled = false }, ref) => {
     const bounceAnimation = usePressBounce(0.95)
 

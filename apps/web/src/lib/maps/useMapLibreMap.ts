@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// Dynamic runtime import for maplibre-gl to avoid bundling into main chunk.
+// We keep type-only imports so TypeScript can validate without pulling runtime.
+import type {
+  Map as MapInstance,
+  Marker as MarkerInstance,
+  MapMouseEvent,
+} from 'maplibre-gl';
 import type { Location } from '@/lib/maps/types';
 import { getMapStyleUrl } from './provider-config';
 
@@ -22,6 +27,23 @@ interface UseMapLibreMapProps {
   clusterMarkers?: boolean;
 }
 
+// Singleton promise to ensure we only load the library & CSS once
+let mapLibreLoadPromise: Promise<typeof import('maplibre-gl')> | null = null;
+function loadMapLibre(): Promise<typeof import('maplibre-gl')> {
+  if (!mapLibreLoadPromise) {
+    mapLibreLoadPromise = import('maplibre-gl').then(async (mod) => {
+      // Load CSS side-effect dynamically (ignored in SSR)
+      try {
+        await import('maplibre-gl/dist/maplibre-gl.css');
+      } catch {
+        // CSS load failure should not break map usage
+      }
+      return mod.default ? (mod.default as typeof import('maplibre-gl')) : mod;
+    });
+  }
+  return mapLibreLoadPromise;
+}
+
 export function useMapLibreMap({
   container,
   center,
@@ -31,52 +53,65 @@ export function useMapLibreMap({
   onMapClick,
   clusterMarkers = true,
 }: UseMapLibreMapProps): {
-  map: maplibregl.Map | null;
+  map: MapInstance | null;
   isLoading: boolean;
   error: Error | null;
 } {
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
+  const mapRef = useRef<MapInstance | null>(null);
+  const markersRef = useRef<MarkerInstance[]>([]);
+  const runtimeLibRef = useRef<typeof import('maplibre-gl') | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!container) return;
+    let cancelled = false;
 
-    try {
-      const map = new maplibregl.Map({
-        container,
-        style: getMapStyleUrl(),
-        center: [center.lng, center.lat],
-        zoom,
-        maxZoom: 18,
-        minZoom: 3,
-      });
+    (async () => {
+      try {
+        const lib = await loadMapLibre();
+        if (cancelled) return;
+        runtimeLibRef.current = lib;
+        const map = new lib.Map({
+          container,
+          style: getMapStyleUrl(),
+          center: [center.lng, center.lat],
+          zoom,
+          maxZoom: 18,
+          minZoom: 3,
+        });
 
-      map.on('load', () => {
+        map.on('load', () => {
+          if (cancelled) return;
+          setIsLoading(false);
+          setError(null);
+        });
+
+        map.on('error', (e) => {
+          if (cancelled) return;
+          const err = e.error instanceof Error ? e.error : new Error(String(e.error));
+          setError(err);
+          setIsLoading(false);
+        });
+
+        mapRef.current = map;
+      } catch (err) {
+        if (cancelled) return;
+        const errorObj = err instanceof Error ? err : new Error(String(err));
+        setError(errorObj);
         setIsLoading(false);
-        setError(null);
-      });
+      }
+    })();
 
-      map.on('error', (e) => {
-        const err = e.error instanceof Error ? e.error : new Error(String(e.error));
-        setError(err);
-        setIsLoading(false);
-      });
-
-      mapRef.current = map;
-
-      return () => {
-        markersRef.current.forEach((marker) => marker.remove());
-        markersRef.current = [];
-        map.remove();
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      setError(error);
-      setIsLoading(false);
-      return undefined;
-    }
+    return () => {
+      cancelled = true;
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, [container, center.lat, center.lng, zoom]);
 
   useEffect(() => {
@@ -91,7 +126,8 @@ export function useMapLibreMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.loaded() || !markers.length) return;
+    const lib = runtimeLibRef.current;
+    if (!map || !lib || !map.loaded() || markers.length === 0) return;
 
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
@@ -116,7 +152,7 @@ export function useMapLibreMap({
         el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         el.style.cursor = 'pointer';
 
-        const marker = new maplibregl.Marker(el)
+        const marker = new lib.Marker(el)
           .setLngLat([cluster.location.lng, cluster.location.lat])
           .addTo(map);
 
@@ -145,7 +181,7 @@ export function useMapLibreMap({
         el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         el.style.cursor = 'pointer';
 
-        const marker = new maplibregl.Marker(el)
+        const marker = new lib.Marker(el)
           .setLngLat([markerData.location.lng, markerData.location.lat])
           .addTo(map);
 
@@ -156,13 +192,13 @@ export function useMapLibreMap({
         markersRef.current.push(marker);
       });
     }
-  }, [mapRef.current, markers, clusterMarkers, onMarkerClick]);
+  }, [markers, clusterMarkers, onMarkerClick]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.loaded() || !onMapClick) return;
 
-    const handleClick = (e: maplibregl.MapMouseEvent) => {
+    const handleClick = (e: MapMouseEvent) => {
       onMapClick({
         lat: e.lngLat.lat,
         lng: e.lngLat.lng,
@@ -180,60 +216,53 @@ export function useMapLibreMap({
     const map = mapRef.current;
     if (!map || !map.loaded()) return;
 
-    let pendingRegion: { lat: number; lng: number; zoom: number } | null = null
-    let idleCallbackId: number | NodeJS.Timeout | null = null
+    let pendingRegion: { lat: number; lng: number; zoom: number } | null = null;
+    let idleCallbackId: number | NodeJS.Timeout | null = null;
 
     const handleMoveEnd = (): void => {
-      const center = map.getCenter()
-      const zoom = map.getZoom()
-      
-      pendingRegion = {
-        lat: center.lat,
-        lng: center.lng,
-        zoom,
-      }
+      const c = map.getCenter();
+      const z = map.getZoom();
+      pendingRegion = { lat: c.lat, lng: c.lng, zoom: z };
 
-      // Cancel existing callback
       if (idleCallbackId !== null) {
         if (typeof idleCallbackId === 'number') {
-          cancelIdleCallback(idleCallbackId)
+          const cib = (globalThis as any).cancelIdleCallback as ((id: number) => void) | undefined;
+          if (typeof cib === 'function') cib(idleCallbackId as number);
         } else {
-          clearTimeout(idleCallbackId)
+          clearTimeout(idleCallbackId as NodeJS.Timeout);
         }
       }
 
-      // Use requestIdleCallback if available, fallback to setTimeout
-      const scheduleUpdate = (callback: () => void): void => {
-        if (typeof requestIdleCallback !== 'undefined') {
-          idleCallbackId = requestIdleCallback(callback, { timeout: 120 })
+      const scheduleUpdate = (cb: () => void): void => {
+        const ric = (globalThis as any).requestIdleCallback as ((cb: () => void, opts?: { timeout?: number }) => number) | undefined;
+        if (typeof ric === 'function') {
+          idleCallbackId = ric(cb, { timeout: 120 });
         } else {
-          idleCallbackId = setTimeout(callback, 120)
+          idleCallbackId = setTimeout(cb, 120);
         }
-      }
+      };
 
       scheduleUpdate(() => {
         if (pendingRegion) {
-          // Update center prop will trigger re-render if needed
-          // This throttles rapid region changes
-          pendingRegion = null
+          pendingRegion = null; // Throttled noop placeholder for potential future state sync
         }
-        idleCallbackId = null
-      })
-    }
+        idleCallbackId = null;
+      });
+    };
 
-    map.on('moveend', handleMoveEnd)
-    
+    map.on('moveend', handleMoveEnd);
     return () => {
-      map.off('moveend', handleMoveEnd)
+      map.off('moveend', handleMoveEnd);
       if (idleCallbackId !== null) {
         if (typeof idleCallbackId === 'number') {
-          cancelIdleCallback(idleCallbackId)
+          const cib = (globalThis as any).cancelIdleCallback as ((id: number) => void) | undefined;
+          if (typeof cib === 'function') cib(idleCallbackId as number);
         } else {
-          clearTimeout(idleCallbackId)
+          clearTimeout(idleCallbackId as NodeJS.Timeout);
         }
       }
-    }
-  }, [mapRef.current])
+    };
+  }, []);
 
   return {
     map: mapRef.current,

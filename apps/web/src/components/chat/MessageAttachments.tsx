@@ -5,6 +5,7 @@ import { Play, Pause, DownloadSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { SmartImage } from '@/components/media/SmartImage'
 import type { MessageAttachment } from '@/lib/chat-types'
 
 interface MessageAttachmentsProps {
@@ -112,11 +113,14 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
     >
-      <img
+      <SmartImage
         src={attachment.url}
+        {...(attachment.thumbnail ? { lqip: attachment.thumbnail } : {})}
         alt={attachment.name ?? 'Photo attachment'}
         className="w-full h-auto"
-        loading="lazy"
+        onLoad={() => {
+          // Image loaded successfully
+        }}
       />
       <Button
         size="icon"

@@ -1,5 +1,4 @@
 import { adoptionApi } from '@/api/adoption-api'
-import { communityAPI } from '@/api/community-api'
 import { lostFoundAPI } from '@/api/lost-found-api'
 import { AdoptionCard } from '@/components/adoption/AdoptionCard'
 import { AdoptionDetailDialog } from '@/components/adoption/AdoptionDetailDialog'
@@ -13,10 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useApp } from '@/contexts/AppContext'
-import { filterPostsByFollows } from '@/core/services/follow-graph'
 import { useStorage } from '@/hooks/useStorage'
 import type { AdoptionProfile } from '@/lib/adoption-types'
-import type { Post, PostFilters } from '@/lib/community-types'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import type { LostAlert } from '@/lib/lost-found-types'
@@ -30,6 +27,11 @@ import { usePageTransition } from '@/effects/reanimated/use-page-transition'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useFeedManagement, useInfiniteScroll } from '@/components/community/features/feed'
+import { VirtualList, VirtualGrid } from '@/components/virtual'
+import { usePullToRefresh } from '@/components/community/features/pull-to-refresh'
+import { useTrendingTags } from '@/components/community/features/trending-tags'
+import { usePostActions } from '@/components/community/features/post-actions'
 
 const logger = createLogger('CommunityView')
 
@@ -58,65 +60,45 @@ function convertLostAlertToLostPetAlert(alert: LostAlert): LostPetAlert {
 
 export default function CommunityView(): JSX.Element {
   const { t } = useApp()
-  const [activeTab, setActiveTab] = useState<'feed' | 'adoption' | 'lost-found'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'adoption' | 'lost-found'>('feed')                                                                        
   const [feedTab, setFeedTab] = useState<'for-you' | 'following'>('for-you')
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
-  const [hasMore, setHasMore] = useState(true)
-  const [cursor, setCursor] = useState<string | undefined>()
   const [showComposer, setShowComposer] = useState(false)
-  const [trendingTags, setTrendingTags] = useState<string[]>([])
-  const loadingRef = useRef(false)
-  const observerTarget = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const startY = useRef<number>(0)
-  const isPulling = useRef<boolean>(false)
   
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const pullDistance = useSharedValue(0)
+  // Feed management hook
+  const feedManagement = useFeedManagement({
+    feedTab,
+    enabled: activeTab === 'feed'
+  })
   
-  const pullOpacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(
-        pullDistance.value,
-        [0, 80],
-        [0, 1],
-        Extrapolation.CLAMP
-      )
-    }
-  }) as AnimatedStyle
+  // Infinite scroll hook
+  const infiniteScroll = useInfiniteScroll({
+    hasMore: feedManagement.hasMore,
+    loading: feedManagement.loading,
+    onLoadMore: () => void feedManagement.loadFeed(true),
+    enabled: activeTab === 'feed'
+  })
   
-  const pullRotationStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{
-        rotate: `${interpolate(
-          pullDistance.value,
-          [0, 80],
-          [0, 360],
-          Extrapolation.CLAMP
-        )}deg`
-      }]
-    }
-  }) as AnimatedStyle
+  // Trending tags hook
+  const trendingTags = useTrendingTags()
   
-  const pullScaleStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{
-        scale: interpolate(
-          pullDistance.value,
-          [0, 80],
-          [0.5, 1],
-          Extrapolation.CLAMP
-        )
-      }]
-    }
-  }) as AnimatedStyle
+  // Pull to refresh hook
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: async () => {
+      await feedManagement.refreshFeed()
+      await trendingTags.loadTrendingTags()
+    },
+    enabled: activeTab === 'feed',
+    activeTab
+  })
   
-  const pullTranslateStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: pullDistance.value }]
-    }
-  }) as AnimatedStyle
+  // Post actions hook
+  const postActions = usePostActions({
+    onPostCreated: () => {
+      void feedManagement.refreshFeed()
+      void trendingTags.loadTrendingTags()
+    },
+    onRefreshFeed: () => void feedManagement.refreshFeed()
+  })
   
   const mainTabsOpacity = useSharedValue(0)
   const mainTabsTranslateY = useSharedValue(20)
@@ -165,46 +147,6 @@ export default function CommunityView(): JSX.Element {
     void loadLostFoundAlerts();
   }, [loadLostFoundAlerts]);
 
-  const loadFeed = useCallback(async (loadMore = false) => {
-    if (loadingRef.current) return
-    
-    try {
-      loadingRef.current = true
-      setLoading(true)
-      
-      const { userService } = await import('@/lib/user-service')
-      const user = await userService.user()
-      const filters: PostFilters & { limit?: number; cursor?: string } = {
-        limit: 20,
-        ...(loadMore && cursor ? { cursor } : {})
-      }
-
-      const response = await communityAPI.queryFeed(filters, user?.id)
-      
-      // Filter posts by follow relationships if "following" tab is selected
-      let filteredPosts = response.posts
-      if (feedTab === 'following') {
-        if (user) {
-          filteredPosts = await filterPostsByFollows<Post>(response.posts, user.id)
-        }
-      }
-      
-      if (loadMore) {
-        setPosts((currentPosts) => [...(Array.isArray(currentPosts) ? currentPosts : []), ...filteredPosts])
-      } else {
-        setPosts(filteredPosts)
-      }
-      
-      setHasMore(!!response.nextCursor)
-      setCursor(response.nextCursor)
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to load feed', err, { action: 'loadFeed', feedTab })
-    } finally {
-      setLoading(false)
-      loadingRef.current = false
-    }
-  }, [feedTab, cursor])
 
   const loadAdoptionProfiles = useCallback(async (loadMore = false) => {
     if (adoptionLoadingRef.current) return
@@ -290,136 +232,12 @@ export default function CommunityView(): JSX.Element {
     }
   }, [])
 
-  const loadTrendingTags = useCallback(async () => {
-    try {
-      const { userService } = await import('@/lib/user-service')
-      const user = await userService.user()
-      const response = await communityAPI.queryFeed({ limit: 100 }, user?.id)
-      const allTags: string[] = []
-      
-      if (Array.isArray(response.posts)) {
-        response.posts.forEach((post: Post) => {
-          if (post.tags && Array.isArray(post.tags)) {
-            allTags.push(...post.tags)
-          }
-        })
-      }
-      
-      // Count tag frequency
-      const tagCounts = allTags.reduce((acc, tag) => {
-        acc[tag] = (acc[tag] ?? 0) + 1
-        return acc
-      }, {} as Record<string, number>)
-      
-      // Sort by frequency and take top 10
-      const sortedTags = Object.entries(tagCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([tag]) => tag)
-      
-      setTrendingTags(sortedTags)
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to load trending tags', err, { action: 'loadTrendingTags' })                                                                         
-      setTrendingTags([])
-    }
-  }, [])
-
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    const container = containerRef.current
-    if (container?.scrollTop === 0 && activeTab === 'feed' && e.touches?.[0]) {
-      startY.current = e.touches[0].clientY
-      isPulling.current = true
-    }
-  }, [activeTab])
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    const container = containerRef.current
-    if (!isPulling.current || !container || !e.touches?.[0]) return
-
-    const currentY = e.touches[0].clientY
-    const diff = currentY - startY.current
-
-    if (diff > 0 && diff < 120) {
-      pullDistance.value = diff
-    }
-  }, [pullDistance])
-
-  const handleTouchEnd = useCallback(async () => {
-    if (!isPulling.current) return
-    isPulling.current = false
-
-    const distance = pullDistance.value
-    
-    if (distance > 80) {
-      setIsRefreshing(true)
-      haptics.impact('light')
-      
-      try {
-        await loadFeed()
-        await loadTrendingTags()
-        haptics.success()
-        toast.success(t.community?.refreshed ?? 'Feed refreshed!')
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error))
-        logger.error('Failed to refresh feed', err)
-        haptics.error()
-        toast.error(t.community?.refreshError ?? 'Failed to refresh')
-      } finally {
-        setIsRefreshing(false)
-      }
-    }
-
-    pullDistance.value = withSpring(0, springConfigs.smooth)
-  }, [pullDistance, t, loadFeed, loadTrendingTags])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container || activeTab !== 'feed') return
-
-    const touchStartHandler = (e: TouchEvent) => handleTouchStart(e)
-    const touchMoveHandler = (e: TouchEvent) => handleTouchMove(e)
-    const touchEndHandler = () => {
-      void handleTouchEnd()
-    }
-
-    container.addEventListener('touchstart', touchStartHandler, { passive: true })                                                                               
-    container.addEventListener('touchmove', touchMoveHandler, { passive: true })
-    container.addEventListener('touchend', touchEndHandler, { passive: true })
-
-    return () => {
-      container.removeEventListener('touchstart', touchStartHandler)
-      container.removeEventListener('touchmove', touchMoveHandler)
-      container.removeEventListener('touchend', touchEndHandler)
-    }
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd, activeTab])
-
   useEffect(() => {
     if (activeTab === 'feed') {
-      void loadFeed()
-      void loadTrendingTags()
-    } else if (activeTab === 'adoption') {
-      void loadAdoptionProfiles()
+      void trendingTags.loadTrendingTags()
     }
-  }, [activeTab, feedTab, loadFeed, loadTrendingTags, loadAdoptionProfiles])
+  }, [activeTab, trendingTags])
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0]
-        if (entry?.isIntersecting && hasMore && !loading && !loadingRef.current && activeTab === 'feed') {                                                      
-          void loadFeed(true)
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current)
-    }
-
-    return () => observer.disconnect()
-  }, [hasMore, loading, activeTab, loadFeed])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -439,14 +257,6 @@ export default function CommunityView(): JSX.Element {
     return () => observer.disconnect()
   }, [adoptionHasMore, adoptionLoading, activeTab, loadAdoptionProfiles])
 
-  const handleAuthorClick = (authorId: string): void => {
-    logger.info('View author profile', { action: 'viewAuthorProfile', authorId })
-  }
-
-  const handlePostCreated = useCallback(() => {
-    void loadFeed()
-    void loadTrendingTags()
-  }, [loadFeed, loadTrendingTags])
 
   const handleMainTabChange = (value: string) => {
     setActiveTab(value as 'feed' | 'adoption')
@@ -455,9 +265,7 @@ export default function CommunityView(): JSX.Element {
 
   const handleFeedTabChange = (value: string) => {
     setFeedTab(value as 'for-you' | 'following')
-    setPosts([])
-    setCursor(undefined)
-    setHasMore(true)
+    feedManagement.resetFeed()
     haptics.selection()
   }
 
@@ -466,25 +274,13 @@ export default function CommunityView(): JSX.Element {
     haptics.impact()
   }
 
-  const handleToggleFavorite = (profileId: string) => {
-    setFavoritedProfiles((currentFavorites) => {
-      const current = Array.isArray(currentFavorites) ? currentFavorites : []
-      const isFavorited = current.includes(profileId)
-      if (isFavorited) {
-        return current.filter(id => id !== profileId)
-      } else {
-        return [...current, profileId]
-      }
-    })
-    haptics.trigger('light')
-  }
 
   // Animation hooks
   const headerTransition = usePageTransition({ isVisible: true, direction: 'down', duration: 300 })
-  const trendingTransition = usePageTransition({ isVisible: trendingTags.length > 0, direction: 'up', duration: 300 })
+  const trendingTransition = usePageTransition({ isVisible: trendingTags.trendingTags.length > 0, direction: 'up', duration: 300 })
   const refreshButtonHover = useHoverLift({ scale: 1.05 })
   const createButtonHover = useHoverLift({ scale: 1.05 })
-  const emptyStateTransition = usePageTransition({ isVisible: posts.length === 0 && !loading, direction: 'fade', duration: 500 })
+  const emptyStateTransition = usePageTransition({ isVisible: feedManagement.posts.length === 0 && !feedManagement.loading, direction: 'fade', duration: 500 })
   
   // Empty state animation
   const emptyScale = useSharedValue(1)
@@ -492,7 +288,7 @@ export default function CommunityView(): JSX.Element {
   const loadingRotation = useSharedValue(0)
   
   useEffect(() => {
-    if (posts.length === 0 && !loading) {
+    if (feedManagement.posts.length === 0 && !feedManagement.loading) {
       emptyScale.value = withRepeat(
         withSequence(
           withTiming(1.1, { duration: 1000 }),
@@ -511,10 +307,10 @@ export default function CommunityView(): JSX.Element {
         false
       )
     }
-  }, [posts.length, loading, emptyScale, emptyRotation])
+  }, [feedManagement.posts.length, feedManagement.loading, emptyScale, emptyRotation])
   
   useEffect(() => {
-    if (loading || adoptionLoading) {
+    if (feedManagement.loading || adoptionLoading) {
       loadingRotation.value = withRepeat(
         withTiming(360, { duration: 1000 }),
         -1,
@@ -523,7 +319,7 @@ export default function CommunityView(): JSX.Element {
     } else {
       loadingRotation.value = 0
     }
-  }, [loading, adoptionLoading, loadingRotation])
+  }, [feedManagement.loading, adoptionLoading, loadingRotation])
   
   const loadingSpinnerStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${loadingRotation.value}deg` }],
@@ -607,20 +403,20 @@ export default function CommunityView(): JSX.Element {
   })) as AnimatedStyle
 
   return (
-    <div ref={containerRef} className="max-w-6xl mx-auto space-y-6 pb-8 relative">
+    <div ref={pullToRefresh.containerRef} className="max-w-6xl mx-auto space-y-6 pb-8 relative">
       {/* Pull-to-Refresh Indicator */}
       <AnimatedView
         className="absolute top-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-        style={[pullTranslateStyle, pullOpacityStyle]}
+        style={[pullToRefresh.pullTranslateStyle, pullToRefresh.pullOpacityStyle]}
       >
         <AnimatedView
           className="bg-card/95 backdrop-blur-xl shadow-xl rounded-full p-3 border border-border/50"
-          style={[pullRotationStyle, pullScaleStyle]}
+          style={[pullToRefresh.pullRotationStyle, pullToRefresh.pullScaleStyle]}
         >
           <ArrowsClockwise 
             size={24} 
             weight="bold" 
-            className={`${isRefreshing ? 'animate-spin' : ''} text-primary`}
+            className={`${pullToRefresh.isRefreshing ? 'animate-spin' : ''} text-primary`}
           />
         </AnimatedView>
       </AnimatedView>
@@ -628,7 +424,7 @@ export default function CommunityView(): JSX.Element {
       {/* Header */}
       <AnimatedView style={headerTransition.style} className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
             {t.community?.title ?? 'Community'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -648,32 +444,27 @@ export default function CommunityView(): JSX.Element {
                 <Button 
                   variant="outline" 
                   size="icon"
-                  onClick={() => {
-                    void (async () => {
-                      setIsRefreshing(true)
-                      haptics.impact()
-                      try {
-                        await loadFeed()
-                        await loadTrendingTags()
-                        haptics.success()
-                        toast.success(t.community?.refreshed ?? 'Feed refreshed!')
-                      } catch (error) {
-                        const err = error instanceof Error ? error : new Error(String(error))
-                        logger.error('Failed to refresh feed', err)
-                        haptics.error()
-                        toast.error(t.community?.refreshError ?? 'Failed to refresh')
-                      } finally {
-                        setIsRefreshing(false)
-                      }
-                    })()
+                  onClick={async () => {
+                    haptics.impact()
+                    try {
+                      await feedManagement.refreshFeed()
+                      await trendingTags.loadTrendingTags()
+                      haptics.success()
+                      toast.success(t.community?.refreshed ?? 'Feed refreshed!')
+                    } catch (error) {
+                      const err = error instanceof Error ? error : new Error(String(error))
+                      logger.error('Failed to refresh feed', err)
+                      haptics.error()
+                      toast.error(t.community?.refreshError ?? 'Failed to refresh')
+                    }
                   }}
-                  disabled={isRefreshing}
+                  disabled={pullToRefresh.isRefreshing}
                   className="shadow-md"
                 >
                   <ArrowsClockwise 
                     size={20} 
                     weight="bold" 
-                    className={isRefreshing ? 'animate-spin' : ''}
+                    className={pullToRefresh.isRefreshing ? 'animate-spin' : ''}
                   />
                 </Button>
               </AnimatedView>
@@ -714,10 +505,10 @@ export default function CommunityView(): JSX.Element {
           {/* Feed Tab Content */}
           <TabsContent value="feed" className="mt-6 space-y-6">
             {/* Trending Tags */}
-            {trendingTags.length > 0 && (
+            {trendingTags.trendingTags.length > 0 && (
               <AnimatedView
                 style={trendingTransition.style}
-                className="bg-gradient-to-br from-card via-card to-card/50 rounded-xl p-4 border border-border/50 shadow-lg"
+                className="bg-linear-to-br from-card via-card to-card/50 rounded-xl p-4 border border-border/50 shadow-lg"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <TrendUp size={20} className="text-accent" weight="bold" />
@@ -727,7 +518,7 @@ export default function CommunityView(): JSX.Element {
                   <Fire size={16} className="text-destructive ml-auto" weight="fill" />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {trendingTags.map(tag => (
+                  {trendingTags.trendingTags.map(tag => (
                     <Badge
                       key={tag}
                       variant="secondary"
@@ -755,9 +546,9 @@ export default function CommunityView(): JSX.Element {
               </TabsList>
 
               <TabsContent value={feedTab} className="mt-6 space-y-4 max-w-3xl mx-auto">
-            {loading && posts.length === 0 ? (
+            {feedManagement.loading && feedManagement.posts.length === 0 ? (
               <RankingSkeleton count={3} variant="post" />
-            ) : posts.length === 0 ? (
+            ) : feedManagement.posts.length === 0 ? (
               <AnimatedView
                 style={emptyStateTransition.style}
                 className="text-center py-20"
@@ -789,30 +580,42 @@ export default function CommunityView(): JSX.Element {
               </AnimatedView>
             ) : (
               <>
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onAuthorClick={handleAuthorClick}
-                  />
-                ))}
+                <VirtualList
+                  items={feedManagement.posts}
+                  renderItem={(post) => (
+                    <div className="mb-4">
+                      <PostCard
+                        post={post}
+                        onAuthorClick={postActions.handleAuthorClick}
+                      />
+                    </div>
+                  )}
+                  estimateSize={() => 400}
+                  overscan={3}
+                  containerClassName="space-y-4"
+                  onEndReached={() => {
+                    if (feedManagement.hasMore && !feedManagement.loading) {
+                      infiniteScroll.loadMore()
+                    }
+                  }}
+                  endReachedThreshold={300}
+                  keyExtractor={(post) => post.id}
+                />
 
-                {/* Infinite scroll trigger */}
-                <div ref={observerTarget} className="h-20 flex items-center justify-center">
-                  {loading && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <AnimatedView style={loadingSpinnerStyle}>
-                        <Sparkle size={20} />
-                      </AnimatedView>
-                      <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
-                    </div>
-                  )}
-                  {!hasMore && posts.length > 0 && (
-                    <div className="text-center text-muted-foreground text-sm py-8">
-                      {t.community?.endOfFeed ?? "You're all caught up! 🎉"}
-                    </div>
-                  )}
-                </div>
+                {/* Loading indicator */}
+                {feedManagement.loading && feedManagement.posts.length > 0 && (
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground py-4">
+                    <AnimatedView style={loadingSpinnerStyle}>
+                      <Sparkle size={20} />
+                    </AnimatedView>
+                    <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
+                  </div>
+                )}
+                {!feedManagement.hasMore && feedManagement.posts.length > 0 && (
+                  <div className="text-center text-muted-foreground text-sm py-8">
+                    {t.community?.endOfFeed ?? "You're all caught up! 🎉"}
+                  </div>
+                )}
               </>
             )}
               </TabsContent>
@@ -861,34 +664,44 @@ export default function CommunityView(): JSX.Element {
               </AnimatedView>
             ) : (
               <>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {adoptionProfiles.map((profile) => (
+                <VirtualGrid
+                  items={adoptionProfiles}
+                  renderItem={(profile) => (
                     <AdoptionCard
-                      key={profile._id}
                       profile={profile}
                       onSelect={setSelectedAdoptionProfile}
-                      onFavorite={handleToggleFavorite}
+                      onFavorite={postActions.handleToggleFavorite}
                       isFavorited={Array.isArray(favoritedProfiles) && favoritedProfiles.includes(profile._id)}
                     />
-                  ))}
-                </div>
+                  )}
+                  columns={3}
+                  itemHeight={400}
+                  gap={24}
+                  overscan={3}
+                  containerClassName="p-4"
+                  onEndReached={() => {
+                    if (adoptionHasMore && !adoptionLoading && activeTab === 'adoption') {
+                      void loadAdoptionProfiles(true)
+                    }
+                  }}
+                  endReachedThreshold={300}
+                  keyExtractor={(profile) => profile._id}
+                />
 
-                {/* Infinite scroll trigger for adoption */}
-                <div ref={adoptionObserverTarget} className="h-20 flex items-center justify-center">
-                  {adoptionLoading && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <AnimatedView style={adoptionLoadingSpinnerStyle}>
-                        <PawPrint size={20} />
-                      </AnimatedView>
-                      <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
-                    </div>
-                  )}
-                  {!adoptionHasMore && adoptionProfiles.length > 0 && (
-                    <div className="text-center text-muted-foreground text-sm py-8">
-                      {t.adoption?.endOfList ?? "You've seen all available pets! 🐾"}
-                    </div>
-                  )}
-                </div>
+                {/* Loading indicator */}
+                {adoptionLoading && adoptionProfiles.length > 0 && (
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground py-4">
+                    <AnimatedView style={adoptionLoadingSpinnerStyle}>
+                      <PawPrint size={20} />
+                    </AnimatedView>
+                    <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
+                  </div>
+                )}
+                {!adoptionHasMore && adoptionProfiles.length > 0 && (
+                  <div className="text-center text-muted-foreground text-sm py-8">
+                    {t.adoption?.endOfList ?? "You've seen all available pets! 🐾"}
+                  </div>
+                )}
               </>
             )}
           </TabsContent>
@@ -937,7 +750,7 @@ export default function CommunityView(): JSX.Element {
       <PostComposer
         open={showComposer}
         onOpenChange={setShowComposer}
-        onPostCreated={handlePostCreated}
+        onPostCreated={postActions.handlePostCreated}
       />
 
       {/* Adoption Detail Dialog */}

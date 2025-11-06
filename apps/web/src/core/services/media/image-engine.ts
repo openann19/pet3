@@ -248,9 +248,25 @@ export async function applyImagePipeline(
     let h = input.height ?? baseImage.height()
     let current = baseImage
 
+interface SkiaCanvas {
+  clear: (color: ReturnType<typeof Skia.Color>) => void
+  drawImageRect: (...args: unknown[]) => void
+  drawRect: (...args: unknown[]) => void
+  [key: string]: unknown
+}
+
+function isSkiaCanvas(value: unknown): value is SkiaCanvas {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'clear' in value &&
+    'drawImageRect' in value &&
+    typeof (value as SkiaCanvas).clear === 'function'
+  )
+}
+
     const run = (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      draw: (canvas: any) => void,
+      draw: (canvas: SkiaCanvas) => void,
       nextW = w,
       nextH = h
     ): void => {
@@ -259,7 +275,7 @@ export async function applyImagePipeline(
         throw new Error('Failed to create offscreen surface')
       }
       const canvas = surface.getCanvas()
-      if (!canvas) {
+      if (!canvas || !isSkiaCanvas(canvas)) {
         throw new Error('Failed to get canvas from surface')
       }
       draw(canvas)

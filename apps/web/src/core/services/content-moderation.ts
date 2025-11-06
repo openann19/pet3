@@ -8,14 +8,65 @@
 import { createLogger } from '@/lib/logger'
 import { getPhotoModerationConfig } from '@/lib/api-config'
 import Filter from 'bad-words'
-import * as toxicity from '@tensorflow-models/toxicity'
-import { loadNSFWModel } from '@/lib/nsfw/loader'
+
+interface ToxicityPrediction {
+  label: string
+  results: Array<{
+    match: boolean
+    probabilities: number[]
+  }>
+}
+
+function isToxicityPrediction(value: unknown): value is ToxicityPrediction {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'label' in value &&
+    'results' in value &&
+    Array.isArray((value as ToxicityPrediction).results) &&
+    typeof (value as ToxicityPrediction).label === 'string'
+  )
+}
+
+function isToxicityModel(value: unknown): value is { classify: (texts: string[]) => Promise<ToxicityPrediction[]> } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'classify' in value &&
+    typeof (value as { classify: unknown }).classify === 'function'
+  )
+}
+
+interface NSFWPrediction {
+  className: string
+  probability: number
+}
+
+function isNSFWPrediction(value: unknown): value is NSFWPrediction {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'className' in value &&
+    'probability' in value &&
+    typeof (value as NSFWPrediction).className === 'string' &&
+    typeof (value as NSFWPrediction).probability === 'number'
+  )
+}
+
+function isNSFWModel(value: unknown): value is { classify: (img: HTMLImageElement) => Promise<NSFWPrediction[]> } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'classify' in value &&
+    typeof (value as { classify: unknown }).classify === 'function'
+  )
+}
 
 const logger = createLogger('ContentModeration')
 
 // Initialize models lazily
-let toxicityModel: toxicity.ToxicityClassifier | null = null
-let nsfwModel: Awaited<ReturnType<typeof loadNSFWModel>> | null = null
+let toxicityModel: unknown = null // Will be loaded dynamically
+let nsfwModel: unknown = null // Will be loaded dynamically
 let modelsInitialized = false
 
 // Bad words filter instance
@@ -65,7 +116,9 @@ async function initializeModels(): Promise<void> {
   try {
     // Load toxicity model for text profanity detection
     const threshold = 0.7
-    toxicityModel = await toxicity.load(threshold, [
+    const { load: loadToxicity } = await import('@tensorflow-models/toxicity')
+
+    toxicityModel = await loadToxicity(threshold, [
       'toxicity',
       'severe_toxicity',
       'identity_attack',
@@ -78,6 +131,7 @@ async function initializeModels(): Promise<void> {
 
     // Load NSFW.js model dynamically from CDN (browser-only)
     try {
+      const { loadNSFWModel } = await import('@/lib/nsfw/loader')
       nsfwModel = await loadNSFWModel()
       logger.info('NSFW model loaded successfully')
     } catch (error) {
@@ -92,7 +146,7 @@ async function initializeModels(): Promise<void> {
 
     modelsInitialized = true
   } catch (error) {
-    logger.error('Failed to initialize moderation models', error instanceof Error ? error : new Error(String(error)))                                           
+    logger.error('Failed to initialize moderation models', error instanceof Error ? error : new Error(String(error)))
     // Continue without models - will fall back to keyword-based detection
   }
 }
@@ -143,7 +197,7 @@ async function detectProfanity(text: string): Promise<number> {
     }
 
     // If models are available, use TensorFlow toxicity model
-    if (toxicityModel) {
+    if (toxicityModel && isToxicityModel(toxicityModel)) {
       const predictions = await toxicityModel.classify([text])
       
       // Combine scores from different toxicity categories
@@ -151,10 +205,10 @@ async function detectProfanity(text: string): Promise<number> {
       let maxScore = 0
       
       for (const prediction of predictions) {
-        if (toxicCategories.includes(prediction.label)) {
+        if (isToxicityPrediction(prediction) && toxicCategories.includes(prediction.label)) {
           const match = prediction.results[0]
           if (match && match.match) {
-            maxScore = Math.max(maxScore, match.probabilities[1] || 0)
+            maxScore = Math.max(maxScore, match.probabilities[1] ?? 0)
           }
         }
       }
@@ -192,13 +246,15 @@ async function detectNSFWText(text: string): Promise<number> {
     await initializeModels()
 
     // Use TensorFlow toxicity model for sexual explicit content
-    if (toxicityModel) {
+    if (toxicityModel && isToxicityModel(toxicityModel)) {
       const predictions = await toxicityModel.classify([text])
       
       // Look for sexual explicit category
-      const sexualExplicit = predictions.find(p => p.label === 'sexual_explicit')
+      const sexualExplicit = predictions.find((p): p is ToxicityPrediction => 
+        isToxicityPrediction(p) && p.label === 'sexual_explicit'
+      )
       if (sexualExplicit && sexualExplicit.results[0]?.match) {
-        return sexualExplicit.results[0].probabilities[1] || 0
+        return sexualExplicit.results[0].probabilities[1] ?? 0
       }
     }
 
@@ -230,7 +286,7 @@ async function detectNSFWMedia(mediaUrl: string, mediaType: 'image' | 'video'): 
     // Initialize models if not already loaded
     await initializeModels()
 
-    if (!nsfwModel) {
+    if (!nsfwModel || !isNSFWModel(nsfwModel)) {
       logger.warn('NSFW model not available, skipping media moderation')
       return 0 // Assume safe if model unavailable
     }
@@ -254,6 +310,11 @@ async function detectNSFWMedia(mediaUrl: string, mediaType: 'image' | 'video'): 
     })
 
     // Classify image
+    if (!nsfwModel || !isNSFWModel(nsfwModel)) {
+      logger.warn('NSFW model not available, skipping media moderation')
+      return 0
+    }
+    
     const predictions = await nsfwModel.classify(img)
     
     // Get NSFW categories: Porn, Hentai, Sexy
@@ -261,7 +322,7 @@ async function detectNSFWMedia(mediaUrl: string, mediaType: 'image' | 'video'): 
     let maxScore = 0
     
     for (const pred of predictions) {
-      if (nsfwCategories.includes(pred.className)) {
+      if (isNSFWPrediction(pred) && nsfwCategories.includes(pred.className)) {
         maxScore = Math.max(maxScore, pred.probability)
       }
     }
@@ -269,7 +330,9 @@ async function detectNSFWMedia(mediaUrl: string, mediaType: 'image' | 'video'): 
     logger.debug('Media NSFW detection completed', {
       mediaUrl,
       maxScore,
-      predictions: predictions.map((p: { className: string; probability: number }) => ({ className: p.className, probability: p.probability }))
+      predictions: predictions
+        .filter(isNSFWPrediction)
+        .map((p) => ({ className: p.className, probability: p.probability }))
     })
 
     return maxScore

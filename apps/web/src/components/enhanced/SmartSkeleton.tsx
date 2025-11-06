@@ -47,7 +47,7 @@ export function SmartSkeleton({
             {animate && (
               <AnimatedView
                 style={shimmerStyle}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
               >
                 <div />
               </AnimatedView>
@@ -68,7 +68,7 @@ export function SmartSkeleton({
             {animate && (
               <AnimatedView
                 style={shimmerStyle}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
               >
                 <div />
               </AnimatedView>
@@ -83,7 +83,7 @@ export function SmartSkeleton({
             {animate && (
               <AnimatedView
                 style={shimmerStyle}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent pointer-events-none"
               >
                 <div />
               </AnimatedView>
@@ -106,7 +106,7 @@ export function SmartSkeleton({
                 {animate && (
                   <AnimatedView
                     style={shimmerStyle}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded-full"
                   >
                     <div />
                   </AnimatedView>
@@ -117,7 +117,7 @@ export function SmartSkeleton({
                   {animate && (
                     <AnimatedView
                       style={shimmerStyle}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded"
+                      className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
                     >
                       <div />
                     </AnimatedView>
@@ -127,7 +127,7 @@ export function SmartSkeleton({
                   {animate && (
                     <AnimatedView
                       style={shimmerStyle}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded"
+                      className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
                     >
                       <div />
                     </AnimatedView>
@@ -144,7 +144,7 @@ export function SmartSkeleton({
             {animate && (
               <AnimatedView
                 style={shimmerStyle}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none rounded-lg"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent pointer-events-none rounded-lg"
               >
                 <div />
               </AnimatedView>
@@ -182,7 +182,7 @@ export function SmartSkeleton({
             {animate && (
               <AnimatedView
                 style={shimmerStyle}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
               >
                 <div />
               </AnimatedView>
