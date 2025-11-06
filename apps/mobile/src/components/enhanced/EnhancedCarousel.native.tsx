@@ -99,7 +99,7 @@ export function EnhancedCarousel({
         }
       }
     }
-    return undefined
+    return
   }, [autoPlay, autoPlayInterval, goToNext, itemCount])
 
   const gestureHandler = useAnimatedGestureHandler({

@@ -90,7 +90,7 @@ export function useChatMessages(
     enabled: !!chatRoomId,
     getNextPageParam: () => {
       // Return cursor for next page if available
-      return undefined
+      return
     },
     staleTime: 30 * 1000, // 30 seconds for messages
     gcTime: 5 * 60 * 1000, // 5 minutes

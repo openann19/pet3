@@ -47,7 +47,7 @@ export function LiquidDots({
       arr.push({ phase, a, y: useSharedValue(0), o: useSharedValue(1) })
     }
     return arr
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [dots, seed])
 
   config.forEach((d, i) => {

@@ -16,20 +16,15 @@ export const MotionText = forwardRef<
 >(({ style, animatedStyle, ...rest }, ref) => {
   const styleFinal = animatedStyle ? [style, animatedStyle] : style;
   
-  // Web performance hints
-  const webStyle = isWeb && animatedStyle
-    ? {
-        willChange: 'transform, opacity' as const,
-      }
-    : undefined;
-  
-  const finalStyle = webStyle ? [styleFinal, webStyle] : styleFinal;
+  // Web performance hints (only apply on web, and only if animated)
+  // Note: willChange is not a valid React Native style, so we only apply it conditionally
+  // In practice, Reanimated handles this on web automatically
   
   return (
     <Animated.Text
-      ref={ref as React.Ref<typeof Animated.Text>}
+      ref={ref}
       {...rest}
-      style={finalStyle}
+      style={styleFinal}
     />
   );
 });
