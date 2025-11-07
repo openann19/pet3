@@ -38,8 +38,8 @@ const parseLogLevel = (value?: string | null): LogLevel | undefined => {
 }
 
 const resolveDefaultLevel = (): LogLevel => {
-  const env = (typeof process !== 'undefined' ? (process.env as EnvWithLogLevel) : undefined) ?? {}
-  const envLevel = env.EXPO_PUBLIC_LOG_LEVEL ?? env.LOG_LEVEL ?? null
+  const env = (typeof process !== 'undefined' && process.env ? process.env as EnvWithLogLevel : undefined) ?? {}
+  const envLevel = env['EXPO_PUBLIC_LOG_LEVEL'] ?? env['LOG_LEVEL'] ?? null
   const parsed = parseLogLevel(envLevel)
   if (isDefined(parsed)) {
     return parsed
