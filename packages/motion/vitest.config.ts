@@ -30,6 +30,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@petspark/motion': path.resolve(__dirname, './src'),
+      '@petspark/shared': path.resolve(__dirname, '../shared/src/index.ts'),
+      '@/core/logger': path.resolve(__dirname, '../shared/src/logger.ts'),
+      '@/core/guards': path.resolve(__dirname, '../shared/src/guards.ts'),
     },
   },
 });
