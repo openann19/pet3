@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLogger, getDefaultLogger, setDefaultLogger, type Logger } from '../logger.js'
-import logger from '@/core/logger';
 
 describe('Logger', () => {
   beforeEach(() => {

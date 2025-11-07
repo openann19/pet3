@@ -23,7 +23,7 @@ export function Slider({
   // In a real implementation, you'd use a proper slider library
   return (
     <div 
-      className={`slider ${String(className || '' ?? '')}`}
+      className={`slider ${String(className ?? '')}`}
       style={{
         width: '100%',
         height: '20px',

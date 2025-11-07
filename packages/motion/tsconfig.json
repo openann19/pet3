@@ -14,7 +14,13 @@
       "react-native-reanimated",
       "vitest/globals"
     ],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/core/guards": ["../shared/src/guards.ts"],
+      "@/core/logger": ["../shared/src/logger.ts"],
+      "@petspark/shared": ["../shared/src/index.ts"]
+    }
   },
   "include": [
     "src/**/*",
