@@ -10,7 +10,7 @@ import { createLogger } from './logger'
 import { storage } from './storage'
 import { APIClient } from './api-client'
 import { ENDPOINTS } from './endpoints'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('ImageUpload')
 

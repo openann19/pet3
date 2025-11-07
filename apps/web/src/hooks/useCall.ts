@@ -12,7 +12,7 @@ import {
 import type { WebRTCPeer } from '@/lib/webrtc-peer'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('useCall')
 

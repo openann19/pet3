@@ -14,7 +14,7 @@ import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { ArrowUUpLeft } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UndoDeleteChipProps {
   onUndo: () => void

@@ -4,7 +4,7 @@ import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, withDelay, interpolate, Extrapolation } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { Heart, Sparkle } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface MatchCelebrationProps {
   show: boolean

@@ -5,7 +5,7 @@ import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { CheckCircle, Heart, Lightning, Sparkle, Star, Trophy } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface TrustBadge {
   type: 'verified' | 'health' | 'responsive' | 'experienced' | 'top-rated' | 'favorite'

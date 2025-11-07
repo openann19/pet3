@@ -2,7 +2,7 @@ import { useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-
 import { motion } from '../tokens';
 import { useCallback } from 'react';
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UsePressBounceOptions {
   scaleOnPress?: number;

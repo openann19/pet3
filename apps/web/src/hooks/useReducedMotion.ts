@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Hook to detect if user prefers reduced motion

@@ -3,7 +3,7 @@
 import { useReactionAnimation } from '@/hooks/use-reaction-animation'
 import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface AnimatedReactionProps {
   emoji: string

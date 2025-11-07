@@ -10,7 +10,7 @@ import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation'
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 import { TypingDotsWeb } from './TypingDotsWeb'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface WebBubbleWrapperProps {
   children: ReactNode

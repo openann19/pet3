@@ -4,7 +4,7 @@ import { motion, Presence } from '@petspark/motion'
 import { X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface DismissibleOverlayProps {
   isOpen: boolean

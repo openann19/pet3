@@ -14,7 +14,7 @@ import { liveStreamingAPI } from '@/api/live-streaming-api'
 import type { LiveStream, LiveStreamChatMessage } from '@/lib/live-streaming-types'
 import { haptics } from '@/lib/haptics'
 import { logger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface LiveStreamRoomProps {
   streamId: string

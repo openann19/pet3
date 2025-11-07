@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Logger utility for structured logging throughout the application

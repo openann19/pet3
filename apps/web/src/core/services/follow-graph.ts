@@ -6,7 +6,7 @@
 
 import { createLogger } from '@/lib/logger'
 import { storage } from '@/lib/storage'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('FollowGraph')
 

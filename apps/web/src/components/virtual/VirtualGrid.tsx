@@ -5,7 +5,7 @@
 
 import * as React from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface VirtualGridProps<T> {
   items: T[]

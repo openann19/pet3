@@ -1,6 +1,6 @@
 import { createLogger } from './logger'
 import type { ExtendedPermissionDescriptor } from './types/performance-api'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('Permissions')
 

@@ -10,7 +10,7 @@ import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface NavItem {
   to: string

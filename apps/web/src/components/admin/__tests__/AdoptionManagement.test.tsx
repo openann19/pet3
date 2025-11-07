@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import AdoptionManagement from '../AdoptionManagement'
 import * as adoptionApiModule from '@/api/adoption-api'
 import { useStorage } from '@/hooks/useStorage'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 vi.mock('@/api/adoption-api', () => ({
   adoptionApi: {

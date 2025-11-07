@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react'
 import type { ReactNode, MouseEvent, TouchEvent } from 'react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface BubbleGestureWrapperProps {
   children: ReactNode

@@ -3,7 +3,7 @@
 import { useSharedValue, useAnimatedStyle, withSequence, withTiming, withSpring, runOnUI, type SharedValue } from 'react-native-reanimated'
 import { useCallback } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseUndoSendAnimationOptions {
   onComplete?: () => void

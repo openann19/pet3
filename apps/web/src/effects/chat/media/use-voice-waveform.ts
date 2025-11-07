@@ -18,7 +18,7 @@ import {
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '../core/reduced-motion'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Spring configuration for playhead

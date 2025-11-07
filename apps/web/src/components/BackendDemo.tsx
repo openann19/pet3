@@ -11,7 +11,7 @@ import { ArrowsClockwise, CheckCircle, Database, Eye, Trash, User, XCircle } fro
 import { MotionView } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface DemoRecord {
   id: string

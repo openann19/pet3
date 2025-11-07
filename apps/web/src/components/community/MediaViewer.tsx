@@ -15,7 +15,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useHoverTap } from '@/effects/reanimated'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('MediaViewer')
 

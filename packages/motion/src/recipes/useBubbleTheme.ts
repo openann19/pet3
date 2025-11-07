@@ -11,7 +11,7 @@ import { useCallback, useEffect } from 'react'
 import { useSharedValue, useAnimatedStyle, withTiming, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
 import { timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export type SenderType = 'user' | 'bot' | 'system'
 export type MessageType = 'ai-answer' | 'error' | 'system-alert' | 'default'
@@ -131,13 +131,13 @@ export function useBubbleTheme(
     const primaryMatch = themeColor.primary.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
     const secondaryMatch = themeColor.secondary.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
 
-    const primaryR = primaryMatch ? parseInt(primaryMatch[1], 10) : 59
-    const primaryG = primaryMatch ? parseInt(primaryMatch[2], 10) : 130
-    const primaryB = primaryMatch ? parseInt(primaryMatch[3], 10) : 246
+    const primaryR = primaryMatch?.[1] ? parseInt(primaryMatch[1], 10) : 59
+    const primaryG = primaryMatch?.[2] ? parseInt(primaryMatch[2], 10) : 130
+    const primaryB = primaryMatch?.[3] ? parseInt(primaryMatch[3], 10) : 246
 
-    const secondaryR = secondaryMatch ? parseInt(secondaryMatch[1], 10) : 139
-    const secondaryG = secondaryMatch ? parseInt(secondaryMatch[2], 10) : 92
-    const secondaryB = secondaryMatch ? parseInt(secondaryMatch[3], 10) : 246
+    const secondaryR = secondaryMatch?.[1] ? parseInt(secondaryMatch[1], 10) : 139
+    const secondaryG = secondaryMatch?.[2] ? parseInt(secondaryMatch[2], 10) : 92
+    const secondaryB = secondaryMatch?.[3] ? parseInt(secondaryMatch[3], 10) : 246
 
     // Return platform-agnostic style (platform adapters will convert)
     return {

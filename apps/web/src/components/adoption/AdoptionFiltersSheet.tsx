@@ -10,7 +10,7 @@ import type { AdoptionListingFilters, AdoptionListingStatus } from '@/lib/adopti
 import { haptics } from '@/lib/haptics'
 import { X } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface AdoptionFiltersSheetProps {
   open: boolean

@@ -10,7 +10,7 @@ import { useUserStore } from '../store/user-store'
 import { queryKeys, mutationKeys } from '../lib/query-client'
 import type { ApiResponse, PaginatedResponse } from '../types/api'
 import type { Match, PetProfile } from '../types/pet'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 import { matchingApi, apiClient } from '../utils/api-client'
 
 /**

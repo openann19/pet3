@@ -15,7 +15,7 @@ import { useHoverLift, type UseHoverLiftReturn } from '@/effects/reanimated/use-
 import { useBounceOnTap, type UseBounceOnTapReturn } from '@/effects/reanimated/use-bounce-on-tap'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface PetDetailDialogProps {
   pet: Pet | null

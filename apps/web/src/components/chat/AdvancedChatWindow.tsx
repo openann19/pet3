@@ -22,7 +22,7 @@ import { MessageItem } from './components/MessageItem'
 import { DateGroup } from './components/DateGroup'
 import { ScrollToBottomFAB } from './components/ScrollToBottomFAB'
 import { TypingIndicator } from './components/TypingIndicator'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdvancedChatWindow')
 

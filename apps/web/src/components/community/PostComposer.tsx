@@ -22,7 +22,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PostComposer')
 

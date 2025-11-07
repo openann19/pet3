@@ -27,7 +27,7 @@ import { toast } from 'sonner'
 import { haptics } from '@/lib/haptics'
 import StoryTemplateSelector from './StoryTemplateSelector'
 import StoryFilterSelector from './StoryFilterSelector'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface CreateStoryDialogProps {
   open: boolean

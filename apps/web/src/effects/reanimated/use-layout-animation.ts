@@ -9,7 +9,7 @@ import {
 } from 'react-native-reanimated'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseLayoutAnimationOptions {
   enabled?: boolean

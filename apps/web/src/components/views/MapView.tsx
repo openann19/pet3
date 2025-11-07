@@ -27,7 +27,7 @@ import { useStorage } from '@/hooks/useStorage';
 import { toast } from 'sonner';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { logger } from '@/lib/logger';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 type MapViewMode = 'discover' | 'places' | 'playdate' | 'lost-pet' | 'matches';
 

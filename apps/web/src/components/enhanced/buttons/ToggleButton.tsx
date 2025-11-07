@@ -7,7 +7,7 @@ import { springConfigs } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   checked?: boolean

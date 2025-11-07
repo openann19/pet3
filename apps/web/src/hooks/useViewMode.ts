@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('useViewMode')
 

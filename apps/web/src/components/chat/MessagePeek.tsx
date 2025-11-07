@@ -8,7 +8,7 @@ import { usePrefersReducedMotion } from '@/utils/reduced-motion'
 import { useFeatureFlags } from '@/config/feature-flags'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { X } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface MessagePeekProps {
   message: {

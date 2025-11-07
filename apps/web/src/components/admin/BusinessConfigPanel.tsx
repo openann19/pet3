@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { useStorage } from '@/hooks/useStorage'
 import { logger } from '@/lib/logger'
 import type { User } from '@/lib/user-service'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export default function BusinessConfigPanel() {
   const { t: _t } = useApp()

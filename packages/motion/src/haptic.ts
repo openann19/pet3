@@ -1,9 +1,16 @@
-import logger from '@/core/logger';
-
 /**
  * Cross-platform haptic feedback utilities
  * Safely handles Expo Haptics with availability checks for iOS/Android
  */
+
+// Simple console logger for haptics (won't throw on web)
+const logger = {
+  warn: (...args: unknown[]) => {
+    if (typeof console !== 'undefined') {
+      console.warn(...args)
+    }
+  }
+}
 
 let Haptics: typeof import('expo-haptics') | undefined
 let isHapticsAvailable = false
@@ -68,7 +75,7 @@ export function triggerHaptic(style: HapticStyle = 'light'): void {
 /**
  * Trigger custom haptic pattern
  */
-export function triggerHapticPattern(pattern: HapticPattern): void {
+export function triggerHapticPattern(_pattern: HapticPattern): void {
   if (!isHapticsAvailable || !Haptics) return
 
   // For now, just trigger a simple impact

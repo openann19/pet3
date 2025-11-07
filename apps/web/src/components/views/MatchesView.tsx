@@ -20,7 +20,7 @@ import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useState, useEffect } from 'react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface MatchesViewProps {
   onNavigateToChat?: () => void

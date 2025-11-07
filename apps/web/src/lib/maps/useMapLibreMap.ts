@@ -8,7 +8,7 @@ import type {
 } from 'maplibre-gl';
 import type { Location } from '@/lib/maps/types';
 import { getMapStyleUrl } from './provider-config';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface MapMarker {
   id: string;

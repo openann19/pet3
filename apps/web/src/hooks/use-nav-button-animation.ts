@@ -4,7 +4,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withSequence, withRepeat,
 import { useEffect, useCallback } from 'react'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseNavButtonAnimationOptions {
   isActive?: boolean

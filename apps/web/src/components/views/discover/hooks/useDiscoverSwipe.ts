@@ -12,7 +12,7 @@ import type { Pet, SwipeAction, Match } from '@/lib/types'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('useDiscoverSwipe')
 

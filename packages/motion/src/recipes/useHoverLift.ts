@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { motion } from '../tokens';
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const isWeb = typeof window !== 'undefined' && 'onmouseover' in window;
 
@@ -12,8 +12,8 @@ export interface UseHoverLiftOptions {
 }
 
 export interface UseHoverLiftReturn {
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
+  onMouseEnter: (() => void) | undefined;
+  onMouseLeave: (() => void) | undefined;
   animatedStyle: ReturnType<typeof useAnimatedStyle>;
 }
 

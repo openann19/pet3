@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { MapLocationPicker } from '../MapLocationPicker'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
   AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (

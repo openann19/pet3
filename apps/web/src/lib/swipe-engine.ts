@@ -1,5 +1,5 @@
 import { haptics } from './haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface SwipeConfig {
   engageThreshold: number

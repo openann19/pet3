@@ -15,7 +15,7 @@ import {
 
 import { springs, timings, reducedMotion } from './constants'
 import type { SpringConfig, TimingConfig, TransitionConfig } from './types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const linearEasing = (value: number): number => Easing.linear(value)
 const easeEasing = (value: number): number => Easing.ease(value)
@@ -41,11 +41,16 @@ export function createSpringAnimation(
   }
 
   // Convert our spring config to Reanimated spring config
-  const springConfig = {
-    damping: config.damping ?? springs.default.damping,
-    stiffness: config.stiffness ?? springs.default.stiffness,
-    mass: config.mass ?? springs.default.mass,
-    velocity: config.velocity ?? springs.default.velocity,
+  const springConfig: {
+    damping: number;
+    stiffness: number;
+    mass: number;
+    velocity: number;
+  } = {
+    damping: (config.damping ?? springs.default.damping) as number,
+    stiffness: (config.stiffness ?? springs.default.stiffness) as number,
+    mass: (config.mass ?? springs.default.mass) as number,
+    velocity: (config.velocity ?? springs.default.velocity ?? 0) as number,
   }
 
   return withSpring(toValue, springConfig)

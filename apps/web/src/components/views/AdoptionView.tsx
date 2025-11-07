@@ -21,7 +21,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdoptionView')
 

@@ -37,7 +37,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item'
 import { useExpandCollapse } from '@/effects/reanimated/use-expand-collapse'
 import { useRotation } from '@/effects/reanimated/use-rotation'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdoptionApplicationReview')
 

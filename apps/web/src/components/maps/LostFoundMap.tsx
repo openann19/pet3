@@ -11,7 +11,7 @@ import MapLibreMap from '@/components/maps/MapLibreMap';
 import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface LostFoundMapProps {
   alerts: LostPetAlert[];

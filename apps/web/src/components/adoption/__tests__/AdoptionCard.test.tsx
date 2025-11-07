@@ -5,7 +5,7 @@ import { AdoptionCard } from '../AdoptionCard'
 import type { AdoptionProfile } from '@/lib/adoption-types'
 import { useApp } from '@/contexts/AppContext'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 vi.mock('@/contexts/AppContext', () => ({
   useApp: vi.fn(),

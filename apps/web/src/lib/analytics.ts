@@ -1,7 +1,7 @@
 import { createLogger } from './logger'
 import { APIClient } from './api-client'
 import { ENV } from '@/config/env'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 type EventProperties = Record<string, string | number | boolean>
 

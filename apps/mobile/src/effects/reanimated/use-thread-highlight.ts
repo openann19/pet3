@@ -3,7 +3,7 @@
 import { useThreadHighlight as useThreadHighlightBase } from '@petspark/motion'
 import type { UseThreadHighlightOptions, UseThreadHighlightReturn } from '@petspark/motion'
 import { Platform } from 'react-native'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface MobileThreadHighlightOptions extends UseThreadHighlightOptions {
   /**

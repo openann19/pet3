@@ -3,7 +3,7 @@ import { generateButtonTokensForTheme } from './button-tokens-generator'
 import { getThemePreset } from '@/lib/theme-presets'
 import { verifyButtonContrast } from '../utils/contrast'
 import type { ThemePreset } from '@/lib/theme-presets'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 describe('button-tokens-generator', () => {
   const testPresets: ThemePreset[] = [

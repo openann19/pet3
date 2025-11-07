@@ -3,7 +3,7 @@ import { APIClient } from '@/lib/api-client'
 import { createLogger } from '@/lib/logger'
 import { authApi } from '@/api/auth-api'
 import type { User } from '@/lib/contracts'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AuthContext')
 

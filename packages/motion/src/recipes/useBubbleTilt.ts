@@ -9,7 +9,6 @@
 
 import { useCallback } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
-import { springConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
 
 export interface UseBubbleTiltOptions {

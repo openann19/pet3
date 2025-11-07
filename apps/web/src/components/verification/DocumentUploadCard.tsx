@@ -12,7 +12,7 @@ import {
 } from '@phosphor-icons/react'
 import type { VerificationDocument, DocumentType } from '@/lib/verification-types'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface DocumentUploadCardProps {
   documentType: DocumentType

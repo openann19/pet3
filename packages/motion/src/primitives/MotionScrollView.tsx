@@ -1,5 +1,5 @@
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
-import type { ScrollViewProps, ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
 /**
  * Unified animated ScrollView component.

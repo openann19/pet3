@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
-import { AccessibilityInfo, Platform } from 'react-native'
+import { AccessibilityInfo } from 'react-native'
 
 import type { ReducedMotionConfig } from './types'
 import { performanceBudgets } from './constants'

@@ -86,7 +86,10 @@ export const timingConfigs = {
    */
   elastic: {
     duration: 400,
-    easing: Easing.elastic(1),
+    easing: (() => {
+      const bezierFactory = Easing.bezier(0.68, -0.55, 0.27, 1.55)
+      return bezierFactory as unknown as (t: number) => number
+    })(),
   } as TimingConfig,
 } as const
 

@@ -12,7 +12,7 @@ import type {
 import { PRODUCT_CATALOG, getPlanById } from './payments-catalog'
 import { paymentsApi } from '@/api/payments-api'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PaymentsService')
 

@@ -3,7 +3,7 @@ import { MotionView } from '@petspark/motion';
 import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import React from 'react';
 import type { ReactNode } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface GlassCardProps {
   children: ReactNode

@@ -1,7 +1,7 @@
 // Lightweight, structured logger used to replace console.* (tree-shakeable in prod).
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
-const envLogLevel = typeof process !== 'undefined' && process.env?.LOG_LEVEL;
+const envLogLevel = typeof process !== 'undefined' && process.env ? process.env['LOG_LEVEL'] : undefined;
 let level: LogLevel = validLevels.includes(envLogLevel as LogLevel) ? (envLogLevel as LogLevel) : 'info';
 
 const order: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };

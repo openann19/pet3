@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useTypingManager } from './use-typing-manager'
 import type { RealtimeClient } from '@/lib/realtime'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 describe('useTypingManager', () => {
   let mockRealtimeClient: RealtimeClient

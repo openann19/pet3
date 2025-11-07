@@ -29,7 +29,7 @@ import { formatCallDuration } from '@/lib/call-utils'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('GroupCallInterface')
 

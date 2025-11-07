@@ -7,12 +7,12 @@
  * @subcategory Chat Effects
  */
 
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, withSequence, withRepeat, withTiming, withDelay, type SharedValue } from 'react-native-reanimated'
 import { springConfigs, timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
 import { haptic } from '../haptic'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export type ReactionType = '❤️' | '😂' | '👍' | '👎' | '🔥' | '🙏' | '⭐'
 
