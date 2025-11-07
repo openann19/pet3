@@ -1,4 +1,5 @@
-import logger from '@/core/logger';
+// Import from the base logger instead of creating circular dependency
+import baseLogger from '../logger';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -30,7 +31,7 @@ class ConsoleLogger implements Logger {
 
   debug(message: string, context?: LogContext): void {
     if (this.shouldLog('debug')) {
-      logger.debug(`[${String(this.name ?? '')}] ${String(message ?? '')}`, context ?? '')
+      baseLogger.debug(`[${String(this.name ?? '')}] ${String(message ?? '')}`, context ?? '')
     }
   }
 
@@ -42,14 +43,14 @@ class ConsoleLogger implements Logger {
 
   warn(message: string, context?: LogContext): void {
     if (this.shouldLog('warn')) {
-      logger.warn(`[${String(this.name ?? '')}] ${String(message ?? '')}`, context ?? '')
+      baseLogger.warn(`[${String(this.name ?? '')}] ${String(message ?? '')}`, context ?? '')
     }
   }
 
   error(message: string, error?: Error | unknown, context?: LogContext): void {
     if (this.shouldLog('error')) {
       const errorDetails = error instanceof Error ? error : { error }
-      logger.error(`[${String(this.name ?? '')}] ${String(message ?? '')}`, errorDetails, context ?? '')
+      baseLogger.error(`[${String(this.name ?? '')}] ${String(message ?? '')}`, errorDetails, context ?? '')
     }
   }
 }

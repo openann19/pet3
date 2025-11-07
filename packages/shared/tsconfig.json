@@ -14,9 +14,16 @@
     "declaration": true,
     "declarationMap": true,
     "jsx": "react-jsx",
-    "types": ["react", "vitest/globals"]
+    "types": ["react", "vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/core/guards": ["./src/guards.ts"],
+      "@/core/logger": ["./src/logger.ts"],
+      "@petspark/shared": ["./src/index.ts"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*", "../motion/src/**/*.ts", "../motion/src/**/*.tsx"],
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**", "**/__stories__/**", "../motion/**/*.test.ts", "../motion/**/*.test.tsx", "../motion/**/__tests__/**"]
 }
 
