@@ -61,8 +61,12 @@ export const timings = {
   complex: {
     duration: 600,
     // Note: Easing.bezier returns a factory object in Reanimated 3.10.1
-    // Cast to function type for compatibility
-    easing: ((Easing.bezier(0.16, 1, 0.3, 1) as unknown) as (t: number) => number),
+    // Helper to safely extract the easing function
+    easing: (() => {
+      const bezierFactory = Easing.bezier(0.16, 1, 0.3, 1)
+      // Cast to the expected function type for compatibility
+      return bezierFactory as unknown as (t: number) => number
+    })(),
   } as TimingConfig,
 }
 
