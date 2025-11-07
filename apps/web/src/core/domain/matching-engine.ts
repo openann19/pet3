@@ -2,7 +2,7 @@ import type { PetProfile, OwnerPreferences } from './pet-model'
 import type { MatchingWeights, HardGatesConfig } from './matching-config'
 import { getSizeCompatibilityMatrix } from './matching-config'
 import { getBreedById } from './breeds'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface HardGateResult {
   passed: boolean

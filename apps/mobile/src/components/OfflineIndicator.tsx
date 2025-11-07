@@ -7,7 +7,7 @@ import React from 'react'
 import { StyleSheet, Text } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useNetworkStatus } from '../hooks/use-network-status'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export function OfflineIndicator(): React.JSX.Element | null {
   const { isConnected } = useNetworkStatus()

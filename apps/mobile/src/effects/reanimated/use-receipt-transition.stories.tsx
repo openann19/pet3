@@ -13,6 +13,8 @@ export default {
   component: ReceiptTransitionDemo,
 }
 
+const STATUSES: MessageStatus[] = ['sending', 'sent', 'delivered', 'read', 'failed']
+
 const getStatusStyleKey = (status: MessageStatus): keyof typeof styles => {
   const capitalized = status.charAt(0).toUpperCase() + status.slice(1)
   return `status${String(capitalized ?? '')}` as keyof typeof styles

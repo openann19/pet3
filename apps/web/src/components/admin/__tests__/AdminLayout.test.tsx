@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import AdminLayout from '../AdminLayout'
 import { useStorage } from '@/hooks/useStorage'
 import { useSidebarAnimation } from '@/effects/reanimated/use-sidebar-animation'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('@/hooks/useStorage')
 vi.mock('@/effects/reanimated/use-sidebar-animation')

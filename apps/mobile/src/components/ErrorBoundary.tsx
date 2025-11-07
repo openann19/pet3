@@ -7,7 +7,7 @@ import { colors } from '@mobile/theme/colors'
 import React, { Component, type ErrorInfo, type ReactNode } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { createLogger } from '../utils/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('ErrorBoundary')
 

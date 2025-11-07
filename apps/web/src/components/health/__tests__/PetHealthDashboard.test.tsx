@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { PetHealthDashboard } from '../PetHealthDashboard'
 import { format, differenceInDays, isPast } from 'date-fns'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
   AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (

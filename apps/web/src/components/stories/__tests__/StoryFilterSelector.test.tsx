@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import StoryFilterSelector, { type StoryFilterSelectorProps } from '../StoryFilterSelector'
 import { STORY_FILTERS, FILTER_CATEGORIES } from '@/lib/story-templates'
 import type { StoryFilter } from '@/lib/story-templates'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const mockFilter: StoryFilter = STORY_FILTERS[0] ?? {
   id: 'filter-none',

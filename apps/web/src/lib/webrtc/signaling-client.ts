@@ -10,7 +10,7 @@
 import { createLogger } from '@/lib/logger'
 import { RealtimeClient } from '@/lib/realtime'
 import type { RTCSessionDescriptionInit, RTCIceCandidateInit } from './webrtc-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('SignalingClient')
 

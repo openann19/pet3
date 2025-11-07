@@ -42,7 +42,7 @@ import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('DiscoverView')
 

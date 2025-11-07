@@ -32,6 +32,23 @@ vi.mock('@/config/env', () => ({
 
 // Mock react-native for web tests
 vi.mock('react-native', () => ({
+  default: {
+    View: 'div',
+    Text: 'span',
+    Image: 'img',
+    StyleSheet: {
+      create: (styles: Record<string, unknown>) => styles,
+      hairlineWidth: 1,
+      absoluteFillObject: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+    },
+    Platform: {
+      OS: 'web',
+    },
+    AccessibilityInfo: {
+      isReduceMotionEnabled: vi.fn(() => Promise.resolve(false)),
+      addEventListener: vi.fn(() => ({ remove: vi.fn() })),
+    },
+  },
   View: 'div',
   Text: 'span',
   Image: 'img',
@@ -42,6 +59,10 @@ vi.mock('react-native', () => ({
   },
   Platform: {
     OS: 'web',
+  },
+  AccessibilityInfo: {
+    isReduceMotionEnabled: vi.fn(() => Promise.resolve(false)),
+    addEventListener: vi.fn(() => ({ remove: vi.fn() })),
   },
 }));
 
@@ -64,7 +85,9 @@ vi.mock('react-native-gesture-handler', () => ({
 }));
 
 // Reanimated mock (stable across tests)
-vi.mock('react-native-reanimated', () => {
+// Note: The alias in vitest.config.ts resolves react-native-reanimated to the polyfill
+// The polyfill already exports Easing, so this mock ensures it's available
+vi.mock('react-native-reanimated', async () => {
   const mockSharedValue = (initial: number) => {
     const value = { value: initial }
     return value
@@ -93,7 +116,40 @@ vi.mock('react-native-reanimated', () => {
   AnimatedComponent.div = AnimatedComponent
   AnimatedComponent.a = AnimatedA
   
+  const Easing = {
+    linear: (t: number) => t,
+    ease: (t: number) => t,
+    quad: (t: number) => t * t,
+    cubic: (t: number) => t * t * t,
+    bezier: (x1: number, y1: number, x2: number, y2: number) => {
+      // Simplified cubic bezier
+      return (t: number) => {
+        const t2 = t * t
+        const t3 = t2 * t
+        return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t2 * y2 + t3
+      }
+    },
+    in: (easing: (t: number) => number) => easing,
+    out: (easing: (t: number) => number) => (t: number) => 1 - easing(1 - t),
+    inOut: (easing: (t: number) => number) => (t: number) => {
+      if (t < 0.5) {
+        return easing(t * 2) / 2
+      }
+      return 1 - easing((1 - t) * 2) / 2
+    },
+    elastic: (amplitude: number = 1) => {
+      return (t: number) => {
+        if (t === 0 || t === 1) return t
+        const p = 0.3
+        const s = p / 4
+        const result = Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) * amplitude + 1
+        return Math.max(0, Math.min(1, result))
+      }
+    },
+  }
+  
   return {
+    ...(actual || {}),
     default: AnimatedComponent,
     Animated: AnimatedNamespace,
     useSharedValue: vi.fn((initial: number) => mockSharedValue(initial)),
@@ -129,21 +185,13 @@ vi.mock('react-native-reanimated', () => {
       EXTEND: 'extend',
       IDENTITY: 'identity'
     },
-    Easing: {
-      linear: (t: number) => t,
-      ease: (t: number) => t,
-      quad: (t: number) => t * t,
-      cubic: (t: number) => t * t * t,
-      in: (easing: (t: number) => number) => easing,
-      out: (easing: (t: number) => number) => easing,
-      inOut: (easing: (t: number) => number) => easing,
-      elastic: () => (t: number) => t
-    },
+    Easing,
     cancelAnimation: vi.fn(),
     withDecay: vi.fn((toValue: number) => toValue),
     runOnJS: vi.fn((fn: () => void) => fn),
   }
 })
+
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);

@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Meta, StoryObj } from '@storybook/react-native'
 import PetDetailDialog from './PetDetailDialog.native'
-import logger from '@/core/logger';
+import logger from '@/lib/logger';
 
 // Mock expo-haptics for stories
 jest.mock('expo-haptics', () => ({

@@ -3,7 +3,6 @@
  * Location: apps/mobile/src/components/enhanced/DetailedPetAnalytics.native.tsx
  */
 
-import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 
 type TrustBadge = {

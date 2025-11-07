@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 // Optional RN import (lazy/try-catch for web)
 let AccessibilityInfo: any = null

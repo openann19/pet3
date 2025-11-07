@@ -33,7 +33,7 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PhotoModerationQueueAdmin')
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from 'react'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { Presence } from '@petspark/motion'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
 import { MagnifyingGlass, X, Clock, TrendUp, Sparkle } from '@phosphor-icons/react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { useStorage } from '@/hooks/useStorage'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface SmartSearchProps<T> {
   placeholder?: string
@@ -137,6 +137,11 @@ export function SmartSearch<T extends Record<string, unknown>>({
   }
 
   const showDropdown = Boolean(isFocused && (query.trim() || showHistory || showTrending))
+  const presence = useAnimatePresence({
+    isVisible: showDropdown,
+    enterTransition: 'fade',
+    exitTransition: 'fade'
+  })
 
   return (
     <div className={cn('relative', className)}>
@@ -168,12 +173,9 @@ export function SmartSearch<T extends Record<string, unknown>>({
         )}
       </div>
 
-      <Presence visible={showDropdown}>
+      {presence.shouldRender && (
         <AnimatedView
-          style={{
-            opacity: 1,
-            transform: [{ translateY: 0 }, { scale: 1 }],
-          }}
+          style={presence.animatedStyle}
         >
             <Card className="absolute top-full mt-2 w-full max-h-[400px] overflow-y-auto shadow-xl border z-50 p-2">
               {query.trim() ? (
@@ -261,7 +263,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
               )}
             </Card>
         </AnimatedView>
-      </Presence>
+      )}
     </div>
   )
 }

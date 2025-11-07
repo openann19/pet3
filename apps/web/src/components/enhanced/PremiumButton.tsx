@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import type { ButtonHTMLAttributes } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface PremiumButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   variant?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'gradient'

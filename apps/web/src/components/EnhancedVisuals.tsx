@@ -1,7 +1,5 @@
-import {
-  MotionView
-} from '@petspark/motion'
-import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence } from 'react-native-reanimated'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, withDelay } from 'react-native-reanimated'
 import React from 'react'
 import type { ReactNode } from 'react'
 
@@ -37,14 +35,14 @@ export function EnhancedCard({ children, className = '', delay = 0 }: EnhancedCa
   }));
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <AnimatedView
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={className}
     >
       {children}
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -62,7 +60,7 @@ export function FloatingActionButton({ onClick, icon, label, className = '' }: F
 
   React.useEffect(() => {
     opacity.value = withTiming(1, { duration: 200 });
-    scale.value = withTiming(1, { duration: 300, delay: 200 });
+    scale.value = withDelay(200, withTiming(1, { duration: 300 }));
   }, []);
 
   const handleMouseEnter = React.useCallback(() => {
@@ -79,8 +77,8 @@ export function FloatingActionButton({ onClick, icon, label, className = '' }: F
   }));
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <AnimatedView
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
@@ -88,7 +86,7 @@ export function FloatingActionButton({ onClick, icon, label, className = '' }: F
     >
       <span className="text-xl">{icon}</span>
       {label && <span className="font-semibold text-sm">{label}</span>}
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -159,12 +157,12 @@ export function PulseIndicator({ color = 'bg-primary', size = 'md' }: PulseIndic
 
   return (
     <div className="relative inline-flex">
-      <MotionView
-        animatedStyle={animatedStyle1}
+      <AnimatedView
+        style={animatedStyle1}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={animatedStyle2}
+      <AnimatedView
+        style={animatedStyle2}
         className={`absolute inset-0 ${String(color ?? '')} rounded-full opacity-30`}
       />
     </div>
@@ -220,10 +218,9 @@ export function Shimmer({ children, className = '' }: ShimmerProps) {
   return (
     <div className={`relative overflow-hidden ${String(className ?? '')}`}>
       {children}
-      <MotionView
-        animatedStyle={animatedStyle}
+      <AnimatedView
+        style={[animatedStyle, { pointerEvents: 'none' }]}
         className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
-        style={{ pointerEvents: 'none' }}
       />
     </div>
   )
@@ -261,12 +258,12 @@ export function CounterBadge({ count, max = 99, variant = 'primary' }: CounterBa
   if (count === 0) return null
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <AnimatedView
+      style={animatedStyle}
       className={`absolute -top-1 -right-1 h-5 min-w-[20px] px-1.5 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ${String(variantClasses[variant] ?? '')}`}
     >
       {displayCount}
-    </MotionView>
+    </AnimatedView>
   )
 }
 
@@ -319,16 +316,16 @@ export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsPr
 
   return (
     <div className="flex items-center justify-center gap-1.5">
-      <MotionView
-        animatedStyle={dot1Style}
+      <AnimatedView
+        style={dot1Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={dot2Style}
+      <AnimatedView
+        style={dot2Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={dot3Style}
+      <AnimatedView
+        style={dot3Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
     </div>
@@ -358,12 +355,11 @@ export function GlowingBorder({ children, className = '', glowColor = 'primary' 
 
   return (
     <div className={`relative ${String(className ?? '')}`}>
-      <MotionView
-        animatedStyle={animatedStyle}
+      <AnimatedView
+        style={[animatedStyle, { filter: 'blur(4px)' }]}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`absolute -inset-[1px] bg-linear-to-r from-${String(glowColor ?? '')} via-accent to-${String(glowColor ?? '')} rounded-inherit`}
-        style={{ filter: 'blur(4px)' }}
       />
       <div className="relative bg-card rounded-inherit">
         {children}

@@ -3,7 +3,7 @@ import { useEffect, useCallback } from 'react'
 import * as Haptics from 'expo-haptics'
 import { springConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseNavButtonAnimationOptions {
   isActive?: boolean

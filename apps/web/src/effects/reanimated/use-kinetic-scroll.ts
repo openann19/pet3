@@ -5,7 +5,7 @@
 
 import { useSharedValue, useAnimatedStyle, withDecay, cancelAnimation } from 'react-native-reanimated';
 import { useCallback, useState, useRef } from 'react';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseKineticScrollOptions {
   damping?: number;

@@ -7,7 +7,7 @@ import { springConfigs } from '@/effects/reanimated/transitions'
 import { cn } from '@/lib/utils'
 import * as ProgressPrimitive from '@radix-ui/react-progress'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface PremiumProgressProps {
   value?: number

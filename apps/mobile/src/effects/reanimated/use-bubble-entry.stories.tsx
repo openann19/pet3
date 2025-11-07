@@ -3,7 +3,7 @@
  * Demonstrates the useBubbleEntry hook for mobile chat bubbles
  */
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useBubbleEntry } from './use-bubble-entry'
@@ -19,7 +19,7 @@ interface BubbleProps {
   delay?: number
 }
 
-function BubbleComponent({ text, direction = 'left', delay = 0 }: BubbleProps) {
+function BubbleComponent({ text, direction = 'left', delay = 0 }: BubbleProps): JSX.Element {
   const { style, enter, exit, reset, isVisible, isAnimating } = useBubbleEntry({
     direction,
     delay,
@@ -31,13 +31,13 @@ function BubbleComponent({ text, direction = 'left', delay = 0 }: BubbleProps) {
     <Animated.View style={[styles.bubble, direction === 'right' ? styles.bubbleRight : styles.bubbleLeft, style]}>
       <Text style={styles.bubbleText}>{text}</Text>
       <View style={styles.bubbleControls}>
-        <TouchableOpacity style={styles.controlButton} onPress={enter}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => { enter(); }}>
           <Text style={styles.controlText}>Enter</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={exit}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => { exit(); }}>
           <Text style={styles.controlText}>Exit</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={reset}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => { reset(); }}>
           <Text style={styles.controlText}>Reset</Text>
         </TouchableOpacity>
       </View>
@@ -48,7 +48,7 @@ function BubbleComponent({ text, direction = 'left', delay = 0 }: BubbleProps) {
   )
 }
 
-function BubbleEntryDemo() {
+function BubbleEntryDemo(): JSX.Element {
   const [staggerDelay, setStaggerDelay] = useState(30)
 
   return (

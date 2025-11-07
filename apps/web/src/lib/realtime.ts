@@ -1,6 +1,6 @@
 import type { Message, Match, Notification } from './contracts'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { getWebSocketManager, initializeWebSocket, disconnectWebSocket } from './websocket-manager'
 
 const logger = createLogger('realtime')
 
@@ -22,17 +22,25 @@ export interface WebRTCSignalData {
 }
 
 export class RealtimeClient {
-  private listeners: Map<string, Set<EventCallback>> = new Map()
-  private connected: boolean = false
+  private listeners = new Map<string, Set<EventCallback>>()
   private accessToken: string | null = null
   private offlineQueue: QueuedEvent[] = []
+  private wsManager = getWebSocketManager()
 
   constructor() {
-    // Constructor intentionally empty
+    // Set up WebSocket event handlers
+    this.setupWebSocketHandlers()
   }
 
   setAccessToken(token: string | null) {
     this.accessToken = token
+    if (token) {
+      // Connect WebSocket with token
+      initializeWebSocket(token)
+    } else {
+      // Disconnect WebSocket
+      disconnectWebSocket()
+    }
   }
 
   connect() {
@@ -41,12 +49,69 @@ export class RealtimeClient {
       return
     }
 
-    this.connected = true
-    this.flushOfflineQueue()
+    // WebSocket connection is handled by setAccessToken
+    // This method is kept for backwards compatibility
+    initializeWebSocket(this.accessToken)
   }
 
   disconnect() {
-    this.connected = false
+    disconnectWebSocket()
+  }
+
+  /**
+   * Set up WebSocket event handlers
+   */
+  private setupWebSocketHandlers(): void {
+    // Listen to WebSocket connection events
+    this.wsManager.on('connection', (data) => {
+      const status = (data as { status?: string }).status
+      if (status === 'connected') {
+        void this.flushOfflineQueue()
+      }
+    })
+
+    // Listen to chat namespace events
+    this.wsManager.on('chat:message_received', (data) => {
+      this.trigger('message_received', data)
+    })
+
+    this.wsManager.on('chat:message_delivered', (data) => {
+      this.trigger('message_delivered', data)
+    })
+
+    this.wsManager.on('chat:message_read', (data) => {
+      this.trigger('message_read', data)
+    })
+
+    this.wsManager.on('chat:user_typing', (data) => {
+      this.trigger('user_typing', data)
+    })
+
+    // Listen to presence namespace events
+    this.wsManager.on('presence:user_online', (data) => {
+      this.trigger('user_online', data)
+    })
+
+    this.wsManager.on('presence:user_offline', (data) => {
+      this.trigger('user_offline', data)
+    })
+
+    // Listen to notifications namespace events
+    this.wsManager.on('notifications:match_created', (data) => {
+      this.trigger('match_created', data)
+    })
+
+    this.wsManager.on('notifications:like_received', (data) => {
+      this.trigger('like_received', data)
+    })
+
+    this.wsManager.on('notifications:story_viewed', (data) => {
+      this.trigger('story_viewed', data)
+    })
+
+    this.wsManager.on('notifications:notification', (data) => {
+      this.trigger('notification', data)
+    })
   }
 
   on(event: string, callback: EventCallback) {
@@ -58,27 +123,40 @@ export class RealtimeClient {
 
   off(event: string, callback: EventCallback) {
     const callbacks = this.listeners.get(event)
-    if (isTruthy(callbacks)) {
+    if (callbacks) {
       callbacks.delete(callback)
     }
   }
 
   emit(event: string, data: unknown): Promise<{ success: boolean; error?: string }> {
     return new Promise((resolve) => {
-      if (!this.connected) {
+      const state = this.wsManager.getState()
+      if (state !== 'connected') {
         this.enqueueOfflineEvent(event, data)
         resolve({ success: false, error: 'Offline' })
         return
       }
 
-      // Real WebSocket emit - send immediately without simulation delay
+      // Send via WebSocket manager
       try {
-        // In a real implementation, this would send data through WebSocket
-        // For now, we're using Spark KV storage as the real backend
+        // Determine namespace from event
+        let namespace: '/chat' | '/presence' | '/notifications' = '/notifications'
+        if (event.startsWith('message_') || event.startsWith('chat:')) {
+          namespace = '/chat'
+        } else if (event.startsWith('user_') || event.startsWith('presence:')) {
+          namespace = '/presence'
+        }
+
+        // Extract event name (remove namespace prefix if present)
+        const eventName = event.includes(':') ? event.split(':')[1] : event
+
+        if (eventName) {
+          this.wsManager.send(namespace, eventName, data)
+        }
         resolve({ success: true })
         this.processEvent(event, data)
       } catch (error) {
-        resolve({ success: false, error: (error as Error).message })
+        resolve({ success: false, error: (error instanceof Error ? error : new Error(String(error))).message })
       }
     })
   }
@@ -99,12 +177,12 @@ export class RealtimeClient {
 
   trigger(event: string, data: unknown) {
     const callbacks = this.listeners.get(event)
-    if (isTruthy(callbacks)) {
+    if (callbacks) {
       callbacks.forEach(callback => {
         try {
           callback(data)
         } catch (error) {
-          logger.error(`Error in event listener for ${String(event ?? '')}`, error instanceof Error ? error : new Error(String(error)))
+          logger.error(`Error in event listener for ${event}`, error instanceof Error ? error : new Error(String(error)))
         }
       })
     }

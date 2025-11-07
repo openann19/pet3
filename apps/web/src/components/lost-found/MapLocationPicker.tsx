@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { X, MapPin, Check, Crosshair } from '@phosphor-icons/react'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('MapLocationPicker')
 

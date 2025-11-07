@@ -9,7 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const X = (props: any) => <FeatherIcon name="x" {...props} />
 

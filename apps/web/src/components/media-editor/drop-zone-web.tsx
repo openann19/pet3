@@ -3,6 +3,7 @@
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import React, { useEffect, useRef } from 'react'
 import { StyleSheet, Text } from 'react-native'
+import type { CSSProperties } from 'react'
 
 const isWeb = typeof window !== 'undefined'
 
@@ -23,16 +24,16 @@ export function DropZoneWeb({ onDrop }: DropZoneWebProps): React.ReactElement | 
       return
     }
 
-    const preventDefault = (e: DragEvent): void => {
-      e.preventDefault()
-      e.stopPropagation()
+    const preventDefault = (event: DragEvent): void => {
+      event.preventDefault()
+      event.stopPropagation()
     }
 
-    const handleDrop = (e: DragEvent): void => {
-      e.preventDefault()
-      e.stopPropagation()
+    const handleDrop = (event: DragEvent): void => {
+      event.preventDefault()
+      event.stopPropagation()
 
-      const file = e.dataTransfer?.files?.[0]
+      const file = event.dataTransfer?.files?.[0]
       if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
         onDrop(file)
       }
@@ -53,25 +54,27 @@ export function DropZoneWeb({ onDrop }: DropZoneWebProps): React.ReactElement | 
     return null
   }
 
-  const dropZoneStyle: Record<string, unknown> = {
+  const dropZoneStyle: CSSProperties = {
     borderWidth: 1,
     borderColor: '#666',
     borderStyle: 'dashed',
     backgroundColor: '#222',
     borderRadius: 12,
     padding: 24,
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
     minHeight: 120,
+    flexDirection: 'column',
   }
 
   return (
     <AnimatedView
-      ref={ref as React.Ref<HTMLDivElement>}
+      ref={ref}
       style={dropZoneStyle}
-      accessibilityRole="button"
-      {...({ 'aria-label': 'Drop photo or video here' } as React.HTMLAttributes<HTMLDivElement>)}
+      role="button"
+      aria-label="Drop photo or video here"
     >
       <Text style={styles.text}>Drag & drop photo or video</Text>
     </AnimatedView>

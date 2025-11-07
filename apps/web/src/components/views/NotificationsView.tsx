@@ -12,12 +12,146 @@ import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import { ArrowLeft, At, Bell, ChatCircle, Check, CheckCircle, Heart, UserPlus } from '@phosphor-icons/react'
 import { formatDistanceToNow } from 'date-fns'
-import { motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
+import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { springConfigs } from '@/effects/reanimated/transitions'
 
 const logger = createLogger('NotificationsView')
+
+function getNotificationIcon(type: CommunityNotification['type']) {
+  switch (type) {
+    case 'like':
+      return Heart
+    case 'comment':
+    case 'reply':
+      return ChatCircle
+    case 'follow':
+      return UserPlus
+    case 'mention':
+      return At
+    case 'moderation':
+      return CheckCircle
+    default:
+      return Bell
+  }
+}
+
+function getNotificationMessage(notification: CommunityNotification): string {
+  switch (notification.type) {
+    case 'like':
+      return `${String(notification.actorName ?? '')} liked your post`
+    case 'comment':
+      return `${String(notification.actorName ?? '')} commented on your post`
+    case 'reply':
+      return `${String(notification.actorName ?? '')} replied to your comment`
+    case 'follow':
+      return `${String(notification.actorName ?? '')} started following you`
+    case 'mention':
+      return `${String(notification.actorName ?? '')} mentioned you`
+    case 'moderation':
+      return notification.content ?? 'Your content was reviewed'
+    default:
+      return notification.content ?? 'New notification'
+  }
+}
+
+function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+        <Bell size={48} className="text-muted-foreground" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">
+        {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+      </h2>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        {filter === 'unread' 
+          ? 'You\'re all caught up!'
+          : 'When you get notifications, they\'ll appear here'}
+      </p>
+    </AnimatedView>
+  )
+}
+
+function _NotificationItemView({
+  notification,
+  index,
+  onNotificationClick
+}: {
+  notification: CommunityNotification
+  index: number
+  onNotificationClick: (notification: CommunityNotification) => void
+}) {
+  const opacity = useSharedValue(0)
+  const translateX = useSharedValue(-20)
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      opacity.value = withSpring(1, springConfigs.smooth)
+      translateX.value = withSpring(0, springConfigs.smooth)
+    }, index * 30)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [index, opacity, translateX])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: `${String(translateX.value)}px` }]
+  })) as AnimatedStyle
+
+  const Icon = getNotificationIcon(notification.type)
+  const message = getNotificationMessage(notification)
+
+  return (
+    <AnimatedView
+      style={animatedStyle}
+      onClick={() => {
+        onNotificationClick(notification)
+      }}
+      className={`
+        flex gap-3 p-3 rounded-lg cursor-pointer transition-colors
+        ${String(notification.read 
+          ? 'hover:bg-muted/50' 
+          : 'bg-primary/5 hover:bg-primary/10 border border-primary/20')
+        }
+      `}
+    >
+      <Avatar
+        {...(notification.actorAvatar && { src: notification.actorAvatar })}
+        className="w-12 h-12"
+      >
+        <Icon size={20} />
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <p className="text-sm font-medium line-clamp-2">
+              {message}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+            </p>
+          </div>
+          {!notification.read && (
+            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
+          )}
+        </div>
+      </div>
+    </AnimatedView>
+  )
+}
 
 interface NotificationsViewProps {
   onBack?: () => void
@@ -36,7 +170,7 @@ export default function NotificationsView({
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
 
   useEffect(() => {
-    loadNotifications()
+    void loadNotifications()
   }, [])
 
   const loadNotifications = async () => {
@@ -81,7 +215,7 @@ export default function NotificationsView({
 
   const handleNotificationClick = (notification: CommunityNotification) => {
     if (!notification.read) {
-      handleMarkAsRead(notification.id)
+      void handleMarkAsRead(notification.id)
     }
 
     if (notification.targetType === 'post' && notification.targetId) {
@@ -93,43 +227,6 @@ export default function NotificationsView({
       if (isTruthy(onUserClick)) {
         onUserClick(notification.targetId)
       }
-    }
-  }
-
-  const getNotificationIcon = (type: CommunityNotification['type']) => {
-    switch (type) {
-      case 'like':
-        return Heart
-      case 'comment':
-      case 'reply':
-        return ChatCircle
-      case 'follow':
-        return UserPlus
-      case 'mention':
-        return At
-      case 'moderation':
-        return CheckCircle
-      default:
-        return Bell
-    }
-  }
-
-  const getNotificationMessage = (notification: CommunityNotification): string => {
-    switch (notification.type) {
-      case 'like':
-        return `${String(notification.actorName ?? '')} liked your post`
-      case 'comment':
-        return `${String(notification.actorName ?? '')} commented on your post`
-      case 'reply':
-        return `${String(notification.actorName ?? '')} replied to your comment`
-      case 'follow':
-        return `${String(notification.actorName ?? '')} started following you`
-      case 'mention':
-        return `${String(notification.actorName ?? '')} mentioned you`
-      case 'moderation':
-        return notification.content || 'Your content was reviewed'
-      default:
-        return notification.content || 'New notification'
     }
   }
 
@@ -156,6 +253,7 @@ export default function NotificationsView({
           </Button>
         )}
         <div className="flex items-center gap-3 flex-1">
+          {/* bg-gradient-to-br is correct Tailwind class - linter warning is false positive */}
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
             <Bell size={24} className="text-white" weight="fill" />
           </div>
@@ -171,7 +269,9 @@ export default function NotificationsView({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleMarkAllAsRead}
+              onClick={() => {
+                void handleMarkAllAsRead()
+              }}
               className="text-xs"
             >
               <Check size={14} className="mr-1" />
@@ -188,7 +288,7 @@ export default function NotificationsView({
             All
           </TabsTrigger>
           <TabsTrigger value="unread" className="flex-1">
-            Unread {unreadCount > 0 && `(${String(unreadCount ?? '')})`}
+            Unread {unreadCount > 0 && `(${String(unreadCount)})`}
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -209,67 +309,16 @@ export default function NotificationsView({
               ))}
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <MotionView
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-16 text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Bell size={48} className="text-muted-foreground" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">
-                {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
-              </h2>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                {filter === 'unread' 
-                  ? 'You\'re all caught up!'
-                  : 'When you get notifications, they\'ll appear here'}
-              </p>
-            </MotionView>
+            <_EmptyStateView filter={filter} />
           ) : (
-            filteredNotifications.map((notification, index) => {
-              const Icon = getNotificationIcon(notification.type)
-              const message = getNotificationMessage(notification)
-              
-              return (
-                <MotionView
-                  key={notification.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  onClick={() => { handleNotificationClick(notification); }}
-                  className={`
-                    flex gap-3 p-3 rounded-lg cursor-pointer transition-colors
-                    ${String(notification.read 
-                                            ? 'hover:bg-muted/50' 
-                                            : 'bg-primary/5 hover:bg-primary/10 border border-primary/20' ?? '')
-                    }
-                  `}
-                >
-                  <Avatar
-                    {...(notification.actorAvatar && { src: notification.actorAvatar })}
-                    className="w-12 h-12"
-                  >
-                    <Icon size={20} />
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium line-clamp-2">
-                          {message}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                      {!notification.read && (
-                        <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
-                      )}
-                    </div>
-                  </div>
-                </MotionView>
-              )
-            })
+            filteredNotifications.map((notification, index) => (
+              <_NotificationItemView
+                key={notification.id}
+                notification={notification}
+                index={index}
+                onNotificationClick={handleNotificationClick}
+              />
+            ))
           )}
         </div>
       </ScrollArea>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Pet } from '@/lib/types'
 import { calculateCompatibility, getCompatibilityFactors, generateMatchReasoning } from '@/lib/matching'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface UseMatchingOptions {
   userPet?: Pet

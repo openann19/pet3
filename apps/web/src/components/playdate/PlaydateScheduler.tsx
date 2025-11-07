@@ -33,12 +33,15 @@ import {
   X
 } from '@phosphor-icons/react'
 import { differenceInDays, format, isPast } from 'date-fns'
-import { Presence, motion } from '@petspark/motion'
-import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useKV } from '@/hooks/useStorage'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
-import { isTruthy, isDefined } from '@/core/guards';
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
+import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, Easing } from 'react-native-reanimated'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const LocationPicker = lazy(() => import('./LocationPicker'))
 
@@ -210,12 +213,14 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
     toast.info('Playdate cancelled', { description: 'The other party has been notified' })
   }, [setPlaydates])
 
+  // Animation hooks
+  const containerEntry = useEntryAnimation({ initialOpacity: 0 })
+  const createFormPresence = useAnimatePresence({ isVisible: showCreateForm })
+
   return (
-    <MotionView
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <AnimatedView
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
+      style={containerEntry.animatedStyle}
     >
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
@@ -289,14 +294,11 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px]">
-                  <Presence>
-                    {showCreateForm && (
-                      <MotionView
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mb-6 p-4 rounded-lg border bg-card/50"
-                      >
+                  {createFormPresence.shouldRender && showCreateForm && (
+                    <AnimatedView
+                      className="mb-6 p-4 rounded-lg border bg-card/50"
+                      style={createFormPresence.animatedStyle}
+                    >
                         <h3 className="text-lg font-semibold mb-4">Create Playdate</h3>
                         <div className="space-y-4">
                           <div>
@@ -431,8 +433,8 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                             </Button>
                           </div>
                         </div>
-                      </MotionView>
-                    )}
+                    </AnimatedView>
+                  )}
 
                     {matchPlaydates.filter(p => p.status !== 'completed' && p.status !== 'cancelled').length === 0 ? (
                       <div className="text-center py-12">
@@ -450,14 +452,16 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                           .map((playdate, index) => {
                             const daysUntil = differenceInDays(new Date(playdate.date), new Date())
                             const isPastDate = isPast(new Date(playdate.date))
+                            const cardEntry = useEntryAnimation({ 
+                              initialY: 20, 
+                              delay: index * 50 
+                            })
 
                             return (
-                              <MotionView
+                              <AnimatedView
                                 key={playdate.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.05 }}
                                 className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                                style={cardEntry.animatedStyle}
                               >
                                 <div className="flex items-start justify-between mb-3">
                                   <div className="flex items-start gap-3">
@@ -548,12 +552,11 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                                     </Button>
                                   </div>
                                 </div>
-                              </MotionView>
+                              </AnimatedView>
                             )
                           })}
                       </div>
                     )}
-                  </Presence>
                 </ScrollArea>
               </CardContent>
             </Card>
@@ -578,14 +581,18 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                       {matchPlaydates
                         .filter(p => p.status === 'completed' || p.status === 'cancelled')
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .map((playdate, index) => (
-                          <MotionView
-                            key={playdate.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="p-4 rounded-lg border bg-card opacity-75"
-                          >
+                        .map((playdate, index) => {
+                          const historyCardEntry = useEntryAnimation({ 
+                            initialY: 20, 
+                            delay: index * 50 
+                          })
+                          
+                          return (
+                            <AnimatedView
+                              key={playdate.id}
+                              className="p-4 rounded-lg border bg-card opacity-75"
+                              style={historyCardEntry.animatedStyle}
+                            >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -607,8 +614,9 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
                               <MapPin size={14} />
                               {playdate.location.name}
                             </div>
-                          </MotionView>
-                        ))}
+                          </AnimatedView>
+                          )
+                        })}
                     </div>
                   )}
                 </ScrollArea>
@@ -634,11 +642,7 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
           <Suspense fallback={
             <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">                             
               <div className="text-center">
-                <MotionView
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"                                                      
-                />
+                <LoadingSpinner />
                 <p className="text-muted-foreground">Loading map...</p>
               </div>
             </div>
@@ -651,6 +655,30 @@ export default function PlaydateScheduler({ match, userPet, onClose, onStartVide
           </Suspense>
         </ErrorBoundary>
       )}
-    </MotionView>
+    </AnimatedView>
+  )
+}
+
+// Loading spinner component
+function LoadingSpinner() {
+  const rotate = useSharedValue(0)
+
+  useEffect(() => {
+    rotate.value = withRepeat(
+      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      -1,
+      false
+    )
+  }, [rotate])
+
+  const spinnerStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotate.value}deg` }],
+  }))
+
+  return (
+    <AnimatedView
+      className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
+      style={spinnerStyle}
+    />
   )
 }

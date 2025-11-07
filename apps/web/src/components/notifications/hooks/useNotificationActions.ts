@@ -8,7 +8,7 @@ import { useCallback } from 'react'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import type { PremiumNotification } from '../types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useNotificationActions')
 

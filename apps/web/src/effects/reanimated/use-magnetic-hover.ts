@@ -5,7 +5,7 @@
 
 import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useState, useCallback } from 'react';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseMagneticHoverOptions {
   strength?: number;

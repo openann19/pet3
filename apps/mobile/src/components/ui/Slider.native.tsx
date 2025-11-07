@@ -73,14 +73,14 @@ export function Slider({
   })
 
   const animatedThumbStyle = useAnimatedStyle(() => ({
-    left: `${String(thumbPosition.value ?? '')}%`,
+    left: `${thumbPosition.value}%` as `${number}%`,
     transform: [
       { scale: isDragging.value ? 1.2 : 1 },
     ],
   }))
 
   const animatedTrackStyle = useAnimatedStyle(() => ({
-    width: `${String(thumbPosition.value ?? '')}%`,
+    width: `${thumbPosition.value}%` as `${number}%`,
   }))
 
   return (

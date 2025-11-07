@@ -11,7 +11,7 @@ import { useEffect } from 'react'
 import { AccessibilityInfo, Platform } from 'react-native'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
 import { createLogger } from '../../utils/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useReducedMotionSV')
 

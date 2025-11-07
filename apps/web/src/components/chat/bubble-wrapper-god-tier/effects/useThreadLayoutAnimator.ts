@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from 'react'
 import { timingConfigs } from '@/effects/reanimated/transitions'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseThreadLayoutAnimatorOptions {
   isExpanded?: boolean

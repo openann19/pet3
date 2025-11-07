@@ -29,10 +29,12 @@ import {
   Warning
 } from '@phosphor-icons/react'
 import type { VariantProps } from 'class-variance-authority'
-import { Presence, MotionView } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 type BadgeVariant = VariantProps<typeof badgeVariants>['variant']
 
@@ -256,15 +258,15 @@ export default function UsersView() {
 
       <ScrollArea className="flex-1 px-6 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Presence visible={filteredUsers.length > 0}>
-            {filteredUsers.map((user, index) => (
-              <MotionView
-                key={user.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.03 }}
-              >
+          {filteredUsers.map((user, index) => {
+            const entry = useEntryAnimation({
+              initialScale: 0.95,
+              initialOpacity: 0,
+              delay: index * 30
+            })
+            
+            return (
+              <AnimatedView key={user.id} style={entry.animatedStyle}>
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -312,9 +314,9 @@ export default function UsersView() {
                     </div>
                   </CardContent>
                 </Card>
-              </MotionView>
-            ))}
-          </Presence>
+              </AnimatedView>
+            )
+          })}
         </div>
 
         {filteredUsers.length === 0 && (

@@ -11,7 +11,7 @@ import type {
     Sighting,
 } from '@/lib/lost-found-types'
 import { notificationsService } from '@/lib/notifications-service'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('LostFoundAPI')
 

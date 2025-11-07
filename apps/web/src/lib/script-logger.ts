@@ -6,7 +6,7 @@
 /* eslint-env node */
 
 import { LogLevel } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 class ScriptLogger {
   private level: LogLevel = LogLevel.INFO

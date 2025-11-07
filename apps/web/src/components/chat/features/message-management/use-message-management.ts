@@ -7,7 +7,7 @@ import { generateMessageId } from '@/lib/chat-utils'
 import { haptics } from '@/lib/haptics'
 import { toast } from 'sonner'
 import { sendPing } from '@/effects/sound/SendPing'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseMessageManagementOptions {
   room: ChatRoom

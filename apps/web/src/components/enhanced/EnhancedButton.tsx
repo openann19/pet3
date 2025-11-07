@@ -7,15 +7,33 @@ import { Button } from '@/components/ui/button'
 import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
-import { MotionView } from '@petspark/motion'
-import { usePressBounce, haptic } from '@petspark/motion'
-import { useSharedValue, useAnimatedStyle, withTiming, withSequence, withSpring } from 'react-native-reanimated'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { haptics } from '@/lib/haptics'
+import { useSharedValue, useAnimatedStyle, withTiming, withSequence, withSpring, useCallback } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 const logger = createLogger('EnhancedButton')
+
+function usePressBounce(scaleOnPress = 0.95) {
+  const scale = useSharedValue(1)
+
+  const onPressIn = useCallback(() => {
+    scale.value = withSpring(scaleOnPress, springConfigs.smooth)
+  }, [scale, scaleOnPress])
+
+  const onPressOut = useCallback(() => {
+    scale.value = withSpring(1, springConfigs.smooth)
+  }, [scale])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  })) as AnimatedStyle
+
+  return { onPressIn, onPressOut, animatedStyle }
+}
 
 export interface EnhancedButtonProps extends ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
   ripple?: boolean
@@ -66,7 +84,7 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
     const handleClick = useCallback(async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
       try {
         if (isTruthy(hapticFeedback)) {
-          haptic.light()
+          haptics.impact('light')
         }
 
         bounceAnimation.onPressIn()
@@ -83,7 +101,7 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
                 withSpring(1, springConfigs.smooth)
               )
               if (isTruthy(hapticFeedback)) {
-                haptic.medium()
+                haptics.impact('medium')
               }
               logger.info('Button action succeeded', { successAnimation: true })
             }
@@ -99,7 +117,7 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
           withTiming(0, { duration: 50 })
         )
         if (isTruthy(hapticFeedback)) {
-          haptic.heavy()
+          haptics.impact('heavy')
         }
         logger.error('Button action failed', err)
       } finally {
@@ -116,16 +134,16 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
     ])
 
     return (
-      <MotionView
-        animatedStyle={successAnimatedStyle}
+      <AnimatedView
+        style={successAnimatedStyle}
         className="relative"
       >
-        <MotionView
-          animatedStyle={errorAnimatedStyle}
+        <AnimatedView
+          style={errorAnimatedStyle}
           className="relative"
         >
-          <MotionView
-            animatedStyle={bounceAnimation.animatedStyle}
+          <AnimatedView
+            style={bounceAnimation.animatedStyle}
             className="relative"
           >
             <div className="relative overflow-hidden">
@@ -143,9 +161,9 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
                 {children}
               </Button>
             </div>
-          </MotionView>
-        </MotionView>
-      </MotionView>
+          </AnimatedView>
+        </AnimatedView>
+      </AnimatedView>
     )
   }
 )

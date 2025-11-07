@@ -2,7 +2,7 @@ import { Alert, AlertTitle, AlertDescription } from "./components/ui/alert";
 import { Button } from "./components/ui/button";
 
 import { Warning, ArrowClockwise } from "@phosphor-icons/react";
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 type ErrorFallbackProps = {
   error: Error

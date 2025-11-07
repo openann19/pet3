@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -113,7 +113,7 @@ export function PremiumSlider({
               style={[
                 styles.trackFill,
                 { 
-                  width: `${String(((value - min) / (max - min)) * 100 ?? '')}%`,
+                  width: `${((value - min) / (max - min)) * 100}%` as const,
                 },
               ]}
             />
@@ -124,7 +124,7 @@ export function PremiumSlider({
               style={[
                 styles.tooltip,
                 {
-                  left: `${String(((value - min) / (max - min)) * 100 ?? '')}%`,
+                  left: `${((value - min) / (max - min)) * 100}%` as const,
                 },
                 tooltipStyle,
               ]}

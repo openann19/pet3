@@ -10,7 +10,7 @@ import type { Sticker } from '../../lib/sticker-library'
 import { useStickerAnimation, type StickerAnimationType } from '../../effects/reanimated/use-sticker-animation'
 import { springConfigs } from '../../effects/reanimated/transitions'
 import * as Haptics from 'expo-haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export interface StickerMessageProps {
   sticker: Sticker

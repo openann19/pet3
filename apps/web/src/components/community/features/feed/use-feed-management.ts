@@ -5,7 +5,7 @@ import { communityAPI } from '@/api/community-api'
 import { filterPostsByFollows } from '@/core/services/follow-graph'
 import type { Post, PostFilters } from '@/lib/community-types'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useFeedManagement')
 

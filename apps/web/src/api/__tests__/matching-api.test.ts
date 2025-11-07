@@ -11,7 +11,7 @@ import type { MatchScore, HardGateResult } from '@/core/domain/matching-engine'
 import type { MatchingConfig } from '@/core/domain/matching-config'
 import { getRealtimeEvents } from '@/lib/realtime-events'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 vi.mock('@/lib/realtime-events', () => ({
   getRealtimeEvents: vi.fn(() => ({

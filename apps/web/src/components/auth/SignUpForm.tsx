@@ -15,7 +15,7 @@ import AgeGateModal from './AgeGateModal'
 import { recordConsent } from '@/lib/kyc-service'
 import { createLogger } from '@/lib/logger'
 import type { APIError } from '@/lib/contracts'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('SignUpForm')
 

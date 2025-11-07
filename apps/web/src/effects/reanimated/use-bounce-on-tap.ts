@@ -4,7 +4,7 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { haptics } from '@/lib/haptics'
 import { useCallback } from 'react'
 import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseBounceOnTapOptions {
   scale?: number

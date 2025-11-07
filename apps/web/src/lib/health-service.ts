@@ -4,11 +4,12 @@
  * Provides health check endpoints and observability utilities
  */
 
-import { api } from './api'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
 import { config } from './config'
 import { generateCorrelationId } from './utils'
 import { createLogger } from './logger'
-import type { APIError } from './contracts'
+import { ENV } from '@/config/env'
 
 const logger = createLogger('HealthService')
 
@@ -56,18 +57,17 @@ export class HealthService {
     const correlationId = generateCorrelationId()
     
     try {
-      const response = await api.get<HealthStatus>('/healthz')
+      const response = await APIClient.get<{ data: HealthStatus }>('/healthz')
       
       logger.debug('Liveness check passed', {
-        status: response.status,
+        status: response.data.status,
         correlationId
       })
 
-      return response
+      return response.data
     } catch (error) {
-      const apiError = error as APIError
-      logger.error('Liveness check failed', new Error(apiError.message), {
-        code: apiError.code,
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Liveness check failed', err, {
         correlationId
       })
       
@@ -82,19 +82,18 @@ export class HealthService {
     const correlationId = generateCorrelationId()
     
     try {
-      const response = await api.get<ReadinessStatus>('/readyz')
+      const response = await APIClient.get<{ data: ReadinessStatus }>('/readyz')
       
       logger.debug('Readiness check completed', {
-        ready: response.ready,
-        dependencies: response.dependencies.length,
+        ready: response.data.ready,
+        dependencies: response.data.dependencies.length,
         correlationId
       })
 
-      return response
+      return response.data
     } catch (error) {
-      const apiError = error as APIError
-      logger.error('Readiness check failed', new Error(apiError.message), {
-        code: apiError.code,
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Readiness check failed', err, {
         correlationId
       })
       
@@ -103,42 +102,106 @@ export class HealthService {
   }
 
   /**
-   * Get version info from backend
+   * Get version info from backend /api/version endpoint
    */
   async getVersion(): Promise<{
     version: string
     commitSha: string
     buildTime?: string
     environment: string
+    featureFlags?: Record<string, boolean>
   }> {
     const correlationId = generateCorrelationId()
     
     try {
-      const response = await api.get<{
-        version: string
-        commitSha: string
-        buildTime?: string
-        environment: string
-      }>('/version')
+      const response = await APIClient.get<{
+        data: {
+          version: string
+          commitSha: string
+          buildTime?: string
+          environment: string
+          featureFlags?: Record<string, boolean>
+        }
+      }>('/api/version')
 
       logger.debug('Version info retrieved', {
-        version: response.version,
-        commitSha: response.commitSha,
+        version: response.data.version,
+        commitSha: response.data.commitSha,
         correlationId
       })
 
-      return response
+      return response.data
     } catch (error) {
-      const apiError = error as APIError
+      const err = error instanceof Error ? error : new Error(String(error))
       logger.warn('Failed to fetch version from backend, using local config', {
-        code: apiError.code,
+        error: err.message,
         correlationId
       })
 
       return {
-        version: config.current.BUILD_VERSION,
-        commitSha: config.current.COMMIT_SHA,
-        environment: config.current.ENV
+        version: ENV.VITE_APP_VERSION,
+        commitSha: import.meta.env.VITE_COMMIT_SHA || 'unknown',
+        environment: ENV.VITE_ENVIRONMENT
+      }
+    }
+  }
+
+  /**
+   * Fetch runtime configuration from backend
+   * This includes feature flags, API endpoints, and other dynamic config
+   */
+  async fetchRuntimeConfig(): Promise<{
+    version: string
+    commitSha: string
+    buildTime?: string
+    environment: string
+    featureFlags?: Record<string, boolean>
+    apiEndpoints?: Record<string, string>
+    cdnUrl?: string
+  }> {
+    const correlationId = generateCorrelationId()
+    
+    try {
+      const response = await APIClient.get<{
+        data: {
+          version: string
+          commitSha: string
+          buildTime?: string
+          environment: string
+          featureFlags?: Record<string, boolean>
+          apiEndpoints?: Record<string, string>
+          cdnUrl?: string
+        }
+      }>('/api/version')
+
+      logger.info('Runtime config fetched from backend', {
+        version: response.data.version,
+        environment: response.data.environment,
+        correlationId
+      })
+
+      return response.data
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.warn('Failed to fetch runtime config from backend, using defaults', {
+        error: err.message,
+        correlationId
+      })
+
+      // Return default config from environment variables
+      return {
+        version: ENV.VITE_APP_VERSION,
+        commitSha: import.meta.env.VITE_COMMIT_SHA || 'unknown',
+        environment: ENV.VITE_ENVIRONMENT,
+        featureFlags: {
+          KYC: ENV.VITE_ENABLE_KYC,
+          PAYMENTS: ENV.VITE_ENABLE_PAYMENTS,
+          LIVE_STREAMING: ENV.VITE_ENABLE_LIVE_STREAMING
+        },
+        apiEndpoints: {
+          base: ENV.VITE_API_URL,
+          ws: ENV.VITE_WS_URL
+        }
       }
     }
   }
@@ -159,9 +222,8 @@ export class HealthService {
         correlationId
       })
     } catch (error) {
-      const apiError = error as APIError
-      logger.error('Failed to sync version', new Error(apiError.message), {
-        code: apiError.code,
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to sync version', err, {
         correlationId
       })
     }
@@ -188,8 +250,8 @@ export class HealthService {
 
     return {
       status: 'healthy',
-      version: config.current.BUILD_VERSION,
-      commitSha: config.current.COMMIT_SHA,
+      version: ENV.VITE_APP_VERSION,
+      commitSha: import.meta.env.VITE_COMMIT_SHA || 'unknown',
       timestamp: new Date().toISOString(),
       uptime: Date.now() - this.startTime,
       checks

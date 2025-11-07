@@ -19,7 +19,7 @@ import { createStoryHighlight } from '@/lib/stories-utils'
 import { filterActiveStories } from '@/lib/stories-utils'
 import { haptics } from '@/lib/haptics'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface CreateHighlightDialogProps {
   open: boolean

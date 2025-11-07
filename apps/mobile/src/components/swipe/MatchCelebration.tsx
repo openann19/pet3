@@ -15,7 +15,7 @@ import Animated, {
   withSequence,
   withSpring
 } from 'react-native-reanimated'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 

@@ -9,11 +9,63 @@ import { communityService } from '@/lib/community-service'
 import type { Post } from '@/lib/community-types'
 import { createLogger } from '@/lib/logger'
 import { ArrowLeft, BookmarkSimple } from '@phosphor-icons/react'
-import { motion } from '@petspark/motion'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 const logger = createLogger('SavedPostsView')
+
+function EmptyStateView() {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+        <BookmarkSimple size={48} className="text-muted-foreground" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">No saved posts yet</h2>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        Posts you save will appear here for easy access later
+      </p>
+    </AnimatedView>
+  )
+}
+
+function PostItemView({
+  post,
+  index,
+  onPostClick,
+  onAuthorClick
+}: {
+  post: Post
+  index: number
+  onPostClick: (postId: string) => void
+  onAuthorClick?: (authorId: string) => void
+}) {
+  const entry = useEntryAnimation({
+    initialY: 20,
+    initialOpacity: 0,
+    delay: index * 50
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <div
+        onClick={() => { onPostClick(post.id); }}
+        className="cursor-pointer"
+      >
+        <PostCard
+          post={post}
+          {...(onAuthorClick ? { onAuthorClick } : {})}
+        />
+      </div>
+    </AnimatedView>
+  )
+}
 
 interface SavedPostsViewProps {
   onBack?: () => void
@@ -92,37 +144,16 @@ export default function SavedPostsView({
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <MotionView
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-16 text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
-                <BookmarkSimple size={48} className="text-muted-foreground" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">No saved posts yet</h2>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                Posts you save will appear here for easy access later
-              </p>
-            </MotionView>
+            <EmptyStateView />
           ) : (
             posts.map((post, index) => (
-              <MotionView
+              <PostItemView
                 key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div
-                  onClick={() => { handlePostClick(post.id); }}
-                  className="cursor-pointer"
-                >
-                  <PostCard
-                    post={post}
-                    {...(onAuthorClick ? { onAuthorClick } : {})}
-                  />
-                </div>
-              </MotionView>
+                post={post}
+                index={index}
+                onPostClick={handlePostClick}
+                {...(onAuthorClick ? { onAuthorClick } : {})}
+              />
             ))
           )}
           <div ref={observerTarget} className="h-4" />

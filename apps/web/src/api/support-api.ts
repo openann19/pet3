@@ -16,7 +16,7 @@ import type {
   SupportTicketFilter,
   SupportTicketStats
 } from '@/lib/support-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('SupportApi')
 

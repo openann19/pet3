@@ -20,7 +20,7 @@ import { photoScanningService } from '@/core/services/photo-scanning'
 import { getKYCStatus } from '@/lib/kyc-service'
 import { createLogger } from '@/lib/logger'
 import type { OptionalWithUndef } from '@/types/optional-with-undef'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PhotoModerationAPI')
 

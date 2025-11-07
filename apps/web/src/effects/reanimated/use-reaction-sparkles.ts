@@ -14,7 +14,7 @@ import { useCallback, useState, useEffect } from 'react'
 import { haptics } from '@/lib/haptics'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { spawnParticles, animateParticle, type Particle, type ParticleConfig, DEFAULT_CONFIG } from './particle-engine'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type ReactionType = '❤️' | '😂' | '👍' | '👎' | '🔥' | '🙏' | '⭐'
 

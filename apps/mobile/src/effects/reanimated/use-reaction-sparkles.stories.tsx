@@ -3,7 +3,7 @@
  * Demonstrates the useReactionSparkles hook for mobile chat reactions
  */
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useReactionSparkles, type ReactionType } from './use-reaction-sparkles'
@@ -15,16 +15,16 @@ export default {
   component: ReactionSparklesDemo,
 }
 
-const REACTIONS: ReactionType[] = ['❤️', '👍', '😂', '😮', '😢', '🔥']
+const REACTIONS: ReactionType[] = ['❤️', '👍', '😂', '👎', '🔥', '🙏', '⭐']
 
-function ReactionSparklesDemo() {
+function ReactionSparklesDemo(): JSX.Element {
   const { animate, particles, clearParticles, animatedStyle, pulseStyle } = useReactionSparkles({
     enableParticles: true,
-    pulseDuration: 1000,
+    enablePulse: true,
   })
   const [selectedReaction, setSelectedReaction] = useState<ReactionType>('❤️')
 
-  const handleReaction = (reaction: ReactionType) => {
+  const handleReaction = (reaction: ReactionType): void => {
     setSelectedReaction(reaction)
     animate(reaction, width / 2, height / 2)
   }
@@ -77,7 +77,7 @@ function ReactionSparklesDemo() {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.clearButton} onPress={clearParticles}>
+      <TouchableOpacity style={styles.clearButton} onPress={() => { clearParticles(); }}>
         <Text style={styles.clearButtonText}>Clear Particles</Text>
       </TouchableOpacity>
 

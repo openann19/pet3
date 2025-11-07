@@ -22,7 +22,7 @@ import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-mo
 import { logEffectEnd, logEffectStart } from '../core/telemetry'
 import { randomRange } from '../core/seeded-rng'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('confetti-burst')
 

@@ -27,7 +27,7 @@ import Animated, {
 import { useLiquidDots } from '../../effects/chat/typing/use-liquid-dots'
 import { MagneticScrollFab } from './MagneticScrollFab'
 import { MessageBubble, type Message } from './MessageBubble'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Typing dot component

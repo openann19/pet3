@@ -15,7 +15,7 @@ import {
 } from '@/lib/call-utils'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useGroupCall')
 

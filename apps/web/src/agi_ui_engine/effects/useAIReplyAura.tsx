@@ -11,7 +11,7 @@ import {
 } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useUIConfig } from '@/hooks/useUIConfig'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 export interface UseAIReplyAuraReturn {
   animatedStyle: AnimatedStyle
@@ -76,7 +76,7 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
       shadowOpacity: visual.enableGlow ? glow.value : 0,
       shadowRadius: visual.enableGlow ? 20 * glow.value : 0,
       backgroundColor: visual.enableGlow
-        ? `rgba(110, 231, 183, ${String(0.05 + glow.value * 0.1 ?? '')})`
+        ? `rgba(110, 231, 183, ${String(0.05 + glow.value * 0.1)})`
         : undefined,
       opacity: visual.enableShimmer
         ? 0.9 + shimmer.value * 0.1

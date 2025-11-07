@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSharedValue, type SharedValue } from 'react-native-reanimated';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 // React Native AccessibilityInfo is loaded lazily to avoid bundling issues on web
 type RNAccessibilityInfo = typeof import('react-native').AccessibilityInfo;
@@ -54,7 +54,9 @@ export function useReducedMotion(): boolean {
 
     // Try to attach RN listener if available (native only)
     // Dynamically import to avoid hard dependency on web
-    void import('react-native')
+    // Use variable to prevent static analysis
+    const reactNativeModule = 'react-native'
+    void import(reactNativeModule)
       .then((rn: typeof import('react-native')) => {
         RN_ACC = rn.AccessibilityInfo;
         if (isTruthy(RN_ACC?.isReduceMotionEnabled)) {

@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 
@@ -132,9 +132,15 @@ export function PremiumSelect({
   }
 
   const sizeStyles: Record<string, ViewStyle> = {
-    sm: { height: 36, paddingHorizontal: 12, fontSize: 14 },
-    md: { height: 48, paddingHorizontal: 16, fontSize: 16 },
-    lg: { height: 56, paddingHorizontal: 20, fontSize: 18 },
+    sm: { height: 36, paddingHorizontal: 12 },
+    md: { height: 48, paddingHorizontal: 16 },
+    lg: { height: 56, paddingHorizontal: 20 },
+  }
+  
+  const textSizeStyles: Record<string, { fontSize: number }> = {
+    sm: { fontSize: 14 },
+    md: { fontSize: 16 },
+    lg: { fontSize: 18 },
   }
 
   return (
@@ -150,8 +156,8 @@ export function PremiumSelect({
           styles.trigger,
           variantStyles[variant],
           sizeStyles[size],
-          error && styles.errorBorder,
-          disabled && styles.disabled,
+          error ? styles.errorBorder : undefined,
+          disabled ? styles.disabled : undefined,
         ]}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
@@ -160,7 +166,7 @@ export function PremiumSelect({
         <Text
           style={[
             styles.triggerText,
-            sizeStyles[size],
+            textSizeStyles[size],
             displayValue === placeholder && styles.placeholder,
           ]}
         >
@@ -170,7 +176,7 @@ export function PremiumSelect({
       </Pressable>
 
       {(error || helperText) && (
-        <Text style={[styles.helperText, error && styles.errorText]}>
+        <Text style={[styles.helperText, ...(error ? [styles.errorText] : [])]}>
           {error || helperText}
         </Text>
       )}

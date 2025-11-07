@@ -13,7 +13,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import { Motion } from '@/core/tokens/motion'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface DialogProps extends ComponentProps<typeof DialogPrimitive.Root> {
   hapticFeedback?: boolean

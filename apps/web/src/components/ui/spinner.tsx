@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface SpinnerProps extends ComponentProps<'div'> {
   size?: 'sm' | 'md' | 'lg'

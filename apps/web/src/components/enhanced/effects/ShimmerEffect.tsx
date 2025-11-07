@@ -6,7 +6,7 @@ import { timingConfigs } from '@/effects/reanimated/transitions'
 import { cn } from '@/lib/utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import type { ReactNode } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface ShimmerEffectProps {
   width?: string | number

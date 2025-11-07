@@ -65,7 +65,7 @@ export function useDynamicBackgroundMesh(
     return {
       background: `linear-gradient(${String(angle ?? '')}deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))`,                                                             
       backgroundSize: '200% 200%',
-      backgroundPosition: `${String(meshProgress.value * 100 ?? '')}% ${String(meshProgress.value * 100 ?? '')}%`                                                                           
+      backgroundPosition: `${String(meshProgress.value * 100)}% ${String(meshProgress.value * 100)}%`                                                                           
     }
   }) as AnimatedStyle
 

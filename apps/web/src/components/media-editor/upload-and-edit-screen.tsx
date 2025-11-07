@@ -10,7 +10,7 @@ import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
 import { DropZoneWeb } from './drop-zone-web'
 import { MediaEditor } from './MediaEditor'
 import { VideoTrimmer } from './video-trimmer'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('UploadAndEditScreen')
 

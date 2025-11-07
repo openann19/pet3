@@ -19,11 +19,14 @@ export default tseslint.config(
       '**/.expo/**',
       '**/coverage/**',
       '**/*.config.js',
+      '**/*.config.cjs',
       '**/*.config.mjs',
       '**/.eslintrc.cjs',
       '**/.lintstagedrc.js',
       '**/index.js',
       '**/__tests__/**',
+      'scripts/**',
+      'tools/**',
       'android/**',
       'ios/**',
     ],
@@ -66,14 +69,11 @@ export default tseslint.config(
         version: 'detect',
       },
       'import/resolver': {
-        alias: {
-          map: [
-            ['@', './src'],
-            ['@mobile', './src'],
-            ['@petspark/shared', '../../packages/shared/src'],
-            ['@ui-mobile', '../../packages/ui-mobile'],
-          ],
-          extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+        typescript: {
+          project: './tsconfig.json',
+        },
+        node: {
+          extensions: ['.ts', '.tsx', '.js', '.jsx', '.cjs', '.json'],
         },
       },
     },
@@ -204,11 +204,14 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.{js,jsx,mjs}'],
+    files: ['**/*.{js,jsx,mjs,cjs}'],
     rules: {
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
       'no-console': 'error',
     },
     languageOptions: {

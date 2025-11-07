@@ -10,12 +10,64 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { Post } from '@/lib/community-types'
 import { createLogger } from '@/lib/logger'
 import { ArrowLeft, User } from '@phosphor-icons/react'
-import { motion } from '@petspark/motion'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 const logger = createLogger('UserPostsView')
+
+function EmptyStateView({ authorName }: { authorName: string }) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+        <User size={48} className="text-muted-foreground" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        {authorName} hasn't shared any posts yet
+      </p>
+    </AnimatedView>
+  )
+}
+
+function PostItemView({
+  post,
+  index,
+  onPostClick,
+  onAuthorClick
+}: {
+  post: Post
+  index: number
+  onPostClick: (postId: string) => void
+  onAuthorClick?: (authorId: string) => void
+}) {
+  const entry = useEntryAnimation({
+    initialY: 20,
+    initialOpacity: 0,
+    delay: index * 50
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <div
+        onClick={() => { onPostClick(post.id); }}
+        className="cursor-pointer"
+      >
+        <PostCard
+          post={post}
+          {...(onAuthorClick && { onAuthorClick })}
+        />
+      </div>
+    </AnimatedView>
+  )
+}
 
 interface UserPostsViewProps {
   userId: string
@@ -37,13 +89,13 @@ export default function UserPostsView({
   const [hasMore, setHasMore] = useState(true)
   const [cursor, setCursor] = useState<string | undefined>()
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
-  const [authorName, setAuthorName] = useState(userName || 'User')
+  const [authorName, setAuthorName] = useState(userName ?? 'User')
   const [authorAvatar, setAuthorAvatar] = useState(userAvatar)
   const observerTarget = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
 
   useEffect(() => {
-    loadPosts()
+    void loadPosts()
   }, [userId])
 
   useEffect(() => {
@@ -52,7 +104,7 @@ export default function UserPostsView({
     const observer = new IntersectionObserver(
       (entries) => {
         if (isTruthy(entries[0]?.isIntersecting)) {
-          loadPosts(true)
+          void loadPosts(true)
         }
       },
       { threshold: 0.1 }
@@ -160,37 +212,16 @@ export default function UserPostsView({
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <MotionView
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-16 text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
-                <User size={48} className="text-muted-foreground" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                {authorName} hasn't shared any posts yet
-              </p>
-            </MotionView>
+            <EmptyStateView authorName={authorName} />
           ) : (
             posts.map((post, index) => (
-              <MotionView
+              <PostItemView
                 key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div
-                  onClick={() => { handlePostClick(post.id); }}
-                  className="cursor-pointer"
-                >
-                  <PostCard
-                    post={post}
-                    {...(onAuthorClick && { onAuthorClick })}
-                  />
-                </div>
-              </MotionView>
+                post={post}
+                index={index}
+                onPostClick={handlePostClick}
+                {...(onAuthorClick ? { onAuthorClick } : {})}
+              />
             ))
           )}
           <div ref={observerTarget} className="h-4" />

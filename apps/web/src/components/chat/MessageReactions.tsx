@@ -15,7 +15,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface MessageReactionsProps {
   reactions: MessageReaction[]

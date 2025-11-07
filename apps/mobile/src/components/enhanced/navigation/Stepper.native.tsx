@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
@@ -44,7 +44,7 @@ export function Stepper({
   const reducedMotion = useReducedMotionSV()
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${String(progressWidth.value ?? '')}%`,
+    width: `${progressWidth.value}%` as `${number}%`,
   }))
 
   const handleStepPress = useCallback(

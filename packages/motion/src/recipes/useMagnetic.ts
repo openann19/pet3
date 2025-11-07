@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import { motion } from '../tokens';
 import { useReducedMotionSV } from '../reduced-motion';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 // Optional gesture handler import (may not be available in all environments)
 let Gesture: {

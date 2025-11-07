@@ -12,8 +12,10 @@ import {
   Prohibit,
   ShieldCheck
 } from '@phosphor-icons/react'
-import { Presence, motion } from '@petspark/motion'
 import { useState } from 'react'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated'
+import { useEffect } from 'react'
 
 interface AuditEntry {
   id: string
@@ -31,7 +33,7 @@ export default function AuditLogView() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterAction, setFilterAction] = useState<string>('all')
 
-  const filteredEntries = (auditLog || []).filter(entry => {
+  const filteredEntries = (auditLog ?? []).filter(entry => {
     const matchesSearch = entry.adminName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.targetId.toLowerCase().includes(searchQuery.toLowerCase())
@@ -39,7 +41,7 @@ export default function AuditLogView() {
     return matchesSearch && matchesAction
   })
 
-  const actionTypes = Array.from(new Set((auditLog || []).map(e => e.action)))
+  const actionTypes = Array.from(new Set((auditLog ?? []).map(e => e.action)))
 
   return (
     <div className="flex-1 flex flex-col">
@@ -82,15 +84,22 @@ export default function AuditLogView() {
 
       <ScrollArea className="flex-1 p-6">
         <div className="space-y-3">
-          <Presence mode="popLayout">
-            {filteredEntries.map((entry, index) => (
-              <MotionView
-                key={entry.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: index * 0.02 }}
-              >
+          {filteredEntries.map((entry, index) => {
+            const opacity = useSharedValue(0)
+            const translateX = useSharedValue(-20)
+            
+            useEffect(() => {
+              opacity.value = withDelay(index * 20, withTiming(1, { duration: 300 }))
+              translateX.value = withDelay(index * 20, withTiming(0, { duration: 300 }))
+            }, [index, opacity, translateX])
+            
+            const entryStyle = useAnimatedStyle(() => ({
+              opacity: opacity.value,
+              transform: [{ translateX: translateX.value }]
+            }))
+            
+            return (
+              <AnimatedView key={entry.id} style={entryStyle}>
                 <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
@@ -129,9 +138,9 @@ export default function AuditLogView() {
                     </div>
                   </CardContent>
                 </Card>
-              </MotionView>
-            ))}
-          </Presence>
+              </AnimatedView>
+            )
+          })}
 
           {filteredEntries.length === 0 && (
             <Card className="p-12">
@@ -162,7 +171,7 @@ function ActionIcon({ action }: { action: string }) {
     deny_verification: ShieldCheck
   }
 
-  const Icon = iconMap[action] || ListBullets
+  const Icon = iconMap[action] ?? ListBullets
 
   return <Icon size={20} className="text-primary" weight="fill" />
 }
@@ -178,7 +187,7 @@ function ActionBadge({ action }: { action: string }) {
     deny_verification: { variant: 'secondary', label: 'Denied Verification' }
   }
 
-  const config = variants[action] || { variant: 'outline', label: action.replace(/_/g, ' ').toUpperCase() }
+  const config = variants[action] ?? { variant: 'outline', label: action.replace(/_/g, ' ').toUpperCase() }
 
   return (
     <Badge variant={config.variant} className="text-xs">

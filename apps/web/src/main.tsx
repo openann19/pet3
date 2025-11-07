@@ -23,7 +23,7 @@ import "./styles/theme.css";
 
 // Register service worker for PWA functionality
 if (isTruthy(import.meta.env.PROD)) {
-  registerServiceWorker();
+  void registerServiceWorker();
 }
 
 // Initialize refresh rate detection
@@ -40,11 +40,23 @@ if (isTruthy(import.meta.env.PROD)) {
 
 // Initialize error reporting
 import { initErrorReporting } from './lib/error-reporting';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 initErrorReporting({
   enabled: import.meta.env.PROD,
 })
+
+// Initialize worldwide scale features
+import { initializeWorldwideScale } from './lib/worldwide-scale-init';
+
+// Initialize worldwide scale features after a short delay to ensure other services are ready
+setTimeout(() => {
+  void initializeWorldwideScale({
+    enableServiceWorker: import.meta.env.PROD,
+    enableErrorTracking: true,
+    enableWebVitals: import.meta.env.PROD,
+  })
+}, 100)
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -70,5 +82,7 @@ createRoot(rootElement).render(
 
 // --- ultra: sw register ---
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  void navigator.serviceWorker.register("/sw.js").catch(() => {
+    // Silently fail
+  });
 }

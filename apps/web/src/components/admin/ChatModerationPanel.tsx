@@ -15,10 +15,11 @@ import type { MessageReport } from '@/lib/chat-types'
 import { createLogger } from '@/lib/logger'
 import type { User } from '@/lib/user-service'
 import { Check, Eye, Flag, X } from '@phosphor-icons/react'
-import { motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 const logger = createLogger('ChatModerationPanel')
 
@@ -30,7 +31,7 @@ export default function ChatModerationPanel() {
   const [currentUser] = useStorage<User | null>('current-user', null)
 
   useEffect(() => {
-    loadReports()
+    void loadReports()
   }, [])
 
   const loadReports = async () => {
@@ -38,7 +39,7 @@ export default function ChatModerationPanel() {
     try {
       // Load reported messages from storage
       const { storage } = await import('@/lib/storage')
-      const allReports = await storage.get<MessageReport[]>('message-reports') || []
+      const allReports = await storage.get<MessageReport[]>('message-reports') ?? []
       setReports(allReports.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ))
@@ -238,69 +239,95 @@ export default function ChatModerationPanel() {
       </Tabs>
 
       {selectedReport && (
-        <MotionView
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-sm"
-          onClick={() => { setSelectedReport(null); }}
-        >
-          <Card
-            className="max-w-2xl w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold">Report Details</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => { setSelectedReport(null); }}
-              >
-                <X size={20} />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Report Reason</Label>
-                <p className="text-sm">{selectedReport.reason}</p>
-              </div>
-
-              {selectedReport.description && (
-                <div>
-                  <Label className="text-sm font-medium">Description</Label>
-                  <p className="text-sm">{selectedReport.description}</p>
-                </div>
-              )}
-
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Action</Label>
-                <Select value={action} onValueChange={(v) => { setAction(v as typeof action); }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no_action">No Action</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="mute">Mute User</SelectItem>
-                    <SelectItem value="suspend">Suspend User</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => { setSelectedReport(null); }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleReview}>
-                  <Check size={16} className="mr-2" />
-                  Take Action
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </MotionView>
+        <ReportDetailModal 
+          report={selectedReport} 
+          action={action}
+          setAction={setAction}
+          onClose={() => { setSelectedReport(null); }}
+          onReview={() => { void handleReview() }}
+        />
       )}
     </div>
+  )
+}
+
+// Report detail modal component
+function ReportDetailModal({ 
+  report, 
+  action,
+  setAction,
+  onClose,
+  onReview
+}: { 
+  report: MessageReport
+  action: 'warning' | 'mute' | 'suspend' | 'no_action'
+  setAction: (action: 'warning' | 'mute' | 'suspend' | 'no_action') => void
+  onClose: () => void
+  onReview: () => void
+}) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+  
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <Card
+        className="max-w-2xl w-full p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold">Report Details</h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+          >
+            <X size={20} />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium">Report Reason</Label>
+            <p className="text-sm">{report.reason}</p>
+          </div>
+
+          {report.description && (
+            <div>
+              <Label className="text-sm font-medium">Description</Label>
+              <p className="text-sm">{report.description}</p>
+            </div>
+          )}
+
+          <div>
+            <Label className="text-sm font-medium mb-2 block">Action</Label>
+            <Select value={action} onValueChange={(v) => { setAction(v as typeof action); }}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no_action">No Action</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="mute">Mute User</SelectItem>
+                <SelectItem value="suspend">Suspend User</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={onReview}>
+              <Check size={16} className="mr-2" />
+              Take Action
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </AnimatedView>
   )
 }
 

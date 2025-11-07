@@ -1,6 +1,6 @@
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { useReducedMotionSV } from '../reduced-motion';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseParallaxOptions {
   mult?: number;

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useEffect, useState, useCallback } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface AnimatedCardProps {
   children: ReactNode

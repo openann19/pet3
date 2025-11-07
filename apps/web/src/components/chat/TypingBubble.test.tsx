@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { TypingBubble } from './TypingBubble'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 describe('TypingBubble', () => {
   it('renders typing bubble with incoming styles', () => {

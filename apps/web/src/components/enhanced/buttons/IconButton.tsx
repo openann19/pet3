@@ -11,7 +11,7 @@ import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { Dimens } from '@/core/tokens/dimens'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   icon: ReactNode

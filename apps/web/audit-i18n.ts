@@ -80,10 +80,10 @@ function auditI18nStrings() {
   
   scriptLogger.writeLine('\n=== Summary ===')
   scriptLogger.writeLine(`Total strings: ${String(entries.length ?? '')}`)
-  scriptLogger.writeLine(`0-30 chars: ${String(bucketCounts['0-30'] || 0 ?? '')}`)
-  scriptLogger.writeLine(`31-60 chars: ${String(bucketCounts['31-60'] || 0 ?? '')}`)
-  scriptLogger.writeLine(`61-120 chars: ${String(bucketCounts['61-120'] || 0 ?? '')}`)
-  scriptLogger.writeLine(`120+ chars: ${String(bucketCounts['120+'] || 0 ?? '')}`)
+  scriptLogger.writeLine(`0-30 chars: ${String((bucketCounts['0-30'] ?? 0) || 0)}`)
+  scriptLogger.writeLine(`31-60 chars: ${String((bucketCounts['31-60'] ?? 0) || 0)}`)
+  scriptLogger.writeLine(`61-120 chars: ${String((bucketCounts['61-120'] ?? 0) || 0)}`)
+  scriptLogger.writeLine(`120+ chars: ${String((bucketCounts['120+'] ?? 0) || 0)}`)
   
   const longStrings = entries.filter(e => Math.max(e.enLength, e.bgLength) > 60)
   if (longStrings.length > 0) {

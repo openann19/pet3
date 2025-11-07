@@ -3,7 +3,7 @@ import { createLogger } from './logger'
 import { storage } from './storage'
 import type { User } from './user-service'
 import { userService } from './user-service'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 const logger = createLogger('EnhancedAuth')
 

@@ -17,7 +17,7 @@
 
 import { createLogger } from '@/lib/logger'
 import type { APIConfig } from '@/components/admin/APIConfigView'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('TokenSigning')
 

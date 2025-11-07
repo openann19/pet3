@@ -8,7 +8,7 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import type { AdoptionProfile, AdoptionApplication, Shelter } from '@/lib/adoption-types'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdoptionApi')
 
@@ -78,7 +78,7 @@ class AdoptionApiImpl {
 
       const query = params.toString()
       const response = await APIClient.get<GetAdoptionProfilesResponse>(
-        `${String(ENDPOINTS.ADOPTION.LISTINGS ?? '')}${String(query ? `?${String(query ?? '')}` : '' ?? '')}`
+        `${String(ENDPOINTS.ADOPTION.LISTINGS ?? '')}${query ? `?${query}` : ''}`
       )
       return response.data
     } catch (error) {

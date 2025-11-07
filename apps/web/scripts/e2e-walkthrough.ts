@@ -16,7 +16,7 @@ import { mediaUploadService } from '../src/lib/media-upload-service'
 import { getRealtimeEvents } from '../src/lib/realtime-events'
 import { storage } from '../src/lib/storage'
 import { generateULID } from '../src/lib/utils'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 const logger = createLogger('E2EWalkthrough')
 

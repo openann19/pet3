@@ -1,7 +1,7 @@
 // Re-enable testing-library now that resolver conditions are set
 import { cleanup } from '@testing-library/react-native'
 import { afterEach, vi } from 'vitest'
-import logger from '@/core/logger';
+import logger from '@/lib/logger';
 
 // Cleanup after each test
 afterEach(() => {

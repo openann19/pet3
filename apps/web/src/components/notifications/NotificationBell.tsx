@@ -45,7 +45,7 @@ export function NotificationBell() {
         size="icon"
         onClick={handleClick}
         className="relative rounded-full w-11 h-11 hover:bg-primary/10 active:bg-primary/20 transition-colors shrink-0 touch-manipulation"
-        aria-label={`Notifications${String(unreadCount > 0 ? ` - ${String(unreadCount ?? '')} unread` : '' ?? '')}`}
+        aria-label={`Notifications${unreadCount > 0 ? ` - ${unreadCount} unread` : ''}`}
       >
         <BellIconView
           hasNewNotification={hasNewNotification}
@@ -137,8 +137,7 @@ function BadgeView({ unreadCount }: BadgeViewProps) {
   useEffect(() => {
     scale.value = withTiming(1, { duration: 300 })
     opacity.value = withTiming(1, { duration: 300 })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [scale, opacity])
 
   const badgeStyle = useAnimatedStyle(() => {
     return {

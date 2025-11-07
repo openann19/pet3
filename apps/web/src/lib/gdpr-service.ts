@@ -10,7 +10,7 @@ import { api } from './api'
 import { createLogger } from './logger'
 import type { APIError } from './contracts'
 import type { UserProfile, Session } from './enhanced-auth'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('GDPRService')
 

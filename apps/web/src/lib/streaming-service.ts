@@ -10,7 +10,7 @@ import type {
     StreamReport,
     StreamStatus
 } from './streaming-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('StreamingService')
 

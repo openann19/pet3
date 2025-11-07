@@ -24,7 +24,7 @@ export function VirtualMessageList({ messages, currentUserId, onReaction, onTran
         renderItem={({ item, index }) => (
           <MessageItem
             message={item}
-            isCurrentUser={item.sender?.id === currentUserId}
+            isCurrentUser={item.senderId === currentUserId}
             currentUserId={currentUserId}
             delay={index * 20}
             onReaction={onReaction}

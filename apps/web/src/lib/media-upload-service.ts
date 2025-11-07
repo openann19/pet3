@@ -4,12 +4,11 @@
  * Handles signed upload flow: backend issues signed intent → client uploads directly → backend callback persists
  */
 
-import { api } from './api'
-import { config } from './config'
-import type { APIError } from './contracts'
+import { APIClient } from './api-client'
+import { ENDPOINTS } from './endpoints'
+import { ENV } from '@/config/env'
 import { createLogger } from './logger'
 import { generateCorrelationId } from './utils'
-import { isTruthy, isDefined } from '@/core/guards';
 
 const logger = createLogger('MediaUploadService')
 
@@ -76,7 +75,8 @@ export class MediaUploadService {
   private provider: MediaProvider
 
   constructor() {
-    this.provider = config.current.MEDIA_UPLOAD_PROVIDER
+    // Default to 'simulated' if not configured
+    this.provider = (ENV as { VITE_MEDIA_UPLOAD_PROVIDER?: MediaProvider }).VITE_MEDIA_UPLOAD_PROVIDER ?? 'simulated'
   }
 
   /**
@@ -100,24 +100,28 @@ export class MediaUploadService {
         correlationId
       })
 
-      const response = await api.post<SignedUploadIntent>('/media/upload/intent', {
-        mediaType,
-        metadata,
-        provider: this.provider,
-        correlationId
-      })
+      const response = await APIClient.post<SignedUploadIntent>(
+        ENDPOINTS.UPLOADS.SIGN_URL,
+        {
+          mediaType,
+          metadata,
+          provider: this.provider,
+          correlationId
+        }
+      )
+
+      const intent = response.data
 
       logger.info('Upload intent received', {
-        uploadId: response.uploadId,
-        expiresAt: response.expiresAt,
+        uploadId: intent.uploadId,
+        expiresAt: intent.expiresAt,
         correlationId
       })
 
-      return response
+      return intent
     } catch (error) {
-      const apiError = error as APIError
-      logger.error('Failed to request upload intent', new Error(apiError.message), {
-        code: apiError.code,
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to request upload intent', err, {
         correlationId
       })
       throw error
@@ -159,7 +163,7 @@ export class MediaUploadService {
 
       if (!uploadResponse.ok) {
         const errorText = await uploadResponse.text()
-        throw new Error(`Upload failed: ${String(uploadResponse.status ?? '')} ${String(errorText ?? '')}`)
+        throw new Error(`Upload failed: ${uploadResponse.status} ${errorText}`)
       }
 
       logger.info('File uploaded to provider', {
@@ -195,8 +199,11 @@ export class MediaUploadService {
         correlationId
       })
 
-      const response = await api.post<UploadCompletionResponse>(
-        callbackUrl,
+      // Use the callback URL if provided, otherwise use the standard completion endpoint
+      const completionUrl = callbackUrl ?? ENDPOINTS.UPLOADS.COMPLETE
+      
+      const response = await APIClient.post<UploadCompletionResponse>(
+        completionUrl,
         {
           uploadId,
           mediaType,
@@ -205,19 +212,20 @@ export class MediaUploadService {
         } as UploadCompletionRequest
       )
 
+      const completion = response.data
+
       logger.info('Upload completed', {
         uploadId,
-        mediaId: response.mediaId,
-        cdnUrl: response.cdnUrl,
+        mediaId: completion.mediaId,
+        cdnUrl: completion.cdnUrl,
         correlationId
       })
 
-      return response
+      return completion
     } catch (error) {
-      const apiError = error as APIError
-      logger.error('Failed to complete upload', new Error(apiError.message), {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to complete upload', err, {
         uploadId,
-        code: apiError.code,
         correlationId
       })
       throw error
@@ -236,14 +244,14 @@ export class MediaUploadService {
     if (!rules.allowedTypes.includes(file.type)) {
       return {
         valid: false,
-        error: `Invalid file type: ${String(file.type ?? '')}. Allowed types: ${String(rules.allowedTypes.join(', ') ?? '')}`
+        error: `Invalid file type: ${file.type}. Allowed types: ${rules.allowedTypes.join(', ')}`
       }
     }
 
     if (file.size > rules.maxSizeBytes) {
       return {
         valid: false,
-        error: `File too large: ${String((file.size / 1024 / 1024).toFixed(2) ?? '')}MB. Maximum size: ${String((rules.maxSizeBytes / 1024 / 1024).toFixed(2) ?? '')}MB`
+        error: `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size: ${(rules.maxSizeBytes / 1024 / 1024).toFixed(2)}MB`
       }
     }
 
@@ -349,7 +357,7 @@ export class MediaUploadService {
 
       if (!createResponse.ok) {
         const errorText = await createResponse.text()
-        throw new Error(`Failed to create upload session: ${String(createResponse.status ?? '')} ${String(errorText ?? '')}`)
+        throw new Error(`Failed to create upload session: ${createResponse.status} ${errorText}`)
       }
 
       const meta = await createResponse.json() as {
@@ -383,11 +391,11 @@ export class MediaUploadService {
           correlationId
         })
 
-        const chunkResponse = await fetch(`${String(putUrl ?? '')}?part=${String(part ?? '')}`, {
+        const chunkResponse = await fetch(`${putUrl}?part=${part}`, {
           method: 'PUT',
           body: chunk,
           headers: {
-            'Content-Range': `bytes ${String(offset ?? '')}-${String(end - 1 ?? '')}/${String(file.size ?? '')}`,
+            'Content-Range': `bytes ${offset}-${end - 1}/${file.size}`,
             'Content-Type': file.type,
             'X-Correlation-ID': correlationId
           }
@@ -395,12 +403,12 @@ export class MediaUploadService {
 
         if (!chunkResponse.ok) {
           const errorText = await chunkResponse.text()
-          throw new Error(`Chunk ${String(part ?? '')} upload failed: ${String(chunkResponse.status ?? '')} ${String(errorText ?? '')}`)
+          throw new Error(`Chunk ${part} upload failed: ${chunkResponse.status} ${errorText}`)
         }
 
         // Check for ETag in response (for resume support)
         const etag = chunkResponse.headers.get('ETag')
-        if (isTruthy(etag)) {
+        if (etag) {
           logger.debug('Chunk uploaded with ETag', {
             uploadId,
             part,
@@ -419,7 +427,7 @@ export class MediaUploadService {
       })
 
       // Step 3: Finalize upload
-      const finalizeResponse = await fetch(`${String(putUrl ?? '')}/complete`, {
+      const finalizeResponse = await fetch(`${putUrl}/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -434,7 +442,7 @@ export class MediaUploadService {
 
       if (!finalizeResponse.ok) {
         const errorText = await finalizeResponse.text()
-        throw new Error(`Failed to finalize upload: ${String(finalizeResponse.status ?? '')} ${String(errorText ?? '')}`)
+        throw new Error(`Failed to finalize upload: ${finalizeResponse.status} ${errorText}`)
       }
 
       const completion = await finalizeResponse.json() as UploadCompletionResponse
@@ -477,7 +485,7 @@ export class MediaUploadService {
 
       const validation = this.validateFile(file, mediaType)
       if (!validation.valid) {
-        throw new Error(validation.error || 'File validation failed')
+        throw new Error(validation.error ?? 'File validation failed')
       }
 
       let metadata: UploadCompletionRequest['metadata'] = {

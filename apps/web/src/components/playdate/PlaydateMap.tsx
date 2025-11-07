@@ -8,7 +8,7 @@ import type { Playdate } from '@/lib/playdate-types'
 import type { Location } from '@/lib/maps/types'
 import { getCurrentLocation, calculateDistance, formatDistance } from '@/lib/maps/utils'
 import { format } from 'date-fns'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface PlaydateMapProps {
   playdates: Playdate[]

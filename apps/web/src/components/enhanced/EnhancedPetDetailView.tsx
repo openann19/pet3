@@ -27,7 +27,7 @@ import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reani
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { haptics } from '@/lib/haptics'
 import type { Pet } from '@/lib/types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface EnhancedPetDetailViewProps {
   pet: Pet

@@ -8,7 +8,7 @@ import { useCallback, useState, useRef } from 'react'
 import { Gesture } from 'react-native-gesture-handler'
 import { haptic } from '@petspark/motion'
 import { useReducedMotionSV } from '../../effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseLiquidSwipeOptions {
   threshold?: number

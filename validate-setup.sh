@@ -1,9 +1,9 @@
 #!/bin/bash
-# Validation script for native app setup
+# Validation script for mobile app setup
 
 set -e
 
-echo "🔍 Validating Pet3 Native App Setup..."
+echo "🔍 Validating Pet3 Mobile App Setup..."
 echo ""
 
 # Check root files
@@ -20,18 +20,17 @@ test -f packages/shared/package.json && echo "  ✅ packages/shared/package.json
 test -f packages/shared/src/index.ts && echo "  ✅ packages/shared/src/index.ts exists"
 test -f packages/shared/tsconfig.json && echo "  ✅ packages/shared/tsconfig.json exists"
 
-# Check native app
+# Check mobile app
 echo ""
-echo "✓ Checking native app..."
-test -d apps/native && echo "  ✅ apps/native directory exists"
-test -f apps/native/package.json && echo "  ✅ apps/native/package.json exists"
-test -f apps/native/app.json && echo "  ✅ apps/native/app.json exists"
-test -f apps/native/eas.json && echo "  ✅ apps/native/eas.json exists"
-test -f apps/native/tsconfig.json && echo "  ✅ apps/native/tsconfig.json exists"
-test -f apps/native/babel.config.js && echo "  ✅ apps/native/babel.config.js exists"
-test -f apps/native/metro.config.js && echo "  ✅ apps/native/metro.config.js exists"
-test -f apps/native/App.tsx && echo "  ✅ apps/native/App.tsx exists"
-test -f apps/native/src/screens/HomeScreen.tsx && echo "  ✅ apps/native/src/screens/HomeScreen.tsx exists"
+echo "✓ Checking mobile app..."
+test -d apps/mobile && echo "  ✅ apps/mobile directory exists"
+test -f apps/mobile/package.json && echo "  ✅ apps/mobile/package.json exists"
+test -f apps/mobile/app.config.ts && echo "  ✅ apps/mobile/app.config.ts exists"
+test -f apps/mobile/eas.json && echo "  ✅ apps/mobile/eas.json exists"
+test -f apps/mobile/tsconfig.json && echo "  ✅ apps/mobile/tsconfig.json exists"
+test -f apps/mobile/babel.config.js && echo "  ✅ apps/mobile/babel.config.js exists"
+test -f apps/mobile/metro.config.cjs && echo "  ✅ apps/mobile/metro.config.cjs exists"
+test -f apps/mobile/App.tsx && echo "  ✅ apps/mobile/App.tsx exists"
 
 # Check workflows
 echo ""
@@ -43,7 +42,6 @@ test -f .github/workflows/eas-build.yml && echo "  ✅ .github/workflows/eas-bui
 echo ""
 echo "✓ Checking documentation..."
 test -f docs/MOBILE_README.md && echo "  ✅ docs/MOBILE_README.md exists"
-test -f apps/native/README.md && echo "  ✅ apps/native/README.md exists"
 test -f packages/shared/README.md && echo "  ✅ packages/shared/README.md exists"
 
 echo ""
@@ -52,6 +50,6 @@ echo ""
 echo "📋 Next steps:"
 echo "  1. Install dependencies: npm install"
 echo "  2. Build shared package: cd packages/shared && npm run build"
-echo "  3. Configure Expo project ID in apps/native/app.json"
+echo "  3. Configure Expo project ID in apps/mobile/app.config.ts"
 echo "  4. Set up GitHub secrets for EAS builds (see docs/MOBILE_README.md)"
 echo ""

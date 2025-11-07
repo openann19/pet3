@@ -82,10 +82,10 @@ export function useSentimentMoodEngine(
       return {
         sentiment: 'positive',
         intensity,
-        color: `rgba(34, 197, 94, ${String(0.15 * intensity ?? '')})`,
+        color: `rgba(34, 197, 94, ${String(0.15 * intensity)})`,
         gradient: [
-          `rgba(34, 197, 94, ${String(0.2 * intensity ?? '')})`,
-          `rgba(16, 185, 129, ${String(0.15 * intensity ?? '')})`
+          `rgba(34, 197, 94, ${String(0.2 * intensity)})`,
+          `rgba(16, 185, 129, ${String(0.15 * intensity)})`
         ]
       }
     }
@@ -94,10 +94,10 @@ export function useSentimentMoodEngine(
       return {
         sentiment: 'negative',
         intensity,
-        color: `rgba(239, 68, 68, ${String(0.15 * intensity ?? '')})`,
+        color: `rgba(239, 68, 68, ${String(0.15 * intensity)})`,
         gradient: [
-          `rgba(239, 68, 68, ${String(0.2 * intensity ?? '')})`,
-          `rgba(220, 38, 38, ${String(0.15 * intensity ?? '')})`
+          `rgba(239, 68, 68, ${String(0.2 * intensity)})`,
+          `rgba(220, 38, 38, ${String(0.15 * intensity)})`
         ]
       }
     }

@@ -11,7 +11,7 @@
 
 import { createLogger } from '@/lib/logger'
 import type { RTCConfiguration, RTCPeerConnection, RTCIceCandidate, RTCTrackEvent, MediaStream } from './webrtc-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PeerConnectionManager')
 

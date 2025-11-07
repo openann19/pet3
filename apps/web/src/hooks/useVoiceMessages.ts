@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { generateMessageId } from '@/lib/chat-utils'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface VoiceMessageData {
   blob: string

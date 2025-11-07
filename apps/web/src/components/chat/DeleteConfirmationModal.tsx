@@ -14,7 +14,7 @@ import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { X, Trash } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface DeleteConfirmationModalProps {
   isOpen: boolean

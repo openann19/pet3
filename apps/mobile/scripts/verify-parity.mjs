@@ -7,6 +7,7 @@
 import { readdirSync, readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import { execSync } from 'child_process'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -87,6 +88,18 @@ if (mobileTransitions && !webTransitions) {
 
 if (webTransitions && !mobileTransitions) {
   die('Missing mobile transitions.ts parity')
+}
+
+// Check reanimated hooks parity using bash script
+try {
+  const parityScript = join(ROOT, 'scripts', 'check_mobile_parity.sh')
+  execSync(`bash ${parityScript}`, { 
+    stdio: 'inherit',
+    cwd: ROOT 
+  })
+} catch (e) {
+  die('Reanimated hooks parity check failed. Run: bash scripts/check_mobile_parity.sh')
+  ERROR = 1
 }
 
 if (ERROR === 0) {

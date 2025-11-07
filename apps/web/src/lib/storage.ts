@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('StorageService')
 

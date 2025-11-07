@@ -74,3 +74,27 @@ pnpm-lock.yaml
 # Documentation markdown files (optional - uncomment if you want to exclude docs)
 # *.md
 
+# Additional exclusions to reduce WindowServer load
+android/
+ios/
+.expo/
+.expo-shared/
+.turbo/
+.pnpm-store/
+*.apk
+*.ipa
+*.aab
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+metro-health-check*
+.vitest/
+*.tsbuildinfo
+prisma/migrations/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+

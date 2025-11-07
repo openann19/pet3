@@ -20,7 +20,7 @@ import type { LastSeenLocation, PetSummary } from '@/lib/lost-found-types'
 import { CurrencyDollar, MapPin, Plus, Upload, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { MapLocationPicker } from './MapLocationPicker'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('CreateLostAlertDialog')
 

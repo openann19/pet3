@@ -19,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface ReactionBurstParticlesProps {
   enabled?: boolean

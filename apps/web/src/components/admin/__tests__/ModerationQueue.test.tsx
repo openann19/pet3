@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { ModerationQueue } from '../ModerationQueue'
 import { moderationService, photoService } from '@/lib/backend-services'
 import { userService } from '@/lib/user-service'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('@/lib/backend-services', () => ({
   moderationService: {

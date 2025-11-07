@@ -11,7 +11,7 @@ import type {
 } from '@/lib/live-streaming-types'
 import { createLogger } from '@/lib/logger'
 import { realtime } from '@/lib/realtime'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('LiveStreamingAPI')
 

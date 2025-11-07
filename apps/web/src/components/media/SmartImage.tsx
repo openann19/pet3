@@ -8,7 +8,7 @@ import { usePrefersReducedMotion } from '@/utils/reduced-motion'
 import { useFeatureFlags } from '@/config/feature-flags'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface SmartImageProps {
   src: string

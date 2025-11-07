@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Query Cache - In-memory cache for API responses with TTL support

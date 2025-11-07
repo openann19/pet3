@@ -3,7 +3,7 @@ import { config } from './config'
 import { generateCorrelationId } from './utils'
 import { apiErrorSchema, type APIError } from './api-schemas'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export class ValidationError extends Error {
   constructor(

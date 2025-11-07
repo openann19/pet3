@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet, Alert, AccessibilityInfo } from 'react-native';
 import type { Story, StoryHighlight, Pet } from '@shared/types';
 import { createStoryHighlight } from '@shared/utils';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 // import { useKV } from '@github/spark/hooks'; // TODO: replace with unified data hook
 // import { t } from '@/lib/i18n'; // TODO: replace with actual i18n

@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 import { logger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'promise'
 export type NotificationPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'

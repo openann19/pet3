@@ -15,8 +15,9 @@ import {
   TrendUp,
   Users
 } from '@phosphor-icons/react'
-import { motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 interface Report {
   id: string
@@ -182,14 +183,14 @@ export default function DashboardView() {
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           const TrendIcon = stat.trend === 'up' ? TrendUp : stat.trend === 'down' ? TrendDown : Clock
+          const entry = useEntryAnimation({
+            initialY: 20,
+            initialOpacity: 0,
+            delay: index * 50
+          })
 
           return (
-            <MotionView
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
+            <AnimatedView key={stat.title} style={entry.animatedStyle}>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -207,7 +208,7 @@ export default function DashboardView() {
                   </div>
                 </CardContent>
               </Card>
-            </MotionView>
+            </AnimatedView>
           )
         })}
       </div>
@@ -331,7 +332,7 @@ function HealthItem({ service, status, uptime }: HealthItemProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className={`w-2 h-2 rounded-full ${String(status === 'operational' ? 'bg-green-600' : 'bg-red-600' ?? '')}`} />
+        <div className={`w-2 h-2 rounded-full ${String(status === 'operational' ? 'bg-green-600' : 'bg-red-600')}`} />
         <span className="text-sm font-medium">{service}</span>
       </div>
       <div className="flex items-center gap-3">

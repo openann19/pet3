@@ -7,7 +7,7 @@
  * Location: apps/mobile/src/components/chat/ReactionBurstParticles.native.tsx
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { View, StyleSheet } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -18,10 +18,11 @@ import Animated, {
   Easing,
   runOnJS,
   type SharedValue,
+  makeMutable,
 } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 export interface ReactionBurstParticlesProps {
   enabled?: boolean
@@ -35,6 +36,7 @@ export interface ReactionBurstParticlesProps {
 }
 
 interface Particle {
+  id: string
   progress: SharedValue<number>
   scale: SharedValue<number>
   opacity: SharedValue<number>
@@ -43,54 +45,8 @@ interface Particle {
   delay: number
 }
 
-function useParticles(
-  count: number,
-  radius: number,
-  seed: number | string,
-  staggerMs: number
-): { particles: Particle[]; finished: SharedValue<number> } {
-  const particlesRef = useRef<Particle[]>([])
-  const finishedRef = useRef<SharedValue<number> | null>(null)
-
-  if (finishedRef.current === null) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    finishedRef.current = useSharedValue(0)
-  }
-
-  const finished = finishedRef.current
-
-  if (particlesRef.current.length !== count) {
-    const rng = createSeededRNG(seed)
-    const newParticles: Particle[] = []
-
-    for (let i = 0; i < count; i++) {
-      const base = (i / count) * Math.PI * 2 + rng.range(-0.08, 0.08)
-      const tx = Math.cos(base) * radius * rng.range(0.9, 1.05)
-      const ty = Math.sin(base) * radius * rng.range(0.9, 1.05)
-
-      // Reanimated's useSharedValue is designed to be called in loops
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const progress = useSharedValue(0)
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const scale = useSharedValue(0.7)
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const opacity = useSharedValue(0)
-
-      newParticles.push({
-        progress,
-        scale,
-        opacity,
-        tx,
-        ty,
-        delay: i * staggerMs,
-      })
-    }
-
-    particlesRef.current = newParticles
-  }
-
-  return { particles: particlesRef.current, finished }
-}
+// Maximum particle count for pre-allocation
+const MAX_PARTICLES = 50
 
 export function ReactionBurstParticles({
   enabled = true,
@@ -104,20 +60,62 @@ export function ReactionBurstParticles({
 }: ReactionBurstParticlesProps): React.ReactElement {
   const reduced = useReducedMotion()
   const dur = getReducedMotionDuration(600, reduced)
-  const { particles, finished } = useParticles(count, radius, seed, staggerMs)
+  const finished = useSharedValue(0)
+  const notifyComplete = useCallback(() => {
+    onComplete?.()
+  }, [onComplete])
+
+  // Pre-allocate all SharedValues at top level (hooks must be called unconditionally)
+  const progressValues = useMemo(
+    () => Array.from({ length: MAX_PARTICLES }, () => makeMutable(0)),
+    []
+  )
+  const scaleValues = useMemo(
+    () => Array.from({ length: MAX_PARTICLES }, () => makeMutable(0.7)),
+    []
+  )
+  const opacityValues = useMemo(
+    () => Array.from({ length: MAX_PARTICLES }, () => makeMutable(0)),
+    []
+  )
+
+  // Create particle metadata (without SharedValues) in useMemo
+  const particles = useMemo<Particle[]>(() => {
+    const rng = createSeededRNG(seed)
+    const actualCount = Math.min(count, MAX_PARTICLES)
+
+    return Array.from({ length: actualCount }, (_, i) => {
+      const base = (i / actualCount) * Math.PI * 2 + rng.range(-0.08, 0.08)
+      const tx = Math.cos(base) * radius * rng.range(0.9, 1.05)
+      const ty = Math.sin(base) * radius * rng.range(0.9, 1.05)
+
+      return {
+        id: `${seed}-${i}`,
+        progress: progressValues[i]!,
+        scale: scaleValues[i]!,
+        opacity: opacityValues[i]!,
+        tx,
+        ty,
+        delay: i * staggerMs,
+      }
+    })
+  }, [count, radius, seed, staggerMs, progressValues, scaleValues, opacityValues])
 
   useEffect(() => {
     if (!enabled) return
 
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i]!
+    finished.value = 0
+
+    const total = particles.length
+
+    for (const particle of particles) {
       if (isTruthy(reduced)) {
         particle.opacity.value = withTiming(1, { duration: 0 })
         particle.scale.value = withTiming(1, { duration: 0 })
         particle.progress.value = withTiming(1, { duration: getReducedMotionDuration(120, true) }, () => {
           finished.value += 1
-          if (finished.value === particles.length && onComplete) {
-            runOnJS(onComplete)()
+          if (finished.value === total) {
+            runOnJS(notifyComplete)()
           }
         })
         continue
@@ -130,38 +128,49 @@ export function ReactionBurstParticles({
         withTiming(1, { duration: dur, easing: Easing.out(Easing.cubic) }, () => {
           particle.opacity.value = withTiming(0, { duration: Math.max(100, dur * 0.35) }, () => {
             finished.value += 1
-            if (finished.value === particles.length && onComplete) {
-              runOnJS(onComplete)()
+            if (finished.value === total) {
+              runOnJS(notifyComplete)()
             }
           })
         })
       )
     }
-  }, [enabled, particles, dur, reduced, finished, onComplete])
+  }, [enabled, particles, dur, reduced, finished, notifyComplete])
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {particles.map((particle, i) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const style = useAnimatedStyle(() => ({
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: [
-            { translateX: particle.progress.value * particle.tx },
-            { translateY: particle.progress.value * particle.ty },
-            { scale: particle.scale.value },
-          ],
-          opacity: particle.opacity.value,
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-        }))
-
-        return <Animated.View key={i} style={style} />
-      })}
+      {particles.map((particle) => (
+        <ReactionParticle key={particle.id} particle={particle} color={color} size={size} />
+      ))}
     </View>
   )
 }
+
+interface ReactionParticleProps {
+  particle: Particle
+  color: string
+  size: number
+}
+
+const ReactionParticle = React.memo(({ particle, color, size }: ReactionParticleProps) => {
+  const style = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    transform: [
+      { translateX: particle.progress.value * particle.tx },
+      { translateY: particle.progress.value * particle.ty },
+      { scale: particle.scale.value },
+    ],
+    opacity: particle.opacity.value,
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    backgroundColor: color,
+  }))
+
+  return <Animated.View style={style} />
+})
+
+ReactionParticle.displayName = 'ReactionParticle'
 

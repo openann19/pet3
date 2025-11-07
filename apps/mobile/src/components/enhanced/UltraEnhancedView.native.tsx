@@ -11,7 +11,7 @@ import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence,
 import Animated from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 

@@ -8,7 +8,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { GestureDetector } from 'react-native-gesture-handler'
 import { useSwipeReply } from './use-swipe-reply'
-import logger from '@/core/logger';
+import logger from '@/lib/logger';
 
 export default {
   title: 'Mobile/Animation Hooks/useSwipeReply',

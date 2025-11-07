@@ -14,7 +14,7 @@ import type { Report } from '@/lib/contracts'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { createLogger } from '@/lib/logger'
 import { enforceRateLimit } from '@/lib/rate-limiting'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('CommunityAPI')
 

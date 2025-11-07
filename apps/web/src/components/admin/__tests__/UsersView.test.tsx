@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import UsersView from '../UsersView'
 import { adminApi } from '@/api/admin-api'
 import { useStorage } from '@/hooks/useStorage'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('@/api/admin-api')
 vi.mock('@/hooks/useStorage')

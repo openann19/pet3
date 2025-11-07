@@ -3,6 +3,8 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import LoadingState from '@/components/LoadingState'
 import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { ConsentManager, AgeVerification, isAgeVerified } from '@/components/compliance'
+import { errorTracking } from '@/lib/error-tracking'
 import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
@@ -20,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Toaster } from '@/components/ui/sonner'
 import { NavButton } from '@/components/navigation/NavButton'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 // Route components - lazy loaded
 const DiscoverView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/DiscoverView'))
@@ -57,8 +59,16 @@ function App() {
   const [appState, setAppState] = useState<AppState>('welcome')
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup')
   const { t, theme, toggleTheme, language, toggleLanguage } = useApp()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [hasSeenWelcome, setHasSeenWelcome] = useStorage<boolean>('has-seen-welcome-v2', false)
+  const [ageVerified, setAgeVerified] = useState(isAgeVerified())
+  
+  // Initialize error tracking with user context
+  useEffect(() => {
+    if (user?.id) {
+      errorTracking.setUserContext(user.id)
+    }
+  }, [user])
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [_userPets] = useStorage<Pet[]>('user-pets', [])
   const [matches] = useStorage<Match[]>('matches', [])
@@ -158,7 +168,7 @@ function App() {
   useEffect(() => {
     // Initialize performance monitoring in production
     if (import.meta.env['NODE_ENV'] === 'production') {
-      Promise.all([
+      void Promise.all([
         import('@/lib/monitoring/performance'),
         import('@/lib/logger')
       ]).then(([{ initPerformanceMonitoring }, { createLogger }]) => {
@@ -649,6 +659,15 @@ function App() {
       <Suspense fallback={null}>
         <BottomNavBar />
       </Suspense>
+      
+      {/* Worldwide Scale Compliance Components */}
+      {!ageVerified && (
+        <AgeVerification
+          onVerified={(verified) => setAgeVerified(verified)}
+          requiredAge={13}
+        />
+      )}
+      <ConsentManager />
     </div>
                     )}
         </>

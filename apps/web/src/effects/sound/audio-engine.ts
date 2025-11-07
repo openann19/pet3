@@ -13,7 +13,7 @@
 import { createLogger } from '@/lib/logger'
 import { haptics } from '@/lib/haptics'
 import type { SoundPreset, SoundEffect, SpatialAudioConfig, AudioContextPool } from './audio-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('AudioEngine')
 

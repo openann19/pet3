@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Frame Drop Counter

@@ -12,7 +12,7 @@ import { createLogger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
 import { PremiumNotificationCenter, type PremiumNotification } from './PremiumNotificationCenter'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PremiumNotificationBell')
 

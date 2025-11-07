@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, Presence } from '@petspark/motion';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import {
   MapPin,
   MagnifyingGlass,
@@ -24,9 +27,55 @@ import { useStorage } from '@/hooks/useStorage';
 import { toast } from 'sonner';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { logger } from '@/lib/logger';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 type MapViewMode = 'discover' | 'places' | 'playdate' | 'lost-pet' | 'matches';
+
+// Animated marker component
+function AnimatedMarker({
+  place,
+  index,
+  category,
+  onClick,
+}: {
+  place: Place;
+  index: number;
+  category: { id: string; name: string; icon: string; color: string } | undefined;
+  onClick: () => void;
+}) {
+  const markerEntry = useEntryAnimation({
+    initialScale: 0,
+    initialOpacity: 0,
+    delay: index * 50,
+    duration: 300,
+  });
+
+  return (
+    <AnimatedView
+      className="absolute"
+      style={[
+        markerEntry.animatedStyle,
+        {
+          left: `${20 + (index % 5) * 16}%`,
+          top: `${20 + Math.floor(index / 5) * 25}%`,
+        },
+      ]}
+    >
+      <button
+        onClick={onClick}
+        className="relative group cursor-pointer transform transition-transform hover:scale-110 active:scale-95"
+      >
+        <div
+          className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
+          style={{ backgroundColor: category?.color || '#ec4899' }}
+        >
+          {category?.icon || '📍'}
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+      </button>
+    </AnimatedView>
+  );
+}
 
 export default function MapView() {
   const { t } = useApp();
@@ -194,6 +243,42 @@ export default function MapView() {
 
   const displayLocation = preciseSharingEnabled && userLocation ? userLocation : coarseLocation;
 
+  // Animation hooks
+  const searchBarEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
+  const privacyBannerEntry = useEntryAnimation({ initialY: -20, delay: 100, duration: 300 });
+  const preciseBannerEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
+  const statsFooterEntry = useEntryAnimation({ initialY: 20, delay: 200 });
+  const listSidebarPresence = useAnimatePresence({ isVisible: showList });
+  const detailSheetPresence = useAnimatePresence({ isVisible: !!selectedMarker && selectedMarker.type === 'place' });
+
+  // Sidebar slide animation
+  const sidebarX = useSharedValue(100);
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${sidebarX.value}%` }],
+  }));
+
+  // Detail sheet slide animation
+  const detailSheetY = useSharedValue(100);
+  const detailSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: `${detailSheetY.value}%` }],
+  }));
+
+  useEffect(() => {
+    if (showList) {
+      sidebarX.value = withSpring(0, { damping: 30, stiffness: 300 });
+    } else {
+      sidebarX.value = withSpring(100, { damping: 30, stiffness: 300 });
+    }
+  }, [showList, sidebarX]);
+
+  useEffect(() => {
+    if (selectedMarker && selectedMarker.type === 'place') {
+      detailSheetY.value = withSpring(0, { damping: 30, stiffness: 300 });
+    } else {
+      detailSheetY.value = withSpring(100, { damping: 30, stiffness: 300 });
+    }
+  }, [selectedMarker, detailSheetY]);
+
   return (
     <div className="relative h-[calc(100vh-12rem)] max-h-[800px] bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
       {/* Map Container */}
@@ -227,34 +312,17 @@ export default function MapView() {
         {displayLocation && filteredPlaces.slice(0, 15).map((place, idx) => {
           const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
           return (
-            <MotionView
+            <AnimatedMarker
               key={place.id}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: idx * 0.05, duration: 0.3 }}
-              className="absolute"
-              style={{
-                left: `${String(20 + (idx % 5) * 16 ?? '')}%`,
-                top: `${String(20 + Math.floor(idx / 5) * 25 ?? '')}%`,
+              place={place}
+              index={idx}
+              category={category}
+              onClick={() => {
+                haptics.trigger('light');
+                setSelectedMarker({ id: place.id, type: 'place', location: place.location, data: place });
+                setShowList(false);
               }}
-            >
-              <button
-                onClick={() => {
-                  haptics.trigger('light');
-                  setSelectedMarker({ id: place.id, type: 'place', location: place.location, data: place });
-                  setShowList(false);
-                }}
-                className="relative group cursor-pointer transform transition-transform hover:scale-110 active:scale-95"
-              >
-                <div
-                  className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
-                  style={{ backgroundColor: category?.color || '#ec4899' }}
-                >
-                  {category?.icon || '📍'}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-              </button>
-            </MotionView>
+            />
           );
         })}
       </div>
@@ -262,11 +330,9 @@ export default function MapView() {
       {/* Top Controls */}
       <div className="absolute top-4 left-4 right-4 z-10 space-y-3">
         {/* Search Bar */}
-        <MotionView
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
+        <AnimatedView
           className="backdrop-blur-xl bg-background/80 rounded-2xl shadow-2xl border border-border/50 p-3"
+          style={searchBarEntry.animatedStyle}
         >
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
@@ -320,15 +386,13 @@ export default function MapView() {
               </button>
             ))}
           </div>
-        </MotionView>
+        </AnimatedView>
 
         {/* Privacy Banner */}
         {locationPermission === 'granted' && !preciseSharingEnabled && (
-          <MotionView
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+          <AnimatedView
             className="backdrop-blur-xl bg-primary/10 rounded-xl border border-primary/20 p-3"
+            style={privacyBannerEntry.animatedStyle}
           >
             <div className="flex items-start gap-3">
               <Warning size={20} className="text-primary shrink-0 mt-0.5" weight="fill" />
@@ -349,14 +413,13 @@ export default function MapView() {
                 {t.map?.enable || 'Enable'}
               </Button>
             </div>
-          </MotionView>
+          </AnimatedView>
         )}
 
         {preciseSharingEnabled && preciseSharingUntil && (
-          <MotionView
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+          <AnimatedView
             className="backdrop-blur-xl bg-green-500/10 rounded-xl border border-green-500/20 p-3"
+            style={preciseBannerEntry.animatedStyle}
           >
             <div className="flex items-center gap-3">
               <CheckCircle size={20} className="text-green-500 shrink-0" weight="fill" />
@@ -377,20 +440,16 @@ export default function MapView() {
                 {t.map?.disable || 'Disable'}
               </Button>
             </div>
-          </MotionView>
+          </AnimatedView>
         )}
       </div>
 
       {/* Places List Sidebar */}
-      <Presence>
-        {showList && (
-          <MotionView
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-96 bg-background/95 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto"
-          >
+      {listSidebarPresence.shouldRender && showList && (
+        <AnimatedView
+          className="absolute right-0 top-0 bottom-0 w-full sm:w-96 bg-background/95 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto"
+          style={[listSidebarPresence.animatedStyle, sidebarStyle]}
+        >
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">
@@ -459,20 +518,15 @@ export default function MapView() {
                 );
               })}
             </div>
-          </MotionView>
-        )}
-      </Presence>
+        </AnimatedView>
+      )}
 
       {/* Selected Place Detail Sheet */}
-      <Presence>
-        {selectedMarker && selectedMarker.type === 'place' && (
-          <MotionView
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="absolute bottom-0 left-0 right-0 max-h-[60%] bg-background rounded-t-3xl shadow-2xl border-t border-border overflow-y-auto"
-          >
+      {detailSheetPresence.shouldRender && selectedMarker && selectedMarker.type === 'place' && (
+        <AnimatedView
+          className="absolute bottom-0 left-0 right-0 max-h-[60%] bg-background rounded-t-3xl shadow-2xl border-t border-border overflow-y-auto"
+          style={[detailSheetPresence.animatedStyle, detailSheetStyle]}
+        >
             {(() => {
               const place = selectedMarker.data as Place;
               const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
@@ -565,16 +619,13 @@ export default function MapView() {
                 </div>
               );
             })()}
-          </MotionView>
-        )}
-      </Presence>
+        </AnimatedView>
+      )}
 
       {/* Stats Footer */}
-      <MotionView
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+      <AnimatedView
         className="absolute bottom-4 left-4 right-4 z-10"
+        style={statsFooterEntry.animatedStyle}
       >
         <div className="backdrop-blur-xl bg-background/80 rounded-2xl shadow-xl border border-border p-4">
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -592,7 +643,7 @@ export default function MapView() {
             </div>
           </div>
         </div>
-      </MotionView>
+      </AnimatedView>
     </div>
   );
 }

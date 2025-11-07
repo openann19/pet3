@@ -9,7 +9,7 @@ import {
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useUIConfig } from '@/hooks/useUIConfig'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseMoodColorThemeOptions {
   text: string

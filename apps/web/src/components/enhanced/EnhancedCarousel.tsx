@@ -2,13 +2,12 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
 import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
-import { Presence } from '@petspark/motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface EnhancedCarouselProps {
   items: React.ReactNode[]
@@ -145,22 +144,20 @@ export function EnhancedCarousel({
   return (
     <div className={cn('relative overflow-hidden rounded-xl', className)}>
       <div className="relative aspect-4/3 bg-muted">
-        <Presence visible={true}>
-          <div
-            key={currentIndex}
-            style={styleValue}
-            onMouseDown={handleDragStart}
-            onMouseMove={handleDrag}
-            onMouseUp={handleDragEnd}
-            onTouchStart={handleDragStart}
-            onTouchMove={handleDrag}
-            onTouchEnd={handleDragEnd}
-            onClick={resetAutoPlay}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing"
-          >
-            {items[currentIndex]}
-          </div>
-        </Presence>
+        <div
+          key={currentIndex}
+          style={styleValue}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDrag}
+          onMouseUp={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDrag}
+          onTouchEnd={handleDragEnd}
+          onClick={resetAutoPlay}
+          className="absolute inset-0 cursor-grab active:cursor-grabbing"
+        >
+          {items[currentIndex]}
+        </div>
       </div>
 
       {showControls && itemCount > 1 && (

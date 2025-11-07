@@ -10,7 +10,7 @@ import { generateULID } from './utils'
 import { PaymentsService } from './payments-service'
 import { APIClient } from './api-client'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('purchase-service')
 

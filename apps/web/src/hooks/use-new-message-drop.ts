@@ -3,7 +3,7 @@
 import { useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay, withTiming, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
 import { useEffect, useCallback } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseNewMessageDropOptions {
   isNew?: boolean

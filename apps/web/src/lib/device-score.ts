@@ -8,7 +8,7 @@
  */
 
 import type { DeviceMetrics } from '@petspark/shared'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Detect device capabilities and calculate performance score

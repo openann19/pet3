@@ -13,7 +13,7 @@ import { PaymentsService } from '@/lib/payments-service'
 import type { Subscription, AuditLogEntry, RevenueMetrics } from '@/lib/payments-types'
 import { MagnifyingGlass, CurrencyDollar, Users, TrendUp, Gift, X, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { toastSuccess, toastError } from '@/effects/confetti-web'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export function SubscriptionAdminPanel() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])

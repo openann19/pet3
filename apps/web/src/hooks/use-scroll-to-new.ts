@@ -3,7 +3,7 @@
 import { useSharedValue, useAnimatedStyle, withSequence, withTiming, withSpring, type SharedValue } from 'react-native-reanimated'
 import { useCallback, useEffect, useRef } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseScrollToNewOptions {
   isVisible?: boolean

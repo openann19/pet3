@@ -13,7 +13,7 @@ import { openInMaps } from '@/lib/maps/deep-links';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface LocationBubbleProps {
   location: Location;

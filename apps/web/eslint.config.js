@@ -37,7 +37,8 @@ export default tseslint.config(
       ecmaVersion: 2022,
       globals: globals.browser,
       parserOptions: {
-        // Don't use TypeScript parser for JS files
+        project: null, // Don't use TypeScript parser for JS files
+        tsconfigRootDir: undefined,
       },
     },
     plugins: {
@@ -193,6 +194,11 @@ export default tseslint.config(
       ecmaVersion: 2022,
       globals: globals.node,
       sourceType: 'module',
+    },
+    parser: undefined, // Use default JS parser, not TypeScript
+    parserOptions: {
+      project: null, // Disable TypeScript project parsing
+      tsconfigRootDir: undefined, // Don't use TypeScript config
     },
     rules: {
       'no-console': 'off',

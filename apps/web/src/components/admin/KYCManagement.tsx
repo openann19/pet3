@@ -19,9 +19,11 @@ import {
   Warning,
   XCircle
 } from '@phosphor-icons/react'
-import { Presence, motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 export function KYCManagement() {
   const [sessions, setSessions] = useState<KYCSubmission[]>([])
@@ -32,14 +34,14 @@ export function KYCManagement() {
   const [rejectText, setRejectText] = useState('')
 
   useEffect(() => {
-    loadSessions()
+    void loadSessions()
   }, [])
 
   const loadSessions = async () => {
     try {
       const allSessions = await kycApi.getAllKYCSubmissions()
       setSessions(allSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    } catch (error) {
+    } catch {
       toast.error('Failed to load KYC sessions')
     }
   }
@@ -48,6 +50,89 @@ export function KYCManagement() {
     if (selectedTab === 'all') return true
     return s.status === selectedTab
   })
+
+  // Empty state component
+  function EmptyState() {
+    const isEmpty = filteredSessions.length === 0
+    const presence = useAnimatePresence({ 
+      isVisible: isEmpty,
+      enterTransition: 'fade',
+      exitTransition: 'fade'
+    })
+    
+    if (!presence.shouldRender) return null
+    
+    return (
+      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+        <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No sessions in this category</p>
+      </AnimatedView>
+    )
+  }
+
+  // Session card component
+  function SessionCard({ session, index }: { session: KYCSubmission; index: number }) {
+    const entry = useEntryAnimation({ 
+      initialY: 20, 
+      initialOpacity: 0,
+      delay: index * 50 
+    })
+    
+    return (
+      <AnimatedView style={entry.animatedStyle}>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => { handleSessionClick(session); }}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className={getStatusColor(session.status)}>
+                  {getStatusIcon(session.status)}
+                  <span className="ml-1">{session.status}</span>
+                </Badge>
+                <Badge variant="outline">{session.provider}</Badge>
+                {session.retryCount > 0 && (
+                  <Badge variant="outline" className="text-orange-500">
+                    Retry #{session.retryCount}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-1 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <User size={14} />
+                  <span>User ID: {session.userId.substring(0, 16)}...</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <IdentificationCard size={14} />
+                  <span>Documents: {session.documents?.length ?? 0}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar size={14} />
+                  <span>Created: {new Date(session.createdAt).toLocaleString()}</span>
+                </div>
+                {session.verifiedAt && (
+                  <div className="flex items-center gap-2 text-green-500">
+                    <CheckCircle size={14} />
+                    <span>Verified: {new Date(session.verifiedAt).toLocaleString()}</span>
+                  </div>
+                )}
+                {session.rejectedAt && (
+                  <div className="flex items-center gap-2 text-red-500">
+                    <XCircle size={14} />
+                    <span>Rejected: {new Date(session.rejectedAt).toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <ArrowRight size={20} className="text-muted-foreground shrink-0" />
+          </div>
+        </Card>
+      </AnimatedView>
+    )
+  }
 
   const handleSessionClick = (session: KYCSubmission) => {
     setSelectedSession(session)
@@ -134,7 +219,7 @@ export function KYCManagement() {
             Review and verify user identity documents
           </p>
         </div>
-        <Button onClick={loadSessions} variant="outline">
+        <Button onClick={() => { void loadSessions() }} variant="outline">
           <Clock size={16} className="mr-2" />
           Refresh
         </Button>
@@ -186,80 +271,10 @@ export function KYCManagement() {
         <TabsContent value={selectedTab} className="mt-4">
           <ScrollArea className="h-[600px]">
             <div className="space-y-4">
-              <Presence mode="popLayout">
-                {filteredSessions.length === 0 ? (
-                  <MotionView
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-center py-12"
-                  >
-                    <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No sessions in this category</p>
-                  </MotionView>
-                ) : (
-                  filteredSessions.map((session) => (
-                    <MotionView
-                      key={session.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                    >
-                      <Card
-                        className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
-                        onClick={() => { handleSessionClick(session); }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Badge className={getStatusColor(session.status)}>
-                                {getStatusIcon(session.status)}
-                                <span className="ml-1">{session.status}</span>
-                              </Badge>
-                              <Badge variant="outline">{session.provider}</Badge>
-                              {session.retryCount > 0 && (
-                                <Badge variant="outline" className="text-orange-500">
-                                  Retry #{session.retryCount}
-                                </Badge>
-                              )}
-                            </div>
-
-                            <div className="space-y-1 text-sm">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <User size={14} />
-                                <span>User ID: {session.userId.substring(0, 16)}...</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <IdentificationCard size={14} />
-                                <span>Documents: {session.documents?.length || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Calendar size={14} />
-                                <span>Created: {new Date(session.createdAt).toLocaleString()}</span>
-                              </div>
-                              {session.verifiedAt && (
-                                <div className="flex items-center gap-2 text-green-500">
-                                  <CheckCircle size={14} />
-                                  <span>Verified: {new Date(session.verifiedAt).toLocaleString()}</span>
-                                </div>
-                              )}
-                              {session.rejectedAt && (
-                                <div className="flex items-center gap-2 text-red-500">
-                                  <XCircle size={14} />
-                                  <span>Rejected: {new Date(session.rejectedAt).toLocaleString()}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <ArrowRight size={20} className="text-muted-foreground shrink-0" />
-                        </div>
-                      </Card>
-                    </MotionView>
-                  ))
-                )}
-              </Presence>
+              <EmptyState />
+              {filteredSessions.map((session, index) => (
+                <SessionCard key={session.id} session={session} index={index} />
+              ))}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -362,7 +377,7 @@ export function KYCManagement() {
                   <h3 className="font-semibold mb-2 text-destructive">Rejection Reason</h3>
                   <p className="text-sm">
                     <strong>{selectedSession.rejectionReason.replace('_', ' ')}:</strong>{' '}
-                    {selectedSession.rejectReasonText || 'No additional details provided'}
+                    {selectedSession.rejectReasonText ?? 'No additional details provided'}
                   </p>
                 </Card>
               )}
@@ -399,11 +414,11 @@ export function KYCManagement() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <Button onClick={handleVerify} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={() => { void handleVerify() }} disabled={loading} className="bg-green-600 hover:bg-green-700">
                       <CheckCircle size={16} className="mr-2" />
                       Verify & Approve
                     </Button>
-                    <Button onClick={handleReject} disabled={loading || !rejectText} variant="destructive">
+                    <Button onClick={() => { void handleReject() }} disabled={loading || !rejectText} variant="destructive">
                       <XCircle size={16} className="mr-2" />
                       Reject
                     </Button>

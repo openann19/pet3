@@ -24,7 +24,7 @@ import { triggerHaptic } from '../core/haptic-manager'
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion'
 import { logEffectEnd, logEffectStart } from '../core/telemetry'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Spring configuration for emoji lift

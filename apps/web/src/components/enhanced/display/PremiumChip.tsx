@@ -8,7 +8,7 @@ import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface PremiumChipProps {
   label: string

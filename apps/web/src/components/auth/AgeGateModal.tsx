@@ -14,7 +14,7 @@ import { haptics } from '@/lib/haptics'
 import { recordAgeVerification } from '@/lib/kyc-service'
 import { useStorage } from '@/hooks/useStorage'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface AgeGateModalProps {
   open: boolean

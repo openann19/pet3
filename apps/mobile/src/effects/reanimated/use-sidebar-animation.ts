@@ -2,7 +2,7 @@ import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reani
 import { useEffect } from 'react'
 import { springConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseSidebarAnimationOptions {
   isOpen: boolean

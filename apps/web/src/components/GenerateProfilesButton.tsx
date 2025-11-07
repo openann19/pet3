@@ -8,7 +8,7 @@ import { generateSamplePets } from '@/lib/seedData'
 import type { Pet } from '@/lib/types'
 import { haptics } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface GenerateProfilesButtonProps {
   variant?: 'default' | 'outline' | 'ghost'

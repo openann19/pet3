@@ -18,7 +18,7 @@ interface TypingUser {
   userAvatar?: string
 }
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
@@ -108,15 +108,15 @@ export default function TypingIndicator({ users }: TypingIndicatorProps): JSX.El
   const typingText = useMemo(() => {
     if (users.length === 1) {
       const userName = users[0]?.userName?.trim()
-      return `${String(userName || 'Someone' ?? '')} is typing`
+      return `${String((userName ?? '') || 'Someone')} is typing`
     }
     if (users.length === 2) {
       const userName1 = users[0]?.userName?.trim()
       const userName2 = users[1]?.userName?.trim()
-      return `${String(userName1 || 'Someone' ?? '')} and ${String(userName2 || 'Someone' ?? '')} are typing`
+      return `${String((userName1 ?? '') || 'Someone')} and ${String((userName2 ?? '') || 'Someone')} are typing`
     }
     const firstName = users[0]?.userName?.trim()
-    return `${String(firstName || 'Someone' ?? '')} and ${String(users.length - 1 ?? '')} others are typing`
+    return `${String((firstName ?? '') || 'Someone')} and ${String(users.length - 1)} others are typing`
   }, [users])
 
   const renderAvatar = useCallback((user: TypingUser, index: number) => {

@@ -8,7 +8,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay, withRepeat, withSequence } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 type WelcomeScreenProps = {
   onGetStarted: () => void

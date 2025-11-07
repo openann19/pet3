@@ -7,7 +7,7 @@
 import { APIClient } from '@/lib/api-client'
 import { createLogger } from '@/lib/logger'
 import type { VerificationRequest, VerificationStatus } from '@/lib/verification-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('VerificationAPI')
 

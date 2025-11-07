@@ -17,7 +17,7 @@ import {
 } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated'
-import { AnimatedView } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
 import { haptics } from '@/lib/haptics'
 import { TemplatePanel } from './TemplatePanel.native'
@@ -29,7 +29,7 @@ import type {
 import { CHAT_STICKERS, generateMessageId } from '@/lib/chat-utils'
 import { REACTION_EMOJIS } from '@/lib/chat-types'
 import { useNotificationToast } from '@/hooks/use-notification-toast'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export interface ChatInputBarProps {
   inputValue: string

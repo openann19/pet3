@@ -5,7 +5,7 @@ import {
   spawnParticles,
   type ParticleConfig
 } from '@/effects/reanimated/particle-engine'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type ParticleEventType = 'send' | 'delete' | 'reaction' | 'ai-reply'
 

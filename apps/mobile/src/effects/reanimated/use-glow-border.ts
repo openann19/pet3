@@ -1,7 +1,7 @@
 import { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, interpolate, Easing, type SharedValue } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseGlowBorderOptions {
   color?: string

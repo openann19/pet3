@@ -1,5 +1,5 @@
 import type { Place, LostPetAlert, PlaceCategory, SearchResult, Location, PlaydateRequest } from './types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface MapConfigAPI {
   privacyGridMeters: number

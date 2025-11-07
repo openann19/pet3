@@ -3,7 +3,6 @@
  * Demonstrates the useRippleEffect hook for mobile touch feedback
  */
 
-import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useRippleEffect } from './use-ripple-effect'
@@ -13,13 +12,13 @@ export default {
   component: RippleEffectDemo,
 }
 
-function RippleButton({ label }: { label: string }) {
+function RippleButton({ label }: { label: string }): JSX.Element {
   const { triggerRipple, rippleStyle } = useRippleEffect()
 
   return (
     <TouchableOpacity
       style={styles.button}
-      onPress={triggerRipple}
+      onPress={() => { triggerRipple(); }}
       activeOpacity={0.8}
     >
       <Animated.View style={[styles.ripple, rippleStyle]} />
@@ -28,7 +27,7 @@ function RippleButton({ label }: { label: string }) {
   )
 }
 
-function RippleEffectDemo() {
+function RippleEffectDemo(): JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.header}>

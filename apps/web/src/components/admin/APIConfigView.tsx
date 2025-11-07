@@ -36,7 +36,7 @@ import { adminApi } from '@/api/admin-api'
 import { useStorage as useUserStorage } from '@/hooks/useStorage'
 import type { User } from '@/lib/user-service'
 import type { UseBounceOnTapReturn } from '@/effects/reanimated/use-bounce-on-tap'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('APIConfigView')
 

@@ -22,7 +22,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
 import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface CallInterfaceProps {
   session: CallSession

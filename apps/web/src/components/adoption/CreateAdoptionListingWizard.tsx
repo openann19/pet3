@@ -15,7 +15,7 @@ import { ArrowLeft, ArrowRight, Check, MapPin, Upload, X } from '@phosphor-icons
 import { Presence, motion } from '@petspark/motion'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('CreateAdoptionListingWizard')
 

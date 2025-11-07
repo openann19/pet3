@@ -20,7 +20,7 @@ import { createLogger } from './logger'
 import { cacheGet, cacheSet } from './offline-cache'
 import { getAuthToken } from './secure-storage'
 import { telemetry } from './telemetry'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('api-client')
 

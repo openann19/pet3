@@ -13,7 +13,7 @@ import {
 import { LayoutChangeEvent } from 'react-native'
 import { springConfigs } from './transitions'
 import { useReducedMotionSV } from '../../effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseLayoutAnimationOptions {
   enabled?: boolean

@@ -10,7 +10,7 @@ import { PaperPlaneRight } from '@phosphor-icons/react'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface SendButtonIconProps {
   isActive?: boolean

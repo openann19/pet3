@@ -11,7 +11,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { scriptLogger } from '../src/lib/script-logger';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
 
 interface LengthBucket {
   key: string;
@@ -85,7 +85,7 @@ function generateCSV(buckets: LengthBucket[]): string {
       const enText = compBucket.enText || '';
       const bgText = compBucket.bgText || '';
       const ratio = compBucket.ratio || 0;
-      return `"${String(b.key ?? '')}",${String(compBucket.enLength || 0 ?? '')},${String(compBucket.bgLength || 0 ?? '')},${String(b.length ?? '')},"${String(b.bucket ?? '')}","${String(b.status ?? '')}","${String(enText.replace(/"/g, '""') ?? '')}","${String(bgText.replace(/"/g, '""') ?? '')}",${String(ratio.toFixed(2) ?? '')}`;
+      return `"${String(b.key ?? '')}",${String((compBucket.enLength ?? 0) || 0)},${String((compBucket.bgLength ?? 0) || 0)},${String(b.length ?? '')},"${String(b.bucket ?? '')}","${String(b.status ?? '')}","${String(enText.replace(/"/g, '""') ?? '')}","${String(bgText.replace(/"/g, '""') ?? '')}",${String(ratio.toFixed(2) ?? '')}`;
     })
     .join('\n');
   return header + rows;
@@ -124,7 +124,7 @@ function generateReport(buckets: LengthBucket[]): string {
       report += `- **${String(b.key ?? '')}** (${String(b.length ?? '')} chars): ${String(b.text ?? '')}\n`;
     });
     if (warnings.length > 10) {
-      report += `\n_...and ${String(warnings.length - 10 ?? '')} more warnings_\n`;
+      report += `\n_...and ${String(warnings.length - 10)} more warnings_\n`;
     }
     report += '\n';
   }

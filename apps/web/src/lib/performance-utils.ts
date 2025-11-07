@@ -47,7 +47,7 @@ export function memoize<T extends (...args: unknown[]) => unknown>(fn: T): T {
 }
 
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('performance-utils')
 

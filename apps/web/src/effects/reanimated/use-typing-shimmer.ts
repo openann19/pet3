@@ -11,7 +11,7 @@ import {
   type SharedValue
 } from 'react-native-reanimated'
 import { useEffect, useCallback } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseTypingShimmerOptions {
   duration?: number

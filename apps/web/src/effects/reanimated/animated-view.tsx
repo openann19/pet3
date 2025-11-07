@@ -1,11 +1,10 @@
 'use client'
 
-import type { CSSProperties, ReactNode, MouseEventHandler } from 'react'
-import { useEffect, useRef, useState } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import type { CSSProperties, ReactNode } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 
-type AnimatedStyleReturn = {
-  value: unknown
+interface AnimatedStyleReturn {
+  readonly value: unknown
 }
 
 // Accept any style object that could come from useAnimatedStyle or be used as CSS
@@ -13,12 +12,12 @@ type AnimatedStyleReturn = {
 // react-native-reanimated's useAnimatedStyle returns AnimatedStyle<DefaultStyle> 
 // where DefaultStyle = ViewStyle | TextStyle | ImageStyle (React Native types)
 // Since we're in a web environment, we can't import those types, so we accept any style-like object
-export type AnimatedStyle = 
-  | AnimatedStyleReturn 
+export type AnimatedStyle =
+  | AnimatedStyleReturn
   | {
       // Match React Native style properties that useAnimatedStyle might return
       opacity?: number
-      transform?: Array<Record<string, number | string>>
+      transform?: Record<string, number | string>[]
       backgroundColor?: string | number
       color?: string | number
       height?: number | string
@@ -27,7 +26,7 @@ export type AnimatedStyle =
     }
   | (() => {
       opacity?: number
-      transform?: Array<Record<string, number | string>>
+      transform?: Record<string, number | string>[]
       backgroundColor?: string | number
       color?: string | number
       height?: number | string
@@ -39,14 +38,15 @@ export type AnimatedStyle =
   | Record<string, unknown>
   | undefined
 
-interface AnimatedViewProps {
-  children?: ReactNode
-  style?: AnimatedStyle | Record<string, unknown> | unknown
-  className?: string | undefined
-  onMouseEnter?: MouseEventHandler<HTMLDivElement> | undefined
-  onMouseLeave?: MouseEventHandler<HTMLDivElement> | undefined
-  onClick?: MouseEventHandler<HTMLDivElement> | undefined
-  [key: string]: unknown
+interface AnimatedViewProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style'> {
+  readonly children?: ReactNode
+  readonly style?: AnimatedStyle | AnimatedStyle[] | CSSProperties
+}
+
+type ResolvedAnimatedStyle = AnimatedStyle | CSSProperties | undefined
+
+function isAnimatedStyleReturn(value: unknown): value is AnimatedStyleReturn {
+  return Boolean(value) && typeof value === 'object' && 'value' in (value as Record<string, unknown>)
 }
 
 function convertToCSSProperties(style: unknown): CSSProperties {
@@ -54,7 +54,7 @@ function convertToCSSProperties(style: unknown): CSSProperties {
     return {}
   }
 
-  const cssStyle: CSSProperties = {}
+  const cssStyle: CSSProperties = { ...(style as CSSProperties) }
   const styleObj = style as Record<string, unknown>
 
   if (styleObj['transform'] && Array.isArray(styleObj['transform'])) {
@@ -62,23 +62,46 @@ function convertToCSSProperties(style: unknown): CSSProperties {
     styleObj['transform'].forEach((t: unknown) => {
       if (t && typeof t === 'object') {
         const transform = t as Record<string, unknown>
-        if (transform['scale'] !== undefined) {
-          transforms.push(`scale(${String(transform['scale'] ?? '')})`)
+        const scale = transform['scale']
+        if (typeof scale === 'number' || typeof scale === 'string') {
+          transforms.push(`scale(${scale})`)
         }
-        if (transform['translateX'] !== undefined) {
-          transforms.push(`translateX(${String(transform['translateX'] ?? '')}px)`)
+        const translateX = transform['translateX']
+        if (typeof translateX === 'number') {
+          transforms.push(`translateX(${translateX}px)`)
+        } else if (typeof translateX === 'string' && translateX.trim().length > 0) {
+          transforms.push(`translateX(${translateX})`)
         }
-        if (transform['translateY'] !== undefined) {
-          transforms.push(`translateY(${String(transform['translateY'] ?? '')}px)`)
+        const translateY = transform['translateY']
+        if (typeof translateY === 'number') {
+          transforms.push(`translateY(${translateY}px)`)
+        } else if (typeof translateY === 'string' && translateY.trim().length > 0) {
+          transforms.push(`translateY(${translateY})`)
         }
-        if (transform['rotateX'] !== undefined) {
-          transforms.push(`rotateX(${String(transform['rotateX'] ?? '')})`)
+        const rotateX = transform['rotateX']
+        if (typeof rotateX === 'string' && rotateX.trim().length > 0) {
+          transforms.push(`rotateX(${rotateX})`)
+        } else if (typeof rotateX === 'number') {
+          transforms.push(`rotateX(${rotateX}deg)`)
         }
-        if (transform['rotateY'] !== undefined) {
-          transforms.push(`rotateY(${String(transform['rotateY'] ?? '')})`)
+        const rotateY = transform['rotateY']
+        if (typeof rotateY === 'string' && rotateY.trim().length > 0) {
+          transforms.push(`rotateY(${rotateY})`)
+        } else if (typeof rotateY === 'number') {
+          transforms.push(`rotateY(${rotateY}deg)`)
         }
-        if (transform['rotate'] !== undefined) {
-          transforms.push(`rotate(${String(transform['rotate'] ?? '')}deg)`)
+        const rotate = transform['rotate']
+        if (typeof rotate === 'string' && rotate.trim().length > 0) {
+          transforms.push(`rotate(${rotate})`)
+        } else if (typeof rotate === 'number') {
+          transforms.push(`rotate(${rotate}deg)`)
+        } else if (typeof rotate === 'object' && rotate !== null && 'value' in (rotate as Record<string, unknown>)) {
+          const rotateValue = (rotate as Record<string, unknown>)['value']
+          if (typeof rotateValue === 'number') {
+            transforms.push(`rotate(${rotateValue}deg)`)
+          } else if (typeof rotateValue === 'string') {
+            transforms.push(`rotate(${rotateValue})`)
+          }
         }
       }
     })
@@ -94,14 +117,72 @@ function convertToCSSProperties(style: unknown): CSSProperties {
   if (styleObj['shadowColor'] !== undefined) {
     const shadowOffset = styleObj['shadowOffset'] as { width?: number; height?: number } | undefined
     const shadowRadius = styleObj['shadowRadius'] as number | undefined
-    cssStyle.boxShadow = `${String(shadowOffset?.width || 0 ?? '')}px ${String(shadowOffset?.height || 0 ?? '')}px ${String(shadowRadius || 0 ?? '')}px ${String(styleObj['shadowColor'] ?? '')}`
+    const offsetWidth = shadowOffset?.width ?? 0
+    const offsetHeight = shadowOffset?.height ?? 0
+    const radius = shadowRadius ?? 0
+    const rawShadowColor = styleObj['shadowColor']
+    if (typeof rawShadowColor === 'string' || typeof rawShadowColor === 'number') {
+      const shadowColor = String(rawShadowColor)
+      cssStyle.boxShadow = `${offsetWidth}px ${offsetHeight}px ${radius}px ${shadowColor}`
+    }
+  }
+
+  if (styleObj['backgroundColor'] !== undefined) {
+    const backgroundColor = styleObj['backgroundColor']
+    if (typeof backgroundColor === 'string' || typeof backgroundColor === 'number') {
+      cssStyle.backgroundColor = String(backgroundColor) as CSSProperties['backgroundColor']
+    }
+  }
+
+  if (styleObj['color'] !== undefined) {
+    const color = styleObj['color']
+    if (typeof color === 'string' || typeof color === 'number') {
+      cssStyle.color = String(color) as CSSProperties['color']
+    }
+  }
+
+  if (styleObj['height'] !== undefined) {
+    const height = styleObj['height']
+    cssStyle.height = typeof height === 'number' ? `${height}px` : (height as CSSProperties['height'])
+  }
+
+  if (styleObj['width'] !== undefined) {
+    const width = styleObj['width']
+    cssStyle.width = typeof width === 'number' ? `${width}px` : (width as CSSProperties['width'])
   }
 
   return cssStyle
 }
 
-export function useAnimatedStyleValue(animatedStyle: AnimatedStyle): CSSProperties {
-  const [style, setStyle] = useState<CSSProperties>({})
+function resolveAnimatedValue(style: ResolvedAnimatedStyle): unknown {
+  if (!style) {
+    return {}
+  }
+
+  if (typeof style === 'function') {
+    return style()
+  }
+
+  if (isAnimatedStyleReturn(style)) {
+    return style.value
+  }
+
+  return style
+}
+
+function mergeAnimatedStyles(animatedStyle: AnimatedStyle | AnimatedStyle[] | CSSProperties): CSSProperties {
+  const stylesArray = Array.isArray(animatedStyle) ? animatedStyle : [animatedStyle]
+  return stylesArray.reduce<CSSProperties>((acc, current) => {
+    const resolved = resolveAnimatedValue(current)
+    const cssStyle = convertToCSSProperties(resolved)
+    return { ...acc, ...cssStyle }
+  }, {})
+}
+
+export function useAnimatedStyleValue(animatedStyle: AnimatedStyle | AnimatedStyle[] | CSSProperties | undefined): CSSProperties {
+  const [style, setStyle] = useState<CSSProperties>(() =>
+    animatedStyle ? mergeAnimatedStyles(animatedStyle) : {}
+  )
   const rafRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
@@ -110,31 +191,32 @@ export function useAnimatedStyleValue(animatedStyle: AnimatedStyle): CSSProperti
       return
     }
 
+    const stylesArray = Array.isArray(animatedStyle) ? animatedStyle : [animatedStyle]
+    const hasDynamicStyles = stylesArray.some((current) =>
+      typeof current === 'function' || isAnimatedStyleReturn(current)
+    )
+
+    if (!hasDynamicStyles) {
+      setStyle(mergeAnimatedStyles(animatedStyle))
+      return
+    }
+
     const updateStyle = () => {
       try {
-        let styleValue: unknown
-        if (typeof animatedStyle === 'function') {
-          styleValue = animatedStyle()
-        } else if ('value' in animatedStyle) {
-          styleValue = animatedStyle.value
-        } else {
-          styleValue = animatedStyle
-        }
-        const cssStyle = convertToCSSProperties(styleValue)
-        setStyle(cssStyle)
+        setStyle(mergeAnimatedStyles(animatedStyle))
       } catch {
         setStyle({})
       }
       rafRef.current = requestAnimationFrame(updateStyle)
     }
 
-    if (isTruthy(rafRef.current)) {
+    if (typeof rafRef.current === 'number') {
       cancelAnimationFrame(rafRef.current)
     }
     rafRef.current = requestAnimationFrame(updateStyle)
 
     return () => {
-      if (isTruthy(rafRef.current)) {
+      if (typeof rafRef.current === 'number') {
         cancelAnimationFrame(rafRef.current)
       }
     }
@@ -143,28 +225,16 @@ export function useAnimatedStyleValue(animatedStyle: AnimatedStyle): CSSProperti
   return style
 }
 
-export function AnimatedView({
-  children,
-  style: animatedStyle,
-  className,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
-  ...props
-}: AnimatedViewProps) {
-  const computedStyle = animatedStyle ? useAnimatedStyleValue(animatedStyle as AnimatedStyle) : {}
+export const AnimatedView = forwardRef<HTMLDivElement, AnimatedViewProps>(function AnimatedView(
+  { children, style: animatedStyle, ...props },
+  ref
+) {
+  const computedStyle = useAnimatedStyleValue(animatedStyle)
 
   return (
-    <div
-      className={className}
-      style={computedStyle}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-      {...props}
-    >
+    <div ref={ref} style={computedStyle} {...props}>
       {children}
     </div>
   )
-}
+})
 

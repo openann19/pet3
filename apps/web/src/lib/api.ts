@@ -1,7 +1,7 @@
 import { config } from './config'
 import { generateCorrelationId } from './utils'
 import type { APIError } from './contracts'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export class APIClient {
   private baseURL: string

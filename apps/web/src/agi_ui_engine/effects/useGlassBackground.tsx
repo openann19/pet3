@@ -56,11 +56,11 @@ export function useGlassBackground(
     }
 
     return {
-      backdropFilter: `blur(${String(blurIntensity.value * 20 ?? '')}px)`,
-      WebkitBackdropFilter: `blur(${String(blurIntensity.value * 20 ?? '')}px)`,
-      backgroundColor: `rgba(255, 255, 255, ${String(0.1 * blurIntensity.value ?? '')})`,
+      backdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
+      WebkitBackdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
+      backgroundColor: `rgba(255, 255, 255, ${String(0.1 * blurIntensity.value)})`,
       borderWidth: 1,
-      borderColor: `rgba(255, 255, 255, ${String(0.2 * blurIntensity.value ?? '')})`
+      borderColor: `rgba(255, 255, 255, ${String(0.2 * blurIntensity.value)})`
     }
   }) as AnimatedStyle
 

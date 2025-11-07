@@ -1,6 +1,6 @@
 import { type ThemePreset, getThemePreset, applyThemePreset } from './theme-presets'
 import { logger } from './logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Initialize theme early to prevent hydration flicker

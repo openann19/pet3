@@ -8,7 +8,7 @@ import Animated, {
   Easing
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '../../effects/chat/core/reduced-motion'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export interface SmartSkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'card' | 'avatar' | 'post'

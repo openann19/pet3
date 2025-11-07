@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import logger from '@/core/logger';
+import logger from '@/lib/logger';
 
 /**
  * Storage abstraction layer for mobile

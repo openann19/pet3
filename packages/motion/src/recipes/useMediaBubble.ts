@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
 import { springConfigs, timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
 import { makeRng } from '@petspark/shared'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type MediaType = 'image' | 'video' | 'voice'
 

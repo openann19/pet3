@@ -9,21 +9,20 @@ import { Textarea } from '@/components/ui/textarea'
 import { moderationService, photoService } from '@/lib/backend-services'
 import type { ModerationReason, ModerationTask, PhotoRecord } from '@/lib/backend-types'
 import {
-  Calendar,
   CheckCircle,
   Clock,
-  Dog,
   Eye,
   Image as ImageIcon,
   ShieldCheck,
-  User,
   Warning,
   XCircle
 } from '@phosphor-icons/react'
-import { Presence, motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 export function ModerationQueue() {
   const [tasks, setTasks] = useState<ModerationTask[]>([])
@@ -36,7 +35,7 @@ export function ModerationQueue() {
   const [decisionText, setDecisionText] = useState('')
 
   useEffect(() => {
-    loadQueue()
+    void loadQueue()
   }, [])
 
   const loadQueue = async () => {
@@ -59,10 +58,80 @@ export function ModerationQueue() {
     return t.status === 'completed'
   })
 
-  const handleTaskClick = async (task: ModerationTask) => {
+  // Empty state component
+  function EmptyState() {
+    const isEmpty = filteredTasks.length === 0
+    const presence = useAnimatePresence({ 
+      isVisible: isEmpty,
+      enterTransition: 'fade',
+      exitTransition: 'fade'
+    })
+    
+    if (!presence.shouldRender) return null
+    
+    return (
+      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+        <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No tasks in this queue</p>
+      </AnimatedView>
+    )
+  }
+
+  // Task card component
+  function TaskCard({ task, index }: { task: ModerationTask; index: number }) {
+    const photo = photos.get(task.photoId)
+    const entry = useEntryAnimation({ 
+      initialY: 20, 
+      initialOpacity: 0,
+      delay: index * 50 
+    })
+    
+    return (
+      <AnimatedView style={entry.animatedStyle}>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => { void handleTaskClick(task) }}
+        >
+          <div className="flex gap-4">
+            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden shrink-0">
+              {photo?.originalUrl ? (
+                <img
+                  src={photo.originalUrl}
+                  alt="Pet photo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageIcon size={32} className="text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className={getPriorityColor(task.priority)}>
+                    {getPriorityIcon(task.priority)}
+                    <span className="ml-1">{task.priority}</span>
+                  </Badge>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Owner: {task.ownerId.substring(0, 16)}...
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Created: {new Date(task.createdAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </AnimatedView>
+    )
+  }
+
+  const handleTaskClick = (task: ModerationTask): void => {
     setSelectedTask(task)
     const photo = photos.get(task.photoId)
-    setDetailPhoto(photo || null)
+    setDetailPhoto(photo ?? null)
   }
 
   const handleTakeTask = async () => {
@@ -196,7 +265,7 @@ export function ModerationQueue() {
             Review and approve pet photos before they go live
           </p>
         </div>
-        <Button onClick={loadQueue} variant="outline">
+        <Button onClick={() => { void loadQueue() }} variant="outline">
           <Clock size={16} className="mr-2" />
           Refresh
         </Button>
@@ -218,103 +287,10 @@ export function ModerationQueue() {
         <TabsContent value={selectedTab} className="mt-4">
           <ScrollArea className="h-[600px]">
             <div className="space-y-4">
-              <Presence mode="popLayout">
-                {filteredTasks.length === 0 ? (
-                  <MotionView
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-center py-12"
-                  >
-                    <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No tasks in this queue</p>
-                  </MotionView>
-                ) : (
-                  filteredTasks.map((task) => {
-                    const photo = photos.get(task.photoId)
-                    return (
-                      <MotionView
-                        key={task.id}
-                        layout
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                      >
-                        <Card
-                          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
-                          onClick={() => handleTaskClick(task)}
-                        >
-                          <div className="flex gap-4">
-                            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden shrink-0">
-                              {photo?.originalUrl ? (
-                                <img
-                                  src={photo.originalUrl}
-                                  alt="Pet photo"
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <ImageIcon size={32} className="text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge className={getPriorityColor(task.priority)}>
-                                    {getPriorityIcon(task.priority)}
-                                    <span className="ml-1">{task.priority}</span>
-                                  </Badge>
-                                  {photo?.safetyCheck.flags.map(flag => (
-                                    <Badge key={flag} variant="outline" className="text-xs">
-                                      {flag.replace('_', ' ')}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <Badge variant={
-                                  task.status === 'pending' ? 'secondary' :
-                                  task.status === 'in_progress' ? 'default' : 'outline'
-                                }>
-                                  {task.status.replace('_', ' ')}
-                                </Badge>
-                              </div>
-
-                              <div className="space-y-1 text-sm">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <User size={14} />
-                                  <span>Owner ID: {task.ownerId.substring(0, 12)}...</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Dog size={14} />
-                                  <span>Pet ID: {task.petId.substring(0, 12)}...</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Calendar size={14} />
-                                  <span>Created: {new Date(task.createdAt).toLocaleString()}</span>
-                                </div>
-                                {photo?.safetyCheck && (
-                                  <div className="flex items-center gap-4 mt-2 text-xs">
-                                    <span className={photo.safetyCheck.isNSFW ? 'text-red-500' : 'text-green-500'}>
-                                      NSFW: {photo.safetyCheck.isNSFW ? 'Yes' : 'No'}
-                                    </span>
-                                    <span className={photo.safetyCheck.hasHumanFaces ? 'text-orange-500' : 'text-green-500'}>
-                                      Human Faces: {photo.safetyCheck.humanFaceCount}
-                                    </span>
-                                    <span>
-                                      Animal: {(photo.safetyCheck.confidence.animal * 100).toFixed(0)}%
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      </MotionView>
-                    )
-                  })
-                )}
-              </Presence>
+              <EmptyState />
+              {filteredTasks.map((task, index) => (
+                <TaskCard key={task.id} task={task} index={index} />
+              ))}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -330,11 +306,11 @@ export function ModerationQueue() {
             <DialogTitle>Photo Review</DialogTitle>
           </DialogHeader>
 
-          {detailPhoto && detailPhoto.safetyCheck && (
+          {detailPhoto?.safetyCheck && (
             <div className="space-y-6">
               <div className="aspect-video bg-muted rounded-lg overflow-hidden">
                 <img
-                  src={detailPhoto.originalUrl}
+                  src={detailPhoto?.originalUrl ?? ''}
                   alt="Photo for review"
                   className="w-full h-full object-contain"
                 />
@@ -418,7 +394,7 @@ export function ModerationQueue() {
 
               {selectedTask?.status === 'pending' && (
                 <div className="space-y-4">
-                  <Button onClick={handleTakeTask} variant="outline" className="w-full" disabled={loading}>
+                  <Button onClick={() => { void handleTakeTask() }} variant="outline" className="w-full" disabled={loading}>
                     <Eye size={16} className="mr-2" />
                     Take This Task
                   </Button>
@@ -457,15 +433,15 @@ export function ModerationQueue() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
-                    <Button onClick={handleApprove} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={() => { void handleApprove() }} disabled={loading} className="bg-green-600 hover:bg-green-700">
                       <CheckCircle size={16} className="mr-2" />
                       Approve
                     </Button>
-                    <Button onClick={handleReject} disabled={loading || !decisionText} variant="destructive">
+                    <Button onClick={() => { void handleReject() }} disabled={loading || !decisionText} variant="destructive">
                       <XCircle size={16} className="mr-2" />
                       Reject
                     </Button>
-                    <Button onClick={handleHoldForKYC} disabled={loading} variant="outline">
+                    <Button onClick={() => { void handleHoldForKYC() }} disabled={loading} variant="outline">
                       <ShieldCheck size={16} className="mr-2" />
                       Hold for KYC
                     </Button>

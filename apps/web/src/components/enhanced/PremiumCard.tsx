@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated'
-import { MotionView } from '@petspark/motion'
-import { useHoverLift } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { cn } from '@/lib/utils'
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 
 interface PremiumCardProps {
   variant?: 'default' | 'glass' | 'elevated' | 'gradient'
@@ -35,7 +36,7 @@ export function PremiumCard({
   const entryStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
-  }))
+  })) as AnimatedStyle
 
   const combinedStyle = hover && hoverLift.animatedStyle ?
     [entryStyle, hoverLift.animatedStyle] :
@@ -49,10 +50,10 @@ export function PremiumCard({
   }
 
   return (
-    <MotionView
-      animatedStyle={combinedStyle}
-      onMouseEnter={hover ? hoverLift.onMouseEnter : undefined}
-      onMouseLeave={hover ? hoverLift.onMouseLeave : undefined}
+    <AnimatedView
+      style={combinedStyle}
+      onMouseEnter={hover ? hoverLift.handleEnter : undefined}
+      onMouseLeave={hover ? hoverLift.handleLeave : undefined}
       className={cn(
         'rounded-xl p-6 transition-all duration-300',
         variants[variant],
@@ -63,6 +64,6 @@ export function PremiumCard({
       {...props}
     >
       {children}
-    </MotionView>
+    </AnimatedView>
   )
 }

@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withSequence, withRepeat,
 import { springConfigs, timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
 import { haptic } from '../haptic'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type ReactionType = '❤️' | '😂' | '👍' | '👎' | '🔥' | '🙏' | '⭐'
 

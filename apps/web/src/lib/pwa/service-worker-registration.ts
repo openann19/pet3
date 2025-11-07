@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from '../logger';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('ServiceWorkerRegistration');
 
@@ -33,8 +33,16 @@ export async function registerServiceWorker(
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
+    // Try enhanced service worker first, fallback to basic one
+    const swPath = '/sw-enhanced.js'
+    const registration = await navigator.serviceWorker.register(swPath, {
       scope: '/',
+    }).catch(async () => {
+      // Fallback to basic service worker
+      logger.warn('Enhanced service worker failed, using basic one')
+      return await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      })
     });
 
     registration.addEventListener('updatefound', () => {

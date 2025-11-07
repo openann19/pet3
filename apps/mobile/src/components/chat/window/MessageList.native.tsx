@@ -19,7 +19,7 @@ export function MessageList({ messages, currentUserId, onReaction, onTranslate }
         renderItem={({ item, index }) => (
           <MessageItem
             message={item}
-            isCurrentUser={item.sender?.id === currentUserId}
+            isCurrentUser={item.senderId === currentUserId}
             currentUserId={currentUserId}
             delay={index * 50}
             onReaction={onReaction}

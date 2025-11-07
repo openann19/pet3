@@ -8,7 +8,7 @@ import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type AvatarStatus = 'online' | 'offline' | 'away' | 'busy'
 

@@ -12,7 +12,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useHoverTap } from '@/effects/reanimated'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface VideoQualitySettingsProps {
   currentQuality: VideoQuality

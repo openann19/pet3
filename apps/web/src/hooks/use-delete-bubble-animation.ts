@@ -13,7 +13,7 @@ import {
 import { useCallback } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type DeleteAnimationContext =
   | 'self-delete'

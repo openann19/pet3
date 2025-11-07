@@ -3,7 +3,7 @@
 import { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, withDelay, Easing } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import { timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseVoiceWaveformOptions {
   waveform: number[]

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseOklch, oklchToHex, oklchToRgbObj } from './oklch-to-hex'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 describe('oklch-to-hex', () => {
   describe('parseOklch', () => {

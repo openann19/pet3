@@ -32,7 +32,7 @@ import { VirtualList, VirtualGrid } from '@/components/virtual'
 import { usePullToRefresh } from '@/components/community/features/pull-to-refresh'
 import { useTrendingTags } from '@/components/community/features/trending-tags'
 import { usePostActions } from '@/components/community/features/post-actions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('CommunityView')
 

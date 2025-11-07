@@ -1,7 +1,7 @@
 import { useUploadPicker } from '@/core/services/media/picker'
 import { renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 // Mock window and document for web tests
 const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' })

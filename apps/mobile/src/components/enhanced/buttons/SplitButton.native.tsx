@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
 import { PremiumButton } from '../PremiumButton.native'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedView = Animated.View

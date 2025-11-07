@@ -2,7 +2,7 @@ import type { Call, CallType, GroupCall } from './call-types'
 import { logger } from './logger'
 import { FixerError } from './fixer-error'
 import { createWebRTCPeer, type WebRTCPeer } from './webrtc-peer'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export function generateCallId(): string {
   return `call-${String(Date.now() ?? '')}-${String(Math.random().toString(36).substring(2, 11) ?? '')}`

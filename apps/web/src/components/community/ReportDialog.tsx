@@ -23,7 +23,7 @@ import { Warning } from '@phosphor-icons/react'
 import { motion } from '@petspark/motion'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface ReportDialogProps {
   open: boolean

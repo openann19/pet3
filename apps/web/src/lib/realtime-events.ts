@@ -4,11 +4,9 @@
  * Complete implementation of all required realtime events with acknowledgment
  */
 
-import { WebSocketManager } from './websocket-manager'
-import { config } from './config'
+import { getWebSocketManager, type WebSocketManager } from './websocket-manager'
 import { createLogger } from './logger'
 import type { Match, Message } from './contracts'
-import { isTruthy, isDefined } from '@/core/guards';
 
 const logger = createLogger('RealtimeEvents')
 
@@ -36,12 +34,12 @@ type Unsubscribe = () => void
 
 export class RealtimeEvents {
   private wsManager: WebSocketManager
-  private pendingAcks: Map<string, {
+  private pendingAcks = new Map<string, {
     resolve: () => void
     reject: (error: Error) => void
     timeout: number
-  }> = new Map()
-  private ackTimeout: number = 5000
+  }>()
+  private ackTimeout = 5000
 
   constructor(wsManager: WebSocketManager) {
     this.wsManager = wsManager
@@ -60,7 +58,7 @@ export class RealtimeEvents {
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         this.pendingAcks.delete(messageId)
-        reject(new Error(`Event acknowledgment timeout: ${String(event ?? '')}`))
+        reject(new Error(`Event acknowledgment timeout: ${event}`))
       }, this.ackTimeout)
 
       this.pendingAcks.set(messageId, {
@@ -81,7 +79,7 @@ export class RealtimeEvents {
         const data = ackData as { messageId: string }
         if (data.messageId === messageId) {
           const pending = this.pendingAcks.get(messageId)
-          if (isTruthy(pending)) {
+          if (pending) {
             pending.resolve()
           }
         }
@@ -91,8 +89,8 @@ export class RealtimeEvents {
         const data = failData as { messageId: string; event: string }
         if (data.messageId === messageId) {
           const pending = this.pendingAcks.get(messageId)
-          if (isTruthy(pending)) {
-            pending.reject(new Error(`Event failed: ${String(data.event ?? '')}`))
+          if (pending) {
+            pending.reject(new Error(`Event failed: ${data.event}`))
           }
         }
       })
@@ -211,14 +209,12 @@ export class RealtimeEvents {
   }
 }
 
-// Create singleton instance when WebSocketManager is available
+// Create singleton instance using the shared WebSocketManager
 let realtimeEventsInstance: RealtimeEvents | null = null
 
 export function getRealtimeEvents(): RealtimeEvents {
   if (!realtimeEventsInstance) {
-    const wsManager = new WebSocketManager({
-      url: config.current.WS_URL
-    })
+    const wsManager = getWebSocketManager()
     realtimeEventsInstance = new RealtimeEvents(wsManager)
   }
   return realtimeEventsInstance

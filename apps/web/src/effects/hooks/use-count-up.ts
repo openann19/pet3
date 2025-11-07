@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { MicroInteractions } from '../micro-interactions/core'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export function useCountUp(end: number, duration?: number) {
   const ref = useRef<HTMLElement>(null)

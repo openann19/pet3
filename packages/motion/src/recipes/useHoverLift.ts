@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { motion } from '../tokens';
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const isWeb = typeof window !== 'undefined' && 'onmouseover' in window;
 

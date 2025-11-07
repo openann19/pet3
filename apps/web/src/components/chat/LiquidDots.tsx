@@ -6,14 +6,16 @@
  * - Premium glow + slight blur (web-only)
  */
 
-import React, { useMemo } from 'react'
-import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated'
+import { useEffect, useMemo } from 'react'
+import { cancelAnimation, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng'
 import { View } from 'react-native'
-import { isTruthy, isDefined } from '@/core/guards';
-
-type DotCfg = { phase: number; y: Animated.SharedValue<number>; a: number; o: Animated.SharedValue<number> }
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+interface DotCfg {
+  readonly phase: number
+  readonly amplitude: number
+}
 
 export interface LiquidDotsProps {
   enabled?: boolean
@@ -36,49 +38,47 @@ export function LiquidDots({
 
   // shared clock loops 0..1
   const t = useSharedValue(0)
+  const enabledShared = useSharedValue(enabled ? 1 : 0)
+  const reducedShared = useSharedValue(reduced ? 1 : 0)
   const dur = getReducedMotionDuration(1200, reduced)
   // Looping timing; reduced motion short-circuits in styles below
-  useMemo(() => {
+  useEffect(() => {
+    enabledShared.value = enabled ? 1 : 0
+  }, [enabled, enabledShared])
+
+  useEffect(() => {
+    reducedShared.value = reduced ? 1 : 0
+  }, [reduced, reducedShared])
+
+  useEffect(() => {
+    cancelAnimation(t)
     t.value = 0
+
+    if (!enabled) {
+      return () => {
+        cancelAnimation(t)
+        t.value = 0
+      }
+    }
+
     t.value = withRepeat(withTiming(1, { duration: dur }), -1, false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dur, enabled])
+
+    return () => {
+      cancelAnimation(t)
+      t.value = 0
+    }
+  }, [dur, enabled, t])
 
   // Build deterministic phases/amps
-  const config = useMemo(() => {
+  const config = useMemo<DotCfg[]>(() => {
     const rng = createSeededRNG(seed)
-    const arr: DotCfg[] = []
-    for (let i = 0; i < dots; i++) {
-      const phase = rng.range(0, Math.PI * 2)
-      const a = rng.range(3, 7) // amplitude px
-      arr.push({ phase, a, y: useSharedValue(0), o: useSharedValue(1) })
-    }
-    return arr
-     
+    return Array.from({ length: dots }, () => ({
+      phase: rng.range(0, Math.PI * 2),
+      amplitude: rng.range(3, 7)
+    }))
   }, [dots, seed])
 
-  // Derived motion per dot
-  config.forEach((d, i) => {
-    const omega = 2 * Math.PI // per cycle
-    useDerivedValue(() => {
-      if (!enabled) { 
-        d.y.value = 0
-        d.o.value = 1
-        return 
-      }
-      if (isTruthy(reduced)) { 
-        d.y.value = 0
-        d.o.value = 1
-        return 
-      }
-      const tt = t.value
-      // phase shift across dots (chain/"liquid" look)
-      const y = Math.sin(omega * tt + d.phase + i * 0.5) * d.a
-      d.y.value = y
-      // opacity breath
-      d.o.value = 0.6 + 0.4 * Math.sin(omega * tt + d.phase + i * 0.5 + Math.PI / 3)
-    })
-  })
+  const omega = 2 * Math.PI
 
   return (
     <View
@@ -87,28 +87,41 @@ export function LiquidDots({
       className={`flex items-center gap-1 ${className ?? ''}`}
       style={{ flexDirection: 'row' }}
     >
-      {config.map((d, i) => {
-        const style = useAnimatedStyle(() => ({
-          transform: [{ translateY: reduced ? 0 : d.y.value }],
-          opacity: reduced ? 1 : d.o.value
-        }))
+      {config.map((dot, index) => {
+        const animatedStyle = useAnimatedStyle(() => {
+          const isEnabled = enabledShared.value === 1
+          const isReduced = reducedShared.value === 1
 
-        // web-only glow/blur via style prop merging
-        const glow: React.CSSProperties = {
-          filter: 'blur(0.4px)',
-          boxShadow: `0 0 ${String(dotSize * 0.6 ?? '')}px ${String(dotColor ?? '')}40`
-        }
+          if (!isEnabled || isReduced) {
+            return {
+              width: dotSize,
+              height: dotSize,
+              borderRadius: dotSize / 2,
+              backgroundColor: dotColor,
+              filter: 'blur(0.4px)',
+              boxShadow: `0 0 ${dotSize * 0.6}px ${dotColor}40`,
+              transform: [{ translateY: 0 }],
+              opacity: 1
+            }
+          }
 
-        return (
-          <Animated.View
-            key={i}
-            style={[
-              { width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor },
-              style,
-              glow
-            ] as unknown as React.CSSProperties}
-          />
-        )
+          const tt = t.value
+          const translateY = Math.sin(omega * tt + dot.phase + index * 0.5) * dot.amplitude
+          const opacity = 0.6 + 0.4 * Math.sin(omega * tt + dot.phase + index * 0.5 + Math.PI / 3)
+
+          return {
+            width: dotSize,
+            height: dotSize,
+            borderRadius: dotSize / 2,
+            backgroundColor: dotColor,
+            filter: 'blur(0.4px)',
+            boxShadow: `0 0 ${dotSize * 0.6}px ${dotColor}40`,
+            transform: [{ translateY }],
+            opacity
+          }
+        })
+
+        return <AnimatedView key={`${dot.phase}-${index}`} style={animatedStyle} />
       })}
     </View>
   )

@@ -36,7 +36,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { DocumentUploadCard } from './DocumentUploadCard'
 import { VerificationLevelSelector } from './VerificationLevelSelector'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface VerificationDialogProps {
   open: boolean

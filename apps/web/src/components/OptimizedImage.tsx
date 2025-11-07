@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { supportsWebP, supportsAVIF } from '@/lib/image-loader'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface OptimizedImageProps {
   src: string

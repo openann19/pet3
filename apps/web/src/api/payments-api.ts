@@ -18,7 +18,7 @@ import type {
     Subscription,
     UserEntitlements,
 } from '@/lib/payments-types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PaymentsApi')
 

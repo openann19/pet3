@@ -11,7 +11,7 @@ import type {
 } from '@/core/domain/photo-moderation'
 import { isValidStatusTransition } from '@/core/domain/photo-moderation'
 import { storage } from '@/lib/storage'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PhotoModerationQueue')
 

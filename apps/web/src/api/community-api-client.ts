@@ -22,7 +22,7 @@ import type {
   PostVisibility
 } from '@/lib/community-types'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('CommunityApi')
 
@@ -72,7 +72,7 @@ class CommunityApiImpl {
 
       const query = params.toString()
       const response = await APIClient.get<FeedResponse>(
-        `${String(ENDPOINTS.COMMUNITY.POSTS ?? '')}${String(query ? `?${String(query ?? '')}` : '' ?? '')}`
+        `${String(ENDPOINTS.COMMUNITY.POSTS ?? '')}${query ? `?${query}` : ''}`
       )
       return response.data
     } catch (error) {

@@ -10,7 +10,7 @@ import {
   createMatchRouteHandler,
   type DeepLinkRoute
 } from '../deep-linking'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 describe('Deep Linking System', () => {
   beforeEach(() => {

@@ -5,7 +5,7 @@
 
 import { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, interpolate, Easing } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseBreathingAnimationOptions {
   minScale?: number;

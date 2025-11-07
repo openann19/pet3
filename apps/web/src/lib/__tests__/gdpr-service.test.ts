@@ -8,7 +8,7 @@ import { GDPRService, type UserDataExport, type DataDeletionResult } from '../gd
 import { db } from '../database'
 import { api } from '../api'
 import type { UserProfile, Session } from '../enhanced-auth'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('../database', () => ({
   db: {

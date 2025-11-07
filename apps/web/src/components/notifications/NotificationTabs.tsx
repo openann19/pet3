@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState} from "react";
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 type Locale = "en" | "bg";
 

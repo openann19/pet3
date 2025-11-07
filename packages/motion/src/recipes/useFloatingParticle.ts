@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, type SharedValue } from 'react-native
 import type { ParticleBaseConfig } from '../core/types'
 import { createSpringAnimation, createTimingAnimation, stopAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseFloatingParticleOptions extends ParticleBaseConfig {
   /**

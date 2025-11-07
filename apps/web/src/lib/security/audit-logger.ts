@@ -1,6 +1,6 @@
 import { APIClient } from '@/lib/api-client'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('AuditLogger')
 

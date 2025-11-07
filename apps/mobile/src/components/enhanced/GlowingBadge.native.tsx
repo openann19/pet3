@@ -8,7 +8,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export type GlowingBadgeVariant = 'primary' | 'secondary' | 'accent' | 'success' | 'warning'
 

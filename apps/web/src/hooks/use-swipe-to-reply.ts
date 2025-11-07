@@ -4,7 +4,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, type SharedValue } from '
 import { useCallback, useRef } from 'react'
 import { haptics } from '@/lib/haptics'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseSwipeToReplyOptions {
   onReply?: () => void

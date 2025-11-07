@@ -12,7 +12,7 @@ import type {
   UserBehaviorInsights
 } from '@/lib/advanced-analytics'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AnalyticsAPI')
 
@@ -84,7 +84,7 @@ class AnalyticsApiImpl {
       if (isTruthy(startDate)) queryParams.append('startDate', startDate)
       if (isTruthy(endDate)) queryParams.append('endDate', endDate)
 
-      const url = `/analytics/metrics${String(queryParams.toString() ? `?${String(queryParams.toString() ?? '')}` : '' ?? '')}`
+      const url = `/analytics/metrics${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
       const response = await APIClient.get<GetMetricsResponse>(url)
       return response.data.metrics
     } catch (error) {

@@ -11,9 +11,11 @@ import { useStorage } from '@/hooks/useStorage'
 import { generateULID } from '@/lib/utils'
 import type { Icon } from '@phosphor-icons/react'
 import { CheckCircle, Clock, Eye, Flag, Warning, XCircle } from '@phosphor-icons/react'
-import { Presence, motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 interface Report {
   id: string
@@ -188,15 +190,15 @@ export default function ReportsView() {
           </Tabs>
 
           <div className="space-y-4">
-            <Presence mode="popLayout">
-              {filteredReports.map((report, index) => (
-                <MotionView
-                  key={report.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+            {filteredReports.map((report, index) => {
+              const entry = useEntryAnimation({
+                initialY: 20,
+                initialOpacity: 0,
+                delay: index * 50
+              })
+              
+              return (
+                <AnimatedView key={report.id} style={entry.animatedStyle}>
                   <Card>
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -245,9 +247,9 @@ export default function ReportsView() {
                       )}
                     </CardContent>
                   </Card>
-                </MotionView>
-              ))}
-            </Presence>
+                </AnimatedView>
+              )
+            })}
 
             {filteredReports.length === 0 && (
               <Card className="p-12">

@@ -19,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { AccessibilityInfo } from 'react-native'
 import * as Haptics from 'expo-haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
@@ -129,7 +129,7 @@ export function FloatingActionButton({
 
   const shimmerStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: `${String(shimmerX.value ?? '')}%` }],
+      transform: [{ translateX: `${shimmerX.value}%` as `${number}%` }],
     }
   })
 

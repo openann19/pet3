@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, type SharedValue } from 'react-native
 import { createSpringAnimation, createTimingAnimation, createDelayedAnimation, stopAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
 import type { BaseAnimationConfig } from '../core/types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseBubbleEntryOptions extends BaseAnimationConfig {
   /**

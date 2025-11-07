@@ -10,7 +10,7 @@ import { useUserStore } from '../store/user-store'
 import { queryKeys, mutationKeys } from '../lib/query-client'
 import type { ApiResponse, PaginatedResponse } from '../types/api'
 import type { Match, PetProfile } from '../types/pet'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://api.petspark.app'
 

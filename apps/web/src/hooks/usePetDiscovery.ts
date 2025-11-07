@@ -3,7 +3,7 @@ import { useStorage } from '@/hooks/useStorage'
 import type { Pet, SwipeAction } from '@/lib/types'
 import { calculateCompatibility } from '@/lib/matching'
 import { calculateDistance } from '@/lib/distance'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface DiscoveryPreferences {
   minAge?: number

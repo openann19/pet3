@@ -10,7 +10,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import TypingIndicatorComponent from '../TypingIndicator'
 import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { useFeatureFlag } from '@/lib/feature-flags'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface VirtualMessageListProps {
   messages: ChatMessage[]

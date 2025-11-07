@@ -22,7 +22,7 @@ import Animated, {
 import { FILTER_CATEGORIES, getFiltersByCategory } from '../../lib/story-templates'
 import type { StoryFilter } from '../../lib/story-templates'
 import { useReducedMotionSV } from '../../effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
 const AnimatedView = Animated.createAnimatedComponent(View)

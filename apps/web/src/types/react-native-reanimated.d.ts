@@ -19,6 +19,8 @@ declare module 'react-native-reanimated' {
     linear(value: number): number
     inOut(easing: (value: number) => number): (value: number) => number
     ease(value: number): number
+    out(easing: (value: number) => number): (value: number) => number
+    in(easing: (value: number) => number): (value: number) => number
   }
 
   export const Easing: AnimationHelpers

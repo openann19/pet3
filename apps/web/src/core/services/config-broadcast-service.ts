@@ -9,7 +9,7 @@ import { adminApi } from '@/api/admin-api'
 import { createLogger } from '@/lib/logger'
 import { RealtimeClient } from '@/lib/realtime'
 import { adminSyncService } from './admin-sync-service'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('ConfigBroadcastService')
 

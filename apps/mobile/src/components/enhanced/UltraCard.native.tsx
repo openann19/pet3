@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 

@@ -3,7 +3,6 @@ import { ENV } from '@/config/env'
 import { createLogger } from '@/lib/logger'
 import { retry } from '@/lib/retry'
 import { ENDPOINTS } from '@/lib/endpoints'
-import { isTruthy, isDefined } from '@/core/guards';
 
 const logger = createLogger('APIClient')
 
@@ -83,10 +82,7 @@ export interface RequestConfig extends RequestInit {
 
 type RequestHeaders = Record<string, string>
 
-interface StoredTokens {
-  accessToken: string
-  refreshToken?: string
-}
+// RefreshToken property is now in class for non-cookie mode
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   attempts: 3,
@@ -97,60 +93,87 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 class APIClientImpl {
   private readonly baseUrl: string
   private readonly timeout: number
-  private accessToken: string | null = null
-  private refreshToken: string | null = null
+  private accessToken: string | null = null // Stored in memory only (from response, not localStorage)
+  private refreshToken: string | null = null // Only used when not using cookies
+  private csrfToken: string | null = null
   private refreshPromise: Promise<void> | null = null
+  private readonly useCookies: boolean // Use httpOnly cookies for refresh token
 
   constructor(config: Environment) {
     this.baseUrl = config.VITE_API_URL
     this.timeout = config.VITE_API_TIMEOUT
+    // Use cookies in production, localStorage in development (if VITE_USE_MOCKS is false)
+    this.useCookies = config.VITE_USE_MOCKS !== 'true'
 
-    // Load stored tokens
-    this.loadTokens()
+    // Load CSRF token if available (from cookie or meta tag)
+    this.loadCSRFToken()
   }
 
-  private static readonly ACCESS_TOKEN_KEY = 'access_token'
-  private static readonly REFRESH_TOKEN_KEY = 'refresh_token'
+  /**
+   * Load CSRF token from meta tag or cookie
+   */
+  private loadCSRFToken(): void {
+    if (typeof document === 'undefined') return
 
-  private loadTokens(): void {
-    try {
-      this.accessToken = localStorage.getItem(APIClientImpl.ACCESS_TOKEN_KEY)
-      this.refreshToken = localStorage.getItem(APIClientImpl.REFRESH_TOKEN_KEY)
-    } catch (error) {
-      logger.warn('Failed to load tokens from storage', { error })
+    // Try to get from meta tag first
+    const metaTag = document.querySelector('meta[name="csrf-token"]')
+    if (metaTag) {
+      this.csrfToken = metaTag.getAttribute('content') ?? null
+      return
+    }
+
+    // Try to get from cookie (if backend sets it)
+    const cookies = document.cookie.split(';')
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=')
+      if (name === 'csrf-token' && value) {
+        this.csrfToken = value
+        return
+      }
     }
   }
 
-  private saveTokens(tokens: StoredTokens): void {
-    const { accessToken, refreshToken } = tokens
+  /**
+   * Get CSRF token (fetch from backend if not available)
+   */
+  private async getCSRFToken(): Promise<string | null> {
+    if (this.csrfToken) {
+      return this.csrfToken
+    }
 
+    // Try to fetch CSRF token from backend
     try {
-      this.accessToken = accessToken
-      localStorage.setItem(APIClientImpl.ACCESS_TOKEN_KEY, accessToken)
-
-      if (isTruthy(refreshToken)) {
-        this.refreshToken = refreshToken
-        localStorage.setItem(APIClientImpl.REFRESH_TOKEN_KEY, refreshToken)
+      const response = await fetch(`${String(this.baseUrl ?? '')}/auth/csrf-token`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (response.ok) {
+        const data = await response.json() as { csrfToken?: string }
+        if (data.csrfToken) {
+          this.csrfToken = data.csrfToken
+          return this.csrfToken
+        }
       }
     } catch (error) {
-      logger.error('Failed to persist auth tokens', { error })
+      logger.debug('Failed to fetch CSRF token', { error: error instanceof Error ? error : new Error(String(error)) })
     }
+
+    return null
   }
 
   private clearTokens(): void {
     this.accessToken = null
-    this.refreshToken = null
-
-    localStorage.removeItem(APIClientImpl.ACCESS_TOKEN_KEY)
-    localStorage.removeItem(APIClientImpl.REFRESH_TOKEN_KEY)
+    // Don't clear cookies - they're httpOnly and managed by backend
   }
 
   private async refreshAccessToken(): Promise<void> {
-    if (!this.refreshToken) {
+    // If using cookies, refresh token is in httpOnly cookie
+    // If not using cookies, check if we have refresh token in memory
+    if (!this.useCookies && !this.refreshToken) {
       throw new Error('No refresh token available')
     }
 
-    if (isTruthy(this.refreshPromise)) {
+    if (this.refreshPromise) {
       await this.refreshPromise
       return
     }
@@ -165,10 +188,23 @@ class APIClientImpl {
   }
 
   private async performTokenRefresh(): Promise<void> {
+    const csrfToken = await this.getCSRFToken()
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    }
+
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken
+    }
+
     const response = await fetch(`${String(this.baseUrl ?? '')}${String(ENDPOINTS.AUTH.REFRESH ?? '')}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: this.refreshToken })
+      headers,
+      credentials: 'include', // Include httpOnly cookies
+      ...(this.useCookies ? {} : {
+        // Fallback: if not using cookies, send refresh token in body (for development)
+        body: JSON.stringify({ refreshToken: this.refreshToken })
+      })
     })
 
     if (!response.ok) {
@@ -176,11 +212,27 @@ class APIClientImpl {
       throw await this.createAPIError(response)
     }
 
-    const data: { accessToken: string; refreshToken?: string } = await response.json()
-    this.saveTokens({ 
-      accessToken: data.accessToken, 
-      ...(data.refreshToken ? { refreshToken: data.refreshToken } : {})
-    })
+    const data = await response.json() as { 
+      accessToken: string
+      refreshToken?: string
+      csrfToken?: string
+    }
+    
+    // Store access token in memory (not localStorage)
+    this.accessToken = data.accessToken
+    
+    // Refresh token is in httpOnly cookie (if using cookies)
+    // If not using cookies, store in memory only
+    if (!this.useCookies && data.refreshToken) {
+      // For development mode without cookies, we still need to track refresh token
+      // But don't store in localStorage - keep in memory only
+      this.refreshToken = data.refreshToken
+    }
+    
+    // Update CSRF token if provided
+    if (data.csrfToken) {
+      this.csrfToken = data.csrfToken
+    }
   }
 
   private async makeRequest<T>(endpoint: string, config: RequestConfig = {}): Promise<APIResponse<T>> {
@@ -201,19 +253,24 @@ class APIClientImpl {
       const timeoutId = setTimeout(() => { controller.abort(); }, timeout)
 
       try {
-        const requestHeaders = this.prepareHeaders(requestInit.headers)
+        const requestHeaders = await this.prepareHeaders(requestInit.headers)
         const response = await fetch(`${String(this.baseUrl ?? '')}${String(endpoint ?? '')}`, {
           ...requestInit,
           headers: requestHeaders,
+          credentials: 'include', // Always include cookies for httpOnly refresh token
           signal: controller.signal
         })
 
-        if (response.status === 401 && this.refreshToken) {
+        // Handle 401 with token refresh
+        if (response.status === 401 && (this.useCookies || this.refreshToken)) {
           await this.handleUnauthorized()
 
+          // Retry request with new access token
+          const retryHeaders = await this.prepareHeaders(requestInit.headers)
           const retryResponse = await fetch(`${String(this.baseUrl ?? '')}${String(endpoint ?? '')}`, {
             ...requestInit,
-            headers: this.prepareHeaders(requestInit.headers),
+            headers: retryHeaders,
+            credentials: 'include',
             signal: controller.signal
           })
 
@@ -230,21 +287,28 @@ class APIClientImpl {
       }
     }
 
-    if (isTruthy(idempotent)) {
+    if (idempotent) {
       return retry(executeRequest, retryConfigResolved)
     }
 
     return executeRequest()
   }
 
-  private prepareHeaders(headers?: HeadersInit): RequestHeaders {
+  private async prepareHeaders(headers?: HeadersInit): Promise<RequestHeaders> {
     const merged: RequestHeaders = {
       'Content-Type': 'application/json',
       ...(headers as RequestHeaders | undefined)
     }
 
-    if (isTruthy(this.accessToken)) {
-      merged['Authorization'] = `Bearer ${String(this.accessToken ?? '')}`
+    // Add access token if available (stored in memory)
+    if (this.accessToken) {
+      merged['Authorization'] = `Bearer ${this.accessToken}`
+    }
+
+    // Add CSRF token for state-changing requests
+    const csrfToken = await this.getCSRFToken()
+    if (csrfToken) {
+      merged['X-CSRF-Token'] = csrfToken
     }
 
     return merged
@@ -268,9 +332,9 @@ class APIClientImpl {
 
   private async parseErrorDetails(response: Response): Promise<APIErrorDetails> {
     try {
-      return await response.json()
+      return await response.json() as APIErrorDetails
     } catch (error) {
-      logger.debug('Failed to parse error body as JSON', { error })
+      logger.debug('Failed to parse error body as JSON', { error: error instanceof Error ? error : new Error(String(error)) })
       return { message: response.statusText }
     }
   }
@@ -278,7 +342,7 @@ class APIClientImpl {
   private async createAPIError(response: Response): Promise<APIClientError> {
     const errorDetails = await this.parseErrorDetails(response)
 
-    return new APIClientError(errorDetails.message || `HTTP ${String(response.status ?? '')}`, {
+    return new APIClientError(errorDetails.message ?? `HTTP ${response.status}`, {
       status: response.status,
       ...(errorDetails.code ? { code: errorDetails.code } : {}),
       ...(errorDetails.details ? { details: errorDetails.details } : {}),
@@ -362,14 +426,27 @@ class APIClientImpl {
 
   // Authentication methods
   setTokens(accessToken: string, refreshToken?: string): void {
-    this.saveTokens({ 
-      accessToken, 
-      ...(refreshToken ? { refreshToken } : {})
-    })
+    // Store access token in memory only (not localStorage)
+    this.accessToken = accessToken
+    
+    // If not using cookies, store refresh token in memory
+    if (!this.useCookies && refreshToken) {
+      this.refreshToken = refreshToken
+    }
+    // If using cookies, refresh token is in httpOnly cookie (set by backend)
   }
 
   logout(): void {
     this.clearTokens()
+    // Call backend logout endpoint to clear httpOnly cookie
+    if (this.useCookies) {
+      fetch(`${this.baseUrl}${ENDPOINTS.AUTH.LOGOUT}`, {
+        method: 'POST',
+        credentials: 'include'
+      }).catch((error) => {
+        logger.warn('Failed to call logout endpoint', { error: error instanceof Error ? error : new Error(String(error)) })
+      })
+    }
   }
 
   isAuthenticated(): boolean {

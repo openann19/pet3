@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useTimestampReveal } from './use-timestamp-reveal'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export default {
   title: 'Mobile/Animation Hooks/useTimestampReveal',

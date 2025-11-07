@@ -20,7 +20,6 @@ const ROOT = join(__dirname, '..')
 const WORKSPACES = [
   { name: 'web', path: 'apps/web', hasTsPrune: true },
   { name: 'mobile', path: 'apps/mobile', hasTsPrune: false },
-  { name: 'native', path: 'apps/native', hasTsPrune: false },
   { name: 'packages/shared', path: 'packages/shared', hasTsPrune: false },
   { name: 'packages/motion', path: 'packages/motion', hasTsPrune: false },
   { name: 'packages/chat-core', path: 'packages/chat-core', hasTsPrune: false },

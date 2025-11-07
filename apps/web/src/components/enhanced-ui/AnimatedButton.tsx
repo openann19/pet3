@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
 import { useEffect, useState, useCallback } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface AnimatedButtonProps {
   children: ReactNode

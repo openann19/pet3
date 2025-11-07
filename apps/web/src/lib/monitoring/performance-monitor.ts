@@ -4,7 +4,7 @@ import type {
   PerformanceWithMemory
 } from '@/lib/types/performance-api'
 import { sentryConfig } from './sentry-config'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PerformanceMonitor')
 

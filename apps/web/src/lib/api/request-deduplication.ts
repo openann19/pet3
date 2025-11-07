@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Request Deduplication - Prevent duplicate API requests

@@ -9,7 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const Eye = (props: any) => <FeatherIcon name="eye" {...props} />
 const EyeSlash = (props: any) => <FeatherIcon name="eye-off" {...props} />
@@ -31,6 +31,7 @@ export interface PremiumInputProps extends Omit<TextInputProps, 'style'> {
   onClear?: () => void
   style?: ViewStyle
   testID?: string
+  type?: 'default' | 'password' | 'email' | 'numeric' | 'phone-pad'
 }
 
 export function PremiumInput({
@@ -130,21 +131,30 @@ export function PremiumInput({
     ]
   }))
 
-  const borderStyle = useAnimatedStyle(() => ({
-    borderWidth: borderWidth.value,
-    borderColor: borderColor.value === 1
+  const borderStyle = useAnimatedStyle(() => {
+    const color = borderColor.value === 1
       ? (error ? '#ef4444' : '#6366f1')
       : 'rgba(0, 0, 0, 0.1)'
-  }))
+    return {
+      borderWidth: borderWidth.value,
+      borderColor: color
+    }
+  })
 
   const inputType = showPasswordToggle && type === 'password'
     ? (showPassword ? 'default' : 'password')
-    : type
+    : (type ?? 'default')
 
-  const sizes = {
-    sm: { height: 40, fontSize: 14, padding: 12 },
-    md: { height: 48, fontSize: 16, padding: 16 },
-    lg: { height: 56, fontSize: 18, padding: 20 }
+  const containerSizes: Record<string, ViewStyle> = {
+    sm: { height: 40, padding: 12 },
+    md: { height: 48, padding: 16 },
+    lg: { height: 56, padding: 20 }
+  }
+  
+  const textSizes: Record<string, { fontSize: number }> = {
+    sm: { fontSize: 14 },
+    md: { fontSize: 16 },
+    lg: { fontSize: 18 }
   }
 
   return (
@@ -152,12 +162,12 @@ export function PremiumInput({
       <Animated.View
         style={[
           styles.container,
-          sizes[size],
-          borderStyle,
-          variant === 'filled' && styles.filled,
-          variant === 'outlined' && styles.outlined,
-          error && styles.error,
-          !editable && styles.disabled
+          containerSizes[size],
+          borderStyle as ViewStyle,
+          variant === 'filled' ? styles.filled : undefined,
+          variant === 'outlined' ? styles.outlined : undefined,
+          error ? styles.error : undefined,
+          !editable ? styles.disabled : undefined
         ]}
       >
         {leftIcon && (
@@ -171,9 +181,9 @@ export function PremiumInput({
             <Text
               style={[
                 styles.label,
-                sizes[size],
-                isFocused && styles.labelFocused,
-                error && styles.labelError
+                textSizes[size],
+                ...(isFocused ? [styles.labelFocused] : []),
+                ...(error ? [styles.labelError] : [])
               ]}
             >
               {label}
@@ -191,8 +201,8 @@ export function PremiumInput({
           editable={editable}
           style={[
             styles.input,
-            sizes[size],
-            label && styles.inputWithLabel
+            textSizes[size],
+            ...(label ? [styles.inputWithLabel] : [])
           ]}
           placeholderTextColor="#9ca3af"
           {...props}
@@ -234,7 +244,7 @@ export function PremiumInput({
       {(error || helperText) && (
         <View style={styles.helperContainer}>
           {error && <AlertCircle size={12} color="#ef4444" />}
-          <Text style={[styles.helperText, error && styles.helperError]}>
+          <Text style={[styles.helperText, ...(error ? [styles.helperError] : [])]}>
             {error || helperText}
           </Text>
         </View>

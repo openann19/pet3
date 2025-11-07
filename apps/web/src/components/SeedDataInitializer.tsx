@@ -5,13 +5,29 @@ import { initializeCommunityData } from '@/lib/community-seed-data'
 import { initializeAdoptionProfiles } from '@/lib/adoption-seed-data'
 import type { Pet } from '@/lib/types'
 import { createLogger } from '@/lib/logger'
+import { ENV } from '@/config/env'
 
+const logger = createLogger('SeedDataInitializer')
+
+/**
+ * SeedDataInitializer
+ * 
+ * Only runs when VITE_USE_MOCKS=true (development/mock mode).
+ * In production, data comes from the backend API.
+ */
 export default function SeedDataInitializer() {
+  const useMocks = ENV.VITE_USE_MOCKS === 'true'
   const [allPets, setAllPets] = useStorage<Pet[]>('all-pets', [])
   const [isInitialized, setIsInitialized] = useStorage<boolean>('data-initialized', false)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    // Only run in mock mode
+    if (!useMocks) {
+      logger.debug('SeedDataInitializer disabled - using backend API')
+      return
+    }
+
     async function initializeData() {
       if (isInitialized || isLoading) return
       
@@ -31,15 +47,15 @@ export default function SeedDataInitializer() {
         await initializeAdoptionProfiles()
         setIsInitialized(true)
       } catch (error) {
-        const logger = createLogger('SeedDataInitializer')
         logger.error('Failed to initialize sample data', error instanceof Error ? error : new Error(String(error)))
       } finally {
         setIsLoading(false)
       }
     }
 
-    initializeData()
-  }, [])
+    void initializeData()
+  }, [useMocks, isInitialized, isLoading, allPets, setAllPets, setIsInitialized])
 
+  // Return null - this component doesn't render anything
   return null
 }

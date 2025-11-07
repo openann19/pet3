@@ -25,7 +25,7 @@ import {
   Gesture,
 } from 'react-native-gesture-handler'
 import * as Haptics from 'expo-haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 

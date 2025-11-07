@@ -6,7 +6,7 @@
 import type { LocationAccuracy, LocationObject } from 'expo-location'
 import * as Location from 'expo-location'
 import { useCallback, useEffect, useState } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface LocationCoordinates {
   latitude: number

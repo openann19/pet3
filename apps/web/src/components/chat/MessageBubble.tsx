@@ -52,7 +52,7 @@ import { DeletedGhostBubble } from './DeletedGhostBubble'
 import { UndoDeleteChip } from './UndoDeleteChip'
 import { MessagePeek } from './MessagePeek'
 import { SmartImage } from '@/components/media/SmartImage'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface MessageBubbleProps {
   message: Message

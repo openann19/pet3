@@ -15,7 +15,7 @@ import { SignalingClient } from '@/lib/webrtc/signaling-client'
 import { mediaStreamManager } from '@/lib/webrtc/media-stream-manager'
 import { RealtimeClient } from '@/lib/realtime'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useWebRTC')
 

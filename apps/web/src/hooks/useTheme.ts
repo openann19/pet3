@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useStorage } from '@/hooks/useStorage'
 import { type ThemePreset, getThemePreset, applyThemePreset } from '@/lib/theme-presets'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type Theme = 'light' | 'dark'
 

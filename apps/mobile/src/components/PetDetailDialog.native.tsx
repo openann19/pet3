@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,14 +8,8 @@ import {
   Dimensions,
   Image,
 } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
-import { useReducedMotionSV } from '@mobile/effects/core/use-reduced-motion-sv'
 import { Dialog } from './ui/Dialog.native'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card.native'
 import { Badge } from './ui/badge.native'
@@ -33,10 +27,32 @@ import {
   Ruler,
   ShieldCheck,
   Star,
-} from '@phosphor-icons/react-native'
-import { isTruthy, isDefined } from '@/core/guards';
+} from '@phosphor-icons/react'
+import { isTruthy } from '@petspark/shared'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
+const { height: SCREEN_HEIGHT } = Dimensions.get('window')
+
+const DIMENS = {
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    '2xl': 24,
+    '3xl': 32,
+  },
+  radius: {
+    sm: 6,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    '2xl': 20,
+  },
+  component: {
+    touchTargetMin: 44,
+  },
+} as const
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
 
 interface PetDetailDialogProps {
@@ -47,10 +63,9 @@ interface PetDetailDialogProps {
 
 interface PetRatingsProps {
   readonly trustProfile: NonNullable<Pet['trustProfile']>
-  readonly ratings?: Pet['ratings']
 }
 
-function PetRatings({ trustProfile, ratings }: PetRatingsProps): React.JSX.Element {
+function PetRatings({ trustProfile }: PetRatingsProps): React.JSX.Element {
   const overallRating = trustProfile.overallRating || 0
   const totalReviews = trustProfile.totalReviews || 0
 
@@ -87,10 +102,9 @@ function PetRatings({ trustProfile, ratings }: PetRatingsProps): React.JSX.Eleme
 
 interface TrustBadgesProps {
   readonly badges: readonly string[]
-  readonly showLabels?: boolean
 }
 
-function TrustBadges({ badges, showLabels = true }: TrustBadgesProps): React.JSX.Element {
+function TrustBadges({ badges }: TrustBadgesProps): React.JSX.Element {
   if (!badges || !Array.isArray(badges) || badges.length === 0) return <></>
 
   return (
@@ -114,17 +128,6 @@ export default function PetDetailDialog({
   onClose,
 }: PetDetailDialogProps): React.JSX.Element | null {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
-  const reducedMotionSV = useReducedMotionSV()
-  const [reducedMotion, setReducedMotion] = useState(() => reducedMotionSV.value)
-
-  useEffect(() => {
-    const checkReducedMotion = (): void => {
-      setReducedMotion(reducedMotionSV.value)
-    }
-
-    const intervalId = setInterval(checkReducedMotion, 100)
-    return () => clearInterval(intervalId)
-  }, [reducedMotionSV])
 
   if (!pet) return null
 
@@ -173,7 +176,7 @@ export default function PetDetailDialog({
             style={styles.photo}
             resizeMode="cover"
             accessible
-            accessibilityLabel={`Photo of ${String(pet.name ?? '')}, ${String(currentPhotoIndex + 1 ?? '')} of ${String(photos.length ?? '')}`}
+            accessibilityLabel={`Photo of ${pet.name ?? ''}, ${currentPhotoIndex + 1} of ${photos.length}`}
           />
 
           {/* Photo Overlay */}
@@ -222,8 +225,8 @@ export default function PetDetailDialog({
           {/* Pet Info Overlay */}
           <View style={styles.petInfoOverlay}>
             <View style={styles.petNameRow}>
-              <Text style={styles.petName}>{pet.name}</Text>
-              {pet.verified && (
+              <Text style={styles.petName}>{pet.name ?? ''}</Text>
+              {pet.verified === true && (
                 <ShieldCheck size={24} weight="fill" color="#10b981" />
               )}
             </View>
@@ -262,7 +265,6 @@ export default function PetDetailDialog({
           {pet.trustProfile && (
             <PetRatings
               trustProfile={pet.trustProfile}
-              ratings={pet.ratings}
             />
           )}
 
@@ -348,7 +350,7 @@ export default function PetDetailDialog({
                 <View style={styles.ownerInfo}>
                   <View style={styles.ownerAvatar}>
                     <Text style={styles.ownerInitial}>
-                      {pet.ownerName[0]?.toUpperCase()}
+                      {pet.ownerName?.[0]?.toUpperCase() ?? ''}
                     </Text>
                   </View>
                   <View style={styles.ownerDetails}>
@@ -466,27 +468,11 @@ export default function PetDetailDialog({
               </Card>
             </>
           )}
-const DIMENS = {
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    '2xl': 24,
-    '3xl': 32,
-  },
-  radius: {
-    sm: 6,
-    md: 8,
-    lg: 12,
-    xl: 16,
-    '2xl': 20,
-  },
-  component: {
-    touchTargetMin: 44,
-  },
-} as const
+        </ScrollView>
+      </View>
+    </Dialog>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {

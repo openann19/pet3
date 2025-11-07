@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavBarAnimation, useNavButtonAnimation } from '@mobile/effects/reanimated'
 import { colors } from '@mobile/theme/colors'
 import * as Haptics from 'expo-haptics'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export type TabKey = 'community' | 'chat' | 'feed' | 'adopt' | 'matches' | 'profile'
 

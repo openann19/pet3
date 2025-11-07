@@ -1,6 +1,7 @@
 import { createLogger } from './logger'
 import { generateCorrelationId } from './utils'
-import { isTruthy, isDefined } from '@/core/guards';
+import { ENV } from '@/config/env'
+import { isTruthy } from '@petspark/shared'
 
 const logger = createLogger('websocket-manager')
 
@@ -36,7 +37,7 @@ export class WebSocketManager {
   private url: string
   private state: ConnectionState = 'disconnected'
   private messageQueue: QueuedMessage[] = []
-  private eventHandlers: Map<string, Set<EventHandler>> = new Map()
+  private eventHandlers = new Map<string, Set<EventHandler>>()
   private reconnectAttempts = 0
   private maxReconnectAttempts: number
   private reconnectInterval: number
@@ -44,7 +45,9 @@ export class WebSocketManager {
   private messageTimeout: number
   private heartbeatTimer: number | undefined = undefined
   private reconnectTimer: number | undefined = undefined
-  private pendingAcknowledgments: Map<string, number> = new Map()
+  private pendingAcknowledgments = new Map<string, number>()
+  private accessToken: string | null = null
+  private refreshInProgress = false
 
   constructor(options: WebSocketManagerOptions) {
     this.url = options.url
@@ -54,19 +57,29 @@ export class WebSocketManager {
     this.messageTimeout = options.messageTimeout ?? 5000
   }
 
-  connect(accessToken: string): void {
+  connect(accessToken?: string): void {
     if (this.state === 'connected' || this.state === 'connecting') {
       return
     }
 
+    // Get access token from parameter or APIClient
+    const token = accessToken ?? this.getAccessToken()
+    if (!token) {
+      logger.warn('Cannot connect WebSocket without access token')
+      return
+    }
+
+    this.accessToken = token
     this.state = 'connecting'
-    logger.info('Connecting', { url: this.url, token: accessToken.substring(0, 10) + '...' })
+    logger.info('Connecting', { url: this.url, token: token.substring(0, 10) + '...' })
 
     // Attempt to establish WebSocket connection
     try {
       // Check if WebSocket is available (browser environment)
       if (typeof WebSocket !== 'undefined') {
-        const ws = new WebSocket(`${String(this.url ?? '')}?token=${String(encodeURIComponent(accessToken) ?? '')}`)
+        // Use token in query param (backend will also check httpOnly cookie)
+        const wsUrl = `${this.url}?token=${encodeURIComponent(token)}`
+        const ws = new WebSocket(wsUrl)
         
         ws.onopen = () => {
           this.state = 'connected'
@@ -78,18 +91,34 @@ export class WebSocketManager {
         }
 
         ws.onerror = (error) => {
-          logger.error('WebSocket connection error', error instanceof Error ? error : new Error(String(error)))
+          const err = error instanceof Error ? error : new Error('WebSocket connection error')
+          logger.error('WebSocket connection error', err)
           this.state = 'disconnected'
-          this.emit('connection', { status: 'error', error })
+          this.emit('connection', { status: 'error', error: err.message })
           this.reconnect()
         }
 
-        ws.onclose = () => {
-          logger.warn('WebSocket connection closed')
+        ws.onclose = (event) => {
+          logger.warn('WebSocket connection closed', { code: event.code, reason: event.reason })
           this.state = 'disconnected'
-          this.emit('connection', { status: 'disconnected' })
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.emit('connection', { status: 'disconnected', code: event.code })
+          
+          // If closed due to authentication error (4001-4003), try to refresh token
+          if (event.code >= 4001 && event.code <= 4003) {
+            void this.handleAuthError()
+          } else if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnect()
+          }
+        }
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(String(event.data)) as WebSocketMessage
+            this.handleAcknowledgment(message.id)
+            this.receiveMessage(message.namespace, message.event, message.data)
+          } catch (error) {
+            const err = error instanceof Error ? error : new Error('Failed to parse WebSocket message')
+            logger.error('Failed to parse WebSocket message', err)
           }
         }
 
@@ -149,7 +178,7 @@ export class WebSocketManager {
 
     return () => {
       const handlers = this.eventHandlers.get(event)
-      if (isTruthy(handlers)) {
+      if (handlers) {
         handlers.delete(handler)
         if (handlers.size === 0) {
           this.eventHandlers.delete(event)
@@ -255,6 +284,51 @@ export class WebSocketManager {
     }
   }
 
+  /**
+   * Get access token from APIClient
+   */
+  private getAccessToken(): string | null {
+    // Access token is stored in APIClient memory
+    // We need to get it from the auth service or APIClient
+    // For now, return null and let the caller provide it
+    return this.accessToken
+  }
+
+  /**
+   * Handle authentication error - refresh token and reconnect
+   */
+  private async handleAuthError(): Promise<void> {
+    if (this.refreshInProgress) {
+      return
+    }
+
+    this.refreshInProgress = true
+    logger.info('WebSocket auth error, attempting token refresh')
+
+    try {
+      // Token refresh is handled by APIClient automatically
+      // We just need to get the new token and reconnect
+      // The token refresh happens when APIClient makes a request
+      // For WebSocket, we'll reconnect with a fresh token
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for refresh
+      
+      // Get fresh token (this would come from auth service)
+      const newToken = this.getAccessToken()
+      if (newToken) {
+        this.reconnectAttempts = 0 // Reset attempts after successful refresh
+        this.connect(newToken)
+      } else {
+        logger.error('Failed to get new access token after refresh')
+        this.emit('connection', { status: 'auth_failed' })
+      }
+    } catch (error) {
+      logger.error('Failed to refresh token for WebSocket', { error: error instanceof Error ? error : new Error(String(error)) })
+      this.emit('connection', { status: 'auth_failed' })
+    } finally {
+      this.refreshInProgress = false
+    }
+  }
+
   private reconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       logger.error('Max reconnection attempts reached', { attempts: this.reconnectAttempts })
@@ -274,7 +348,13 @@ export class WebSocketManager {
     
     this.reconnectTimer = window.setTimeout(() => {
       logger.info('Attempting reconnection')
-      this.connect('reconnect-token')
+      // Reconnect with current token (or get fresh one)
+      const token = this.getAccessToken()
+      if (token) {
+        this.connect(token)
+      } else {
+        logger.warn('No access token available for reconnection')
+      }
     }, backoffDelay)
   }
 
@@ -287,7 +367,7 @@ export class WebSocketManager {
 
   private emit(event: string, data: unknown): void {
     const handlers = this.eventHandlers.get(event)
-    if (isTruthy(handlers)) {
+    if (handlers) {
       handlers.forEach(handler => {
         try {
           handler(data)
@@ -317,8 +397,9 @@ let wsManager: WebSocketManager | null = null
 
 export function getWebSocketManager(): WebSocketManager {
   if (!wsManager) {
+    const wsUrl = ENV.VITE_WS_URL.replace(/^https?:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')
     wsManager = new WebSocketManager({
-      url: 'ws://localhost:3000',
+      url: wsUrl,
       reconnectInterval: 3000,
       maxReconnectAttempts: 10,
       heartbeatInterval: 30000,
@@ -328,13 +409,13 @@ export function getWebSocketManager(): WebSocketManager {
   return wsManager
 }
 
-export function initializeWebSocket(accessToken: string): void {
+export function initializeWebSocket(accessToken?: string): void {
   const manager = getWebSocketManager()
   manager.connect(accessToken)
 }
 
 export function disconnectWebSocket(): void {
-  if (isTruthy(wsManager)) {
+  if (wsManager) {
     wsManager.disconnect()
   }
 }

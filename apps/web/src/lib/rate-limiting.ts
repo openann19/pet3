@@ -1,7 +1,7 @@
 import { createLogger } from './logger'
 import { storage } from './storage'
 import { rateLimitingApi } from '@/api/rate-limiting-api'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('RateLimiting')
 

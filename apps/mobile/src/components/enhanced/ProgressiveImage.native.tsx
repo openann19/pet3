@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 export interface ProgressiveImageProps {
   src: string

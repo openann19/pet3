@@ -6,7 +6,7 @@ import { MotionView } from '@petspark/motion'
 import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated'
 import { createLogger } from '@/lib/logger'
 import { Heart, X, MapPin, Sparkle } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('DiscoverView')
 

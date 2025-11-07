@@ -7,7 +7,7 @@ import { motion } from '@petspark/motion'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import StoryViewer from './StoryViewer'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface HighlightViewerProps {
   highlight: StoryHighlight

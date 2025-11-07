@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
 import { MessageBubble } from './MessageBubble'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 // Stubs for unavailable imports
 function useKV<T>(_key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {

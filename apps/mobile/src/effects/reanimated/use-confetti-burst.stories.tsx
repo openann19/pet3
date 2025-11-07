@@ -3,7 +3,7 @@
  * Demonstrates the useConfettiBurst hook for mobile celebration effects
  */
 
-import React from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useConfettiBurst } from './use-confetti-burst'
@@ -15,7 +15,7 @@ export default {
   component: ConfettiBurstDemo,
 }
 
-function ConfettiBurstDemo() {
+function ConfettiBurstDemo(): JSX.Element {
   const { burst, particles, createParticleStyle, isAnimating } = useConfettiBurst({
     particleCount: 30,
     colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7dc6f', '#bb8fce'],
@@ -23,7 +23,7 @@ function ConfettiBurstDemo() {
     spread: 200,
   })
 
-  const handleBurst = () => {
+  const handleBurst = (): void => {
     burst(width / 2, height / 4)
   }
 
@@ -63,7 +63,7 @@ function ConfettiBurstDemo() {
 
       <TouchableOpacity
         style={[styles.burstButton, isAnimating && styles.burstButtonActive]}
-        onPress={handleBurst}
+        onPress={() => { handleBurst(); }}
         disabled={isAnimating}
       >
         <Text style={styles.burstButtonText}>

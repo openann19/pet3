@@ -30,7 +30,7 @@ import type { MediaItem } from './MediaViewer'
 import { MediaViewer } from './MediaViewer'
 import { PostDetailView } from './PostDetailView'
 import { ReportDialog } from './ReportDialog'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('PostCard')
 

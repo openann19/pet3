@@ -1,5 +1,5 @@
 import type { Pet, SwipeAction } from './types'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface RecommendationScore {
   petId: string

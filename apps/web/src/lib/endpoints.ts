@@ -209,6 +209,13 @@ export const ENDPOINTS = {
   // Image Uploads
   IMAGES: {
     UPLOAD: '/uploads/images'
+  },
+
+  // Health & Version
+  HEALTH: {
+    LIVENESS: '/healthz',
+    READINESS: '/readyz',
+    VERSION: '/api/version'
   }
 } as const
 

@@ -7,7 +7,7 @@ import { ENDPOINTS } from '@/lib/endpoints'
 import { getRealtimeEvents } from '@/lib/realtime-events'
 import type { UpdateOwnerPreferencesData, UpdateMatchingConfigData } from '@/api/types'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('MatchingAPI')
 

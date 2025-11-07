@@ -1,7 +1,7 @@
 import type { Location } from './types'
 import { createLogger } from '../logger'
 import { getMapsConfig } from '../api-config'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('MapboxPlaces')
 

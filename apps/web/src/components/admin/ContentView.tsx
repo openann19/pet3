@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { motion, Presence } from '@petspark/motion'
 import { MagnifyingGlass, Image as ImageIcon, CheckCircle, XCircle, Eye } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type { Pet } from '@/lib/types'
+import { AnimatePresence } from '@/effects/reanimated/animate-presence'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 export default function ContentView() {
   const [allPets] = useStorage<Pet[]>('all-pets', [])
@@ -34,7 +36,7 @@ export default function ContentView() {
     setDialogOpen(false)
   }
 
-  const filteredPets = (allPets || []).filter((pet: Pet) => {
+  const filteredPets = (allPets ?? []).filter((pet: Pet) => {
     const matchesSearch = pet.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pet.breed?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesSearch
@@ -77,54 +79,16 @@ export default function ContentView() {
 
       <ScrollArea className="h-[600px]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <Presence mode="popLayout">
+          <AnimatePresence mode="sync">
             {filteredPets.map((pet: Pet, index: number) => (
-              <MotionView
+              <AnimatedPetCard
                 key={pet.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.02 }}
-              >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-square relative bg-muted">
-                    {pet.photo ? (
-                      <img
-                        src={pet.photo}
-                        alt={pet.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon size={48} className="text-muted-foreground" />
-                      </div>
-                    )}
-                    <Badge className="absolute top-2 right-2" variant="secondary">
-                      Active
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold truncate">{pet.name}</h3>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {pet.breed} • {pet.age?.toString() ?? 'N/A'}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Owner: {pet.ownerName}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full mt-3"
-                      onClick={() => { handleReviewPet(pet); }}
-                    >
-                      <Eye size={16} className="mr-2" />
-                      Review
-                    </Button>
-                  </CardContent>
-                </Card>
-              </MotionView>
+                pet={pet}
+                index={index}
+                onReview={handleReviewPet}
+              />
             ))}
-          </Presence>
+          </AnimatePresence>
         </div>
       </ScrollArea>
 
@@ -212,6 +176,61 @@ export default function ContentView() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+interface AnimatedPetCardProps {
+  pet: Pet
+  index: number
+  onReview: (pet: Pet) => void
+}
+
+function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
+  const entry = useEntryAnimation({
+    initialScale: 0.95,
+    initialOpacity: 0,
+    delay: index * 20
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <div className="aspect-square relative bg-muted">
+          {pet.photo ? (
+            <img
+              src={pet.photo}
+              alt={pet.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon size={48} className="text-muted-foreground" />
+            </div>
+          )}
+          <Badge className="absolute top-2 right-2" variant="secondary">
+            Active
+          </Badge>
+        </div>
+        <CardContent className="p-4">
+          <h3 className="font-semibold truncate">{pet.name}</h3>
+          <p className="text-sm text-muted-foreground truncate">
+            {pet.breed} • {pet.age?.toString() ?? 'N/A'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Owner: {pet.ownerName}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full mt-3"
+            onClick={() => { onReview(pet); }}
+          >
+            <Eye size={16} className="mr-2" />
+            Review
+          </Button>
+        </CardContent>
+      </Card>
+    </AnimatedView>
   )
 }
 

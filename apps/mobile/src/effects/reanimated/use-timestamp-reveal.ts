@@ -8,7 +8,7 @@ import {
 import { useCallback, useRef } from 'react'
 import { springConfigs, timingConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseTimestampRevealOptions {
   autoHideDelay?: number

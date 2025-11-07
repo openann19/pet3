@@ -1,4 +1,8 @@
-import { MotionView, MotionText } from '@petspark/motion'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { timingConfigs } from '@/effects/reanimated/transitions'
+import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, withDelay, Easing } from 'react-native-reanimated'
 import type { CompatibilityFactors } from '@/lib/types'
 import { useEffect, useState } from 'react'
 
@@ -31,8 +35,174 @@ const factorColors = {
   locationProximity: 'from-primary to-accent',
 }
 
+// Factor item component with animations
+function FactorItem({ 
+  index, 
+  label, 
+  icon, 
+  percentage, 
+  colorClass 
+}: { 
+  index: number
+  label: string
+  icon: string
+  percentage: number
+  colorClass: string
+}) {
+  const entryOpacity = useSharedValue(0)
+  const entryX = useSharedValue(-20)
+  useEffect(() => {
+    entryOpacity.value = withDelay(
+      index * 100,
+      withTiming(1, { duration: 300 })
+    )
+    entryX.value = withDelay(
+      index * 100,
+      withTiming(0, { duration: 300 })
+    )
+  }, [index, entryOpacity, entryX])
+  const entryStyle = useAnimatedStyle(() => ({
+    opacity: entryOpacity.value,
+    transform: [{ translateX: entryX.value }]
+  }))
+  const hover = useHoverLift({ scale: 1.02, translateY: 0 })
+  
+  // Icon hover animation
+  const iconHover = useSharedValue(1)
+  const iconRotation = useSharedValue(0)
+  const iconHoverStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: iconHover.value },
+      { rotate: `${iconRotation.value}deg` }
+    ]
+  }))
+  
+  const handleIconMouseEnter = (): void => {
+    iconHover.value = withTiming(1.3, { duration: 250 })
+    iconRotation.value = withTiming(360, { duration: 500 })
+  }
+  
+  const handleIconMouseLeave = (): void => {
+    iconHover.value = withTiming(1, { duration: 250 })
+    iconRotation.value = withTiming(0, { duration: 250 })
+  }
+  
+  // Percentage animation
+  const percentageOpacity = useSharedValue(0)
+  const percentageScale = useSharedValue(0)
+  useEffect(() => {
+    percentageOpacity.value = withDelay(
+      index * 100 + 300,
+      withTiming(1, { duration: 300 })
+    )
+    percentageScale.value = withDelay(
+      index * 100 + 300,
+      withTiming(1, { duration: 300 })
+    )
+  }, [index, percentageOpacity, percentageScale])
+  const percentageEntry = useAnimatedStyle(() => ({
+    opacity: percentageOpacity.value,
+    transform: [{ scale: percentageScale.value }]
+  }))
+  
+  // Progress bar width animation
+  const progressWidth = useSharedValue(0)
+  useEffect(() => {
+    progressWidth.value = withDelay(
+      index * 100 + 200,
+      withTiming(percentage, { 
+        duration: 800,
+        easing: timingConfigs.smooth.easing ?? ((v: number) => v)
+      })
+    )
+  }, [percentage, index, progressWidth])
+  
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value}%`
+  }))
+  
+  // Shimmer animation
+  const shimmerX = useSharedValue(-100)
+  useEffect(() => {
+    shimmerX.value = withDelay(
+      index * 100 + 500,
+      withRepeat(
+        withSequence(
+          withTiming(200, { duration: 1500, easing: (value: number) => Easing.linear(value) }),
+          withTiming(-100, { duration: 0 })
+        ),
+        -1,
+        false
+      )
+    )
+  }, [index, shimmerX])
+  
+  const shimmerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${shimmerX.value}%` }]
+  }))
+  
+  return (
+    <AnimatedView
+      style={[entryStyle, hover.animatedStyle]}
+      onMouseEnter={hover.handleEnter}
+      onMouseLeave={hover.handleLeave}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium flex items-center gap-2">
+          <AnimatedView
+            style={iconHoverStyle}
+            onMouseEnter={handleIconMouseEnter}
+            onMouseLeave={handleIconMouseLeave}
+            className="inline-block cursor-pointer"
+          >
+            {icon}
+          </AnimatedView>
+          {label}
+        </span>
+        <AnimatedView 
+          style={percentageEntry}
+          className="text-sm font-bold text-muted-foreground tabular-nums"
+        >
+          {percentage}%
+        </AnimatedView>
+      </div>
+      <div className="relative">
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <AnimatedView
+            style={progressStyle}
+            className={`h-full bg-linear-to-r ${String(colorClass ?? '')} rounded-full relative overflow-hidden`}
+          >
+            <AnimatedView
+              style={shimmerStyle}
+              className="absolute inset-0 bg-white/30"
+            />
+          </AnimatedView>
+        </div>
+      </div>
+    </AnimatedView>
+  )
+}
+
 export default function CompatibilityBreakdown({ factors, className }: CompatibilityBreakdownProps) {
   const [animatedValues, setAnimatedValues] = useState<Record<string, number>>({})
+  const headerEntry = useEntryAnimation({ initialY: -10, initialOpacity: 0 })
+  
+  // Rotating emoji animation
+  const emojiRotation = useSharedValue(0)
+  useEffect(() => {
+    emojiRotation.value = withRepeat(
+      withSequence(
+        withTiming(10, { duration: 500 }),
+        withTiming(-10, { duration: 500 }),
+        withTiming(0, { duration: 500 })
+      ),
+      -1,
+      true
+    )
+  }, [emojiRotation])
+  const emojiStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${emojiRotation.value}deg` }]
+  }))
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -51,78 +221,31 @@ export default function CompatibilityBreakdown({ factors, className }: Compatibi
   return (
     <div className={`rounded-3xl glass-strong premium-shadow backdrop-blur-2xl border border-white/20 ${String(className ?? '')}`}>
       <div className="p-6 bg-linear-to-br from-white/20 to-white/10">
-        <MotionView 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <AnimatedView 
+          style={headerEntry.animatedStyle}
           className="text-lg font-bold mb-4 flex items-center gap-2 bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
         >
-          <MotionText
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-          >
+          <AnimatedView style={emojiStyle} className="inline-block">
             📊
-          </MotionText>
+          </AnimatedView>
           Compatibility Breakdown
-        </MotionView>
+        </AnimatedView>
         <div className="space-y-4">
           {Object.entries(factors).map(([key, _value], idx) => {
-            const animatedPercentage = Math.round((animatedValues[key] || 0) * 100)
+            const animatedPercentage = Math.round((animatedValues[key] ?? 0) * 100)
             const label = factorLabels[key as keyof typeof factorLabels]
             const icon = factorIcons[key as keyof typeof factorIcons]
             const colorClass = factorColors[key as keyof typeof factorColors]
             
             return (
-              <MotionView
+              <FactorItem
                 key={key}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300, damping: 30 }}
-                whileHover={{ scale: 1.02, x: 5 }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium flex items-center gap-2">
-                    <MotionText
-                      whileHover={{ scale: 1.3, rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {icon}
-                    </MotionText>
-                    {label}
-                  </span>
-                  <MotionText 
-                    className="text-sm font-bold text-muted-foreground tabular-nums"
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 + 0.3 }}
-                  >
-                    {animatedPercentage}%
-                  </MotionText>
-                </div>
-                <div className="relative">
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <MotionView
-                      className={`h-full bg-linear-to-r ${String(colorClass ?? '')} rounded-full relative overflow-hidden`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${String(animatedPercentage ?? '')}%` }}
-                      transition={{ delay: idx * 0.1 + 0.2, duration: 0.8, ease: 'easeOut' }}
-                    >
-                      <MotionView
-                        className="absolute inset-0 bg-white/30"
-                        animate={{ 
-                          x: ['-100%', '100%'],
-                        }}
-                        transition={{ 
-                          duration: 1.5, 
-                          repeat: Infinity, 
-                          ease: 'linear',
-                          delay: idx * 0.1 + 0.5
-                        }}
-                        style={{ width: '50%' }}
-                      />
-                    </MotionView>
-                  </div>
-                </div>
-              </MotionView>
+                index={idx}
+                label={label}
+                icon={icon}
+                percentage={animatedPercentage}
+                colorClass={colorClass}
+              />
             )
           })}
         </div>

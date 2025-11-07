@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { Eye, EyeSlash, X, CheckCircle, AlertCircle } from '@phosphor-icons/react'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import type { InputHTMLAttributes, ReactNode } from 'react'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface PremiumInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string

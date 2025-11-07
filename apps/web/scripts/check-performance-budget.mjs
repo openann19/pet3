@@ -17,27 +17,28 @@ const DIST_DIR = join(ROOT, 'dist')
 
 // Import performance budget config
 // Note: This is a simplified version for CI - actual config is in TypeScript
+// Based on Core Web Vitals targets: LCP < 2.5s, FID < 100ms, CLS < 0.1
 const BUDGETS = {
-  initial: 200, // KB (gzipped)
-  total: 1000, // KB (gzipped)
-  chunk: 300, // KB (gzipped)
-  vendor: 500, // KB (gzipped)
+  initial: 200, // KB (gzipped) - Target for fast LCP
+  total: 1000, // KB (gzipped) - Total bundle size limit
+  chunk: 300, // KB (gzipped) - Individual chunk limit
+  vendor: 500, // KB (gzipped) - Vendor chunk limit
 }
 
 let errors = 0
 let warnings = 0
 
-function error(message: string): void {
+function error(message) {
   console.error(`❌ ${message}`)
   errors++
 }
 
-function warn(message: string): void {
+function warn(message) {
   console.warn(`⚠️  ${message}`)
   warnings++
 }
 
-function getGzippedSize(filePath: string): number {
+function getGzippedSize(filePath) {
   try {
     const content = readFileSync(filePath)
     const gzipped = gzipSync(content)
@@ -48,7 +49,7 @@ function getGzippedSize(filePath: string): number {
   }
 }
 
-function getFileSize(filePath: string): number {
+function getFileSize(filePath) {
   try {
     const stats = statSync(filePath)
     return Math.round(stats.size / 1024) // Convert to KB
@@ -57,14 +58,9 @@ function getFileSize(filePath: string): number {
   }
 }
 
-function analyzeBundles(): {
-  initial: number
-  total: number
-  chunks: Record<string, number>
-  vendors: Record<string, number>
-} {
-  const chunks: Record<string, number> = {}
-  const vendors: Record<string, number> = {}
+function analyzeBundles() {
+  const chunks = {}
+  const vendors = {}
   let total = 0
   let initial = 0
 
@@ -104,7 +100,7 @@ function analyzeBundles(): {
   return { initial, total, chunks, vendors }
 }
 
-function checkPerformanceBudget(): void {
+function checkPerformanceBudget() {
   console.log('\n📊 Checking Performance Budget\n')
   console.log('='.repeat(50))
 

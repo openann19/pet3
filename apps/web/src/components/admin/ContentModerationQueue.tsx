@@ -24,10 +24,12 @@ import {
   XCircle
 } from '@phosphor-icons/react'
 import { formatDistanceToNow } from 'date-fns'
-import { Presence, motion } from '@petspark/motion'
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared'
+import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 
 const logger = createLogger('ContentModerationQueue')
 
@@ -54,7 +56,7 @@ export function ContentModerationQueue() {
   const [decisionText, setDecisionText] = useState('')
 
   useEffect(() => {
-    loadQueue()
+    void loadQueue()
   }, [selectedType, selectedStatus])
 
   const loadQueue = async () => {
@@ -273,14 +275,14 @@ export function ContentModerationQueue() {
           </div>
           <h4 className="font-semibold">{alert.petSummary.name}</h4>
           <p className="text-sm text-muted-foreground">
-            {alert.petSummary.species} • {alert.petSummary.breed || 'Unknown breed'}
+            {alert.petSummary.species} • {alert.petSummary.breed ?? 'Unknown breed'}
           </p>
           <p className="text-xs text-muted-foreground">
             Last seen: {formatDistanceToNow(new Date(alert.lastSeen.whenISO), { addSuffix: true })}
           </p>
           {alert.photos && alert.photos.length > 0 && (
             <div className="w-24 h-24 bg-muted rounded overflow-hidden">
-              <img src={alert.photos[0]} alt={alert.petSummary.name} className="w-full h-full object-cover" />
+              <img src={alert.photos[0] ?? ''} alt={alert.petSummary.name} className="w-full h-full object-cover" />
             </div>
           )}
         </div>
@@ -297,14 +299,14 @@ export function ContentModerationQueue() {
           </div>
           <h4 className="font-semibold">Post by {post.authorName}</h4>
           <p className="text-sm text-muted-foreground line-clamp-2">
-            {post.text || 'No text content'}
+            {post.text ?? 'No text content'}
           </p>
           {post.media && post.media.length > 0 && post.media[0] && (
             <div className="w-24 h-24 bg-muted rounded overflow-hidden">
               {(() => {
                 const mediaItem = post.media?.[0]
                 if (!mediaItem) return null
-                const mediaUrl = typeof mediaItem === 'string' ? mediaItem : ('url' in mediaItem ? mediaItem.url : '')
+                const mediaUrl = typeof mediaItem === 'string' ? mediaItem : ('url' in mediaItem ? (mediaItem.url ?? '') : '')
                 return <img src={mediaUrl} alt="Post media" className="w-full h-full object-cover" />
               })()}
             </div>
@@ -336,6 +338,57 @@ export function ContentModerationQueue() {
 
   const filteredItems = items.filter(item => item.type === selectedType)
 
+  // Empty state component with animation
+  function EmptyState() {
+    const isEmpty = filteredItems.length === 0 && !loading
+    const presence = useAnimatePresence({ 
+      isVisible: isEmpty,
+      enterTransition: 'fade',
+      exitTransition: 'fade'
+    })
+    
+    if (!presence.shouldRender) return null
+    
+    return (
+      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+        <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No items in this queue</p>
+      </AnimatedView>
+    )
+  }
+
+  // Item component with animation
+  function ModerationItemCard({ item, index }: { item: ModerationItem; index: number }) {
+    const entry = useEntryAnimation({ 
+      initialY: 20, 
+      initialOpacity: 0,
+      delay: index * 50 
+    })
+    
+    return (
+      <AnimatedView style={entry.animatedStyle}>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => { setSelectedItem(item); }}
+        >
+          <div className="flex gap-4">
+            <div className="flex-1">
+              {renderContentPreview(item)}
+            </div>
+            <div className="flex items-center">
+              <Badge variant={
+                item.status === 'pending' ? 'secondary' :
+                item.status === 'approved' ? 'default' : 'destructive'
+              }>
+                {item.status}
+              </Badge>
+            </div>
+          </div>
+        </Card>
+      </AnimatedView>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -345,7 +398,7 @@ export function ContentModerationQueue() {
             Review and moderate Lost & Found alerts, Community posts, and Live streams
           </p>
         </div>
-        <Button onClick={loadQueue} variant="outline">
+        <Button onClick={() => { void loadQueue() }} variant="outline">
           <Clock size={16} className="mr-2" />
           Refresh
         </Button>
@@ -386,53 +439,19 @@ export function ContentModerationQueue() {
 
           <ScrollArea className="h-[600px]">
             <div className="space-y-4">
-              <Presence mode="popLayout">
-                {loading && filteredItems.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading...</p>
-                  </div>
-                ) : filteredItems.length === 0 ? (
-                  <MotionView
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-center py-12"
-                  >
-                    <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No items in this queue</p>
-                  </MotionView>
-                ) : (
-                  filteredItems.map((item) => (
-                    <MotionView
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                    >
-                      <Card
-                        className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
-                        onClick={() => { setSelectedItem(item); }}
-                      >
-                        <div className="flex gap-4">
-                          <div className="flex-1">
-                            {renderContentPreview(item)}
-                          </div>
-                          <div className="flex items-center">
-                            <Badge variant={
-                              item.status === 'pending' ? 'secondary' :
-                              item.status === 'approved' ? 'default' : 'destructive'
-                            }>
-                              {item.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      </Card>
-                    </MotionView>
-                  ))
-                )}
-              </Presence>
+              {loading && filteredItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading...</p>
+                </div>
+              ) : (
+                <>
+                  <EmptyState />
+                  {filteredItems.map((item, index) => (
+                    <ModerationItemCard key={item.id} item={item} index={index} />
+                  ))}
+                </>
+              )}
             </div>
           </ScrollArea>
         </div>
@@ -487,11 +506,11 @@ export function ContentModerationQueue() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <Button onClick={handleApprove} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={() => { void handleApprove() }} disabled={loading} className="bg-green-600 hover:bg-green-700">
                       <CheckCircle size={16} className="mr-2" />
                       Approve
                     </Button>
-                    <Button onClick={handleReject} disabled={loading || !decisionText} variant="destructive">
+                    <Button onClick={() => { void handleReject() }} disabled={loading || !decisionText} variant="destructive">
                       <XCircle size={16} className="mr-2" />
                       Reject
                     </Button>

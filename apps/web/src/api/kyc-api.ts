@@ -8,7 +8,7 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import type { KYCSubmission, KYCStatus, ConsentRecord, AgeVerification, KYCAuditLog } from '@/lib/kyc-types'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('KYCApi')
 

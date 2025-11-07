@@ -8,6 +8,7 @@ import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import type { PluginOption, UserConfig } from 'vite';
 import { isTruthy, isDefined } from '@/core/guards';
+import { securityHeadersPlugin } from './vite-plugin-security-headers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = process.env['PROJECT_ROOT'] ?? __dirname;
@@ -187,6 +188,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
     transformJSXInJSPlugin(),
     handleJSXImportAnalysisPlugin(),
     tailwindcss(),
+    securityHeadersPlugin(),
     nodePolyfills({
       include: [
         'util',
