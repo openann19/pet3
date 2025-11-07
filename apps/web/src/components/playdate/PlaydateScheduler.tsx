@@ -41,7 +41,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence'
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, Easing } from 'react-native-reanimated'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const LocationPicker = lazy(() => import('./LocationPicker'))
 

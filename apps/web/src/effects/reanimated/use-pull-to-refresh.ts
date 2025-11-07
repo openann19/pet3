@@ -5,7 +5,7 @@ import { useSharedValue, useAnimatedStyle, withSpring, withTiming, interpolate, 
 import { springConfigs, timingConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UsePullToRefreshOptions {
   onRefresh: () => Promise<void> | void

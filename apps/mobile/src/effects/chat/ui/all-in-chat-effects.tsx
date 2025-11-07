@@ -42,7 +42,7 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // ============================================================
 // TYPES & INTERFACES

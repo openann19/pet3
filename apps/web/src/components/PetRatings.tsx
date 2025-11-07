@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import type { Rating, PetTrustProfile } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface PetRatingsProps {
   trustProfile: PetTrustProfile

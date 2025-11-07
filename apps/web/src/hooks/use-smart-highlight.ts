@@ -3,7 +3,7 @@
 import { useSharedValue, useAnimatedStyle, withSequence, withTiming, withDelay, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
 import { useEffect, useCallback } from 'react'
 import { timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseSmartHighlightOptions {
   isHighlighted?: boolean

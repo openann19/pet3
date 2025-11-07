@@ -1,7 +1,7 @@
 import { useSharedValue, withTiming, useAnimatedStyle, withRepeat } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { useReducedMotionSV } from '../reduced-motion';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseShimmerOptions {
   width?: number;

@@ -68,7 +68,7 @@ export function triggerHaptic(style: HapticStyle = 'light'): void {
 /**
  * Trigger custom haptic pattern
  */
-export function triggerHapticPattern(pattern: HapticPattern): void {
+export function triggerHapticPattern(_pattern: HapticPattern): void {
   if (!isHapticsAvailable || !Haptics) return
 
   // For now, just trigger a simple impact

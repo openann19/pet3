@@ -22,7 +22,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion } from '@petspark/motion'
 import { useEffect, useState } from 'react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('MyApplicationsView')
 

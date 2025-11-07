@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ContentView from '../ContentView'
 import { useStorage } from '@/hooks/useStorage'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 vi.mock('@/hooks/useStorage')
 vi.mock('sonner', () => ({

@@ -5,7 +5,7 @@
 
 import type { CSSProperties } from 'react';
 import { useCallback, useMemo, useRef } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // Type definitions
 export interface SharedValue<T = number> {

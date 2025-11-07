@@ -10,7 +10,7 @@ import type { Language, TranslationModule } from '../core/types'
 import { loadAllTranslations } from '../core/loader'
 import { translations } from '../../i18n'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('useTranslation')
 

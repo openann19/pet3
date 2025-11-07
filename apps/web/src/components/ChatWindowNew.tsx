@@ -62,7 +62,7 @@ import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface ChatWindowProps {
   room: ChatRoom

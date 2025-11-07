@@ -13,7 +13,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createLogger } from './logger'
 import { secureStorage } from './secure-storage'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('offline-cache')
 

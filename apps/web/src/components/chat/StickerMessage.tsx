@@ -9,7 +9,7 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useStickerAnimation } from '@/effects/reanimated/use-sticker-animation'
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface StickerMessageProps {
   sticker: Sticker

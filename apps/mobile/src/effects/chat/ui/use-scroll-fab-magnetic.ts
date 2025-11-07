@@ -21,7 +21,7 @@ import {
   type SharedValue,
 } from 'react-native-reanimated'
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Spring configuration for entry

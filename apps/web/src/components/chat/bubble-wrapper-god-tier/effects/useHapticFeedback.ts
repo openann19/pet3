@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export type HapticAction = 'tap' | 'swipe' | 'delete' | 'react' | 'send' | 'longPress' | 'error' | 'success'
 

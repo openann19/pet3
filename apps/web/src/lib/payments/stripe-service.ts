@@ -3,7 +3,7 @@ import { APIClient } from '@/lib/api-client'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { ENV } from '@/config/env'
 import { createLogger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // Payment types
 export interface PaymentProduct {

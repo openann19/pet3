@@ -5,7 +5,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface GestureState {
   isSwiping: boolean

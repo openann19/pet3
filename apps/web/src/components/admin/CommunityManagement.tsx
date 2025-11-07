@@ -18,7 +18,7 @@ import { createLogger } from '@/lib/logger'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('CommunityManagement')
 

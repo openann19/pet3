@@ -2,7 +2,7 @@ import type { APIConfig } from '@/components/admin/APIConfigView'
 import { logger } from './logger'
 import { storage } from './storage'
 import { apiConfigApi } from '@/api/api-config-api'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export async function getAPIConfig(): Promise<APIConfig | null> {
   try {

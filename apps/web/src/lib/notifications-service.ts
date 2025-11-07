@@ -5,7 +5,7 @@ import type { LostAlert, Sighting } from './lost-found-types'
 import type { Post } from './community-types'
 import type { LiveStream } from './live-streaming-types'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('NotificationsService')
 

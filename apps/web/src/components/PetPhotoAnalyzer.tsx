@@ -9,7 +9,7 @@ import { Camera, Check, Image as ImageIcon, Sparkle, Upload, X } from '@phosphor
 import { Presence, motion } from '@petspark/motion'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PetPhotoAnalyzer')
 

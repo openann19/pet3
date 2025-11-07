@@ -1,6 +1,6 @@
 import { makeRng } from '@petspark/shared'
 import type { ParticleOptions, RippleOptions } from './types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export class MicroInteractions {
   static createRipple(

@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react'
 import { usePrefersReducedMotion } from '@/utils/reduced-motion'
 import { useFeatureFlags } from '@/config/feature-flags'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * GlowTrail Component

@@ -315,7 +315,7 @@ export function useVirtualList<T>(
 }
 
 import { useEffect, useState } from 'react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export function usePrefetch(url: string, condition: boolean = true) {
   useEffect(() => {

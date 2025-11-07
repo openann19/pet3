@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface UseDialogOptions {
   initialOpen?: boolean

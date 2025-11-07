@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import type { Pet } from '@/lib/types'
 import { getTemplatesByType, type PetType, type PetProfileTemplate } from '@/lib/pet-profile-templates'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // Lazy load heavy components
 const PetPhotoAnalyzer = lazy(() => import('@/components/PetPhotoAnalyzer').then(module => ({ default: module.default })))

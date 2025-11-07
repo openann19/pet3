@@ -4,7 +4,7 @@
 
 import { useEffect } from 'react'
 import { isReduceMotionEnabled, useReducedMotion } from './reduced-motion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // Lazy import haptics (Expo or custom wrapper), safe on web
 let Haptics: any = null

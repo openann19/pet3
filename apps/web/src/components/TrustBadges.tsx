@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { TrustBadge } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface TrustBadgesProps {
   badges: TrustBadge[]

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { springConfigs } from './transitions'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseHoverTapOptions {
   pressScale?: number

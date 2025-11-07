@@ -17,7 +17,7 @@ import { useApp } from '@/contexts/AppContext'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logger'
 import type { LostAlertFilters } from '@/lib/lost-found-types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('LostFoundView')
 

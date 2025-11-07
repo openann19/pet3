@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { X } from 'lucide-react'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface PremiumModalProps {
   open?: boolean

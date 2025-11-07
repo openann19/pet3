@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { StickerMessage } from './StickerMessage'
 import type { Sticker } from '@/lib/sticker-library'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const mockSticker: Sticker = {
   id: 'test-sticker',

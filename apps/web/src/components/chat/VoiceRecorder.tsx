@@ -6,7 +6,7 @@ import { Microphone, X, Check } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { toast } from 'sonner'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface VoiceRecorderProps {
   onRecorded: (audioBlob: Blob, duration: number, waveform: number[]) => void

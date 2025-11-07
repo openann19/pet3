@@ -8,7 +8,7 @@
 import { createLogger } from '@/lib/logger'
 import { getPhotoModerationConfig } from '@/lib/api-config'
 import Filter from 'bad-words'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface ToxicityPrediction {
   label: string

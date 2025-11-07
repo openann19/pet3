@@ -37,7 +37,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation'
 import { LiquidDots } from '../LiquidDots'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdvancedChatWindow')
 

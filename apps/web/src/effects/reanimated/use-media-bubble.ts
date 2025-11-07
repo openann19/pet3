@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
 import { makeRng } from '@petspark/shared'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export type MediaType = 'image' | 'video' | 'voice'
 

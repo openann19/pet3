@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSharedValue, type SharedValue } from 'react-native-reanimated';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // React Native AccessibilityInfo is loaded lazily to avoid bundling issues on web
 type RNAccessibilityInfo = typeof import('react-native').AccessibilityInfo;

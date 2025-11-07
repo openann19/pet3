@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { queryCache, generateCacheKey } from '../lib/cache/query-cache';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface UseApiCacheOptions<T> {
   enabled?: boolean;

@@ -18,7 +18,7 @@ import {
   type WithSpringConfig,
 } from 'react-native-reanimated'
 import { createLogger } from '../utils/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('usePullToRefresh')
 

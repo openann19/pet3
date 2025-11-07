@@ -18,7 +18,7 @@ import { adminApi } from '@/api/admin-api'
 import { useStorage } from '@/hooks/useStorage'
 import type { User } from '@/lib/user-service'
 import { Radio } from '@phosphor-icons/react'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('MatchingConfigPanel')
 

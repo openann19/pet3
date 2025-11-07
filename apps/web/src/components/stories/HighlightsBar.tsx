@@ -7,7 +7,7 @@ import type { StoryHighlight } from '@/lib/stories-types'
 import HighlightViewer from './HighlightViewer'
 import CreateHighlightDialog from './CreateHighlightDialog'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface HighlightsBarProps {
   petId?: string

@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { logger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export function SyncStatusIndicator() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({

@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { ChatMessage, MessageReaction, ReactionType } from '@/lib/chat-types'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseReactionsOptions {
   currentUserId: string

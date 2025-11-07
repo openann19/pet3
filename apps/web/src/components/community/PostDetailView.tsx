@@ -20,7 +20,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { MediaViewer } from './MediaViewer'
 import { ReportDialog } from './ReportDialog'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('PostDetailView')
 

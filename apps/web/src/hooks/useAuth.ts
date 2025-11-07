@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { enhancedAuth, type UserProfile } from '@/lib/enhanced-auth'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export function useAuth() {
   const [user, setUser] = useState<UserProfile | null>(null)

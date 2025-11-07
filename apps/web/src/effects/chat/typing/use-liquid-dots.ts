@@ -24,7 +24,7 @@ import {
 import { createLogger } from '@/lib/logger'
 import { useReducedMotionSV } from '../core/reduced-motion'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('liquid-dots')
 

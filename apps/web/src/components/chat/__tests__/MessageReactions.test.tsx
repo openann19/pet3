@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MessageReactions from '../MessageReactions'
 import type { MessageReaction } from '@/lib/chat-types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const mockReactions: MessageReaction[] = [
   {

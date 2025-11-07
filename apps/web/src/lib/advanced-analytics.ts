@@ -3,7 +3,7 @@ import { generateCorrelationId } from './utils'
 import { createLogger } from './logger'
 import { storage } from './storage'
 import { analyticsApi } from '@/api/analytics-api'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('advanced-analytics')
 

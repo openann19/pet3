@@ -15,7 +15,7 @@ import {
   type StoryFilter 
 } from '@/lib/story-templates'
 import { cn } from '@/lib/utils'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface StoryFilterSelectorProps {
   readonly selectedFilter: StoryFilter

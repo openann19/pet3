@@ -5,7 +5,7 @@ import { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-
 import { AnimatedView } from './animated-view'
 import { timingConfigs, springConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface AnimatePresenceProps {
   children: ReactNode

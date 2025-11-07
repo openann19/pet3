@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { useStorage } from '@/hooks/useStorage'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface SmartSearchProps<T> {
   placeholder?: string

@@ -8,7 +8,7 @@
 import { RealtimeClient } from '@/lib/realtime'
 import { createLogger } from '@/lib/logger'
 import type { AdminAction } from '@petspark/shared'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdminSyncService')
 

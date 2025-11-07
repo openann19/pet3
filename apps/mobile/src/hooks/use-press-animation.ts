@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics'
 import { useCallback } from 'react'
 import type { AnimatedStyle } from 'react-native-reanimated'
 import { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const SPRING_CONFIG = {
   damping: 15,

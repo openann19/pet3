@@ -6,7 +6,7 @@
  */
 
 import { audioEngine } from './audio-engine'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 let featureFlags: { enableSendPing: boolean } | null = null
 

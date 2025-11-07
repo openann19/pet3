@@ -10,7 +10,7 @@ import { getPlanById } from '@/lib/payments-catalog'
 import { PricingModal } from './PricingModal'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export function SubscriptionStatusCard() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)

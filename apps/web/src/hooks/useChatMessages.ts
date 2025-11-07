@@ -10,7 +10,7 @@ import {
 } from '@/lib/chat-utils'
 import { queryKeys } from '@/lib/query-client'
 import { chatAPI } from '@/lib/api-services'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface UseChatMessagesOptions {
   roomId: string

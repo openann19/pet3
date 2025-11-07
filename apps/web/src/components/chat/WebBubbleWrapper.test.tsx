@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { WebBubbleWrapper } from './WebBubbleWrapper'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 describe('WebBubbleWrapper', () => {
   it('renders children correctly', () => {

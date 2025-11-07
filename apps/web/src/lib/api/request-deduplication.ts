@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Request Deduplication - Prevent duplicate API requests

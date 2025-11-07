@@ -4,7 +4,7 @@ import { storage } from './storage'
 import { APIClient } from './api-client'
 import { ENDPOINTS } from './endpoints'
 import type { ReactionType } from './chat-types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('offline-sync')
 

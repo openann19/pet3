@@ -1,7 +1,7 @@
 import { ENV } from '@/config/env'
 import { createLogger } from '@/lib/logger'
 import * as Sentry from '@sentry/browser'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('Sentry')
 

@@ -14,7 +14,7 @@ import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { forwardGeocode } from '@/lib/maps/geocoding';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface VenuePickerProps {
   open: boolean;

@@ -4,7 +4,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { AnimatePresence } from '@/effects/reanimated/animate-presence'
 import { cn } from '@/lib/utils'
 import { supportsWebP, supportsAVIF } from '@/lib/image-loader'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface ProgressiveImageProps {
   src: string

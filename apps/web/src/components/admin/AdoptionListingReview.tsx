@@ -15,7 +15,7 @@ import { createLogger } from '@/lib/logger'
 import { userService } from '@/lib/user-service'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdoptionListingReview')
 

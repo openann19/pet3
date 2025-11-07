@@ -23,7 +23,7 @@ import {
 import { haptics } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface StickerPickerProps {
   onSelectSticker: (sticker: Sticker) => void

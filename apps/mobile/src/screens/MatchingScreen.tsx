@@ -9,7 +9,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { ApiResponse } from '../types/api'
 import type { Match } from '../types/pet'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export function MatchingScreen(): React.JSX.Element {
   const [showMatch, setShowMatch] = useState(false)

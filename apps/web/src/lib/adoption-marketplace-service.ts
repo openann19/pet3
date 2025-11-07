@@ -10,7 +10,7 @@ import { adoptionApi } from '@/api/adoption-api'
 import type { CreateAdoptionProfileRequest } from '@/api/adoption-api'
 import type { AdoptionProfile, AdoptionApplication as APIAdoptionApplication } from './adoption-types'
 import { createLogger } from './logger'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('AdoptionMarketplaceService')
 

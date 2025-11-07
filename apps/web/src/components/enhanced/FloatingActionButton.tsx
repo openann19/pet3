@@ -8,7 +8,7 @@ import { haptics } from '@/lib/haptics'
 import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface FloatingActionButtonProps {
   icon?: React.ReactNode

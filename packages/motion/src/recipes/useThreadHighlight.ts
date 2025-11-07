@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, interpolateColor, type SharedValue } 
 import { createSpringAnimation, createTimingAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
 import type { BaseAnimationConfig } from '../core/types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseThreadHighlightOptions extends BaseAnimationConfig {
   /**

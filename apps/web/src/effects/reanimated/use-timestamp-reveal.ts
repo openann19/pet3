@@ -9,7 +9,7 @@ import {
 } from 'react-native-reanimated'
 import { useCallback, useRef } from 'react'
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseTimestampRevealOptions {
   autoHideDelay?: number
