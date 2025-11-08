@@ -48,7 +48,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
