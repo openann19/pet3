@@ -18,7 +18,7 @@ import type { CreateAdoptionListingData } from '@/lib/adoption-marketplace-types
 import { createLogger } from '@/lib/logger';
 import { userService } from '@/lib/user-service';
 import { ArrowLeft, ArrowRight, Check, MapPin, Upload, X } from '@phosphor-icons/react';
-import { Presence, motion } from '@petspark/motion';
+import { Presence, MotionView } from '@petspark/motion';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

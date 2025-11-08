@@ -20,7 +20,7 @@ import {
   Warning,
   XCircle,
 } from '@phosphor-icons/react';
-import { motion } from '@petspark/motion';
+import { MotionView } from '@petspark/motion';
 import { useEffect, useState } from 'react';
 
 const logger = createLogger('MyApplicationsView');
