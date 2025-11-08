@@ -4,7 +4,7 @@
  * Provides Google and Apple sign-in buttons with proper styling and accessibility.
  */
 
-import { motion } from '@petspark/motion';
+import { MotionView } from '@petspark/motion';
 // Using inline SVGs for Google and Apple logos
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';

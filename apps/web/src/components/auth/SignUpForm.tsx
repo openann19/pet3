@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from '@petspark/motion';
+import { MotionView } from '@petspark/motion';
 import { EnvelopeSimple, LockKey, User, Eye, EyeSlash } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
