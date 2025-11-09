@@ -24,7 +24,7 @@ export function SmartSkeleton({
   animate = true,
   count = 1,
 }: SmartSkeletonProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const shimmer = useShimmer({
         enabled: animate,
         duration: 2000,

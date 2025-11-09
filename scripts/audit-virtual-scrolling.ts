@@ -130,7 +130,7 @@ async function auditComponent(filePath: string): Promise<void> {
         listType,
       });
     }
-  } catch (error) {
+  } catch {
     // Skip files that can't be parsed
   }
 }

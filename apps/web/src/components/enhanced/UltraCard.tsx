@@ -39,7 +39,7 @@ export function UltraCard({
   className,
   ...props
 }: UltraCardProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reveal = useUltraCardReveal({
         index,
         enabled: enableReveal,

@@ -25,7 +25,7 @@ export interface Notification {
 }
 
 export function NotificationCenter() {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [notifications, setNotifications] = useStorage<Notification[]>('notifications', []);
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');

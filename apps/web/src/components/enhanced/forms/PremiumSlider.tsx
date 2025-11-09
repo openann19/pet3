@@ -41,7 +41,7 @@ export function PremiumSlider({
   className,
   'aria-label': ariaLabel,
 }: PremiumSliderProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isDragging, setIsDragging] = useState(false);
   const tooltipOpacity = useSharedValue(0);
   const tooltipScale = useSharedValue(0.8);

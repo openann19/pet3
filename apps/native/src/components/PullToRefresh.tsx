@@ -23,7 +23,7 @@ export const PullToRefreshIndicator: React.FC<PullToRefreshProps> = ({ refreshin
     } else {
       rotation.value = 0;
     }
-  }, [refreshing]);
+  }, [refreshing, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const scale = interpolate(progress, [0, 1], [0.5, 1], Extrapolate.CLAMP);

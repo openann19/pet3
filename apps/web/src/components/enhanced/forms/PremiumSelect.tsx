@@ -57,7 +57,7 @@ export function PremiumSelect({
   className,
   'aria-label': ariaLabel,
 }: PremiumSelectProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const selectedValues = Array.isArray(value) ? value : value ? [value] : [];

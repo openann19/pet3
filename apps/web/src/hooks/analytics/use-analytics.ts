@@ -371,7 +371,7 @@ export function useAnalytics(config: AnalyticsConfig) {
       }
 
       if (debug) {
-        // eslint-disable-next-line no-console
+         
         console.error('[Analytics] Flush failed', error);
       }
     }

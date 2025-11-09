@@ -54,7 +54,7 @@ export function PremiumModal({
   closeOnOverlayClick = true,
   className,
 }: PremiumModalProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(0.95);
   const opacity = useSharedValue(0);
 

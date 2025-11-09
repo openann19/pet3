@@ -126,7 +126,7 @@ async function auditComponent(filePath: string): Promise<void> {
         isPresentational,
       });
     }
-  } catch (error) {
+  } catch {
     // Skip files that can't be parsed
   }
 }

@@ -44,7 +44,7 @@ const HIGH_KEYWORDS = ['incomplete', 'missing', 'implement', 'fix', 'issue'];
 const MEDIUM_KEYWORDS = ['improve', 'optimize', 'refactor', 'cleanup'];
 const LOW_KEYWORDS = ['consider', 'maybe', 'suggest', 'nice-to-have'];
 
-function categorizeTodo(content: string, file: string): {
+function categorizeTodo(content: string, _file: string): {
   category: TodoItem['category'];
   priority: TodoItem['priority'];
   description: string;

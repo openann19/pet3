@@ -19,7 +19,7 @@ export interface TemplatePanelProps {
 }
 
 export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const animation = useEntryAnimation({ initialY: 20, delay: 0 });
 
   return (

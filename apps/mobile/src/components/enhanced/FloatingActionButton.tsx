@@ -70,7 +70,7 @@ export function FloatingActionButton({
       scale.value = withSpring(1, SPRING_CONFIG)
       rotate.value = withSpring(0, SPRING_CONFIG)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [scale, rotate, reducedMotion])
 
   // Expanded state

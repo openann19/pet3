@@ -15,7 +15,7 @@ export interface DateGroupProps {
 }
 
 export function DateGroup({ date, delay }: DateGroupProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const animation = useEntryAnimation({ initialY: -10, delay });
 
   return (

@@ -36,7 +36,7 @@ test.describe('WCAG 2.2 AA Compliance', () => {
             (outline.boxShadow && outline.boxShadow !== 'none');
 
           expect(hasFocusIndicator).toBe(true);
-        } catch (error) {
+        } catch {
           // Element might not be focusable, skip
           continue;
         }
@@ -99,7 +99,7 @@ test.describe('WCAG 2.2 AA Compliance', () => {
             expect(size.width).toBeGreaterThanOrEqual(44);
             expect(size.height).toBeGreaterThanOrEqual(44);
           }
-        } catch (error) {
+        } catch {
           // Element might not be visible, skip
           continue;
         }

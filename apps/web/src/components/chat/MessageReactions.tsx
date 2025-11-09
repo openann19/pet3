@@ -26,7 +26,7 @@ export default function MessageReactions({
   onReact,
   currentUserId,
 }: MessageReactionsProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [showPicker, setShowPicker] = useState(false);
   const [visibleReactions, setVisibleReactions] = useState<Set<string>>(new Set());
 

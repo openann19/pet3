@@ -55,7 +55,7 @@ export function ChatInputBar({
   onTemplate,
   onQuickReaction,
 }: ChatInputBarProps): JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const internalInputRef = useRef<HTMLInputElement>(null);
   const inputRef = externalInputRef ?? internalInputRef;
 

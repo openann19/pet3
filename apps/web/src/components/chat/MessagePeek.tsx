@@ -31,7 +31,7 @@ export interface MessagePeekProps {
  * Manages focus: traps focus when open, returns to trigger on close
  */
 export function MessagePeek({ message, visible, onClose, position, triggerRef }: MessagePeekProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const reducedMotion = usePrefersReducedMotion();
   const { enableMessagePeek } = useFeatureFlags();
   const closeButtonRef = useRef<HTMLButtonElement>(null);

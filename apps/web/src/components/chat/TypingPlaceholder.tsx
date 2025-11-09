@@ -16,7 +16,7 @@ export function TypingPlaceholder({
   isOwn = false,
   className,
 }: TypingPlaceholderProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const { animatedStyles, containerStyle } = useTypingPlaceholder({
         enabled,
         barCount: 3,

@@ -39,7 +39,7 @@ export function BubbleGestureWrapper({
   onHoverEnd,
   enabled = true,
 }: BubbleGestureWrapperProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isPressedRef = useRef(false);
   const panStartRef = useRef<{ x: number; y: number } | null>(null);

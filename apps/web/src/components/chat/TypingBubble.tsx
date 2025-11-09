@@ -22,7 +22,7 @@ export function TypingBubble({
   className,
   bubbleClassName,
 }: TypingBubbleProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const isMobile = variant === 'mobile';
 
   return (

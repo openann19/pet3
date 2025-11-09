@@ -24,7 +24,7 @@ export function PremiumCard({
   style,
   ...props
 }: PremiumCardProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const opacity = useSharedValue(0);
   const translateY = useSharedValue(20);
   const hoverLift = useHoverLift(8);

@@ -23,7 +23,7 @@ export function ShimmerEffect({
   className,
   animated = true,
 }: ShimmerEffectProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const shimmerPosition = useSharedValue(-100);
 
   if (animated) {

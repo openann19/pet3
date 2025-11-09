@@ -34,7 +34,7 @@ export function SegmentedControl({
   className,
   'aria-label': ariaLabel,
 }: SegmentedControlProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const containerRef = useRef<HTMLDivElement>(null);
   const indicatorPosition = useSharedValue(0);
   const indicatorWidth = useSharedValue(0);

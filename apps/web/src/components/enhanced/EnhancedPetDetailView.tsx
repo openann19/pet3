@@ -50,7 +50,7 @@ export function EnhancedPetDetailView({
   matchReasons,
   showActions = true,
 }: EnhancedPetDetailViewProps): React.JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);

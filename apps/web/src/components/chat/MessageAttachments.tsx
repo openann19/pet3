@@ -16,7 +16,7 @@ interface MessageAttachmentsProps {
 export default function MessageAttachments({
   attachments,
 }: MessageAttachmentsProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     return (
         <div className="space-y-2">
           {attachments.map((attachment) => {

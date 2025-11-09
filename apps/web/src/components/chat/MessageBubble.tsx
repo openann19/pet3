@@ -114,7 +114,7 @@ function MessageBubble({
   onUndo,
   showTimestamp = false,
 }: MessageBubbleProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const { t } = useApp();
   const [showReactions, setShowReactions] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);

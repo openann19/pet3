@@ -32,7 +32,7 @@ export function PremiumProgress({
   className,
   'aria-label': ariaLabel,
 }: PremiumProgressProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const progressWidth = useSharedValue(0);
   const shimmerX = useSharedValue(-100);
 

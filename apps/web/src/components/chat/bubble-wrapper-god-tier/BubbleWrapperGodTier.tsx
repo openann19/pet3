@@ -43,7 +43,7 @@ export function BubbleWrapperGodTier({
   enabled = true,
   isDeleting = false,
 }: BubbleWrapperGodTierProps): React.JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const typingIndicator = useTypingIndicator({
     enabled: showTyping && enabled,
   });

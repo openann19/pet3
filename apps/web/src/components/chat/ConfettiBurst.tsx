@@ -55,7 +55,7 @@ export function ConfettiBurst({
   className,
   seed = 'confetti-burst',
 }: ConfettiBurstProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const reduced = useReducedMotion();
   const dur = getReducedMotionDuration(duration, reduced);
   const finished = useSharedValue(0);

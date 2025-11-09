@@ -34,7 +34,7 @@ export function ParticleEffect({
   withGlow = true,
   className = '',
 }: ParticleEffectProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {

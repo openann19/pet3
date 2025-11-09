@@ -37,7 +37,7 @@ export function UltraButton({
   onClick,
   ...props
 }: UltraButtonProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const magnetic = useMagnetic(40);
 
   const elastic = usePressBounce(0.96);

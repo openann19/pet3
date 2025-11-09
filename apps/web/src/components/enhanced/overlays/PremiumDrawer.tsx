@@ -52,7 +52,7 @@ export function PremiumDrawer({
   closeOnOverlayClick = true,
   className,
 }: PremiumDrawerProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const translateX = useSharedValue(side === 'right' ? 100 : side === 'left' ? -100 : 0);
   const translateY = useSharedValue(side === 'top' ? -100 : side === 'bottom' ? 100 : 0);
   const opacity = useSharedValue(0);

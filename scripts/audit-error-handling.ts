@@ -116,7 +116,7 @@ function findNonNullAssertions(content: string, file: string): ErrorHandlingIssu
     const line = lines[i];
     const matches = line.matchAll(nonNullPattern);
 
-    for (const match of matches) {
+    for (const _match of matches) {
       issues.push({
         file: relative(process.cwd(), file),
         line: i + 1,
@@ -143,7 +143,7 @@ function findMissingNullChecks(content: string, file: string): ErrorHandlingIssu
     const line = lines[i];
     const matches = line.matchAll(methodCallPattern);
 
-    for (const match of matches) {
+    for (const _match of matches) {
       // Check if there's a null check before this line
       const lineStart = content.indexOf(line);
       const precedingLines = content.substring(Math.max(0, lineStart - 500), lineStart);

@@ -6,17 +6,15 @@ import { vi } from 'vitest'
 
 // Mock react-native-reanimated
 vi.mock('react-native-reanimated', () => {
-  const actual = vi.importActual('react-native-reanimated')
   return {
-    ...actual,
     useSharedValue: (initialValue: unknown) => ({
       value: initialValue,
     }),
     useAnimatedStyle: (updater: () => unknown) => updater(),
-    withSpring: (toValue: number, config?: unknown) => toValue,
-    withTiming: (toValue: number, config?: unknown) => toValue,
-    withRepeat: (animation: unknown, iterations?: number, reverse?: boolean) => animation,
-    withDelay: (delay: number, animation: unknown) => animation,
+    withSpring: (toValue: number, _config?: unknown) => toValue,
+    withTiming: (toValue: number, _config?: unknown) => toValue,
+    withRepeat: (animation: unknown, _iterations?: number, _reverse?: boolean) => animation,
+    withDelay: (_delay: number, animation: unknown) => animation,
     Easing: {
       out: (easing: (t: number) => number) => easing,
       inOut: (easing: (t: number) => number) => easing,

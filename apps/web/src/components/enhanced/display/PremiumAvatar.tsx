@@ -51,7 +51,7 @@ export function PremiumAvatar({
   className,
   'aria-label': ariaLabel,
 }: PremiumAvatarProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(1);
   const glowOpacity = useSharedValue(0);
 

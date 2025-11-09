@@ -25,7 +25,7 @@ export function RippleEffect({
   onClick,
   ...props
 }: RippleEffectProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const ripple = useRippleEffect({ color, opacity, duration });
 
   const handleClick = useCallback(

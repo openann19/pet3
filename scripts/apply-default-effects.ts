@@ -12,7 +12,7 @@
 
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { Project, SyntaxKind, SourceFile, type Node, type Statement, type Block } from 'ts-morph';
+import { Project, SyntaxKind, SourceFile, type Statement, type Block } from 'ts-morph';
 
 interface PatchResult {
   file: string;

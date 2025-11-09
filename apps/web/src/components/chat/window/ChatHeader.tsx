@@ -30,7 +30,7 @@ export function ChatHeader({
   awayMode,
   setAwayMode,
 }: ChatHeaderProps): JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const headerAnim = useEntryAnimation({ initialY: -20, delay: 0 });
 
   return (

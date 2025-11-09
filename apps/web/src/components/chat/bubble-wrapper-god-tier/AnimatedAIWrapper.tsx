@@ -23,7 +23,7 @@ export function AnimatedAIWrapper({
   showGlow = true,
   className,
 }: AnimatedAIWrapperProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const aiAnimation = useAiReplyAnimation({
         enabled,
         showShimmer,

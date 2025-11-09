@@ -45,7 +45,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   const handleStoryRingClick = (userId: string) => {
     const userStories = storiesByUser.get(userId);

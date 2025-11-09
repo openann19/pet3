@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export function PetAnalyticsSkeleton(): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     return (
         <div className="space-y-6">
           {/* Compatibility Score Skeleton */}
