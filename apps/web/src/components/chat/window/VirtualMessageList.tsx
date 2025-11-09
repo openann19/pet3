@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import type { ChatMessage } from '@/lib/chat-types';
+import type { ChatMessage, TypingUser } from '@/lib/chat-types';
 import { groupMessagesByDate } from '@/lib/chat-utils';
 import { MessageItem } from './MessageItem';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
@@ -15,7 +15,7 @@ export interface VirtualMessageListProps {
   messages: ChatMessage[];
   currentUserId: string;
   currentUserName: string;
-  typingUsers: { userName?: string }[];
+  typingUsers: TypingUser[];
   onReaction: (messageId: string, emoji: string) => void;
   onTranslate: (messageId: string) => void;
   className?: string;
@@ -93,8 +93,13 @@ export function VirtualMessageList({
           extraHeight += row.msg.attachments.length * 60;
         }
 
-        if (row.msg.reactions && row.msg.reactions.length > 0) {
-          extraHeight += 30;
+        if (row.msg.reactions) {
+          const reactionCount = Array.isArray(row.msg.reactions)
+            ? row.msg.reactions.length
+            : Object.values(row.msg.reactions).flat().length;
+          if (reactionCount > 0) {
+            extraHeight += 30;
+          }
         }
 
         const totalHeight = Math.min(baseHeight + extraHeight, MAX_MESSAGE_HEIGHT);
@@ -114,16 +119,18 @@ export function VirtualMessageList({
     overscan: useVirtualizedList ? OVERSCAN : 0,
     measureElement:
       typeof window !== 'undefined' && 'ResizeObserver' in window
-        ? (element) => {
-            if (!element) {
-              return;
-            }
-            const index = parseInt(element.getAttribute('data-index') ?? '-1', 10);
-            if (index >= 0) {
-              const height = element.getBoundingClientRect().height;
-              sizeCacheRef.current.set(index, height);
-            }
+        ? (element, entry, instance) => {
+          if (!element) {
+            return DEFAULT_MESSAGE_HEIGHT;
           }
+          const index = parseInt(element.getAttribute('data-index') ?? '-1', 10);
+          if (index >= 0) {
+            const height = element.getBoundingClientRect().height;
+            sizeCacheRef.current.set(index, height);
+            return height;
+          }
+          return DEFAULT_MESSAGE_HEIGHT;
+        }
         : undefined,
   });
 

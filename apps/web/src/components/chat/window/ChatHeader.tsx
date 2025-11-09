@@ -93,7 +93,7 @@ export function ChatHeader({
                     const currentUserId = room.participantIds[0]; // parent should pass if different ownership needed
                     const otherUserId = room.participantIds.find((id) => id !== currentUserId);
 
-                    if (!otherUserId) {
+                    if (!otherUserId || !currentUserId) {
                       return;
                     }
 

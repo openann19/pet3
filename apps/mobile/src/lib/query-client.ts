@@ -87,6 +87,11 @@ export const queryKeys = {
     list: ['stories', 'list'] as const,
     detail: (storyId: string) => ['stories', 'detail', storyId] as const,
   },
+  payments: {
+    subscription: (userId: string) => ['payments', 'subscription', userId] as const,
+    methods: (userId: string) => ['payments', 'methods', userId] as const,
+    billingIssues: (userId: string) => ['payments', 'billing-issues', userId] as const,
+  },
 } as const
 
 // Mutation keys for consistent mutation tracking
@@ -100,6 +105,12 @@ export const mutationKeys = {
     updateHighlight: ['stories', 'updateHighlight'] as const,
     addStoryToHighlight: ['stories', 'addStoryToHighlight'] as const,
     deleteHighlight: ['stories', 'deleteHighlight'] as const,
+  },
+  payments: {
+    createSubscription: ['payments', 'createSubscription'] as const,
+    cancelSubscription: ['payments', 'cancelSubscription'] as const,
+    updatePaymentMethod: ['payments', 'updatePaymentMethod'] as const,
+    restorePurchases: ['payments', 'restorePurchases'] as const,
   },
 } as const
 

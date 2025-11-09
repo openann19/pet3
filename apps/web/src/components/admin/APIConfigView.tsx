@@ -220,10 +220,19 @@ export default function APIConfigView() {
             logger.warn('Config is null, using defaults');
             return DEFAULT_CONFIG;
           }
+          const sectionValue = current[section];
+          if (sectionValue && typeof sectionValue === 'object') {
+            return {
+              ...current,
+              [section]: {
+                ...sectionValue,
+                [field]: value,
+              },
+            };
+          }
           return {
             ...current,
             [section]: {
-              ...current[section],
               [field]: value,
             },
           };

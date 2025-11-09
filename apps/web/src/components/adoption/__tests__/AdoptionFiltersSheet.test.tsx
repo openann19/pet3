@@ -78,7 +78,7 @@ describe('AdoptionFiltersSheet', () => {
     );
 
     const sizeCheckboxes = screen.getAllByLabelText(/small|medium|large/i);
-    if (sizeCheckboxes.length > 0) {
+    if (sizeCheckboxes.length > 0 && sizeCheckboxes[0]) {
       await user.click(sizeCheckboxes[0]);
     }
 
@@ -97,7 +97,7 @@ describe('AdoptionFiltersSheet', () => {
     );
 
     const energyCheckboxes = screen.getAllByLabelText(/low|medium|high/i);
-    if (energyCheckboxes.length > 0) {
+    if (energyCheckboxes.length > 0 && energyCheckboxes[0]) {
       await user.click(energyCheckboxes[0]);
     }
 
@@ -116,7 +116,7 @@ describe('AdoptionFiltersSheet', () => {
     );
 
     const statusCheckboxes = screen.getAllByLabelText(/active|pending|adopted/i);
-    if (statusCheckboxes.length > 0) {
+    if (statusCheckboxes.length > 0 && statusCheckboxes[0]) {
       await user.click(statusCheckboxes[0]);
     }
 
@@ -207,7 +207,7 @@ describe('AdoptionFiltersSheet', () => {
     );
 
     const sliders = screen.getAllByRole('slider');
-    if (sliders.length > 0) {
+    if (sliders.length > 0 && sliders[0]) {
       await user.click(sliders[0]);
     }
   });
@@ -224,7 +224,7 @@ describe('AdoptionFiltersSheet', () => {
     );
 
     const sliders = screen.getAllByRole('slider');
-    if (sliders.length > 1) {
+    if (sliders.length > 1 && sliders[1]) {
       await user.click(sliders[1]);
     }
   });

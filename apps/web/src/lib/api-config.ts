@@ -1,4 +1,4 @@
-import type { APIConfig } from '@/components/admin/APIConfigView';
+import type { APIConfig } from '@/api/api-config-api';
 import { logger } from './logger';
 import { storage } from './storage';
 import { apiConfigApi } from '@/api/api-config-api';

@@ -71,6 +71,7 @@ export interface APIConfig {
     wsUrl: string;
     enabled: boolean;
   };
+  [key: string]: unknown;
 }
 
 /**

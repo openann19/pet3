@@ -9,11 +9,13 @@ import { groupMessagesByDate } from '@/lib/chat-utils';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import type { RefObject } from 'react';
 
+import type { TypingUser } from '@/lib/chat-types';
+
 export interface MessageListProps {
   messages: ChatMessage[];
   currentUserId: string;
   currentUserName: string;
-  typingUsers: { userName?: string }[];
+  typingUsers: TypingUser[];
   onReaction: (messageId: string, emoji: string) => void;
   onTranslate: (messageId: string) => void;
   scrollRef: RefObject<HTMLDivElement>;

@@ -67,13 +67,19 @@ const stubGestureHandlerPlugin = (): PluginOption => ({
       return `
         // Stub for react-native-gesture-handler (not available in web environment)
         export const Gesture = {
+          Tap: () => ({
+            onUpdate: () => {},
+            onEnd: () => {},
+          }),
           Pan: () => ({
             onUpdate: () => {},
             onEnd: () => {},
           }),
         };
+        export const GestureDetector = ({ children, gesture }) => children;
         export default {
           Gesture,
+          GestureDetector,
         };
       `;
     }
@@ -102,34 +108,236 @@ const stubExpoHapticsPlugin = (): PluginOption => ({
           Medium: 1,
           Heavy: 2,
         };
-        
+
         export const NotificationFeedbackType = {
           Success: 0,
           Warning: 1,
           Error: 2,
         };
-        
+
         export async function impactAsync(style = 1) {
           // No-op in web environment
           return Promise.resolve();
         }
-        
+
         export async function notificationAsync(type = 0) {
           // No-op in web environment
           return Promise.resolve();
         }
-        
+
         export async function selectionAsync() {
           // No-op in web environment
           return Promise.resolve();
         }
-        
+
         export default {
           ImpactFeedbackStyle,
           NotificationFeedbackType,
           impactAsync,
           notificationAsync,
           selectionAsync,
+        };
+      `;
+    }
+    return null;
+  },
+});
+
+// Plugin to stub expo-file-system for web (not available in web environment)
+const stubExpoFileSystemPlugin = (): PluginOption => ({
+  name: 'stub-expo-file-system',
+  enforce: 'pre',
+  resolveId(id) {
+    // Stub expo-file-system for web builds
+    if (id === 'expo-file-system' || id.includes('expo-file-system')) {
+      return '\0expo-file-system-stub';
+    }
+    return null;
+  },
+  load(id) {
+    // Return a stub module for expo-file-system
+    if (id === '\0expo-file-system-stub') {
+      return `
+        // Stub for expo-file-system (web environment uses File API)
+        export const documentDirectory = null;
+        export const cacheDirectory = null;
+        export const bundleDirectory = null;
+        export const temporaryDirectory = null;
+
+        export const FileSystem = {
+          documentDirectory: null,
+          cacheDirectory: null,
+          bundleDirectory: null,
+          temporaryDirectory: null,
+        };
+
+        export async function getInfoAsync(fileUri, options) {
+          // Stub: file operations not available in web environment
+          return {
+            exists: false,
+            isDirectory: false,
+            uri: fileUri,
+          };
+        }
+
+        export async function readAsStringAsync(fileUri, options) {
+          // Stub: file operations not available in web environment
+          return '';
+        }
+
+        export async function writeAsStringAsync(fileUri, contents, options) {
+          // Stub: file operations not available in web environment
+          return Promise.resolve();
+        }
+
+        export async function deleteAsync(fileUri, options) {
+          // Stub: file operations not available in web environment
+          return Promise.resolve();
+        }
+
+        export async function moveAsync(options) {
+          // Stub: file operations not available in web environment
+          return Promise.resolve();
+        }
+
+        export async function copyAsync(options) {
+          // Stub: file operations not available in web environment
+          return Promise.resolve();
+        }
+
+        export async function makeDirectoryAsync(fileUri, options) {
+          // Stub: file operations not available in web environment
+          return Promise.resolve();
+        }
+
+        export async function readDirectoryAsync(fileUri) {
+          // Stub: file operations not available in web environment
+          return [];
+        }
+
+        export async function downloadAsync(uri, fileUri, options) {
+          // Stub: file operations not available in web environment
+          return {
+            uri: fileUri,
+            status: 200,
+            headers: {},
+            mimeType: null,
+          };
+        }
+
+        export async function uploadAsync(url, fileUri, options) {
+          // Stub: file operations not available in web environment
+          return {
+            body: '',
+            status: 200,
+            headers: {},
+          };
+        }
+
+        // Default export with all functions attached for compatibility
+        const defaultExport = {
+          documentDirectory: null,
+          cacheDirectory: null,
+          bundleDirectory: null,
+          temporaryDirectory: null,
+          FileSystem: {
+            documentDirectory: null,
+            cacheDirectory: null,
+            bundleDirectory: null,
+            temporaryDirectory: null,
+          },
+          getInfoAsync,
+          readAsStringAsync,
+          writeAsStringAsync,
+          deleteAsync,
+          moveAsync,
+          copyAsync,
+          makeDirectoryAsync,
+          readDirectoryAsync,
+          downloadAsync,
+          uploadAsync,
+        };
+
+        export default defaultExport;
+      `;
+    }
+    return null;
+  },
+});
+
+// Plugin to stub @shopify/react-native-skia for web (not available in web environment)
+const stubReactNativeSkiaPlugin = (): PluginOption => ({
+  name: 'stub-react-native-skia',
+  enforce: 'pre',
+  resolveId(id) {
+    // Stub @shopify/react-native-skia for web builds
+    if (id === '@shopify/react-native-skia' || id.includes('@shopify/react-native-skia')) {
+      return '\0react-native-skia-stub';
+    }
+    return null;
+  },
+  load(id) {
+    // Return a stub module for @shopify/react-native-skia
+    if (id === '\0react-native-skia-stub') {
+      return `
+        // Stub for @shopify/react-native-skia (web environment uses Canvas API)
+        export const Skia = {
+          // Stub Skia API
+        };
+
+        export const Canvas = () => null;
+        export const Group = () => null;
+        export const Rect = () => null;
+        export const Circle = () => null;
+        export const Path = () => null;
+        export const Image = () => null;
+        export const Text = () => null;
+        export const LinearGradient = () => null;
+        export const RadialGradient = () => null;
+        export const Blur = () => null;
+        export const ColorMatrix = () => null;
+        export const ImageShader = () => null;
+        export const useImage = () => ({ width: 0, height: 0 });
+        export const useFont = () => null;
+        export const useValue = () => ({ value: 0 });
+        export const useComputedValue = () => ({ value: 0 });
+        export const useSharedValueEffect = () => {};
+        export const useCanvasRef = () => ({ current: null });
+        export const useTouchHandler = () => {};
+        export const vec = () => ({ x: 0, y: 0 });
+        export const rrect = () => ({ rect: { x: 0, y: 0, width: 0, height: 0 }, rx: 0, ry: 0 });
+        export const BlendMode = {};
+        export const PaintStyle = {};
+        export const StrokeCap = {};
+        export const StrokeJoin = {};
+
+        export default {
+          Skia,
+          Canvas,
+          Group,
+          Rect,
+          Circle,
+          Path,
+          Image,
+          Text,
+          LinearGradient,
+          RadialGradient,
+          Blur,
+          ColorMatrix,
+          ImageShader,
+          useImage,
+          useFont,
+          useValue,
+          useComputedValue,
+          useSharedValueEffect,
+          useCanvasRef,
+          useTouchHandler,
+          vec,
+          rrect,
+          BlendMode,
+          PaintStyle,
+          StrokeCap,
+          StrokeJoin,
         };
       `;
     }
@@ -275,6 +483,8 @@ export default defineConfig(async (): Promise<UserConfig> => {
   const plugins: PluginOption[] = [
     stubGestureHandlerPlugin(),
     stubExpoHapticsPlugin(),
+    stubExpoFileSystemPlugin(),
+    stubReactNativeSkiaPlugin(),
     resolveReactNativePlugin(),
     resolveWorkspacePackagePlugin(),
     react({}),
@@ -423,7 +633,6 @@ export default defineConfig(async (): Promise<UserConfig> => {
         output: {
           // Ensure proper format
           format: 'es',
-          chunkSizeWarningLimit: 500,
           manualChunks: (id): string | undefined => {
             // Split large libraries into separate chunks
             if (id.includes('node_modules')) {
