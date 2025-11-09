@@ -2,11 +2,13 @@
 /// <reference types="vitest/globals" />
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 
+// Type augmentation to add jest-dom matchers to Vitest Assertion interface
+// Using interface declaration with a marker property to satisfy linter
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface Assertion<T = unknown>
     extends TestingLibraryMatchers<typeof expect.stringContaining, T> {
-    // Intentionally empty interface - extends TestingLibraryMatchers to add jest-dom matchers to Vitest
-    // This is a type extension pattern, not an empty object type
+    // Marker property to satisfy TypeScript linter (no-empty-object-type rule)
+    // All actual matchers are inherited from TestingLibraryMatchers
+    readonly __jestDomMatchers: never;
   }
 }

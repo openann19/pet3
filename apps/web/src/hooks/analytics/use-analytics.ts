@@ -37,7 +37,8 @@
  * ```
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { createLogger, LogLevel } from '@/lib/logger';
 
 // ============================================================================
 // Types
@@ -289,6 +290,11 @@ export function useAnalytics(config: AnalyticsConfig) {
     maskPII: shouldMaskPII = true,
   } = config;
 
+  const logger = useMemo(
+    () => createLogger('Analytics', debug ? LogLevel.DEBUG : LogLevel.INFO),
+    [debug]
+  );
+
   // State
   const [state, setState] = useState<AnalyticsState>(() => ({
     sessionId: generateId(),
@@ -352,8 +358,7 @@ export function useAnalytics(config: AnalyticsConfig) {
       await clearPersistedEvents(eventsToSend.map((e) => e.id));
 
       if (debug) {
-        // eslint-disable-next-line no-console
-        console.debug('[Analytics] Flushed', eventsToSend.length, 'events');
+        logger.debug('Flushed events', { count: eventsToSend.length });
       }
     } catch (error) {
       // Re-queue events on failure
@@ -370,12 +375,10 @@ export function useAnalytics(config: AnalyticsConfig) {
         });
       }
 
-      if (debug) {
-         
-        console.error('[Analytics] Flush failed', error);
-      }
+      const errorInstance = error instanceof Error ? error : new Error(String(error));
+      logger.error('Flush failed', errorInstance, { eventCount: eventsToSend.length });
     }
-  }, [projectId, endpoint, debug]);
+  }, [projectId, endpoint, debug, logger]);
 
   // ============================================================================
   // Event Tracking
@@ -450,11 +453,10 @@ export function useAnalytics(config: AnalyticsConfig) {
       void persistEvent(event);
 
       if (debug) {
-        // eslint-disable-next-line no-console
-        console.debug('[Analytics] Tracked', eventName, sanitizedProperties);
+        logger.debug('Tracked event', { eventName, properties: sanitizedProperties });
       }
     },
-    [userId, state.anonymousId, batchSize, flush, debug, shouldMaskPII]
+    [userId, state.anonymousId, batchSize, flush, debug, shouldMaskPII, logger]
   );
 
   // Page view tracking
@@ -481,11 +483,10 @@ export function useAnalytics(config: AnalyticsConfig) {
       });
 
       if (debug) {
-        // eslint-disable-next-line no-console
-        console.debug('[Analytics] Identified', newUserId, properties);
+        logger.debug('User identified', { userId: newUserId, properties });
       }
     },
-    [track, debug]
+    [track, debug, logger]
   );
 
   // Session info
