@@ -8,6 +8,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BusinessConfig, Purchase } from '../business-types';
 import { getUserEntitlements } from '../entitlements-engine';
+import { APIClient } from '../api-client';
 import {
   getBusinessConfig,
   handleRefund,
@@ -33,6 +34,16 @@ vi.mock('../logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
+}));
+
+// Mock APIClient
+vi.mock('../api-client', () => ({
+  APIClient: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 const kvStore: KVStore = new Map();
@@ -68,8 +79,9 @@ beforeEach(() => {
   kvStore.clear();
   vi.clearAllMocks();
 
-  // Reset fetch mock
-  vi.mocked(global.fetch).mockReset();
+  // Reset APIClient mock
+  vi.mocked(APIClient.post).mockReset();
+  vi.mocked(APIClient.get).mockReset();
 });
 
 describe('verifyReceipt', () => {
@@ -98,10 +110,11 @@ describe('verifyReceipt', () => {
         transactionId: 'txn_123',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      vi.mocked(APIClient.post).mockResolvedValueOnce({
+        data: mockResponse,
+        status: 200,
+        statusText: 'OK',
+      } as never);
 
       const result = await verifyReceipt('web', receipt, userId);
 
