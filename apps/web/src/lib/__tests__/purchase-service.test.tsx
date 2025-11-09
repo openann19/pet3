@@ -153,9 +153,9 @@ describe('verifyReceipt', () => {
         sku: 'premium_monthly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('web', receipt, userId);
@@ -173,9 +173,9 @@ describe('verifyReceipt', () => {
         error: 'Invalid receipt',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('web', receipt, userId);
@@ -191,9 +191,9 @@ describe('verifyReceipt', () => {
         valid: false,
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('web', receipt, userId);
@@ -205,7 +205,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle network errors', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(APIClient.post).mockRejectedValueOnce(new Error('Network error'));
 
       const result = await verifyReceipt('web', receipt, userId);
 
@@ -216,7 +216,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce('String error');
+      vi.mocked(APIClient.post).mockRejectedValueOnce('String error');
 
       const result = await verifyReceipt('web', receipt, userId);
 
@@ -227,7 +227,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-OK HTTP response', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
         ok: false,
         status: 500,
       } as Response);
@@ -241,8 +241,8 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle invalid response format', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
         json: async () => ({ invalid: 'response' }),
       } as Response);
 
@@ -260,9 +260,9 @@ describe('verifyReceipt', () => {
         error: 'Receipt validation failed',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('web', receipt, userId);
@@ -296,9 +296,9 @@ describe('verifyReceipt', () => {
         transactionId: 'txn_123',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('ios', receipt, userId);
@@ -324,9 +324,9 @@ describe('verifyReceipt', () => {
         sku: 'premium_monthly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('ios', receipt, userId);
@@ -335,7 +335,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle errors for Apple receipt', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Apple API error'));
+      vi.mocked(APIClient.post).mockRejectedValueOnce(new Error('Apple API error'));
 
       const result = await verifyReceipt('ios', receipt, userId);
 
@@ -346,7 +346,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-OK HTTP response for Apple receipt', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
         ok: false,
         status: 500,
       } as Response);
@@ -360,7 +360,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-Error exceptions for Apple receipt', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce('String error');
+      vi.mocked(APIClient.post).mockRejectedValueOnce('String error');
 
       const result = await verifyReceipt('ios', receipt, userId);
 
@@ -376,9 +376,9 @@ describe('verifyReceipt', () => {
         error: 'Receipt expired',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('ios', receipt, userId);
@@ -394,9 +394,9 @@ describe('verifyReceipt', () => {
         valid: false,
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('ios', receipt, userId);
@@ -408,7 +408,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-Error exceptions for Apple receipt', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce('String error');
+      vi.mocked(APIClient.post).mockRejectedValueOnce('String error');
 
       const result = await verifyReceipt('ios', receipt, userId);
 
@@ -419,8 +419,8 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle invalid response format for Apple receipt', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
         json: async () => ({ invalid: 'response' }),
       } as Response);
 
@@ -437,9 +437,9 @@ describe('verifyReceipt', () => {
         valid: false,
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('ios', receipt, userId);
@@ -473,9 +473,9 @@ describe('verifyReceipt', () => {
         transactionId: 'txn_123',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('android', receipt, userId);
@@ -509,9 +509,9 @@ describe('verifyReceipt', () => {
         receipt: 'google_receipt_boost',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('android', receipt, userId);
@@ -522,7 +522,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle errors for Google Play receipt', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
         ok: false,
         status: 400,
       } as Response);
@@ -536,8 +536,8 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle invalid Google Play response format', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
         json: async () => ({ invalid: 'response' }),
       } as Response);
 
@@ -555,9 +555,9 @@ describe('verifyReceipt', () => {
         error: 'Purchase not found',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('android', receipt, userId);
@@ -573,9 +573,9 @@ describe('verifyReceipt', () => {
         valid: false,
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       const result = await verifyReceipt('android', receipt, userId);
@@ -587,7 +587,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle network errors for Google Play receipt', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(APIClient.post).mockRejectedValueOnce(new Error('Network error'));
 
       const result = await verifyReceipt('android', receipt, userId);
 
@@ -598,7 +598,7 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle non-Error exceptions for Google Play receipt', async () => {
-      vi.mocked(global.fetch).mockRejectedValueOnce('String error');
+      vi.mocked(APIClient.post).mockRejectedValueOnce('String error');
 
       const result = await verifyReceipt('android', receipt, userId);
 
@@ -609,8 +609,8 @@ describe('verifyReceipt', () => {
     });
 
     it('should handle invalid Google Play response format', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
         json: async () => ({ invalid: 'response' }),
       } as Response);
 
@@ -670,9 +670,9 @@ describe('verifyReceipt', () => {
         sku: 'premium_monthly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -690,9 +690,9 @@ describe('verifyReceipt', () => {
         sku: 'elite_yearly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -710,9 +710,9 @@ describe('verifyReceipt', () => {
         sku: 'boost_consumable',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -727,9 +727,9 @@ describe('verifyReceipt', () => {
         sku: 'super_like_consumable',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -744,9 +744,9 @@ describe('verifyReceipt', () => {
         sku: 'unknown_sku',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -766,9 +766,9 @@ describe('verifyReceipt', () => {
         sku: 'premium_monthly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
@@ -801,9 +801,9 @@ describe('verifyReceipt', () => {
         sku: 'elite_yearly',
       };
 
-      vi.mocked(global.fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
+      vi.mocked(APIClient.post).mockResolvedValueOnce({ data: {
+        }
+        status: 200, statusText: 'OK'
       } as Response);
 
       await verifyReceipt('web', receipt, userId);
