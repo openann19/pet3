@@ -7,7 +7,7 @@
  */
 
 import { execSync } from 'node:child_process'
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, dirname, relative, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Project } from 'ts-morph'

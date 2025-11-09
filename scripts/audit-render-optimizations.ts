@@ -107,7 +107,7 @@ function auditComponent(filePath: string): void {
         const handlerBlock = fileContent.substring(handlerDef.index, handlerDef.index + 500);
 
         // Check if it's wrapped in useCallback
-        const isWrapped = new RegExp(`useCallback\\s*\\(\\s*(?:\([^)]*\)\\s*=>|\([^)]*\)\\s*\\{).*${handler}`).test(fileContent) ||
+        const isWrapped = new RegExp(`useCallback\\s*\\(\\s*(?:\\([^)]*\\)\\s*=>|\\([^)]*\\)\\s*\\{).*${handler}`).test(fileContent) ||
           handlerBlock.includes('useCallback');
 
         // Check if it's passed as prop (indicates it should be memoized)
@@ -188,7 +188,7 @@ function auditComponent(filePath: string): void {
         hasUseMemo,
       });
     }
-  } catch (error) {
+  } catch {
     // Skip files that can't be parsed
   }
 }

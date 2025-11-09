@@ -166,7 +166,7 @@ async function auditComponent(filePath: string): Promise<void> {
         isEditor,
       });
     }
-  } catch (error) {
+  } catch {
     // Skip files that can't be parsed or don't exist
   }
 }

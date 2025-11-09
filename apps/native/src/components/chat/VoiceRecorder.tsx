@@ -48,7 +48,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSendVoice, onCan
       cancelAnimation(waveScale);
       waveScale.value = 1;
     }
-  }, [isRecording, isPaused, waveScale]);
+  }, [isRecording, isPaused, waveScale, handleStopRecording]);
 
   const handleStartRecording = async () => {
     try {
@@ -89,7 +89,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSendVoice, onCan
     }
   };
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = React.useCallback(async () => {
     setIsRecording(false);
     if (duration > 0 && recording) {
       try {
@@ -107,7 +107,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSendVoice, onCan
       }
     }
     setDuration(0);
-  };
+  }, [duration, recording, onSendVoice]);
 
   const handleCancelRecording = async () => {
     setIsRecording(false);

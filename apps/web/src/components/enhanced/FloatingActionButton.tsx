@@ -40,7 +40,7 @@ export function FloatingActionButton({
   expanded = false,
   label,
 }: FloatingActionButtonProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reducedMotion = useReducedMotion();
   const scale = useSharedValue(0);
   const rotate = useSharedValue(-180);

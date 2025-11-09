@@ -46,7 +46,7 @@ async function loadGestureHandler(): Promise<GestureHandler | null> {
   // Type declaration is in src/types/react-native-gesture-handler.d.ts
   // Using type assertion to handle optional module that may not exist at runtime
   gestureLoadPromise = (
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+     
     import('react-native-gesture-handler') as unknown as Promise<{
       default?: ReactNativeGestureHandlerModule
       Gesture?: GestureHandler
