@@ -18,7 +18,7 @@ export interface OverlaysProps {
 }
 
 export function Overlays({ burstSeed, confettiSeed, roomId }: OverlaysProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     return (
         <>
           {burstSeed > 0 && (

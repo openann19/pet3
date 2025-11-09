@@ -57,7 +57,7 @@ export default function AdvancedChatWindow({
   currentUserAvatar,
   onBack,
 }: AdvancedChatWindowProps): JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [messages, setMessages] = useStorage<ChatMessage[]>(`chat-messages-${room.id}`, []);
   const [inputValue, setInputValue] = useState('');
   const [showStickers, setShowStickers] = useState(false);

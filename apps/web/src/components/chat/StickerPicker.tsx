@@ -37,7 +37,7 @@ interface StickerPickerProps {
 }
 
 export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [recentStickerIds, setRecentStickerIds] = useStorage<string[]>('recent-stickers', []);

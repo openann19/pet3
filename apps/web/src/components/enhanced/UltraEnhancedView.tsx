@@ -23,7 +23,7 @@ export function UltraEnhancedView({
   enableTransition = true,
   className = '',
 }: UltraEnhancedViewProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const pageTransition = usePageTransition({
         isVisible: true,
         direction: 'up',

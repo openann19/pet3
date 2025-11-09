@@ -41,7 +41,7 @@ export function ProgressiveImage({
   onLoad,
   onError,
 }: ProgressiveImageProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isLoaded, setIsLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(placeholderSrc || src);
   const [error, setError] = useState(false);

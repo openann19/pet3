@@ -54,7 +54,7 @@ export function GlowingBadge({
   className,
   'aria-label': ariaLabel,
 }: GlowingBadgeProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
   const pulseOpacity = useSharedValue(0.5);

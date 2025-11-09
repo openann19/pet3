@@ -16,7 +16,7 @@ export interface TemplateButtonProps {
 }
 
 export function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const hover = useHoverAnimation({ scale: 1.02 });
 
   return (

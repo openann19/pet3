@@ -33,7 +33,7 @@ export function VoiceWaveform({
   color = '#3B82F6',
   className,
 }: VoiceWaveformProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const { playheadProgress, animatedStyle, canvasRef, drawWaveform } = useVoiceWaveform({
         enabled: true,
         waveform,

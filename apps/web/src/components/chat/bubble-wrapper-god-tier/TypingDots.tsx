@@ -18,7 +18,7 @@ export function TypingDots({
   className,
   enabled = true,
 }: TypingDotsProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const { dotStyles, containerStyle } = useTypingIndicator({
         enabled,
         dotSize,

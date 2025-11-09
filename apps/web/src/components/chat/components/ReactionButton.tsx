@@ -16,7 +16,7 @@ export interface ReactionButtonProps {
 }
 
 export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const hover = useHoverAnimation({ scale: 1.2 });
   const containerRef = useRef<HTMLDivElement>(null);
   // Target size validation - ensures 44x44px minimum touch target

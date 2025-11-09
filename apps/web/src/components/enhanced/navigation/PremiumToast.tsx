@@ -62,7 +62,7 @@ export function PremiumToast({
   position = 'top',
   showProgress = true,
 }: PremiumToastProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const Icon = icons[type];
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(position === 'top' ? -20 : 20);

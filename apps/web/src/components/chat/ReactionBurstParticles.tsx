@@ -44,7 +44,7 @@ export function ReactionBurstParticles({
   size = 6,
   staggerMs = 8,
 }: ReactionBurstParticlesProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
   const dur = getReducedMotionDuration(600, reduced);
 

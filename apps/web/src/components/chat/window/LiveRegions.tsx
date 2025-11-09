@@ -14,7 +14,7 @@ export interface AnnounceNewMessageProps {
  * Uses aria-live="assertive" to interrupt current announcements
  */
 export function AnnounceNewMessage({ lastText, senderName }: AnnounceNewMessageProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const announcementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -48,7 +48,7 @@ export function WebBubbleWrapper({
   glowOpacity = 0,
   glowIntensity = 0.85,
 }: WebBubbleWrapperProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const bubbleTilt = useBubbleTilt({
         enabled: enable3DTilt,
         maxTilt: 10,

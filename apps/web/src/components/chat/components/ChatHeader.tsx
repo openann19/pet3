@@ -31,7 +31,7 @@ export function ChatHeader({
   onToggleAwayMode,
   onBlockUser,
 }: ChatHeaderProps): JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const animation = useEntryAnimation({ initialY: -20, delay: 0 });
 
   return (

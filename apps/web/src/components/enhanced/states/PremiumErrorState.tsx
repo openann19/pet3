@@ -32,7 +32,7 @@ export function PremiumErrorState({
   showDetails = false,
   className,
 }: PremiumErrorStateProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(0.9);
   const opacity = useSharedValue(0);
   const shake = useSharedValue(0);

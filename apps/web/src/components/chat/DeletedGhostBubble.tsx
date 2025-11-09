@@ -23,7 +23,7 @@ export function DeletedGhostBubble({
   className,
   delay = 0,
 }: DeletedGhostBubbleProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.95);
 

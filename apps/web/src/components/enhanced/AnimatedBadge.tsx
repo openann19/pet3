@@ -20,7 +20,7 @@ export interface AnimatedBadgeProps {
  * Used for migrating from framer-motion to react-native-reanimated
  */
 export function AnimatedBadge({ children, show = true, className }: AnimatedBadgeProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(show ? 1 : 0);
   const opacity = useSharedValue(show ? 1 : 0);
 

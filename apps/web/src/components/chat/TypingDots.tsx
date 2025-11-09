@@ -34,7 +34,7 @@ export function TypingDots({
   animationDuration = DEFAULT_ANIMATION_DURATION,
   className,
 }: TypingDotsProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale1 = useSharedValue(1);
   const scale2 = useSharedValue(1);
   const scale3 = useSharedValue(1);

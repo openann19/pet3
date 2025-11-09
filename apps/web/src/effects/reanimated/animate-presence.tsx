@@ -22,7 +22,7 @@ interface PresenceChildProps {
 }
 
 function PresenceChild({ children, isVisible, onExitComplete, childKey }: PresenceChildProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const opacity = useSharedValue(isVisible ? 1 : 0);
   const scale = useSharedValue(isVisible ? 1 : 0.95);
   const translateY = useSharedValue(isVisible ? 0 : -8);

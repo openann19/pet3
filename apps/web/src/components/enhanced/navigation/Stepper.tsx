@@ -33,7 +33,7 @@ export function Stepper({
   orientation = 'horizontal',
   className,
 }: StepperProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const progressWidth = useSharedValue(0);
 
   const progressStyle = useAnimatedStyle(() => ({

@@ -31,7 +31,7 @@ export function EnhancedCarousel({
   loop = true,
   onSlideChange,
 }: EnhancedCarouselProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
   const autoPlayRef = useRef<NodeJS.Timeout | undefined>(undefined);

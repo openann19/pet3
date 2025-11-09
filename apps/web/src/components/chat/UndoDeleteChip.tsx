@@ -21,7 +21,7 @@ export interface UndoDeleteChipProps {
 }
 
 export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDeleteChipProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isVisible, setIsVisible] = useState(true);
   const translateX = useSharedValue(-100);
   const opacity = useSharedValue(0);

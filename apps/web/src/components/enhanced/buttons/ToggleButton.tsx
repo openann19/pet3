@@ -33,7 +33,7 @@ export function ToggleButton({
   'aria-label': ariaLabel,
   ...props
 }: ToggleButtonProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(checked ? 1 : 0.95);
   const opacity = useSharedValue(checked ? 1 : 0.7);
 
