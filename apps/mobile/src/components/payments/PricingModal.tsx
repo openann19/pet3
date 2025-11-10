@@ -3,10 +3,8 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   Pressable,
   ScrollView,
-  type ViewStyle,
 } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -22,9 +20,6 @@ import { PremiumButton } from '@/components/enhanced/PremiumButton'
 import { PremiumCard } from '@/components/enhanced/PremiumCard'
 import { useTheme } from '@/hooks/use-theme'
 import { springConfigs } from '@/effects/reanimated/transitions'
-import { createLogger } from '@/utils/logger'
-
-const logger = createLogger('PricingModal')
 
 const AnimatedView = Animated.View
 
@@ -55,11 +50,11 @@ const PlanCard: React.FC<PlanCardProps> = ({
     transform: [{ scale: planScale.value }],
   }))
 
-  const handlePlanPressIn = () => {
+  const handlePlanPressIn = (): void => {
     planScale.value = withSpring(0.98, springConfigs.smooth)
   }
 
-  const handlePlanPressOut = () => {
+  const handlePlanPressOut = (): void => {
     planScale.value = withSpring(1, springConfigs.smooth)
   }
 

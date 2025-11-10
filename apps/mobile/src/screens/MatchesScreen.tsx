@@ -31,7 +31,7 @@ export function MatchesScreen(): React.ReactElement {
   // In production, this would come from the selected match
   const [selectedMatchUserId] = useState<string>('match-user-id')
   const [selectedMatchUserName] = useState<string>('Match User')
-  const [selectedMatchUserPhoto] = useState<string | undefined>(undefined)
+  const [selectedMatchUserPhoto] = useState<string | undefined>()
 
   // Initialize call manager
   const callManager = useCallManager({

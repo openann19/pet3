@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useCallback } from 'react'
-import { View, Text, StyleSheet, Modal, Pressable, Image } from 'react-native'
+import { View, Text, StyleSheet, Modal, Image } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,10 +19,6 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { PremiumButton } from '@/components/enhanced/PremiumButton'
 import { useTheme } from '@/hooks/use-theme'
-import { createLogger } from '@/utils/logger'
-import { springConfigs } from '@/effects/reanimated/transitions'
-
-const logger = createLogger('IncomingCallNotification')
 
 const AnimatedView = Animated.View
 
