@@ -54,7 +54,7 @@ export const VideoQualitySettings: React.FC = () => {
     return () => {
       unsubscribe()
     }
-  }, [])
+  }, [checkNetworkQuality])
 
   const checkNetworkQuality = useCallback(async (): Promise<void> => {
     try {
