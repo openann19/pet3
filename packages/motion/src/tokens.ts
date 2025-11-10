@@ -5,6 +5,15 @@ import { Easing } from 'react-native-reanimated'
  * Single source of truth for all animation durations, springs, and easings
  */
 
+// Helper for easing functions that may not exist on web
+const createPolyEasing = (power: number) => {
+  if (typeof Easing.poly === 'function') {
+    return Easing.poly(power)
+  }
+  // Fallback for web - approximate poly behavior
+  return Easing.bezier(0.25, 0.1, 0.25, 1)
+}
+
 export const motion = {
   // Durations (ms) - Production presets
   durations: {
@@ -34,7 +43,7 @@ export const motion = {
 
   // Easing curves (for timing animations)
   easing: {
-    outQuint: Easing.out(Easing.poly(5)),
+    outQuint: Easing.out(createPolyEasing(5)),
     outExpo: Easing.out(Easing.exp),
     inOutCubic: Easing.inOut(Easing.cubic),
     // Legacy CSS curves (for web fallback)

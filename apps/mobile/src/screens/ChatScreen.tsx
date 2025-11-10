@@ -38,7 +38,7 @@ export function ChatScreen(): React.ReactElement {
   // In production, this would come from the chat/room context
   const [remoteUserId] = useState<string>('remote-user-id')
   const [remoteUserName] = useState<string>('Remote User')
-  const [remoteUserPhoto] = useState<string | undefined>(undefined)
+  const [remoteUserPhoto] = useState<string | undefined>()
 
   // Initialize call manager
   const callManager = useCallManager({
