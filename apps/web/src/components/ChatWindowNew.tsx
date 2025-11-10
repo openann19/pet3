@@ -651,6 +651,7 @@ export default function ChatWindow({
           <VirtualMessageList
             messages={messages || []}
             currentUserId={currentUserId}
+            currentUserName={currentUserName}
             typingUsers={typingUsers}
             onReaction={handleReaction}
             onTranslate={() => { }}

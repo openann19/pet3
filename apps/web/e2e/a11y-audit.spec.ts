@@ -93,7 +93,7 @@ test.describe('Accessibility Audit (WCAG 2.2 AA)', () => {
 
         // Log violations for debugging
         if (accessibilityScanResults.violations.length > 0) {
-          // eslint-disable-next-line no-console
+           
           console.error(`Accessibility violations found in ${viewConfig.name} view:`,
             accessibilityScanResults.violations.map(v => ({
               id: v.id,
@@ -112,13 +112,13 @@ test.describe('Accessibility Audit (WCAG 2.2 AA)', () => {
 
         // Log incomplete checks (warnings) for review
         if (accessibilityScanResults.incomplete.length > 0) {
-          // eslint-disable-next-line no-console
+           
           console.warn(`Accessibility incomplete checks for ${viewConfig.name}:`, accessibilityScanResults.incomplete);
         }
 
         // Log passes for verification
         if (accessibilityScanResults.passes.length > 0) {
-          // eslint-disable-next-line no-console
+           
           console.info(`Accessibility passes for ${viewConfig.name}: ${accessibilityScanResults.passes.length} checks`);
         }
       });
@@ -288,7 +288,7 @@ test.describe('Accessibility Audit (WCAG 2.2 AA)', () => {
       // Should have at least one live region for dynamic content
       // This is a soft check - doesn't fail if no live regions, but logs for review
       if (liveRegions.length === 0) {
-        // eslint-disable-next-line no-console
+         
         console.warn('No live regions found on page - dynamic content may not be announced to screen readers');
       }
     });

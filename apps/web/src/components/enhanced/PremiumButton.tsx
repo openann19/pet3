@@ -29,7 +29,7 @@ export function PremiumButton({
   onClick,
   ...props
 }: PremiumButtonProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const hoverLift = useHoverLift({ scale: 1.05 });
   const bounceOnTap = useBounceOnTap({ scale: 0.95, hapticFeedback: false });
   const rotation = useSharedValue(0);

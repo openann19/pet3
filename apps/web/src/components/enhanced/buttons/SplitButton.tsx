@@ -47,7 +47,7 @@ export function SplitButton({
   disabled = false,
   className,
 }: SplitButtonProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isOpen, setIsOpen] = useState(false);
   const dividerOpacity = useSharedValue(1);
   const menuScale = useSharedValue(0.95);

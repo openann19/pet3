@@ -15,7 +15,7 @@ interface SmartSuggestionsPanelProps {
 }
 
 export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSuggestionsPanelProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [suggestions] = useState<SmartSuggestion[]>([
     { id: '1', category: 'suggestion', text: 'Tell me more about your pet!', icon: '🐾' },
     { id: '2', category: 'suggestion', text: 'Want to set up a playdate?', icon: '🎾' },

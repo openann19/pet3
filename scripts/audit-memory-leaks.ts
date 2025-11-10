@@ -42,7 +42,7 @@ function findUseEffectWithoutCleanup(content: string, file: string): MemoryLeakI
       // Find the useEffect block
       let braceCount = 0;
       let inUseEffect = false;
-      let useEffectStart = i;
+      const useEffectStart = i;
       let useEffectEnd = i;
 
       for (let j = i; j < lines.length; j++) {

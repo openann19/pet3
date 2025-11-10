@@ -14,7 +14,7 @@ export function AchievementBadge({
   color = 'var(--primary)',
   className = '',
 }: AchievementBadgeProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(0);
 
   useEffect(() => {

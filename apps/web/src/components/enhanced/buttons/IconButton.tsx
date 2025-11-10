@@ -65,7 +65,7 @@ export function IconButton({
   'aria-label': ariaLabel,
   ...props
 }: IconButtonProps): React.JSX.Element {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   // Target size validation - ensures 44x44px minimum touch target (already enforced by SIZE_CONFIG)
   const { ensure: ensureTargetSize } = useTargetSize({ enabled: !disabled, autoFix: true });
   const buttonRef = useRef<HTMLButtonElement>(null);

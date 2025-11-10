@@ -47,7 +47,7 @@ export function AdvancedFilterPanel({
   onClose,
   showActiveCount = true,
 }: AdvancedFilterPanelProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const {
     values: localValues,
     activeFiltersCount,

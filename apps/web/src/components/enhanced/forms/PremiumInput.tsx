@@ -46,7 +46,7 @@ export function PremiumInput({
   id,
   ...props
 }: PremiumInputProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [hasValue, setHasValue] = useState(Boolean(value));

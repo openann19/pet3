@@ -33,7 +33,7 @@ export function PremiumChip({
   className,
   'aria-label': ariaLabel,
 }: PremiumChipProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
 

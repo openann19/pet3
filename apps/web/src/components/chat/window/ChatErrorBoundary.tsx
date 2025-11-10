@@ -22,7 +22,7 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, S
     this.state = { hasError: false, error: null };
   }
 
-  static override getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
@@ -33,7 +33,7 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, S
     this.props.onError?.(error, errorInfo);
   }
 
-  render(): React.ReactNode {
+  override render(): React.ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;

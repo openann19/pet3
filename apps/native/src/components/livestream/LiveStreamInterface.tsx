@@ -41,7 +41,7 @@ export const LiveStreamInterface: React.FC<LiveStreamInterfaceProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [pulseScale]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],

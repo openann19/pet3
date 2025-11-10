@@ -108,6 +108,7 @@ export interface MatchingConfig {
   featureFlags: FeatureFlags;
   updatedAt: string;
   updatedBy: string;
+  [key: string]: unknown;
 }
 
 export interface AuditLogEntry {

@@ -33,7 +33,7 @@ export function LinkPreview({
   isLoading = false,
   className,
 }: LinkPreviewProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
   const safeUrl = useMemo(() => safeHref(url), [url]);
   const showContent = !isLoading && (!!title || !!image) && safeUrl !== null;

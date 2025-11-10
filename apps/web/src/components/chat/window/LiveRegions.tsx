@@ -14,8 +14,8 @@ export interface AnnounceNewMessageProps {
  * Uses aria-live="assertive" to interrupt current announcements
  */
 export function AnnounceNewMessage({ lastText, senderName }: AnnounceNewMessageProps): JSX.Element {
-    const uiConfig = useUIConfig();
-    const announcementRef = useRef<HTMLDivElement>(null);
+  const _uiConfig = useUIConfig();
+  const announcementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (lastText && announcementRef.current) {
@@ -144,23 +144,11 @@ export function LiveRegions({ children, className }: LiveRegionsProps): JSX.Elem
         if (popover) {
           const closeButton = popover.querySelector(
             '[aria-label*="close" i], [aria-label*="Close" i], button[aria-label*="close" i]'
-          )!;
+          ) as HTMLElement | null;
           if (closeButton) {
             closeButton.click();
             e.preventDefault();
             e.stopPropagation();
-          } else {
-            // Handle escape key via popover's onkeydown if available
-            const popoverElement = popover as HTMLElement;
-            if (popoverElement.onkeydown) {
-              // Create a synthetic event that matches the expected type
-              const syntheticEvent = {
-                ...e,
-                currentTarget: popoverElement,
-                target: popoverElement,
-              } as React.KeyboardEvent<HTMLElement>;
-              popoverElement.onkeydown(syntheticEvent);
-            }
           }
         }
       }

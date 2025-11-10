@@ -34,7 +34,7 @@ export function PremiumToggle({
   className,
   'aria-label': ariaLabel,
 }: PremiumToggleProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const thumbPosition = useSharedValue(checked ? 1 : 0);
   const glowOpacity = useSharedValue(checked ? 1 : 0);
 

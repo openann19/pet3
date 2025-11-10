@@ -44,7 +44,7 @@ export function LiquidDots({
   dots = 3,
   seed = 'liquid-dots',
 }: LiquidDotsProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
 
   // shared clock loops 0..1

@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { ConsentManager } from '../consent-manager';
 import { DEFAULT_CONSENT_PREFERENCES } from '../consent-types';
-import type { ConsentRecord, ConsentCategory } from '../consent-types';
+import type { ConsentRecord } from '../consent-types';
 
 describe('ConsentManager', () => {
   describe('isConsentRequired', () => {

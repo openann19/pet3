@@ -18,7 +18,7 @@ export interface StickerMessageProps {
 }
 
 export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessageProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [isHovered, setIsHovered] = useState(false);
 
   const entryOpacity = useSharedValue(0);

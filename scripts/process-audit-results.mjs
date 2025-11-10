@@ -106,8 +106,8 @@ function processTodoAudit() {
     console.log(`\nResults written to: ${outputPath}\n`);
 
     return todos;
-  } catch (error) {
-    console.error('Error processing TODO audit:', error.message);
+  } catch (err) {
+    console.error('Error processing TODO audit:', err instanceof Error ? err.message : String(err));
     return [];
   }
 }
@@ -121,7 +121,7 @@ function processErrorHandlingAudit() {
   try {
     // Find floating promises
     const floatingPromiseResult = execSync(
-      `grep -rn "Promise\\.(all|race|allSettled|any)\\|\.then(" --include="*.ts" --include="*.tsx" apps/ packages/ 2>/dev/null | grep -v "node_modules\\|dist\\|build\\|html\\|\\.test\\.\\|\\.spec\\." | grep -v "\\.catch\\|await\\|void" | head -100 || true`,
+      `grep -rn "Promise\\.(all|race|allSettled|any)\\|\\.then(" --include="*.ts" --include="*.tsx" apps/ packages/ 2>/dev/null | grep -v "node_modules\\|dist\\|build\\|html\\|\\.test\\.\\|\\.spec\\." | grep -v "\\.catch\\|await\\|void" | head -100 || true`,
       { encoding: 'utf-8', cwd: process.cwd() }
     );
 
@@ -140,7 +140,7 @@ function processErrorHandlingAudit() {
         });
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 
@@ -166,7 +166,7 @@ function processErrorHandlingAudit() {
         });
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 
@@ -192,7 +192,7 @@ function processErrorHandlingAudit() {
         });
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 
@@ -273,12 +273,12 @@ function processMemoryLeakAudit() {
               suggestion: 'Add clearInterval in cleanup function',
             });
           }
-        } catch (error) {
+        } catch {
           // Skip if file can't be read
         }
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 
@@ -311,12 +311,12 @@ function processMemoryLeakAudit() {
               suggestion: 'Add removeEventListener in cleanup function',
             });
           }
-        } catch (error) {
+        } catch {
           // Skip if file can't be read
         }
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 
@@ -349,12 +349,12 @@ function processMemoryLeakAudit() {
               suggestion: 'Add cancelAnimationFrame in cleanup function',
             });
           }
-        } catch (error) {
+        } catch {
           // Skip if file can't be read
         }
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore errors from grep
   }
 

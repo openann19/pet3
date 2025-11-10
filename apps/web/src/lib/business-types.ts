@@ -92,6 +92,7 @@ export interface BusinessConfig {
   >;
   updatedAt: string;
   updatedBy: string;
+  [key: string]: unknown;
 }
 
 export interface ReferralCredit {

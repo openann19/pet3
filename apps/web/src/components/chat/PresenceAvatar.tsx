@@ -31,7 +31,7 @@ export function PresenceAvatar({
   size = 40,
   className,
 }: PresenceAvatarProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
   const rot = useSharedValue(0);
 

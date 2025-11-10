@@ -108,21 +108,9 @@ class Logger {
   }
 
   private addConsoleHandler(): void {
-    this.addHandler((record) => {
-      const ts = new Date(record.ts).toISOString();
-      const levelName = LogLevel[record.level];
-      const prefix = record.context
-        ? `[${ts}] ${levelName} [${record.context}]`
-        : `[${ts}] ${levelName}`;
-
-      if (record.level >= LogLevel.ERROR) {
-        console.error(prefix, record.message, ...record.args);
-      } else if (record.level >= LogLevel.WARN) {
-        console.warn(prefix, record.message, ...record.args);
-      }
-      // INFO and DEBUG levels are silently ignored in production
-      // Only ERROR and WARN are logged to console per lint rules
-    });
+    // Console handler removed per mandatory rules: NO console.* in production
+    // Logging is handled by Sentry and other external handlers only
+    // This method is kept for API compatibility but does nothing
   }
 
   private addSentryHandler(): void {

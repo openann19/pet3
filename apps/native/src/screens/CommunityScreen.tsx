@@ -161,7 +161,7 @@ export default function CommunityScreen(): React.JSX.Element {
       modalScale.value = 0;
       modalScale.value = withSpring(1, SpringConfig.bouncy);
     }
-  }, [showCreatePost]);
+  }, [showCreatePost, modalScale]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

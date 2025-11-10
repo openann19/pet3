@@ -27,7 +27,12 @@
     "lint:motion": "eslint packages/motion apps/web/src/effects apps/mobile/src/effects apps/web/src/components apps/mobile/src/components --ext .ts,.tsx",
     "test:motion": "pnpm --filter ./packages/motion test:run",
     "migrate:motion": "node scripts/motion-migrate.mjs",
-    "e2e:smoke": "pnpm --filter ./apps/web e2e:smoke"
+    "e2e:smoke": "pnpm --filter ./apps/web e2e:smoke",
+    "spec:merge": "pnpm --filter @petspark/spec-cli exec spec merge",
+    "spec:lock": "pnpm --filter @petspark/spec-cli exec spec lock",
+    "spec:diff": "pnpm --filter @petspark/spec-cli exec spec diff",
+    "spec:migrate": "pnpm --filter @petspark/spec-cli exec spec migrate",
+    "spec:new-pack": "pnpm --filter @petspark/spec-cli exec spec new-pack"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

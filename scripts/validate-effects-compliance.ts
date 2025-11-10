@@ -184,7 +184,7 @@ function getFilesInDirectory(dir: string, fileList: string[] = []): string[] {
         fileList.push(filePath);
       }
     }
-  } catch (error) {
+  } catch {
     // Directory doesn't exist or can't be read - skip
   }
 

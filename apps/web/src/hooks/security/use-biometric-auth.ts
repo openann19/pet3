@@ -383,7 +383,7 @@ export function useBiometricAuth(config: BiometricAuthConfig) {
 
       // Check if session requires re-authentication
       let requiresReAuth = false;
-      let sessionId = state.sessionId;
+      const sessionId = state.sessionId;
 
       if (sessionId) {
         const isValid = biometricStorage.validateSession(sessionId);

@@ -53,7 +53,7 @@ function getAllComponentFiles(dir: string, fileList: string[] = []): string[] {
         fileList.push(filePath);
       }
     }
-  } catch (error) {
+  } catch {
     // Directory might not exist or be inaccessible
   }
 
@@ -67,7 +67,7 @@ function auditFile(filePath: string): AriaViolation[] {
 
   try {
     content = readFileSync(filePath, 'utf-8');
-  } catch (error) {
+  } catch {
     return violations;
   }
 
@@ -116,7 +116,7 @@ function auditFile(filePath: string): AriaViolation[] {
     // Check for aria-label, aria-labelledby, or id (which might be associated with label)
     const hasAriaLabel = /aria-label\s*=/i.test(attributes);
     const hasAriaLabelledBy = /aria-labelledby\s*=/i.test(attributes);
-    const hasId = /id\s*=\s*["'][^"']+["']/i.test(attributes);
+    const _hasId = /id\s*=\s*["'][^"']+["']/i.test(attributes);
 
     // Check if there's a label element with htmlFor pointing to this input
     const idMatch = attributes.match(/id\s*=\s*["']([^"']+)["']/i);
@@ -400,7 +400,7 @@ function main(): void {
   // Ensure docs/accessibility directory exists
   try {
     mkdirSync(reportDir, { recursive: true });
-  } catch (error) {
+  } catch {
     // Directory might already exist
   }
 

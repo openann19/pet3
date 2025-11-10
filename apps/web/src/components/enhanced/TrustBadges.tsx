@@ -85,7 +85,7 @@ interface BadgeAnimatedProps {
 }
 
 function BadgeAnimated({ index, animated, sizeConfig, config, Icon }: BadgeAnimatedProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const staggered = useStaggeredItem({ index, staggerDelay: 50 });
   const scale = useSharedValue(animated ? 0.8 : 1);
 

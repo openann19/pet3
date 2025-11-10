@@ -31,7 +31,7 @@ export function DeleteConfirmationModal({
   context = 'self-delete',
   className,
 }: DeleteConfirmationModalProps) {
-  const uiConfig = useUIConfig();
+  const _uiConfig = useUIConfig();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);

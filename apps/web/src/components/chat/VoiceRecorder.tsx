@@ -25,7 +25,7 @@ export default function VoiceRecorder({
   onCancel,
   maxDuration = 120,
 }: VoiceRecorderProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const [duration, setDuration] = useState(0);
   const [waveform, setWaveform] = useState<number[]>([]);
 

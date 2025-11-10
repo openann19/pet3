@@ -30,7 +30,7 @@ export function PremiumEmptyState({
   variant = 'default',
   className,
 }: PremiumEmptyStateProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const scale = useSharedValue(0.9);
   const opacity = useSharedValue(0);
 

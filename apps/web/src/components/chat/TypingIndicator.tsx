@@ -25,7 +25,7 @@ interface TypingDotProps {
 }
 
 function TypingDot({ index }: TypingDotProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const opacity = useSharedValue(0.3);
   const translateY = useSharedValue(0);
 

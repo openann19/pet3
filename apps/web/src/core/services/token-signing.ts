@@ -16,7 +16,7 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import type { APIConfig } from '@/components/admin/APIConfigView';
+import type { APIConfig } from '@/api/api-config-api';
 
 const logger = createLogger('TokenSigning');
 

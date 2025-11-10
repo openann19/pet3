@@ -126,14 +126,14 @@ export const LENIENT_PERFORMANCE_BUDGET: PerformanceBudgetConfig = {
  * Get performance budget based on environment
  */
 export function getPerformanceBudget(): PerformanceBudgetConfig {
-  const env = process.env.NODE_ENV || 'development';
-  const budgetMode = process.env.PERFORMANCE_BUDGET_MODE || 'default';
+  const isProduction = import.meta.env.PROD;
+  const budgetMode = import.meta.env.VITE_PERFORMANCE_BUDGET_MODE || 'default';
 
   if (budgetMode === 'strict') {
     return STRICT_PERFORMANCE_BUDGET;
   }
 
-  if (budgetMode === 'lenient' || env === 'development') {
+  if (budgetMode === 'lenient' || !isProduction) {
     return LENIENT_PERFORMANCE_BUDGET;
   }
 

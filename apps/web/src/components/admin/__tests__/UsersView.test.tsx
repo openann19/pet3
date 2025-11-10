@@ -258,11 +258,13 @@ describe('UsersView', () => {
   });
 
   it('handles empty pets array', async () => {
+    const setValue = vi.fn().mockResolvedValue(undefined);
+    const deleteValue = vi.fn().mockResolvedValue(undefined);
     mockUseStorage.mockImplementation((key: string, defaultValue: unknown) => {
       if (key === 'all-pets') {
-        return [[]];
+        return [[], setValue, deleteValue];
       }
-      return [defaultValue, vi.fn()];
+      return [defaultValue, setValue, deleteValue];
     });
 
     render(<UsersView />);
@@ -278,11 +280,13 @@ describe('UsersView', () => {
       { _id: '2', name: 'Luna', ownerId: 'owner2', photos: [] },
     ];
 
+    const setValue = vi.fn().mockResolvedValue(undefined);
+    const deleteValue = vi.fn().mockResolvedValue(undefined);
     mockUseStorage.mockImplementation((key: string, defaultValue: unknown) => {
       if (key === 'all-pets') {
-        return [petsWithoutOwner];
+        return [petsWithoutOwner, setValue, deleteValue];
       }
-      return [defaultValue, vi.fn()];
+      return [defaultValue, setValue, deleteValue];
     });
 
     render(<UsersView />);

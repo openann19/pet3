@@ -34,7 +34,7 @@ export function TypingDotsWeb({
   animationDuration = DEFAULT_ANIMATION_DURATION,
   className,
 }: TypingDotsWebProps): React.JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     return (
         <div className={cn('flex items-center', className)} style={{ gap }}>
           {[0, 1, 2].map((index) => (

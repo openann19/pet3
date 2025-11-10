@@ -17,7 +17,7 @@ export interface SendButtonIconProps {
 }
 
 export function SendButtonIcon({ isActive = false }: SendButtonIconProps): JSX.Element {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const translateX = useSharedValue(0);
   const scale = useSharedValue(1);
 

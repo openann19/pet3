@@ -21,7 +21,7 @@ export function DetailedPetAnalytics({
   compatibilityScore,
   matchReasons,
 }: DetailedPetAnalyticsProps) {
-    const uiConfig = useUIConfig();
+    const _uiConfig = useUIConfig();
     const stats = [
         {
           icon: Heart,
