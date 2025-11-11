@@ -41,18 +41,18 @@ const getThemeColors = (theme: ChatTheme): { primary: string; secondary: string;
       shadow: 'rgba(255, 0, 255, 0.5)',
     };
   }
-  
+
   const mode = theme === 'dark' ? 'dark' : 'light';
   const opacity = theme === 'glass' ? 0.8 : 1;
-  
+
   return {
-    primary: theme === 'glass' 
+    primary: theme === 'glass'
       ? getColorTokenWithOpacity('primary', opacity, mode)
       : getColorToken('primary', mode),
     secondary: theme === 'glass'
       ? getColorTokenWithOpacity('secondary', opacity, mode)
       : getColorToken('secondary', mode),
-    shadow: mode === 'dark' 
+    shadow: mode === 'dark'
       ? 'rgba(0, 0, 0, 0.3)'
       : theme === 'glass'
       ? 'rgba(0, 0, 0, 0.2)'
@@ -130,8 +130,8 @@ export function useBubbleTheme(options: UseBubbleThemeOptions = {}): UseBubbleTh
     );
 
     return {
-      background: `linear-gradient(135deg, 
-        rgba(${primaryR}, ${primaryG}, ${primaryB}, ${intensity}) 0%, 
+      background: `linear-gradient(135deg,
+        rgba(${primaryR}, ${primaryG}, ${primaryB}, ${intensity}) 0%,
         rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${intensity * 0.8}) 100%
       )`,
       boxShadow: `0 4px ${shadowBlur}px ${shadowOpacity}px ${themeColor.shadow}`,

@@ -497,20 +497,20 @@ afterEach(() => {
   // Reset haptics mock state
   hapticsCallCounter = 0;
   hapticsCalls.length = 0;
-  
+
   // Reset analytics mock state (if analytics mock is used)
   // Note: Analytics mock is created per test, but we clear any global state here
   if (typeof window !== 'undefined' && (window as typeof window & { __analyticsEvents?: unknown[] }).__analyticsEvents) {
     ((window as typeof window & { __analyticsEvents: unknown[] }).__analyticsEvents).length = 0;
   }
-  
+
   // Reset QueryClient mock state
   // QueryClient mocks are created per test, but we ensure no global state persists
-  
+
   // Reset browser API mocks
   // IntersectionObserver and ResizeObserver callbacks are reset by cleanupTestState
   // but we ensure no global state persists
-  
+
   cleanupTestState();
   resetAllMocks();
 
@@ -785,18 +785,14 @@ vi.mock('@/lib/websocket-manager', () => ({
   })),
 }));
 
-// Mock UI Context
+// Mock UI Context - use actual implementation to allow proper testing
+// Tests that need UIProvider should wrap components with it
+// Tests that don't need it can use vi.unmock if needed
 vi.mock('@/contexts/UIContext', async () => {
   const actual = await vi.importActual<typeof import('@/contexts/UIContext')>('@/contexts/UIContext');
-  const { ABSOLUTE_MAX_UI_MODE } = await import('@/agi_ui_engine/config/ABSOLUTE_MAX_UI_MODE');
   
-  return {
-    ...actual,
-    UIProvider: ({ children }: { children: React.ReactNode }) => children,
-    useUIContext: vi.fn(() => ({
-      config: ABSOLUTE_MAX_UI_MODE,
-    })),
-  };
+  // Use actual implementation - tests should wrap with UIProvider when needed
+  return actual;
 });
 
 // Mock query client

@@ -59,7 +59,7 @@ export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodCol
 
   const colors = useMemo(() => {
     const moodColors = getMoodColors(themeMode);
-    
+
     if (!enabled || !theme.adaptiveMood) {
       return moodColors.NEUTRAL;
     }

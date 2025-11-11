@@ -27,14 +27,14 @@ export function getColorTokenWithOpacity(
   mode: ThemeMode = 'light'
 ): string {
   const color = getColorToken(colorKey, mode);
-  
+
   // Convert OKLCH to rgba if needed
   if (color.startsWith('oklch')) {
     // For OKLCH, we'll use CSS color-mix or convert
     // For now, return as-is and let CSS handle opacity
     return color;
   }
-  
+
   // If already rgba/rgb, extract and apply opacity
   const rgbaMatch = color.match(/rgba?\(([^)]+)\)/);
   if (rgbaMatch) {
@@ -46,7 +46,7 @@ export function getColorTokenWithOpacity(
       return `rgba(${r}, ${g}, ${b}, ${opacity})`;
     }
   }
-  
+
   // If hex, convert to rgba
   const hexMatch = color.match(/^#([0-9a-fA-F]{6})$/);
   if (hexMatch) {
@@ -56,7 +56,7 @@ export function getColorTokenWithOpacity(
     const b = parseInt(hex.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
-  
+
   return color;
 }
 
@@ -112,4 +112,3 @@ export function getColorCSSVar(colorKey: keyof typeof tokens.colors.light): stri
   const kebab = colorKey.replace(/([A-Z])/g, '-$1').toLowerCase();
   return `var(--${kebab})`;
 }
-

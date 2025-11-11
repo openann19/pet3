@@ -175,4 +175,3 @@
 - **Theme-specific colors** (cyberpunk): May need custom token category
 - **Opacity values**: Create utility to apply opacity to token colors
 - **Dynamic colors**: Some colors are computed (e.g., category colors) - may need runtime token resolution
-
