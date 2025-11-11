@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { ReactNode } from 'react';
 import { renderHook } from '@testing-library/react';
-import { useUIConfig } from './useUIConfig';
+import { useUIConfig } from './use-ui-config';
 import { UIProvider } from '../contexts/UIContext';
 import { ABSOLUTE_MAX_UI_MODE } from '@/agi_ui_engine/config/ABSOLUTE_MAX_UI_MODE';
 

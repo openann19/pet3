@@ -8,75 +8,50 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service';
-import type { AdoptionListing, AdoptionListingFilters } from '@/lib/adoption-marketplace-types';
+import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
 import { haptics } from '@/lib/haptics';
-import { logger } from '@/lib/logger';
 import { Check, Funnel, Heart, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
 import { MotionView } from '@petspark/motion';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 type ViewTab = 'browse' | 'my-listings' | 'my-applications';
 
+import { useAdoptionMarketplace } from '@/hooks/adoption/use-adoption-marketplace';
+
 export default function AdoptionMarketplaceView() {
   const [activeTab, setActiveTab] = useState<ViewTab>('browse');
-  const [listings, setListings] = useState<AdoptionListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<AdoptionListingFilters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedListing, setSelectedListing] = useState<AdoptionListing | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: string; name: string } | null>(null);
 
-  const loadCurrentUser = useCallback(async () => {
-    try {
-      const user = await spark.user();
-      setCurrentUser({ id: user.id, name: user.login });
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to load user', err, { action: 'loadUser' });
-    }
-  }, []);
-
-  const loadListings = useCallback(
-    async (_reset = true) => {
-      try {
-        setLoading(true);
-        const response = await adoptionMarketplaceService.getActiveListings(filters);
-        setListings(response);
-        setHasMore(false);
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        logger.error('Failed to load listings', err, { action: 'loadListings' });
-        toast.error('Failed to load adoption listings');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [filters]
-  );
-
-  useEffect(() => {
-    void loadCurrentUser();
-    void loadListings();
-  }, [loadCurrentUser, loadListings]);
+  const {
+    listings,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilters,
+    currentUser,
+    hasMore,
+    loadListings,
+    filteredListings,
+    activeFilterCount,
+  } = useAdoptionMarketplace();
 
   const handleCreateListing = () => {
     haptics.impact('medium');
     setShowCreateDialog(true);
   };
 
-  const handleListingCreated = useCallback(() => {
+  const handleListingCreated = () => {
     setShowCreateDialog(false);
     toast.success('Adoption listing created! It will be reviewed by our team.');
     void loadListings();
-  }, [loadListings]);
+  };
 
   const handleSelectListing = (listing: AdoptionListing) => {
     haptics.impact('light');
@@ -88,21 +63,6 @@ export default function AdoptionMarketplaceView() {
     haptics.impact('light');
     setShowFilters(!showFilters);
   };
-
-  const filteredListings = searchQuery
-    ? listings.filter(
-      (listing) =>
-        listing.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        listing.petBreed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        listing.location.city.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    : listings;
-
-  const activeFilterCount = Object.keys(filters).filter((key) => {
-    const value = filters[key as keyof AdoptionListingFilters];
-    if (Array.isArray(value)) return value.length > 0;
-    return value !== undefined && value !== null;
-  }).length;
 
   return (
     <PageTransitionWrapper key="adoption-marketplace-view" direction="up">

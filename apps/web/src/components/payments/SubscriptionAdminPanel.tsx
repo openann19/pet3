@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,8 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PaymentsService } from '@/lib/payments-service';
-import type { Subscription, AuditLogEntry, RevenueMetrics } from '@/lib/payments-types';
+import type { Subscription } from '@/lib/payments-types';
 import {
   MagnifyingGlass,
   CurrencyDollar,
@@ -41,40 +40,24 @@ import {
   ArrowCounterClockwise,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
+import { useSubscriptionAdmin } from '@/hooks/admin/use-subscription-admin';
 
 export function SubscriptionAdminPanel() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
-  const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const {
+    subscriptions,
+    auditLogs,
+    metrics,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    compSubscription: compSubscriptionHook,
+    cancelSubscription: cancelSubscriptionHook,
+  } = useSubscriptionAdmin();
 
   const [compDialogOpen, setCompDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [compMonths, setCompMonths] = useState('1');
   const [compReason, setCompReason] = useState('');
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [subs, logs, rev] = await Promise.all([
-        PaymentsService.getAllSubscriptions(),
-        PaymentsService.getAuditLogs(100),
-        PaymentsService.getRevenueMetrics(),
-      ]);
-      setSubscriptions(subs);
-      setAuditLogs(logs);
-      setMetrics(rev);
-    } catch {
-      toast.error('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCompSubscription = async () => {
     if (!selectedSubscription || !compReason.trim()) {
@@ -83,23 +66,13 @@ export function SubscriptionAdminPanel() {
     }
 
     try {
-      const user = await spark.user();
-      await PaymentsService.compSubscription(
-        selectedSubscription.userId,
-        selectedSubscription.planId,
-        parseInt(compMonths),
-        user.id,
-        compReason
-      );
-
-      toast.success('Subscription comped successfully');
+      await compSubscriptionHook(selectedSubscription, parseInt(compMonths), compReason);
       setCompDialogOpen(false);
       setCompReason('');
       setCompMonths('1');
       setSelectedSubscription(null);
-      await loadData();
     } catch {
-      toast.error('Failed to comp subscription');
+      // Error already handled in hook
     }
   };
 
@@ -109,18 +82,9 @@ export function SubscriptionAdminPanel() {
     }
 
     try {
-      const user = await spark.user();
-      await PaymentsService.cancelSubscription(
-        subscription.id,
-        true,
-        user.id,
-        'Admin cancellation'
-      );
-
-      toast.success('Subscription canceled');
-      await loadData();
+      await cancelSubscriptionHook(subscription);
     } catch {
-      toast.error('Failed to cancel subscription');
+      // Error already handled in hook
     }
   };
 

@@ -298,11 +298,11 @@ export default function WelcomeScreen({
                 <Heart size={40} className="text-white" weight="fill" aria-hidden />
               </AnimatedView>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-center text-[#1F2937] mb-3">
+              <h1 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-3">
                 {t.welcome.title}
               </h1>
 
-              <p className="text-lg text-[#6B7280] text-center">{t.welcome.subtitle}</p>
+              <p className="text-lg text-muted-foreground text-center">{t.welcome.subtitle}</p>
             </AnimatedView>
 
             <AnimatedView style={proofItemsStyle} className="space-y-3 mb-10">
@@ -314,7 +314,7 @@ export default function WelcomeScreen({
                     className="text-primary shrink-0"
                     aria-hidden
                   />
-                  <span className="text-[#6B7280] text-sm">{text}</span>
+                  <span className="text-muted-foreground text-sm">{text}</span>
                 </div>
               ))}
             </AnimatedView>
@@ -325,7 +325,7 @@ export default function WelcomeScreen({
                 className="mb-6 p-3 rounded-lg bg-primary/10 border border-primary/20"
                 role="note"
               >
-                <p className="text-sm text-[#6B7280] text-center">{deepLinkMessage}</p>
+                <p className="text-sm text-muted-foreground text-center">{deepLinkMessage}</p>
               </AnimatedView>
             )}
 
@@ -376,7 +376,7 @@ export default function WelcomeScreen({
             </AnimatedView>
 
             <AnimatedView style={legalStyle} className="mt-8 text-center">
-              <p className="text-xs text-[#6B7280]">
+              <p className="text-xs text-muted-foreground">
                 {t.welcome.legal}{' '}
                 <a
                   href="https://pawfectmatch.app/terms"

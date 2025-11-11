@@ -3,6 +3,7 @@ import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { FocusRing } from '@/core/tokens';
 
 function Sheet({ ...props }: ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -62,7 +63,7 @@ function SheetContent({
       >
         {children}
         <SheetPrimitive.Close
-          className="ring-offset-background focus:ring-[var(--coral-primary)] data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className={`ring-offset-background ${FocusRing.standard} data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none text-[var(--text-secondary)] hover:text-[var(--text-primary)]`}
           aria-label="Close sheet"
         >
           <X className="size-4" />

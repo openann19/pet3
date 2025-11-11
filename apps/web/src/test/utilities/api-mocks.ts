@@ -7,7 +7,9 @@
 import { vi } from 'vitest';
 import type { MockAPIClient } from '@/test/mocks/api-client';
 import { createMockAPIClient, createMockAPIResponse, createMockAPIError } from '@/test/mocks/api-client';
-import type { Pet, Match, User, ChatRoom, Message } from '@/lib/types';
+import type { Pet, Match } from '@/lib/types';
+import type { User } from '@/lib/api-schemas';
+import type { ChatRoom, Message } from '@/lib/chat-types';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import {
   createMockUser,

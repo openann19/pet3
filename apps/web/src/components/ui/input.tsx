@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
+import { FocusRing } from '@/core/tokens';
 
 function Input({ className, type, ...props }: ComponentProps<'input'>) {
   return (
@@ -12,7 +13,7 @@ function Input({ className, type, ...props }: ComponentProps<'input'>) {
         'placeholder:text-[var(--text-tertiary)]',
         'selection:bg-primary selection:text-primary-foreground',
         'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
-        'focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-opacity-20 focus:outline-none',
+        `focus:border-[var(--coral-primary)] ${FocusRing.input}`,
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[var(--muted)] disabled:text-[var(--disabled)]',
         'aria-invalid:border-[var(--error)] aria-invalid:ring-2 aria-invalid:ring-[var(--error)]/20',
         'read-only:bg-muted/20 read-only:cursor-default',

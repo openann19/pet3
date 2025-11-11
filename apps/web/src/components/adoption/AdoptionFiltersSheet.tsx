@@ -16,9 +16,9 @@ import type {
   AdoptionListingFilters,
   AdoptionListingStatus,
 } from '@/lib/adoption-marketplace-types';
-import { haptics } from '@/lib/haptics';
 import { X } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { FocusRing } from '@/core/tokens';
+import { useAdoptionFilters } from '@/hooks/use-adoption-filters';
 
 interface AdoptionFiltersSheetProps {
   open: boolean;
@@ -44,101 +44,22 @@ export function AdoptionFiltersSheet({
   filters,
   onFiltersChange,
 }: AdoptionFiltersSheetProps) {
-  const [localFilters, setLocalFilters] = useState<AdoptionListingFilters>(filters);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
-  const handleSpeciesToggle = (species: string) => {
-    const current = localFilters.species || [];
-    const updated = current.includes(species)
-      ? current.filter((s) => s !== species)
-      : [...current, species];
-    const newFilters = { ...localFilters };
-    if (updated.length > 0) {
-      newFilters.species = updated;
-    } else {
-      delete newFilters.species;
-    }
-    setLocalFilters(newFilters);
-    haptics.impact('light');
-  };
-
-  const handleSizeToggle = (size: string) => {
-    const current = localFilters.size || [];
-    const updated = current.includes(size) ? current.filter((s) => s !== size) : [...current, size];
-    const newFilters = { ...localFilters };
-    if (updated.length > 0) {
-      newFilters.size = updated;
-    } else {
-      delete newFilters.size;
-    }
-    setLocalFilters(newFilters);
-    haptics.impact('light');
-  };
-
-  const handleEnergyLevelToggle = (level: string) => {
-    const current = localFilters.energyLevel || [];
-    const updated = current.includes(level)
-      ? current.filter((l) => l !== level)
-      : [...current, level];
-    const newFilters = { ...localFilters };
-    if (updated.length > 0) {
-      newFilters.energyLevel = updated;
-    } else {
-      delete newFilters.energyLevel;
-    }
-    setLocalFilters(newFilters);
-    haptics.impact('light');
-  };
-
-  const handleStatusToggle = (status: AdoptionListingStatus) => {
-    const current = localFilters.status || [];
-    const updated = current.includes(status)
-      ? current.filter((s) => s !== status)
-      : [...current, status];
-    const newFilters = { ...localFilters };
-    if (updated.length > 0) {
-      newFilters.status = updated;
-    } else {
-      delete newFilters.status;
-    }
-    setLocalFilters(newFilters);
-    haptics.impact('light');
-  };
-
-  const handleClearFilters = () => {
-    setLocalFilters({});
-    haptics.trigger('light');
-  };
+  const {
+    localFilters,
+    toggleArrayFilter,
+    toggleBooleanFilter,
+    updateFilters,
+    clearFilters,
+    hasActiveFilters,
+    applyFilters,
+  } = useAdoptionFilters({
+    initialFilters: filters,
+    onFiltersChange,
+  });
 
   const handleApply = () => {
-    onFiltersChange(localFilters);
-    if (typeof haptics.success === 'function') {
-      haptics.success();
-    }
+    applyFilters();
     onOpenChange(false);
-  };
-
-  const hasActiveFilters = () => {
-    return !!(
-      localFilters.species?.length ||
-      localFilters.size?.length ||
-      localFilters.ageMin ||
-      localFilters.ageMax ||
-      localFilters.location ||
-      localFilters.maxDistance ||
-      localFilters.goodWithKids !== undefined ||
-      localFilters.goodWithPets !== undefined ||
-      localFilters.vaccinated !== undefined ||
-      localFilters.spayedNeutered !== undefined ||
-      localFilters.energyLevel?.length ||
-      localFilters.feeMax ||
-      localFilters.status?.length ||
-      localFilters.featured !== undefined ||
-      localFilters.sortBy
-    );
   };
 
   return (
@@ -160,12 +81,12 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={species}
                   variant={localFilters.species?.includes(species) ? 'default' : 'outline'}
-                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
-                  onClick={() => handleSpeciesToggle(species)}
+                  className={`cursor-pointer ${FocusRing.standard}`}
+                  onClick={() => toggleArrayFilter('species', species)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleSpeciesToggle(species);
+                      toggleArrayFilter('species', species);
                     }
                   }}
                   role="button"
@@ -186,12 +107,12 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={size}
                   variant={localFilters.size?.includes(size) ? 'default' : 'outline'}
-                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
-                  onClick={() => handleSizeToggle(size)}
+                  className={`cursor-pointer ${FocusRing.standard}`}
+                  onClick={() => toggleArrayFilter('size', size)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleSizeToggle(size);
+                      toggleArrayFilter('size', size);
                     }
                   }}
                   role="button"
@@ -219,13 +140,9 @@ export function AdoptionFiltersSheet({
                   max="30"
                   value={localFilters.ageMin || ''}
                   onChange={(e) => {
-                    const newFilters = { ...localFilters };
-                    if (e.target.value) {
-                      newFilters.ageMin = Number(e.target.value);
-                    } else {
-                      delete newFilters.ageMin;
-                    }
-                    setLocalFilters(newFilters);
+                    updateFilters({
+                      ageMin: e.target.value ? Number(e.target.value) : undefined,
+                    });
                   }}
                   placeholder="0"
                 />
@@ -241,13 +158,9 @@ export function AdoptionFiltersSheet({
                   max="30"
                   value={localFilters.ageMax || ''}
                   onChange={(e) => {
-                    const newFilters = { ...localFilters };
-                    if (e.target.value) {
-                      newFilters.ageMax = Number(e.target.value);
-                    } else {
-                      delete newFilters.ageMax;
-                    }
-                    setLocalFilters(newFilters);
+                    updateFilters({
+                      ageMax: e.target.value ? Number(e.target.value) : undefined,
+                    });
                   }}
                   placeholder="30"
                 />
@@ -262,13 +175,9 @@ export function AdoptionFiltersSheet({
               id="location"
               value={localFilters.location || ''}
               onChange={(e) => {
-                const newFilters = { ...localFilters };
-                if (e.target.value) {
-                  newFilters.location = e.target.value;
-                } else {
-                  delete newFilters.location;
-                }
-                setLocalFilters(newFilters);
+                updateFilters({
+                  location: e.target.value || undefined,
+                });
               }}
               placeholder="City or zip code"
             />
@@ -282,13 +191,9 @@ export function AdoptionFiltersSheet({
                 <Slider
                   value={[localFilters.maxDistance || 50]}
                   onValueChange={([value]) => {
-                    const newFilters = { ...localFilters };
-                    if (value !== undefined) {
-                      newFilters.maxDistance = value;
-                    } else {
-                      delete newFilters.maxDistance;
-                    }
-                    setLocalFilters(newFilters);
+                    updateFilters({
+                      maxDistance: value !== undefined ? value : undefined,
+                    });
                   }}
                   min={1}
                   max={100}
@@ -312,13 +217,7 @@ export function AdoptionFiltersSheet({
                   id="goodWithKids"
                   checked={localFilters.goodWithKids === true}
                   onCheckedChange={(checked) => {
-                    const newFilters = { ...localFilters };
-                    if (checked) {
-                      newFilters.goodWithKids = true;
-                    } else {
-                      delete newFilters.goodWithKids;
-                    }
-                    setLocalFilters(newFilters);
+                    toggleBooleanFilter('goodWithKids', checked === true);
                   }}
                 />
                 <Label htmlFor="goodWithKids" className="text-sm font-normal cursor-pointer">
@@ -330,13 +229,7 @@ export function AdoptionFiltersSheet({
                   id="goodWithPets"
                   checked={localFilters.goodWithPets === true}
                   onCheckedChange={(checked) => {
-                    const newFilters = { ...localFilters };
-                    if (checked) {
-                      newFilters.goodWithPets = true;
-                    } else {
-                      delete newFilters.goodWithPets;
-                    }
-                    setLocalFilters(newFilters);
+                    toggleBooleanFilter('goodWithPets', checked === true);
                   }}
                 />
                 <Label htmlFor="goodWithPets" className="text-sm font-normal cursor-pointer">
@@ -348,13 +241,7 @@ export function AdoptionFiltersSheet({
                   id="vaccinated"
                   checked={localFilters.vaccinated === true}
                   onCheckedChange={(checked) => {
-                    const newFilters = { ...localFilters };
-                    if (checked) {
-                      newFilters.vaccinated = true;
-                    } else {
-                      delete newFilters.vaccinated;
-                    }
-                    setLocalFilters(newFilters);
+                    toggleBooleanFilter('vaccinated', checked === true);
                   }}
                 />
                 <Label htmlFor="vaccinated" className="text-sm font-normal cursor-pointer">
@@ -366,13 +253,7 @@ export function AdoptionFiltersSheet({
                   id="spayedNeutered"
                   checked={localFilters.spayedNeutered === true}
                   onCheckedChange={(checked) => {
-                    const newFilters = { ...localFilters };
-                    if (checked) {
-                      newFilters.spayedNeutered = true;
-                    } else {
-                      delete newFilters.spayedNeutered;
-                    }
-                    setLocalFilters(newFilters);
+                    toggleBooleanFilter('spayedNeutered', checked === true);
                   }}
                 />
                 <Label htmlFor="spayedNeutered" className="text-sm font-normal cursor-pointer">
@@ -390,12 +271,12 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={level}
                   variant={localFilters.energyLevel?.includes(level) ? 'default' : 'outline'}
-                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
-                  onClick={() => handleEnergyLevelToggle(level)}
+                  className={`cursor-pointer ${FocusRing.standard}`}
+                  onClick={() => toggleArrayFilter('energyLevel', level)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleEnergyLevelToggle(level);
+                      toggleArrayFilter('energyLevel', level);
                     }
                   }}
                   role="button"
@@ -417,13 +298,9 @@ export function AdoptionFiltersSheet({
               min="0"
               value={localFilters.feeMax || ''}
               onChange={(e) => {
-                const newFilters = { ...localFilters };
-                if (e.target.value) {
-                  newFilters.feeMax = Number(e.target.value);
-                } else {
-                  delete newFilters.feeMax;
-                }
-                setLocalFilters(newFilters);
+                updateFilters({
+                  feeMax: e.target.value ? Number(e.target.value) : undefined,
+                });
               }}
               placeholder="No limit"
             />
@@ -437,12 +314,12 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={status}
                   variant={localFilters.status?.includes(status) ? 'default' : 'outline'}
-                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
-                  onClick={() => handleStatusToggle(status)}
+                  className={`cursor-pointer ${FocusRing.standard}`}
+                  onClick={() => toggleArrayFilter('status', status)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleStatusToggle(status);
+                      toggleArrayFilter('status', status);
                     }
                   }}
                   role="button"
@@ -460,12 +337,11 @@ export function AdoptionFiltersSheet({
             <Label htmlFor="sortBy">Sort By</Label>
             <Select
               value={localFilters.sortBy || 'recent'}
-              onValueChange={(value) =>
-                setLocalFilters({
-                  ...localFilters,
+              onValueChange={(value) => {
+                updateFilters({
                   sortBy: value as (typeof SORT_OPTIONS)[number],
-                })
-              }
+                });
+              }}
             >
               <SelectTrigger id="sortBy" aria-label="Sort adoption listings by">
                 <SelectValue />
@@ -486,13 +362,7 @@ export function AdoptionFiltersSheet({
               id="featured"
               checked={localFilters.featured === true}
               onCheckedChange={(checked) => {
-                const newFilters = { ...localFilters };
-                if (checked) {
-                  newFilters.featured = true;
-                } else {
-                  delete newFilters.featured;
-                }
-                setLocalFilters(newFilters);
+                toggleBooleanFilter('featured', checked === true);
               }}
             />
             <Label htmlFor="featured" className="text-sm font-normal cursor-pointer">
@@ -502,13 +372,13 @@ export function AdoptionFiltersSheet({
         </div>
 
         <SheetFooter className="flex-col sm:flex-row gap-2">
-          {hasActiveFilters() && (
-            <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
-              <X size={16} className="mr-2" />
+          {hasActiveFilters && (
+            <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto" aria-label="Clear all filters">
+              <X size={16} className="mr-2" aria-hidden="true" />
               Clear All
             </Button>
           )}
-          <Button onClick={handleApply} className="w-full sm:w-auto">
+          <Button onClick={handleApply} className="w-full sm:w-auto" aria-label="Apply filters">
             Apply Filters
           </Button>
         </SheetFooter>

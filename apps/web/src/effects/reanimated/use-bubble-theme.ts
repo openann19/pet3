@@ -10,6 +10,7 @@ import {
 } from 'react-native-reanimated';
 import { useEffect, useCallback } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
+import { getColorToken, getColorTokenWithOpacity } from '@/core/tokens';
 
 export type SenderType = 'user' | 'bot' | 'system';
 export type MessageType = 'ai-answer' | 'error' | 'system-alert' | 'default';
@@ -29,27 +30,34 @@ export interface UseBubbleThemeReturn {
   updateTheme: (newTheme: ChatTheme) => void;
 }
 
-const THEME_COLORS: Record<ChatTheme, { primary: string; secondary: string; shadow: string }> = {
-  light: {
-    primary: 'rgba(59, 130, 246, 1)',
-    secondary: 'rgba(139, 92, 246, 1)',
-    shadow: 'rgba(0, 0, 0, 0.1)',
-  },
-  dark: {
-    primary: 'rgba(96, 165, 250, 1)',
-    secondary: 'rgba(167, 139, 250, 1)',
-    shadow: 'rgba(0, 0, 0, 0.3)',
-  },
-  glass: {
-    primary: 'rgba(59, 130, 246, 0.8)',
-    secondary: 'rgba(139, 92, 246, 0.8)',
-    shadow: 'rgba(0, 0, 0, 0.2)',
-  },
-  cyberpunk: {
-    primary: 'rgba(255, 0, 255, 1)',
-    secondary: 'rgba(0, 255, 255, 1)',
-    shadow: 'rgba(255, 0, 255, 0.5)',
-  },
+// Get theme colors using design tokens
+// Note: cyberpunk theme uses custom colors (intentional design choice)
+const getThemeColors = (theme: ChatTheme): { primary: string; secondary: string; shadow: string } => {
+  if (theme === 'cyberpunk') {
+    // Cyberpunk theme uses custom neon colors (intentional design choice)
+    return {
+      primary: 'rgba(255, 0, 255, 1)',
+      secondary: 'rgba(0, 255, 255, 1)',
+      shadow: 'rgba(255, 0, 255, 0.5)',
+    };
+  }
+  
+  const mode = theme === 'dark' ? 'dark' : 'light';
+  const opacity = theme === 'glass' ? 0.8 : 1;
+  
+  return {
+    primary: theme === 'glass' 
+      ? getColorTokenWithOpacity('primary', opacity, mode)
+      : getColorToken('primary', mode),
+    secondary: theme === 'glass'
+      ? getColorTokenWithOpacity('secondary', opacity, mode)
+      : getColorToken('secondary', mode),
+    shadow: mode === 'dark' 
+      ? 'rgba(0, 0, 0, 0.3)'
+      : theme === 'glass'
+      ? 'rgba(0, 0, 0, 0.2)'
+      : 'rgba(0, 0, 0, 0.1)',
+  };
 };
 
 const SENDER_INTENSITY: Record<SenderType, number> = {
@@ -104,7 +112,7 @@ export function useBubbleTheme(options: UseBubbleThemeOptions = {}): UseBubbleTh
   );
 
   const animatedStyle = useAnimatedStyle(() => {
-    const themeColor = THEME_COLORS[theme];
+    const themeColor = getThemeColors(theme);
     const intensity = colorIntensity.value;
 
     const shadowBlur = interpolate(shadowIntensity.value, [0, 1], [0, 20], Extrapolation.CLAMP);

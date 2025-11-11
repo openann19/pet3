@@ -19,6 +19,8 @@ global.fetch = vi.fn(() =>
     text: async () => '',
     blob: async () => new Blob(),
     arrayBuffer: async () => new ArrayBuffer(0),
+    formData: async () => new FormData(),
+    bytes: async () => new Uint8Array(),
     headers: new Headers(),
     redirected: false,
     type: 'default' as ResponseType,
@@ -26,7 +28,7 @@ global.fetch = vi.fn(() =>
     clone: vi.fn(),
     body: null,
     bodyUsed: false,
-  } as Response)
+  } as unknown as Response)
 ) as typeof fetch;
 
 type GlobalWithDevFlag = typeof globalThis & { __DEV__?: boolean };
@@ -69,10 +71,11 @@ Object.defineProperty(window, 'scroll', { value: vi.fn(), writable: true });
 Object.defineProperty(Element.prototype, 'scrollTo', { value: vi.fn(), writable: true });
 
 // Mock HTMLCanvasElement methods
+// Use type assertion to handle multiple context types
 HTMLCanvasElement.prototype.getContext = vi.fn((
   _contextId?: string,
   _options?: unknown
-): CanvasRenderingContext2D | null => {
+) => {
   const mockContext = {
     fillRect: vi.fn(),
     clearRect: vi.fn(),
@@ -99,8 +102,8 @@ HTMLCanvasElement.prototype.getContext = vi.fn((
     rect: vi.fn(),
     clip: vi.fn(),
   };
-  return mockContext as unknown as CanvasRenderingContext2D;
-});
+  return mockContext as unknown as CanvasRenderingContext2D | ImageBitmapRenderingContext | WebGLRenderingContext | WebGL2RenderingContext | null;
+}) as typeof HTMLCanvasElement.prototype.getContext;
 
 // Mock HTMLMediaElement methods
 Object.defineProperty(HTMLMediaElement.prototype, 'play', {
@@ -491,6 +494,23 @@ expect.extend(matchers);
 // Cleanup after each test
 // This ensures all tests have proper isolation and no state leaks between tests
 afterEach(() => {
+  // Reset haptics mock state
+  hapticsCallCounter = 0;
+  hapticsCalls.length = 0;
+  
+  // Reset analytics mock state (if analytics mock is used)
+  // Note: Analytics mock is created per test, but we clear any global state here
+  if (typeof window !== 'undefined' && (window as typeof window & { __analyticsEvents?: unknown[] }).__analyticsEvents) {
+    ((window as typeof window & { __analyticsEvents: unknown[] }).__analyticsEvents).length = 0;
+  }
+  
+  // Reset QueryClient mock state
+  // QueryClient mocks are created per test, but we ensure no global state persists
+  
+  // Reset browser API mocks
+  // IntersectionObserver and ResizeObserver callbacks are reset by cleanupTestState
+  // but we ensure no global state persists
+  
   cleanupTestState();
   resetAllMocks();
 
@@ -766,36 +786,18 @@ vi.mock('@/lib/websocket-manager', () => ({
 }));
 
 // Mock UI Context
-vi.mock('@/contexts/UIContext', () => ({
-  UIProvider: ({ children }: { children: React.ReactNode }) => children,
-  useUIContext: vi.fn(() => ({
-    config: {
-      animations: {
-        enabled: true,
-        reduceMotion: false,
-        particles: {
-          enabled: true,
-          maxCount: 100,
-        },
-        transitions: {
-          pageTransition: true,
-          microInteractions: true,
-        },
-      },
-      effects: {
-        glassmorphism: true,
-        shadows: true,
-        gradients: true,
-        blur: true,
-      },
-      interactions: {
-        hapticFeedback: true,
-        soundEffects: false,
-        gestureEnhancements: true,
-      },
-    },
-  })),
-}));
+vi.mock('@/contexts/UIContext', async () => {
+  const actual = await vi.importActual<typeof import('@/contexts/UIContext')>('@/contexts/UIContext');
+  const { ABSOLUTE_MAX_UI_MODE } = await import('@/agi_ui_engine/config/ABSOLUTE_MAX_UI_MODE');
+  
+  return {
+    ...actual,
+    UIProvider: ({ children }: { children: React.ReactNode }) => children,
+    useUIContext: vi.fn(() => ({
+      config: ABSOLUTE_MAX_UI_MODE,
+    })),
+  };
+});
 
 // Mock query client
 vi.mock('@tanstack/react-query', async () => {

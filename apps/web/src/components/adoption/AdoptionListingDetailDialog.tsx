@@ -23,6 +23,7 @@ import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
 import { createLogger } from '@/lib/logger';
+import { FocusRing } from '@/core/tokens';
 
 const logger = createLogger('AdoptionListingDetailDialog');
 
@@ -204,7 +205,7 @@ export function AdoptionListingDetailDialog({
               >
                 <button
                   type="button"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 ${FocusRing.standard}`}
                   aria-label="Previous photo"
                 >
                   <CaretLeft size={20} weight="bold" />
@@ -221,7 +222,7 @@ export function AdoptionListingDetailDialog({
               >
                 <button
                   type="button"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 ${FocusRing.standard}`}
                   aria-label="Next photo"
                 >
                   <CaretRight size={20} weight="bold" />
@@ -232,7 +233,7 @@ export function AdoptionListingDetailDialog({
                   <button
                     key={index}
                     onClick={() => setCurrentPhotoIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2 ${index === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/75'
+                    className={`w-2 h-2 rounded-full transition-all ${FocusRing.standard} ${index === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/75'
                       }`}
                     aria-label={`Go to photo ${index + 1}`}
                     aria-current={index === currentPhotoIndex ? 'true' : undefined}

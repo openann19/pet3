@@ -310,6 +310,7 @@ export default function MapView() {
                   setShowList(!showList);
                 }}
                 className="h-11 w-11 rounded-xl hover:bg-primary/10"
+                aria-label={showList ? 'Hide places list' : 'Show places list'}
               >
                 {showList ? <X size={20} /> : <List size={20} />}
               </Button>
@@ -319,6 +320,7 @@ export default function MapView() {
                 onClick={requestLocation}
                 disabled={isLocating}
                 className="h-11 w-11 rounded-xl hover:bg-primary/10"
+                aria-label={isLocating ? 'Locating your position' : 'Use current location'}
               >
                 <Crosshair size={20} className={isLocating ? 'animate-spin' : ''} />
               </Button>
@@ -418,7 +420,12 @@ export default function MapView() {
                   <h3 className="text-lg font-semibold">
                     {t.map?.nearbyPlaces || 'Nearby Places'} ({filteredPlaces.length})
                   </h3>
-                  <Button variant="ghost" size="icon" onClick={() => setShowList(false)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowList(false)}
+                    aria-label="Close places list"
+                  >
                     <X size={20} />
                   </Button>
                 </div>
@@ -460,6 +467,7 @@ export default function MapView() {
                                 e.stopPropagation();
                                 handleSavePlace(place.id);
                               }}
+                              aria-label={isSaved ? 'Remove from saved places' : 'Save place'}
                             >
                               <Heart
                                 size={16}
@@ -524,7 +532,12 @@ export default function MapView() {
                           <p className="text-sm text-muted-foreground">{place.address}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedMarker(null)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedMarker(null)}
+                        aria-label="Close place details"
+                      >
                         <X size={20} />
                       </Button>
                     </div>

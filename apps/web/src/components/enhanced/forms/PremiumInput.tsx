@@ -11,6 +11,7 @@ import { Eye, EyeSlash, X, CheckCircle, WarningCircle } from '@phosphor-icons/re
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { getColorToken } from '@/core/tokens';
 
 export interface PremiumInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -138,12 +139,13 @@ export function PremiumInput({
     transform: [{ scale: labelScale.value }, { translateY: labelY.value }],
   })) as AnimatedStyle;
 
-  // Use theme colors that match CSS variables
-  // These values match --coral-primary (#FF715B), --error (#FF715B), --border-light (#E5E5E5)
+  // Use design token colors for animated styles
+  // Note: For static styles, CSS variables are used in className
+  const themeMode = _uiConfig.theme.mode || 'light';
   const THEME_COLORS = {
-    primary: '#FF715B',
-    error: '#FF715B',
-    borderLight: '#E5E5E5',
+    primary: getColorToken('accent', themeMode),
+    error: getColorToken('destructive', themeMode),
+    borderLight: getColorToken('border', themeMode),
   };
 
   const borderStyle = useAnimatedStyle(() => ({
