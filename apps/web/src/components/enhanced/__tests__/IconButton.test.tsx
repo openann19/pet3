@@ -14,7 +14,10 @@ vi.mock('@/effects/reanimated/use-hover-lift', () => ({
 }));
 vi.mock('@/effects/reanimated/use-ripple-effect', () => ({
   useRippleEffect: vi.fn(() => ({
-    handlePress: vi.fn(),
+    ripples: [],
+    addRipple: vi.fn(),
+    animatedStyle: {},
+    color: 'rgba(255, 255, 255, 0.5)',
   })),
 }));
 vi.mock('@/effects/reanimated/use-magnetic-hover', () => ({
@@ -40,6 +43,8 @@ vi.mock('react-native-reanimated', () => ({
   useSharedValue: vi.fn(() => ({ value: 0 })),
   useAnimatedStyle: vi.fn(() => ({})),
   withSpring: vi.fn((value) => value),
+  withTiming: vi.fn((value) => value),
+  withSequence: vi.fn((...values) => values[values.length - 1]),
 }));
 vi.mock('@/lib/haptics', () => ({
   haptics: {

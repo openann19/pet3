@@ -702,6 +702,55 @@ vi.mock('@/contexts/UIContext', () => ({
   UIProvider: ({ children }: { children: React.ReactNode }) => children,
   useUIContext: vi.fn(() => ({
     config: {
+      visual: {
+        enableBlur: true,
+        enableGlow: true,
+        enableShadows: true,
+        enableShimmer: true,
+        enable3DTilt: true,
+        backdropSaturation: 1.2,
+        maxElevation: 5,
+        borderRadius: 'md',
+        highContrastText: false,
+      },
+      animation: {
+        enableReanimated: true,
+        smoothEntry: true,
+        tapFeedback: 'spring',
+        motionBlur: false,
+        springPhysics: {
+          damping: 15,
+          stiffness: 300,
+          mass: 1,
+        },
+        showParticles: true,
+        showTrails: true,
+        motionFPS: 60,
+      },
+      performance: {
+        runOnUIThread: true,
+        skipReactRender: false,
+        useSkiaWhereAvailable: true,
+        flatListOptimized: true,
+        layoutAwareAnimations: true,
+      },
+      feedback: {
+        haptics: true,
+        hapticStrength: 'medium',
+        sound: false,
+        showTooltips: true,
+      },
+      theme: {
+        adaptiveMood: true,
+        gradientIntensity: 0.8,
+        themeVariants: ['glass', 'neon'],
+        avatarGlow: true,
+        dynamicBackground: true,
+      },
+      debug: {
+        logFrameDrops: false,
+        traceSharedValues: false,
+      },
       animations: {
         enabled: true,
         reduceMotion: false,
