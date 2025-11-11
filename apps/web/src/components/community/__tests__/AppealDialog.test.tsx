@@ -1,7 +1,7 @@
 /**
  * AppealDialog tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppealDialog } from '@/components/community/AppealDialog';
@@ -38,15 +38,20 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock spark.user()
-global.spark = {
+type PartialSpark = Partial<Window['spark']>;
+(global as typeof globalThis & { spark?: PartialSpark }).spark = {
   user: vi.fn().mockResolvedValue({ id: 'user-1', login: 'testuser' }),
-} as any;
+};
 
 describe('AppealDialog', () => {
   const mockOnOpenChange = vi.fn();
   const mockOnAppealed = vi.fn();
 
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 

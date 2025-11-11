@@ -20,7 +20,7 @@
    */
   .focus-ring:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 107, 107, 0.4));
+    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 113, 91, 0.4));
   }
 
   /**
@@ -60,7 +60,7 @@
   [role='link']:focus-visible,
   [tabindex]:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 107, 107, 0.4));
+    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 113, 91, 0.4));
   }
 
   /**
@@ -88,7 +88,7 @@
    */
   .focus-visible-ring:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 107, 107, 0.4));
+    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 113, 91, 0.4));
   }
 
   @media (prefers-contrast: high) {
@@ -136,7 +136,7 @@
    */
   .focus-within-ring:focus-within {
     outline: none;
-    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 107, 107, 0.4));
+    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 113, 91, 0.4));
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * PostComposer tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostComposer } from '@/components/community/PostComposer';
@@ -49,25 +49,30 @@ vi.mock('@/hooks/useStorage', () => ({
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
 }));
 
 // Mock spark.user()
-global.spark = {
+type PartialSpark = Partial<Window['spark']>;
+(global as typeof globalThis & { spark?: PartialSpark }).spark = {
   user: vi.fn().mockResolvedValue({
     id: 'user-1',
     login: 'testuser',
     avatarUrl: 'https://example.com/avatar.jpg',
   }),
-} as any;
+};
 
 describe('PostComposer', () => {
   const mockOnOpenChange = vi.fn();
   const mockOnPostCreated = vi.fn();
 
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 

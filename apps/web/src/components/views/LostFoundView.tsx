@@ -203,6 +203,7 @@ export default function LostFoundView() {
                   }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search lost and found alerts"
                   className="pl-10"
                 />
               </div>

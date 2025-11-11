@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AdoptionFiltersSheet } from '../AdoptionFiltersSheet';
+import { AdoptionFiltersSheet } from '@/components/adoption/AdoptionFiltersSheet';
 import type { AdoptionListingFilters } from '@/lib/adoption-marketplace-types';
 import { haptics } from '@/lib/haptics';
 
@@ -31,6 +31,11 @@ describe('AdoptionFiltersSheet', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders filters sheet when open', () => {

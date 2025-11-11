@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { MapLocationPicker } from '../MapLocationPicker';
+import { MapLocationPicker } from '@/components/lost-found/MapLocationPicker';
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div {...props}>{children}</div>
   ),
   useAnimatedStyleValue: vi.fn((style: unknown) => {
@@ -255,7 +255,7 @@ describe('MapLocationPicker', () => {
 
   describe('Loading States', () => {
     it('should disable buttons while loading address', async () => {
-      vi.mocked(global.fetch).mockImplementation(() => new Promise(() => {}));
+      vi.mocked(global.fetch).mockImplementation(() => new Promise(() => { }));
 
       render(<MapLocationPicker onSelect={mockOnSelect} onClose={mockOnClose} />);
 

@@ -3,9 +3,9 @@
  * Location: apps/web/src/components/chat/__tests__/MessageAttachments.test.tsx
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import MessageAttachments from '../MessageAttachments';
+import MessageAttachments from '@/components/chat/MessageAttachments';
 import type { MessageAttachment } from '@/lib/chat-types';
 
 // Mock useHoverLift
@@ -49,6 +49,11 @@ vi.mock('@/effects/reanimated/animated-view', () => ({
 describe('MessageAttachments', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   const mockVoiceAttachment: MessageAttachment & { waveform?: number[] } = {

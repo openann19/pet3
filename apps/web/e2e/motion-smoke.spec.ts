@@ -19,21 +19,37 @@ test.describe('AdvancedChatWindow Performance', () => {
 
     // Set up RAF monitoring
     await page.evaluate(() => {
-      (window as any).__frameTimes = [];
-      (window as any).__lastFrameTime = performance.now();
-      (window as any).__frameCount = 0;
-      (window as any).__droppedFrames = 0;
+      type WindowWithMetrics = typeof window & {
+        __frameTimes?: number[];
+        __lastFrameTime?: number;
+        __frameCount?: number;
+        __droppedFrames?: number;
+      };
+      (window as WindowWithMetrics).__frameTimes = [];
+      (window as WindowWithMetrics).__lastFrameTime = performance.now();
+      (window as WindowWithMetrics).__frameCount = 0;
+      (window as WindowWithMetrics).__droppedFrames = 0;
 
       function measureFrame() {
         const now = performance.now();
-        const delta = now - (window as any).__lastFrameTime;
-        (window as any).__lastFrameTime = now;
-        (window as any).__frameTimes.push(delta);
-        (window as any).__frameCount++;
+        type WindowWithMetrics = typeof window & {
+          __frameTimes?: number[];
+          __lastFrameTime?: number;
+          __frameCount?: number;
+          __droppedFrames?: number;
+        };
+        const win = window as WindowWithMetrics;
+        const delta = now - (win.__lastFrameTime ?? 0);
+        win.__lastFrameTime = now;
+        if (win.__frameTimes) {
+          win.__frameTimes.push(delta);
+        }
+        win.__frameCount = (win.__frameCount ?? 0) + 1;
 
         // Check for dropped frames (frame time > 20ms at 60fps, or > 16.67ms ideally)
         if (delta > 20) {
-          (window as any).__droppedFrames++;
+          const win = window as WindowWithMetrics;
+          win.__droppedFrames = (win.__droppedFrames ?? 0) + 1;
         }
 
         requestAnimationFrame(measureFrame);
@@ -66,9 +82,15 @@ test.describe('AdvancedChatWindow Performance', () => {
 
     // Get performance metrics
     const metrics = await page.evaluate(() => {
-      const frameTimes = (window as any).__frameTimes || [];
-      const frameCount = (window as any).__frameCount || 0;
-      const droppedFrames = (window as any).__droppedFrames || 0;
+      type WindowWithMetrics = typeof window & {
+        __frameTimes?: number[];
+        __frameCount?: number;
+        __droppedFrames?: number;
+      };
+      const win = window as WindowWithMetrics;
+      const frameTimes = win.__frameTimes || [];
+      const frameCount = win.__frameCount || 0;
+      const droppedFrames = win.__droppedFrames || 0;
 
       return {
         frameCount,

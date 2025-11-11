@@ -2,7 +2,7 @@ import { PetRatings } from '@/components/PetRatings';
 import { TrustBadges } from '@/components/TrustBadges';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { usePhotoCarousel } from '@/hooks/usePhotoCarousel';
 import { haptics } from '@/lib/haptics';
@@ -117,6 +117,10 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0 border-0 bg-transparent">
+        <DialogTitle className="sr-only">{pet.name} - Pet Details</DialogTitle>
+        <DialogDescription className="sr-only">
+          {pet.bio ? `Details for ${pet.name}. ${pet.bio}` : `Details for ${pet.name}`}
+        </DialogDescription>
         {open && dialogPresence.shouldRender ? (
           <AnimatedView
             style={[dialogStyle, dialogPresence.animatedStyle]}
@@ -138,7 +142,8 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
               onMouseEnter={closeButtonHover.handleEnter}
               onMouseLeave={closeButtonHover.handleLeave}
               onMouseDown={closeButtonTap.handlePress}
-              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full glass-strong flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl cursor-pointer"
+              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full glass-strong flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+              aria-label="Close dialog"
             >
               <X size={20} className="text-white drop-shadow-lg" weight="bold" />
             </AnimatedView>
@@ -197,8 +202,8 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                           }
                         }}
                         className={`h-2 rounded-full transition-all shadow-lg ${idx === currentIndex
-                            ? 'bg-white w-10'
-                            : 'bg-white/50 w-2 hover:bg-white/75'
+                          ? 'bg-white w-10'
+                          : 'bg-white/50 w-2 hover:bg-white/75'
                           }`}
                       />
                     ))}
@@ -208,7 +213,7 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
 
               <AnimatedView className="absolute bottom-6 left-6 text-white z-20">
                 <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-4xl sm:text-5xl font-bold drop-shadow-2xl">{pet.name}</h2>
+                  <h2 className="text-4xl sm:text-5xl font-bold drop-shadow-2xl" aria-hidden="true">{pet.name}</h2>
                   {pet.verified && (
                     <AnimatedView>
                       <ShieldCheck size={32} weight="fill" className="text-accent drop-shadow-lg" />

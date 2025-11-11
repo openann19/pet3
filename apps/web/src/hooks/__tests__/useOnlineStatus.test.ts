@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useOnlineStatus } from '../useOnlineStatus';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 describe('useOnlineStatus', () => {
   let originalNavigator: Navigator;

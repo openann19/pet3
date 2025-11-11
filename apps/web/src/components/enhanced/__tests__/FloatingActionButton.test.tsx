@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { FloatingActionButton } from '../FloatingActionButton';
+import { FloatingActionButton } from '@/components/enhanced/FloatingActionButton';
 
 // Mock useReducedMotion
 vi.mock('@/hooks/useReducedMotion', () => ({

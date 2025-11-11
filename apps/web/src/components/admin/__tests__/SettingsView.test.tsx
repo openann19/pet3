@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import SettingsView from '../SettingsView';
+import SettingsView from '@/components/admin/SettingsView';
 import { useStorage } from '@/hooks/use-storage';
 import { triggerHaptic } from '@/lib/haptics';
 
@@ -70,6 +70,11 @@ describe('SettingsView', () => {
       }
       return [defaultValue, vi.fn(), vi.fn()];
     });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders settings view', async () => {

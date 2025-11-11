@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -204,7 +204,8 @@ export function AdoptionListingDetailDialog({
               >
                 <button
                   type="button"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+                  aria-label="Previous photo"
                 >
                   <CaretLeft size={20} weight="bold" />
                 </button>
@@ -220,7 +221,8 @@ export function AdoptionListingDetailDialog({
               >
                 <button
                   type="button"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center shadow-lg z-10 focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+                  aria-label="Next photo"
                 >
                   <CaretRight size={20} weight="bold" />
                 </button>
@@ -230,8 +232,10 @@ export function AdoptionListingDetailDialog({
                   <button
                     key={index}
                     onClick={() => setCurrentPhotoIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${index === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/75'
+                    className={`w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2 ${index === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/75'
                       }`}
+                    aria-label={`Go to photo ${index + 1}`}
+                    aria-current={index === currentPhotoIndex ? 'true' : undefined}
                   />
                 ))}
               </div>
@@ -254,6 +258,9 @@ export function AdoptionListingDetailDialog({
           <div>
             <DialogHeader>
               <DialogTitle className="text-2xl">{listing.petName}</DialogTitle>
+              <DialogDescription>
+                Adoption listing for {listing.petName} located in {listing.location.city}, {listing.location.country}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex items-center gap-2 mt-2 text-muted-foreground">
               <MapPin size={16} weight="fill" />
@@ -354,21 +361,28 @@ export function AdoptionListingDetailDialog({
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">{'Apply to Adopt'}</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowApplicationForm(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowApplicationForm(false)}
+                  aria-label="Close application form"
+                >
                   <X size={20} />
                 </Button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <Label>{'Message'}</Label>
+                  <Label htmlFor="application-message">{'Message'}</Label>
                   <Textarea
+                    id="application-message"
                     placeholder={'Tell the owner why you want to adopt...'}
                     value={applicationData.message}
                     onChange={(e) =>
                       setApplicationData({ ...applicationData, message: e.target.value })
                     }
                     rows={4}
+                    aria-label="Application message"
                   />
                 </div>
 

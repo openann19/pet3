@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useMatches } from '../useMatches';
+import { useMatches } from '@/hooks/useMatches';
 import { matchingAPI, petAPI } from '@/lib/api-services';
 import { usePets } from '@/hooks/api/use-pets';
 
@@ -40,6 +40,10 @@ function createWrapper() {
 
 describe('useMatches', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
@@ -129,8 +133,10 @@ describe('useMatches', () => {
       wrapper: createWrapper(),
     });
 
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
     });
 
     expect(result.current.matches).toHaveLength(1);
@@ -234,8 +240,10 @@ describe('useMatches', () => {
       wrapper: createWrapper(),
     });
 
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
     });
 
     expect(result.current.matchedPets.length).toBe(1);

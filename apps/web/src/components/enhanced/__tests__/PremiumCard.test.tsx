@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PremiumCard } from '../PremiumCard';
+import { PremiumCard } from '@/components/enhanced/PremiumCard';
 import { useHoverLift } from '@petspark/motion';
 
 vi.mock('@petspark/motion', () => ({
@@ -21,7 +21,7 @@ vi.mock('react-native-reanimated', () => ({
   useAnimatedStyle: vi.fn(() => ({})),
 }));
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div data-testid="animated-view" {...props}>
       {children}
     </div>

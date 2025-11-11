@@ -7,5 +7,5 @@
 export * from './mock-factories';
 export * from './render-helpers';
 export * from './api-mocks';
-export * from '../utils/test-helpers';
-
+export * from './test-helpers';
+export * from './act-helpers';

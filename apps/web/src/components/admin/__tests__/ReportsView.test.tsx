@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ReportsView from '../ReportsView';
+import ReportsView from '@/components/admin/ReportsView';
 import { adminApi } from '@/api/admin-api';
 import { useStorage } from '@/hooks/use-storage';
 
@@ -82,6 +82,11 @@ describe('ReportsView', () => {
     });
     vi.mocked(adminReportsApi.resolveReport).mockResolvedValue(mockReports[0]!);
     vi.mocked(adminReportsApi.dismissReport).mockResolvedValue(mockReports[0]!);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders reports view', async () => {

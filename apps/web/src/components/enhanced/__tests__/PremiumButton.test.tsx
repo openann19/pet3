@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { PremiumButton } from '../PremiumButton';
+import { PremiumButton } from '@/components/enhanced/PremiumButton';
 
 vi.mock('@/effects/reanimated/use-hover-lift', () => ({
   useHoverLift: vi.fn(() => ({

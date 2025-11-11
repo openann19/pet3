@@ -36,7 +36,7 @@ beforeEach(() => {
         addListener: vi.fn(),
         removeListener: vi.fn(),
         dispatchEvent: vi.fn(),
-      }) as any
+      }) as MediaQueryList
   );
 });
 

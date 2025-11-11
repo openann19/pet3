@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './styles/reset.css';
 @import './styles/focus.css';
 
 @layer base {
@@ -842,17 +843,28 @@ html * {
 
 :root {
   /* PETSPARK Light Theme Design System - Color Palette */
-  --background-cream: #F5F5F0;
+  --background-cream: #FFF9F0;
   --surface-white: #FFFFFF;
-  --text-primary: #1F2937;
-  --text-secondary: #6B7280;
-  --text-tertiary: #9CA3AF;
-  --coral-primary: #FF8B7B;
-  --coral-hover: #FF7A68;
-  --coral-active: #FF6957;
-  --blue-link: #4A90E2;
-  --border-light: #E5E7EB;
-  --border-focus: #D1D5DB;
+  --text-primary: #222222;
+  --text-secondary: #666666;
+  --text-tertiary: #888888;
+
+  /* Semantic colors */
+  --success: #28C76F;
+  --success-foreground: #FFFFFF;
+  --warning: #FFC107;
+  --warning-foreground: #222222;
+  --error: #FF715B;
+  --error-foreground: #FFFFFF;
+  --disabled: #BDBDBD;
+  --coral-primary: #FF715B;
+  --coral-hover: #FF5A40;
+  --coral-active: #FF4430;
+  --coral-link: #FF715B;
+  --secondary-accent-orange: #FFE4B2;
+  --secondary-accent-yellow: #FFD580;
+  --border-light: #E5E5E5;
+  --border-focus: #FF715B;
 
   /* Typography */
   --text-xs: 12px;
@@ -886,73 +898,79 @@ html * {
   --radius-full: 9999px;
 
   /* Legacy variables - keeping for compatibility */
-  --background: #F5F5F0;
-  --foreground: #1F2937;
+  --background: #FFF9F0;
+  --foreground: #222222;
 
   --card: #FFFFFF;
-  --card-foreground: #1F2937;
+  --card-foreground: #222222;
 
   --popover: #FFFFFF;
-  --popover-foreground: #1F2937;
+  --popover-foreground: #222222;
 
-  --primary: #FF8B7B;
+  --primary: #FF715B;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #6366F1;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #FFE4B2;
+  --secondary-foreground: #222222;
 
   --muted: #F3F4F6;
-  --muted-foreground: #6B7280;
+  --muted-foreground: #666666;
 
-  --accent: #FFA500;
-  --accent-foreground: #1F2937;
+  --accent: #FFD580;
+  --accent-foreground: #222222;
 
-  --destructive: #EF4444;
+  --destructive: #FF715B;
   --destructive-foreground: #FFFFFF;
 
-  --border: #E5E7EB;
-  --input: #E5E7EB;
-  --ring: #FF8B7B;
+  --success: #28C76F;
+  --success-foreground: #FFFFFF;
+
+  --warning: #FFC107;
+  --warning-foreground: #222222;
+
+  --border: #E5E5E5;
+  --input: #E5E5E5;
+  --ring: #FF715B;
 
   --radius: 0.75rem;
 
   --lavender: oklch(0.72 0.15 290);
 
   /* Button tokens - Light theme */
-  --btn-hover-bg: #FF7A68;
-  --btn-press-bg: #FF6957;
-  --btn-focus-ring: #FF8B7B;
+  --btn-hover-bg: #FF5A40;
+  --btn-press-bg: #FF4430;
+  --btn-focus-ring: #FF715B;
 
-  --btn-disabled-fg: #9CA3AF;
+  --btn-disabled-fg: #BDBDBD;
   --btn-disabled-bg: #F3F4F6;
-  --btn-disabled-border: #E5E7EB;
+  --btn-disabled-border: #E5E5E5;
 
   --btn-ghost-hover-bg: #F3F4F6;
-  --btn-ghost-hover-fg: #1F2937;
+  --btn-ghost-hover-fg: #222222;
 
-  --btn-outline-hover-bg: #F9FAFB;
-  --btn-outline-hover-fg: #1F2937;
+  --btn-outline-hover-bg: #FFF9F0;
+  --btn-outline-hover-fg: #222222;
 
-  --btn-link-hover-fg: #4A90E2;
+  --btn-link-hover-fg: #FF715B;
 
-  --btn-destructive-hover-bg: #DC2626;
-  --btn-destructive-press-bg: #B91C1C;
+  --btn-destructive-hover-bg: #FF5A40;
+  --btn-destructive-press-bg: #FF4430;
 
-  --btn-secondary-hover-bg: oklch(0.65 0.22 250);
-  --btn-secondary-press-bg: oklch(0.62 0.24 250);
+  --btn-secondary-hover-bg: #FFD580;
+  --btn-secondary-press-bg: #FFC966;
 
   /* Notification Tabs theme tokens */
   --tabs-bg: transparent;
-  --tabs-indicator: rgb(59 130 246); /* blue-500 */
+  --tabs-indicator: #FF715B;
   --tab-bg: rgba(255, 255, 255, 0.6);
-  --tab-fg: rgb(55 65 81); /* gray-700 */
-  --tab-active-bg: rgb(17 24 39); /* gray-900 */
+  --tab-fg: #666666;
+  --tab-active-bg: #FF715B;
   --tab-active-fg: white;
-  --focus-ring: rgb(59 130 246);
-  --badge-bg: rgb(229 231 235); /* gray-200 */
-  --badge-fg: rgb(17 24 39); /* gray-900 */
-  --badge-active-bg: white;
-  --badge-active-fg: black;
+  --focus-ring: #FF715B;
+  --badge-bg: #E5E5E5;
+  --badge-fg: #222222;
+  --badge-active-bg: #FF715B;
+  --badge-active-fg: white;
 }
 
 .dark {

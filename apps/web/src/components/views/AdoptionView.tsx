@@ -241,6 +241,7 @@ export default function AdoptionView() {
                 placeholder={'Search by pet name, breed, location...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search adoption listings"
                 className="pl-10"
               />
             </div>

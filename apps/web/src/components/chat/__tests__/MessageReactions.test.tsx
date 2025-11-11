@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import MessageReactions from '../MessageReactions';
+import MessageReactions from '@/components/chat/MessageReactions';
 import type { MessageReaction } from '@/lib/chat-types';
 
 const mockReactions: MessageReaction[] = [
@@ -37,6 +37,11 @@ describe('MessageReactions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders reaction buttons for each unique emoji', () => {

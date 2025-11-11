@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Spinner } from '../spinner';
+import { Spinner } from '@/components/ui/spinner';
 import * as useReducedMotionHook from '@/hooks/useReducedMotion';
 
 // Mock the useReducedMotion hook

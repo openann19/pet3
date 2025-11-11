@@ -97,7 +97,7 @@ vi.mock('@/components/auth/OAuthButtons', () => ({
 }));
 
 vi.mock('@/components/auth/AgeGateModal', () => ({
-  default: ({ open, onVerified }: any) =>
+  default: ({ open, onVerified }: { open?: boolean; onVerified?: () => void }) =>
     open ? (
       <div data-testid="age-gate-modal">
         <button onClick={() => onVerified()}>Verify Age</button>
@@ -117,6 +117,11 @@ describe('SignUpForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should render sign up form', async () => {

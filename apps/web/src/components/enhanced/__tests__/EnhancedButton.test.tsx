@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { EnhancedButton } from '../EnhancedButton';
+import { EnhancedButton } from '@/components/enhanced/EnhancedButton';
 
 describe('EnhancedButton', () => {
   beforeEach(() => {
@@ -339,4 +339,3 @@ describe('EnhancedButton', () => {
     });
   });
 });
-

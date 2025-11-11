@@ -81,6 +81,7 @@ describe('DashboardView', () => {
   });
 
   afterEach(() => {
+    vi.clearAllMocks();
     vi.restoreAllMocks();
   });
 

@@ -2,7 +2,7 @@ import type { Pet } from '@/lib/types';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { EnhancedPetDetailView } from '../EnhancedPetDetailView';
+import { EnhancedPetDetailView } from '@/components/enhanced/EnhancedPetDetailView';
 
 vi.mock('@/lib/haptics', () => ({
   haptics: {

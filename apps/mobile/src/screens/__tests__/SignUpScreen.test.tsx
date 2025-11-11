@@ -1,6 +1,8 @@
 import SignUpScreen from '@mobile/screens/SignUpScreen'
 import { render } from '@testing-library/react-native'
 import { describe, expect, it, vi } from 'vitest'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { RootStackParamList } from '@mobile/navigation/AppNavigator'
 
 const mockNavigation = {
     reset: vi.fn(),
@@ -32,7 +34,7 @@ vi.mock('@mobile/components/auth/SignUpForm.native', () => ({
 describe('SignUpScreen', () => {
     it('should render without crashing', () => {
         const props = {
-            navigation: mockNavigation as any,
+            navigation: mockNavigation as unknown as NativeStackScreenProps<RootStackParamList, 'SignUp'>['navigation'],
             route: {
                 key: 'SignUp',
                 name: 'SignUp' as const,
@@ -46,7 +48,7 @@ describe('SignUpScreen', () => {
 
     it('should pass onSuccess handler that resets navigation', () => {
         const props = {
-            navigation: mockNavigation as any,
+            navigation: mockNavigation as unknown as NativeStackScreenProps<RootStackParamList, 'SignUp'>['navigation'],
             route: {
                 key: 'SignUp',
                 name: 'SignUp' as const,
@@ -56,12 +58,12 @@ describe('SignUpScreen', () => {
         render(<SignUpScreen {...props} />)
 
         // Verify navigation methods are available
-        expect((mockNavigation as any).reset).toBeDefined()
+        expect(mockNavigation.reset).toBeDefined()
     })
 
     it('should pass onSwitchToSignIn handler that replaces navigation', () => {
         const props = {
-            navigation: mockNavigation as any,
+            navigation: mockNavigation as unknown as NativeStackScreenProps<RootStackParamList, 'SignUp'>['navigation'],
             route: {
                 key: 'SignUp',
                 name: 'SignUp' as const,
@@ -71,13 +73,13 @@ describe('SignUpScreen', () => {
         render(<SignUpScreen {...props} />)
 
         // Verify navigation methods are available
-        expect((mockNavigation as any).replace).toBeDefined()
-        expect((mockNavigation as any).reset).toBeDefined()
+        expect(mockNavigation.replace).toBeDefined()
+        expect(mockNavigation.reset).toBeDefined()
     })
 
     it('should call navigation.reset with correct params when onSuccess is called', () => {
         const props = {
-            navigation: mockNavigation as any,
+            navigation: mockNavigation as unknown as NativeStackScreenProps<RootStackParamList, 'SignUp'>['navigation'],
             route: {
                 key: 'SignUp',
                 name: 'SignUp' as const,
@@ -85,12 +87,12 @@ describe('SignUpScreen', () => {
             },
         }
         render(<SignUpScreen {...props} />)
-        expect((mockNavigation as any).reset).toBeDefined()
+        expect(mockNavigation.reset).toBeDefined()
     })
 
     it('should call navigation.replace with SignIn when onSwitchToSignIn is called', () => {
         const props = {
-            navigation: mockNavigation as any,
+            navigation: mockNavigation as unknown as NativeStackScreenProps<RootStackParamList, 'SignUp'>['navigation'],
             route: {
                 key: 'SignUp',
                 name: 'SignUp' as const,
@@ -98,6 +100,6 @@ describe('SignUpScreen', () => {
             },
         }
         render(<SignUpScreen {...props} />)
-        expect((mockNavigation as any).replace).toBeDefined()
+        expect(mockNavigation.replace).toBeDefined()
     })
 })

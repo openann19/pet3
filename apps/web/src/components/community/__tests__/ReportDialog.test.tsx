@@ -1,8 +1,8 @@
 /**
  * ReportDialog tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReportDialog } from '@/components/community/ReportDialog';
 
@@ -43,20 +43,25 @@ vi.mock('@/utils/reduced-motion', () => ({
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   },
 }));
 
 // Mock spark.user()
-global.spark = {
+type PartialSpark = Partial<Window['spark']>;
+(global as typeof globalThis & { spark?: PartialSpark }).spark = {
   user: vi.fn().mockResolvedValue({ id: 'user-1' }),
-} as any;
+};
 
 describe('ReportDialog', () => {
   const mockOnOpenChange = vi.fn();
   const mockOnReported = vi.fn();
 
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
@@ -115,10 +120,14 @@ describe('ReportDialog', () => {
     );
 
     const submitButton = screen.getByRole('button', { name: /submit report/i });
-    await user.click(submitButton);
+    await act(async () => {
+      await user.click(submitButton);
+    });
 
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Please select a reason for reporting');
+    await act(async () => {
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Please select a reason for reporting');
+      });
     });
   });
 

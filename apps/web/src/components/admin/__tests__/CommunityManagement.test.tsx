@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import CommunityManagement from '../CommunityManagement';
+import CommunityManagement from '@/components/admin/CommunityManagement';
 import { useStorage } from '@/hooks/use-storage';
 import { communityService } from '@/lib/community-service';
 
@@ -76,6 +76,11 @@ describe('CommunityManagement', () => {
       return [defaultValue, vi.fn(), vi.fn()];
     });
     mockCommunityService.getFeed.mockResolvedValue({ posts: mockPosts, total: mockPosts.length } as never);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders community management', async () => {

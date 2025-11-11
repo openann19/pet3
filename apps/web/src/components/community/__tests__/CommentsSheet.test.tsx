@@ -1,7 +1,7 @@
 /**
  * CommentsSheet tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CommentsSheet } from '@/components/community/CommentsSheet';
@@ -37,9 +37,9 @@ vi.mock('sonner', () => ({
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
 }));
 
 vi.mock('@/contexts/AppContext', () => ({
@@ -61,6 +61,10 @@ describe('CommentsSheet', () => {
   const mockOnOpenChange = vi.fn();
 
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
@@ -156,7 +160,7 @@ describe('CommentsSheet', () => {
       },
     ];
 
-    vi.mocked(communityService.getComments).mockResolvedValue(mockComments as any);
+    vi.mocked(communityService.getComments).mockResolvedValue(mockComments as Awaited<ReturnType<typeof communityService.getComments>>);
 
     render(
       <CommentsSheet

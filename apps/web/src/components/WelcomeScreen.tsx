@@ -272,7 +272,7 @@ export default function WelcomeScreen({
   }
 
   return (
-    <main className="fixed inset-0 bg-[#F5F5F0] overflow-auto">
+    <main className="fixed inset-0 bg-[var(--background-cream)] overflow-auto">
       <div className="min-h-screen flex flex-col">
         <AnimatedView style={languageButtonStyle} className="absolute top-6 right-6 z-10">
           <Button
@@ -383,7 +383,7 @@ export default function WelcomeScreen({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleLegalClick('terms')}
-                  className="text-[#4A90E2] font-medium hover:underline focus:outline-none"
+                  className="text-[var(--coral-primary)] font-medium hover:underline focus:outline-none"
                 >
                   {t.welcome.terms}
                 </a>{' '}
@@ -393,7 +393,7 @@ export default function WelcomeScreen({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleLegalClick('privacy')}
-                  className="text-[#4A90E2] font-medium hover:underline focus:outline-none"
+                  className="text-[var(--coral-primary)] font-medium hover:underline focus:outline-none"
                 >
                   {t.welcome.privacy}
                 </a>

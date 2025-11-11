@@ -5,8 +5,8 @@
  */
 
 import { vi } from 'vitest';
-import type { MockAPIClient } from '../mocks/api-client';
-import { createMockAPIClient, createMockAPIResponse, createMockAPIError } from '../mocks/api-client';
+import type { MockAPIClient } from '@/test/mocks/api-client';
+import { createMockAPIClient, createMockAPIResponse, createMockAPIError } from '@/test/mocks/api-client';
 import type { Pet, Match, User, ChatRoom, Message } from '@/lib/types';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import {
@@ -232,4 +232,3 @@ export function setupMockAPI(
 
   return client;
 }
-

@@ -7,6 +7,27 @@ import { createMockIntersectionObserver } from './mocks/intersection-observer';
 import { createMockResizeObserver } from './mocks/resize-observer';
 import { setupStorageMocks } from './mocks/storage';
 import { setupWebRTCMocks } from './mocks/webrtc';
+import { cleanupTestState, resetAllMocks } from './utilities/test-helpers';
+
+// Mock global fetch
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    json: async () => ({}),
+    text: async () => '',
+    blob: async () => new Blob(),
+    arrayBuffer: async () => new ArrayBuffer(0),
+    headers: new Headers(),
+    redirected: false,
+    type: 'default' as ResponseType,
+    url: '',
+    clone: vi.fn(),
+    body: null,
+    bodyUsed: false,
+  } as Response)
+) as typeof fetch;
 
 type GlobalWithDevFlag = typeof globalThis & { __DEV__?: boolean };
 
@@ -48,32 +69,38 @@ Object.defineProperty(window, 'scroll', { value: vi.fn(), writable: true });
 Object.defineProperty(Element.prototype, 'scrollTo', { value: vi.fn(), writable: true });
 
 // Mock HTMLCanvasElement methods
-HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-  fillRect: vi.fn(),
-  clearRect: vi.fn(),
-  getImageData: vi.fn(() => ({ data: new Array(4) })),
-  putImageData: vi.fn(),
-  createImageData: vi.fn(() => ({ data: new Array(4) })),
-  setTransform: vi.fn(),
-  drawImage: vi.fn(),
-  save: vi.fn(),
-  fillText: vi.fn(),
-  restore: vi.fn(),
-  beginPath: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  closePath: vi.fn(),
-  stroke: vi.fn(),
-  translate: vi.fn(),
-  scale: vi.fn(),
-  rotate: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  measureText: vi.fn(() => ({ width: 0 })),
-  transform: vi.fn(),
-  rect: vi.fn(),
-  clip: vi.fn(),
-})) as any;
+HTMLCanvasElement.prototype.getContext = vi.fn((
+  _contextId?: string,
+  _options?: unknown
+): CanvasRenderingContext2D | null => {
+  const mockContext = {
+    fillRect: vi.fn(),
+    clearRect: vi.fn(),
+    getImageData: vi.fn(() => ({ data: new Array(4) })),
+    putImageData: vi.fn(),
+    createImageData: vi.fn(() => ({ data: new Array(4) })),
+    setTransform: vi.fn(),
+    drawImage: vi.fn(),
+    save: vi.fn(),
+    fillText: vi.fn(),
+    restore: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    translate: vi.fn(),
+    scale: vi.fn(),
+    rotate: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+    measureText: vi.fn(() => ({ width: 0 })),
+    transform: vi.fn(),
+    rect: vi.fn(),
+    clip: vi.fn(),
+  };
+  return mockContext as unknown as CanvasRenderingContext2D;
+});
 
 // Mock HTMLMediaElement methods
 Object.defineProperty(HTMLMediaElement.prototype, 'play', {
@@ -100,40 +127,66 @@ interface HapticsShim {
   error: () => void;
 }
 
+// Deterministic haptics mock - tracks call order and provides consistent behavior
+interface HapticsCall {
+  method: string;
+  args: unknown[];
+  timestamp: number;
+}
+
+let hapticsCallCounter = 0;
+const hapticsCalls: HapticsCall[] = [];
+
+const createDeterministicHapticsMock = () => {
+  const noop = () => undefined;
+
+  // Deterministic mock that tracks calls in order
+  const createMockMethod = (methodName: string) => {
+    return vi.fn((...args: unknown[]) => {
+      hapticsCallCounter += 1;
+      hapticsCalls.push({
+        method: methodName,
+        args,
+        timestamp: hapticsCallCounter, // Deterministic timestamp
+      });
+      return undefined;
+    });
+  };
+
+  return {
+    trigger: createMockMethod('trigger'),
+    light: createMockMethod('light'),
+    medium: createMockMethod('medium'),
+    heavy: createMockMethod('heavy'),
+    selection: createMockMethod('selection'),
+    success: createMockMethod('success'),
+    warning: createMockMethod('warning'),
+    error: createMockMethod('error'),
+    impact: createMockMethod('impact'),
+    notification: createMockMethod('notification'),
+    isHapticSupported: vi.fn(() => false), // Always false in test environment
+  };
+};
+
 // Minimal haptics shim expected by UI components during tests
 const globalWithHaptics = globalThis as typeof globalThis & { haptics?: HapticsShim };
-const hapticsMock = vi.fn(() => undefined);
+const hapticsMockInstance = createDeterministicHapticsMock();
 const shim: HapticsShim = {
-  trigger: hapticsMock,
-  light: vi.fn(() => undefined),
-  medium: vi.fn(() => undefined),
-  heavy: vi.fn(() => undefined),
-  selection: vi.fn(() => undefined),
-  success: vi.fn(() => undefined),
-  warning: vi.fn(() => undefined),
-  error: vi.fn(() => undefined),
+  trigger: hapticsMockInstance.trigger,
+  light: hapticsMockInstance.light,
+  medium: hapticsMockInstance.medium,
+  heavy: hapticsMockInstance.heavy,
+  selection: hapticsMockInstance.selection,
+  success: hapticsMockInstance.success,
+  warning: hapticsMockInstance.warning,
+  error: hapticsMockInstance.error,
 };
 
 globalWithHaptics.haptics = shim;
 
-// Mock the haptics module to use the global shim
+// Mock the haptics module to use the deterministic mock
 vi.mock('@/lib/haptics', () => {
-  const noop = () => undefined;
-  const createHapticsMock = () => ({
-    trigger: vi.fn(noop),
-    light: vi.fn(noop),
-    medium: vi.fn(noop),
-    heavy: vi.fn(noop),
-    selection: vi.fn(noop),
-    success: vi.fn(noop),
-    warning: vi.fn(noop),
-    error: vi.fn(noop),
-    impact: vi.fn(noop),
-    notification: vi.fn(noop),
-    isHapticSupported: vi.fn(() => false),
-  });
-
-  const hapticsMock = createHapticsMock();
+  const hapticsMock = createDeterministicHapticsMock();
 
   // Ensure all methods are properly bound
   const hapticsProxy = new Proxy(hapticsMock, {
@@ -141,14 +194,14 @@ vi.mock('@/lib/haptics', () => {
       if (prop in target && typeof target[prop as keyof typeof target] === 'function') {
         return target[prop as keyof typeof target];
       }
-      // Return a mock function for any missing methods
-      return vi.fn(noop);
+      // Return a deterministic mock function for any missing methods
+      return vi.fn(() => undefined);
     }
   });
 
   return {
     haptics: hapticsProxy,
-    triggerHaptic: vi.fn(noop),
+    triggerHaptic: vi.fn(() => undefined),
     HapticFeedbackType: {
       light: 'light',
       medium: 'medium',
@@ -161,10 +214,20 @@ vi.mock('@/lib/haptics', () => {
   };
 });
 
-// Logger mock - comprehensive mock matching actual logger implementation
+// Logger mock - deterministic mock matching actual logger implementation
+// Removed all 'any' types for type safety
+interface MockLogger {
+  warn: ReturnType<typeof vi.fn>;
+  info: ReturnType<typeof vi.fn>;
+  error: ReturnType<typeof vi.fn>;
+  debug: ReturnType<typeof vi.fn>;
+  setLevel: ReturnType<typeof vi.fn>;
+  addHandler: ReturnType<typeof vi.fn>;
+}
+
 vi.mock('@/lib/logger', () => {
-  const createMockLogger = () => {
-    const mockLogger = {
+  const createMockLogger = (): MockLogger => {
+    return {
       warn: vi.fn(),
       info: vi.fn(),
       error: vi.fn(),
@@ -172,21 +235,13 @@ vi.mock('@/lib/logger', () => {
       setLevel: vi.fn(),
       addHandler: vi.fn(),
     };
-    return mockLogger;
   };
 
   const mockLoggerInstance = createMockLogger();
 
   return {
-    createLogger: vi.fn((context?: string) => {
-      const logger = createMockLogger();
-      // Ensure logger methods are always functions
-      Object.keys(logger).forEach(key => {
-        if (typeof logger[key as keyof typeof logger] !== 'function') {
-          (logger as any)[key] = vi.fn();
-        }
-      });
-      return logger;
+    createLogger: vi.fn((_context?: string): MockLogger => {
+      return createMockLogger();
     }),
     logger: mockLoggerInstance,
     log: {
@@ -434,8 +489,16 @@ vi.mock('react-native-reanimated', () => {
 expect.extend(matchers);
 
 // Cleanup after each test
+// This ensures all tests have proper isolation and no state leaks between tests
 afterEach(() => {
-  cleanup();
+  cleanupTestState();
+  resetAllMocks();
+
+  // Ensure fake timers are used by default for deterministic tests
+  // Individual tests can opt out by calling vi.useRealTimers() if needed
+  if (!vi.isFakeTimers()) {
+    vi.useFakeTimers();
+  }
 });
 
 // MatchMedia shim for reduced-motion tests
@@ -575,7 +638,7 @@ vi.mock('leaflet', async () => {
   };
 });
 
-// Mock API Client - but allow tests to override with vi.unmock if needed
+// Mock API Client - deterministic mock with configurable behavior
 // For integration tests that need real HTTP, use vi.unmock('@/lib/api-client') in the test file
 vi.mock('@/lib/api-client', async () => {
   // Check if we should use the real implementation (for integration tests)
@@ -585,7 +648,12 @@ vi.mock('@/lib/api-client', async () => {
   }
 
   const { createMockAPIClient } = await import('./mocks/api-client');
-  const mockClient = createMockAPIClient();
+  // Create deterministic mock with no delay and 100% success rate by default
+  const mockClient = createMockAPIClient({
+    delay: 0,
+    successRate: 1.0,
+    defaultResponse: {},
+  });
   return {
     APIClient: mockClient,
     APIClientError: class extends Error {
@@ -795,7 +863,7 @@ vi.mock('@tanstack/react-query', async () => {
         findAll: vi.fn(),
         notify: vi.fn(),
       }));
-      constructor(_options?: any) {
+      constructor(_options?: unknown) {
         // Mock constructor
       }
     },
@@ -852,6 +920,25 @@ vi.mock('@petspark/motion', () => {
     a: AnimatedComponent,
   };
 
+  // MotionView component for use in components
+  const MotionView = ({
+    children,
+    style,
+    initial,
+    animate,
+    transition,
+    ...props
+  }: {
+    children?: React.ReactNode;
+    style?: Record<string, unknown>;
+    initial?: Record<string, unknown>;
+    animate?: Record<string, unknown>;
+    transition?: Record<string, unknown>;
+    [key: string]: unknown;
+  }) => {
+    return React.createElement('div', { style, ...props }, children);
+  };
+
   return {
     // Export Animated as named export (matches motion package exports)
     Animated: AnimatedNamespace,
@@ -863,8 +950,7 @@ vi.mock('@petspark/motion', () => {
       button: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) =>
         React.createElement('button', props, children),
     },
-    MotionView: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) =>
-      React.createElement('div', props, children),
+    MotionView,
     MotionText: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) =>
       React.createElement('span', props, children),
     MotionScrollView: ({
@@ -906,26 +992,6 @@ vi.mock('@petspark/motion', () => {
     withRepeat: vi.fn((animation: unknown) => animation),
     withSequence: vi.fn((...args: unknown[]) => args[args.length - 1]),
     withDelay: vi.fn((_delay: number, animation: unknown) => animation),
-    usePressBounce: vi.fn(() => ({
-      onPressIn: vi.fn(),
-      onPressOut: vi.fn(),
-      animatedStyle: {},
-    })),
-    useMagnetic: vi.fn(() => ({
-      onMouseMove: vi.fn(),
-      animatedStyle: {},
-    })),
-    useParallax: vi.fn(() => ({
-      onMouseMove: vi.fn(),
-      animatedStyle: {},
-    })),
-    useShimmer: vi.fn(() => ({
-      animatedStyle: {},
-    })),
-    useRipple: vi.fn(() => ({
-      onPress: vi.fn(),
-      animatedStyle: {},
-    })),
     useReducedMotion: vi.fn(() => false),
     useReducedMotionSV: vi.fn(() => createMockSharedValue(0)),
     isReduceMotionEnabled: vi.fn(() => false),
@@ -947,6 +1013,11 @@ vi.mock('@petspark/motion', () => {
     usePageTransitions: vi.fn(() => ({
       transition: {},
       animatedStyle: {},
+    })),
+    usePressBounce: vi.fn((scaleOnPress = 0.96, scaleOnRelease = 1) => ({
+      onPressIn: vi.fn(),
+      onPressOut: vi.fn(),
+      animatedStyle: { transform: [{ scale: scaleOnRelease }] },
     })),
   };
 });

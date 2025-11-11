@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import CommunityView from '../CommunityView';
+import CommunityView from '@/components/views/CommunityView';
 
 // Mock react-native-reanimated
 vi.mock('react-native-reanimated', () => ({
@@ -214,6 +214,11 @@ vi.mock('@/lib/maps/types', () => ({}));
 describe('CommunityView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Rendering', () => {

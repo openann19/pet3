@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SmartToast } from '../SmartToast';
-import type { ToastType } from '../SmartToast';
+import { SmartToast } from '@/components/enhanced/SmartToast';
+import type { ToastType } from '@/components/enhanced/SmartToast';
 
 vi.mock('react-native-reanimated', () => ({
   useSharedValue: vi.fn(() => ({ value: 0 })),
@@ -11,7 +11,7 @@ vi.mock('react-native-reanimated', () => ({
   useAnimatedStyle: vi.fn(() => ({})),
 }));
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div data-testid="animated-view" {...props}>
       {children}
     </div>

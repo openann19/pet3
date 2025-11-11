@@ -53,7 +53,7 @@ vi.mock('react-native-reanimated', () => ({
 }));
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  AnimatedView: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   useAnimatedStyleValue: vi.fn((style: unknown) => {
     if (typeof style === 'function') {
       try {
@@ -92,16 +92,14 @@ vi.mock('@/components/community/ReportDialog', () => ({
 }));
 
 // Mock spark
-global.window = {
-  ...global.window,
-  spark: {
-    user: vi.fn().mockResolvedValue({
-      id: 'user-1',
-      login: 'testuser',
-      avatarUrl: 'https://example.com/avatar.jpg',
-    }),
-  },
-} as any;
+type PartialSpark = Partial<Window['spark']>;
+(global.window as Window & { spark?: PartialSpark }).spark = {
+  user: vi.fn().mockResolvedValue({
+    id: 'user-1',
+    login: 'testuser',
+    avatarUrl: 'https://example.com/avatar.jpg',
+  }),
+};
 
 describe('PostCard', () => {
   const mockPost: Post = {

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useEntitlements } from '../useEntitlements';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import { useEntitlements } from '@/hooks/useEntitlements';
 import { PaymentsService } from '@/lib/payments-service';
 
 vi.mock('@/lib/payments-service', () => ({
@@ -33,11 +33,19 @@ describe('useEntitlements', () => {
     mockPaymentsService.getUserEntitlements.mockResolvedValue(mockEntitlements as never);
   });
 
-  it('loads entitlements on mount', async () => {
-    renderHook(() => useEntitlements());
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
-    await waitFor(() => {
-      expect(mockPaymentsService.getUserEntitlements).toHaveBeenCalled();
+  it('loads entitlements on mount', async () => {
+    await act(async () => {
+      renderHook(() => useEntitlements());
+    });
+
+    await act(async () => {
+      await waitFor(() => {
+        expect(mockPaymentsService.getUserEntitlements).toHaveBeenCalled();
+      });
     });
   });
 
@@ -50,8 +58,10 @@ describe('useEntitlements', () => {
   it('returns entitlements when loaded', async () => {
     const { result } = renderHook(() => useEntitlements());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+    await act(async () => {
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
     });
 
     expect(result.current.entitlements).toEqual(mockEntitlements);

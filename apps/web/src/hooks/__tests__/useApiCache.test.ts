@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useApiCache } from '../useApiCache';
+import { useApiCache } from '@/hooks/useApiCache';
 import { queryCache } from '@/lib/cache/query-cache';
+import { waitForStateUpdate } from '@/test/utilities/act-helpers';
 
 vi.mock('@/lib/cache/query-cache', () => ({
   queryCache: {
@@ -34,11 +35,11 @@ describe('useApiCache', () => {
 
     const { result } = renderHook(() => useApiCache('test-key', mockFetcher));
 
-    await act(async () => {
-      vi.advanceTimersByTime(0);
+    await waitForStateUpdate(() => {
+      expect(result.current.data).toBeNull();
+      return result.current;
     });
 
-    expect(result.current.data).toBeNull();
     expect(result.current.isLoading).toBe(true);
   });
 
@@ -48,11 +49,11 @@ describe('useApiCache', () => {
 
     const { result } = renderHook(() => useApiCache('test-key', mockFetcher));
 
-    await act(async () => {
-      vi.advanceTimersByTime(0);
+    await waitForStateUpdate(() => {
+      expect(result.current.data).toEqual(cachedData);
+      return result.current;
     });
 
-    expect(result.current.data).toEqual(cachedData);
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -124,9 +125,13 @@ describe('useApiCache', () => {
     mockFetcher.mockClear();
     mockFetcher.mockResolvedValue({ data: 'refetched' });
 
-    await result.current.refetch();
+    await act(async () => {
+      await result.current.refetch();
+    });
 
-    expect(mockFetcher).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockFetcher).toHaveBeenCalled();
+    });
   });
 
   it('mutates data and updates cache', () => {
@@ -253,13 +258,21 @@ describe('useApiCache', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    const refetchPromise = result.current.refetch();
+    const refetchPromise = act(async () => {
+      return result.current.refetch();
+    });
 
-    expect(result.current.isRefetching).toBe(true);
+    await waitFor(() => {
+      expect(result.current.isRefetching).toBe(true);
+    });
 
-    resolveFetcher!({ data: 'refetched' });
-    await refetchPromise;
+    await act(async () => {
+      resolveFetcher!({ data: 'refetched' });
+      await refetchPromise;
+    });
 
-    expect(result.current.isRefetching).toBe(false);
+    await waitFor(() => {
+      expect(result.current.isRefetching).toBe(false);
+    });
   });
 });

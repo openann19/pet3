@@ -58,7 +58,7 @@ vi.mock('react-native-reanimated', () => ({
 }));
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  AnimatedView: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   useAnimatedStyleValue: vi.fn((style: unknown) => {
     if (typeof style === 'function') {
       try {
@@ -81,13 +81,13 @@ vi.mock('@/effects/reanimated/transitions', () => ({
 }));
 
 vi.mock('@radix-ui/react-dialog', () => ({
-  Root: ({ children, open }: any) => (open ? <div>{children}</div> : null),
-  Portal: ({ children }: any) => <div>{children}</div>,
-  Overlay: ({ children }: any) => <div>{children}</div>,
-  Content: ({ children }: any) => <div>{children}</div>,
-  Title: ({ children }: any) => <div>{children}</div>,
-  Description: ({ children }: any) => <div>{children}</div>,
-  Close: ({ children }: any) => <button>{children}</button>,
+  Root: ({ children, open }: { children?: React.ReactNode; open?: boolean }) => (open ? <div>{children}</div> : null),
+  Portal: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Overlay: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Content: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Title: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Description: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Close: ({ children }: { children?: React.ReactNode }) => <button>{children}</button>,
 }));
 
 describe('MediaViewer', () => {

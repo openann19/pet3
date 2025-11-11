@@ -126,7 +126,7 @@ export default function OAuthButtons({
         type="button"
         onClick={handleGoogleSignIn}
         disabled={disabled}
-        className="flex-1 h-[48px] flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] rounded-[12px] text-[14px] font-medium text-[#374151] hover:bg-[#F9FAFB] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+        className="flex-1 h-[48px] flex items-center justify-center gap-2 bg-white border border-[var(--border-light)] rounded-[12px] text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--muted)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)]/20"
         aria-label="Sign in with Google"
       >
         <GoogleLogo size={18} aria-hidden="true" />

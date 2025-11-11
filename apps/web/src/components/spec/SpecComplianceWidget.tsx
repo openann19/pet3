@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useSpecCompliance } from '../../hooks/useSpecCompliance'
+import { useSpecCompliance } from '@/hooks/useSpecCompliance'
 import type { MergedSpec } from '@petspark/spec-core'
 
 export interface SpecComplianceWidgetProps {
@@ -67,6 +67,3 @@ export function SpecComplianceWidget({
     </div>
   )
 }
-
-
-

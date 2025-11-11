@@ -1,7 +1,7 @@
 /**
  * OAuthButtons tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OAuthButtons from '@/components/auth/OAuthButtons';
@@ -43,7 +43,7 @@ vi.mock('@/lib/analytics', () => ({
 
 vi.mock('framer-motion', () => ({
   motion: {
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children?: React.ReactNode }) => <button {...props}>{children}</button>,
   },
 }));
 
@@ -51,10 +51,10 @@ vi.mock('framer-motion', () => ({
 global.fetch = vi.fn();
 
 // Mock window.AppleID
-global.window = {
-  ...global.window,
-  AppleID: undefined,
-} as any;
+type WindowWithAppleID = typeof window & {
+  AppleID?: { auth: (config: unknown) => Promise<unknown> } | undefined;
+};
+(global.window as WindowWithAppleID).AppleID = undefined;
 
 describe('OAuthButtons', () => {
   const mockOnGoogleSignIn = vi.fn();
@@ -63,6 +63,10 @@ describe('OAuthButtons', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(global.fetch).mockClear();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it('should render Google and Apple sign in buttons', () => {
@@ -97,8 +101,13 @@ describe('OAuthButtons', () => {
     } as Response);
 
     // Mock window.location.href
-    delete (window as any).location;
-    (window as any).location = { href: '' };
+    const originalLocation = window.location;
+    delete (window as { location?: Location }).location;
+    Object.defineProperty(window, 'location', {
+      value: { href: '' },
+      writable: true,
+      configurable: true,
+    });
 
     render(<OAuthButtons onGoogleSignIn={mockOnGoogleSignIn} onAppleSignIn={mockOnAppleSignIn} />);
 
@@ -167,10 +176,7 @@ describe('OAuthButtons', () => {
       signIn: vi.fn().mockResolvedValue({ authorization: { id_token: 'token' } }),
     };
 
-    global.window = {
-      ...global.window,
-      AppleID: { auth: mockAppleAuth },
-    } as any;
+    (global.window as WindowWithAppleID).AppleID = { auth: mockAppleAuth };
 
     render(<OAuthButtons onGoogleSignIn={mockOnGoogleSignIn} onAppleSignIn={mockOnAppleSignIn} />);
 

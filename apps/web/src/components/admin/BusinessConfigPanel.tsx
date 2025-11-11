@@ -4,9 +4,6 @@
  * Admin panel for managing prices, limits, and experiments.
  */
 
-import { configBroadcastService } from '@/core/services/config-broadcast-service';
-import { adminApi } from '@/api/admin-api';
-import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, CurrencyDollar, Flask, Gear, Radio } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,155 +11,20 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
-import { getBusinessConfig, updateBusinessConfig } from '@/lib/purchase-service';
-import type { BusinessConfig } from '@/lib/business-types';
-import { toast } from 'sonner';
-import { useStorage } from '@/hooks/use-storage';
-import { logger } from '@/lib/logger';
-import type { User } from '@/lib/user-service';
+import { useBusinessConfig } from '@/hooks/use-business-config';
 
 export default function BusinessConfigPanel() {
   useApp();
-  const [config, setConfig] = useState<BusinessConfig | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [broadcasting, setBroadcasting] = useState(false);
-  const [currentUser] = useStorage<User | null>('current-user', null);
-
-  const loadConfig = useCallback(async () => {
-    setLoading(true);
-    try {
-      const cfg = await getBusinessConfig();
-      if (cfg) {
-        setConfig(cfg);
-      } else {
-        // Create default config
-        const defaultConfig: BusinessConfig = {
-          id: 'default',
-          version: '1',
-          prices: {
-            premium: { monthly: 9.99, yearly: 99.99, currency: 'USD' },
-            elite: { monthly: 19.99, yearly: 199.99, currency: 'USD' },
-            boost: { price: 2.99, currency: 'USD' },
-            superLike: { price: 0.99, currency: 'USD' },
-          },
-          limits: {
-            free: { swipeDailyCap: 5, adoptionListingLimit: 1 },
-            premium: { boostsPerWeek: 1, superLikesPerDay: 0 },
-            elite: { boostsPerWeek: 2, superLikesPerDay: 10 },
-          },
-          experiments: {},
-          updatedAt: new Date().toISOString(),
-          updatedBy: currentUser?.id || 'admin',
-        };
-        setConfig(defaultConfig);
-      }
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Load config error', err, { action: 'loadConfig' });
-      toast.error('Failed to load config');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    void loadConfig();
-  }, [loadConfig]);
-
-  const handleSave = async () => {
-    if (!config || !currentUser) return;
-
-    setSaving(true);
-    try {
-      await updateBusinessConfig(config, currentUser.id || 'admin');
-      toast.success('Business config updated successfully');
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Save config error', err, { action: 'saveConfig' });
-      toast.error('Failed to save config');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveAndBroadcast = async () => {
-    if (!config || !currentUser) return;
-
-    setSaving(true);
-    setBroadcasting(true);
-    try {
-      // First save the config
-      await updateBusinessConfig(config, currentUser.id || 'admin');
-
-      // Then broadcast it
-      await configBroadcastService.broadcastConfig(
-        'business',
-        config satisfies Record<string, unknown>,
-        currentUser.id || 'admin'
-      );
-
-      toast.success('Business config saved and broadcasted successfully');
-
-      // Log audit entry
-      await adminApi.createAuditLog({
-        adminId: currentUser.id || 'admin',
-        action: 'config_broadcast',
-        targetType: 'business_config',
-        targetId: config.id || 'default',
-        details: JSON.stringify({ configType: 'business' }),
-      });
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Save and broadcast config error', err, { action: 'saveAndBroadcastConfig' });
-      toast.error('Failed to save and broadcast config');
-    } finally {
-      setSaving(false);
-      setBroadcasting(false);
-    }
-  };
-
-  const updatePrice = (path: string[], value: number): void => {
-    if (!config) return;
-    const newConfig = { ...config };
-    let current: Record<string, unknown> = newConfig as Record<string, unknown>;
-    for (let i = 0; i < path.length - 1; i++) {
-      const key = path[i];
-      if (key === undefined) return;
-      const next = current[key];
-      if (typeof next === 'object' && next !== null && !Array.isArray(next)) {
-        current = next as Record<string, unknown>;
-      } else {
-        return;
-      }
-    }
-    const lastKey = path[path.length - 1];
-    if (lastKey !== undefined) {
-      current[lastKey] = value;
-    }
-    setConfig(newConfig as BusinessConfig);
-  };
-
-  const updateLimit = (path: string[], value: number): void => {
-    if (!config) return;
-    const newConfig = { ...config };
-    let current: Record<string, unknown> = newConfig as Record<string, unknown>;
-    for (let i = 0; i < path.length - 1; i++) {
-      const key = path[i];
-      if (key === undefined) return;
-      const next = current[key];
-      if (typeof next === 'object' && next !== null && !Array.isArray(next)) {
-        current = next as Record<string, unknown>;
-      } else {
-        return;
-      }
-    }
-    const lastKey = path[path.length - 1];
-    if (lastKey !== undefined) {
-      current[lastKey] = value;
-    }
-    setConfig(newConfig as BusinessConfig);
-  };
+  const {
+    config,
+    loading,
+    saving,
+    broadcasting,
+    saveConfig,
+    saveAndBroadcastConfig,
+    updatePrice,
+    updateLimit,
+  } = useBusinessConfig();
 
   if (loading || !config) {
     return (
@@ -182,11 +44,7 @@ export default function BusinessConfigPanel() {
         <div className="flex gap-2">
           <Button
             onClick={() => {
-              void handleSave().catch((error) => {
-                const err = error instanceof Error ? error : new Error(String(error));
-                logger.error('Failed to save config', err, { action: 'handleSave' });
-                toast.error('Failed to save config');
-              });
+              void saveConfig();
             }}
             disabled={saving || broadcasting}
             variant="outline"
@@ -196,13 +54,7 @@ export default function BusinessConfigPanel() {
           </Button>
           <Button
             onClick={() => {
-              void handleSaveAndBroadcast().catch((error) => {
-                const err = error instanceof Error ? error : new Error(String(error));
-                logger.error('Failed to save and broadcast config', err, {
-                  action: 'handleSaveAndBroadcast',
-                });
-                toast.error('Failed to save and broadcast config');
-              });
+              void saveAndBroadcastConfig();
             }}
             disabled={saving || broadcasting}
           >

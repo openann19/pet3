@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ProfileView from '../ProfileView';
+import ProfileView from '@/components/views/ProfileView';
 import { useApp } from '@/contexts/AppContext';
 import { useStorage } from '@/hooks/use-storage';
 
@@ -111,6 +111,11 @@ describe('ProfileView', () => {
       if (key === 'video-quality-preference') return ['4k', vi.fn()];
       return [defaultValue, vi.fn()];
     });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should render empty state when no pets', () => {

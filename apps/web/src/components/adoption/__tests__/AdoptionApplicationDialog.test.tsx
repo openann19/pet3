@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AdoptionApplicationDialog } from '../AdoptionApplicationDialog';
+import { AdoptionApplicationDialog } from '@/components/adoption/AdoptionApplicationDialog';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import { adoptionService } from '@/lib/adoption-service';
 import { useApp } from '@/contexts/AppContext';
@@ -107,6 +107,11 @@ describe('AdoptionApplicationDialog', () => {
       },
     } as never);
     mockAdoptionService.submitApplication.mockResolvedValue({ id: 'app1' } as never);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders dialog when open', () => {

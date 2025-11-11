@@ -1,7 +1,7 @@
 /**
  * ProtectedRoute tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -24,7 +24,7 @@ vi.mock('@/lib/kyc-service', () => ({
 }));
 
 vi.mock('@/components/ui/spinner', () => ({
-  Spinner: ({ size }: any) => <div data-testid={`spinner-${size}`}>Loading...</div>,
+  Spinner: ({ size }: { size?: string | number }) => <div data-testid={`spinner-${size}`}>Loading...</div>,
 }));
 
 const mockUseAuth = vi.fn();
@@ -34,6 +34,10 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 

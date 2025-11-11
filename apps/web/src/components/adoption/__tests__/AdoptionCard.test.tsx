@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AdoptionCard } from '../AdoptionCard';
+import { AdoptionCard } from '@/components/adoption/AdoptionCard';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
@@ -26,7 +26,7 @@ vi.mock('@/lib/haptics', () => ({
   triggerHaptic: vi.fn(() => undefined),
 }));
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div data-testid="animated-view" {...props}>
       {children}
     </div>
@@ -105,6 +105,11 @@ describe('AdoptionCard', () => {
         },
       },
     } as never);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders adoption card with profile information', () => {

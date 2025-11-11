@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMessageBubbleAnimation } from '@/hooks/use-message-bubble-animation';
 
 describe('useMessageBubbleAnimation', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -76,11 +81,16 @@ describe('useMessageBubbleAnimation', () => {
     });
 
     // Initial state should have backgroundOpacity at 0
-    expect(result.current.backgroundOpacity.value).toBe(0);
+    await waitFor(() => {
+      expect(result.current.backgroundOpacity.value).toBe(0);
+    });
 
     // Change isHighlighted to true
-    await act(async () => {
+    act(() => {
       rerender({ isHighlighted: true });
+    });
+
+    await act(async () => {
       // Advance timers to allow useEffect to run and animation to start
       await vi.advanceTimersByTimeAsync(10);
     });
@@ -88,16 +98,23 @@ describe('useMessageBubbleAnimation', () => {
     // In the mock, withSequence might return the final value immediately,
     // but we can verify the hook responds to isHighlighted changes
     // by checking that the value is set (even if it's the final value in mocks)
-    expect(typeof result.current.backgroundOpacity.value).toBe('number');
+    await waitFor(() => {
+      expect(typeof result.current.backgroundOpacity.value).toBe('number');
+    });
 
     // Verify that animateHighlight function works
-    await act(async () => {
+    act(() => {
       result.current.animateHighlight();
+    });
+
+    await act(async () => {
       await vi.advanceTimersByTimeAsync(10);
     });
 
     // After calling animateHighlight, the value should be set
-    expect(typeof result.current.backgroundOpacity.value).toBe('number');
+    await waitFor(() => {
+      expect(typeof result.current.backgroundOpacity.value).toBe('number');
+    });
 
     vi.useRealTimers();
   });

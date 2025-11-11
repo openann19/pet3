@@ -1,11 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
-import { GlowingBadge } from '../GlowingBadge';
+import { GlowingBadge } from '@/components/enhanced/GlowingBadge';
 import { renderWithUI } from '@/test/utils/test-helpers';
 
 describe('GlowingBadge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should render badge with children', () => {

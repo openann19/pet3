@@ -170,219 +170,219 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         </div>
       )}
 
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-[32px] font-bold text-gray-900 mb-3 tracking-tight">Create Account</h1>
-          <p className="text-gray-500 text-[15px]">Join PawfectMatch to find your pet's perfect companion</p>
-        </div>
+      {/* Header */}
+      <div className="text-center mb-10">
+        <h1 className="text-[32px] font-bold text-[var(--text-primary)] mb-3 tracking-tight">Create Account</h1>
+        <p className="text-[var(--text-secondary)] text-[15px]">Join PawfectMatch to find your pet's perfect companion</p>
+      </div>
 
-        {/* Form */}
-        <Form {...form}>
-          <form
-            ref={formRef}
-            onSubmit={(e) => {
-              e.preventDefault();
-              void form.handleSubmit(onSubmit)(e);
-            }}
-            className="space-y-5"
-            noValidate
+      {/* Form */}
+      <Form {...form}>
+        <form
+          ref={formRef}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void form.handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-5"
+          noValidate
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] mb-2 block">Full Name</FormLabel>
+                <div className="relative">
+                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" weight="regular" />
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder="John Doe"
+                    className="w-full h-[50px] pl-12 pr-4 bg-white border border-[var(--border-light)] rounded-xl text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    autoComplete="name"
+                    aria-label="Full Name"
+                  />
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] mb-2 block">Email</FormLabel>
+                <div className="relative">
+                  <EnvelopeSimple size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" weight="regular" />
+                  <input
+                    {...field}
+                    type="email"
+                    placeholder="you@example.com"
+                    className="w-full h-[50px] pl-12 pr-4 bg-white border border-[var(--border-light)] rounded-xl text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    autoComplete="email"
+                    aria-label="Email address"
+                  />
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] mb-2 block">Password</FormLabel>
+                <div className="relative">
+                  <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" weight="regular" />
+                  <input
+                    {...field}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    className="w-full h-[50px] pl-12 pr-12 bg-white border border-[var(--border-light)] rounded-xl text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                    aria-label="Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPassword((p) => !p);
+                      haptics.trigger('selection');
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] mb-2 block">Confirm Password</FormLabel>
+                <div className="relative">
+                  <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" weight="regular" />
+                  <input
+                    {...field}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    className="w-full h-[50px] pl-12 pr-12 bg-white border border-[var(--border-light)] rounded-xl text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                    aria-label="Confirm Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowConfirmPassword((p) => !p);
+                      haptics.trigger('selection');
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="agreeToTerms"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-start gap-3 pt-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked === true);
+                        haptics.trigger('selection');
+                      }}
+                      disabled={isLoading}
+                      className="mt-0.5 rounded border-[var(--border-light)]"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-[13px] text-[var(--text-secondary)] leading-relaxed cursor-pointer font-normal">
+                    I agree to the{' '}
+                    <a
+                      href="https://pawfectmatch.app/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--coral-primary)] hover:underline"
+                    >
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a
+                      href="https://pawfectmatch.app/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--coral-primary)] hover:underline"
+                    >
+                      Privacy Policy
+                    </a>
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-[50px] bg-[var(--coral-primary)] hover:bg-[var(--coral-hover)] active:bg-[var(--coral-active)] text-white text-[15px] font-semibold rounded-xl transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-700 mb-2 block">Full Name</FormLabel>
-                  <div className="relative">
-                    <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" weight="regular" />
-                    <input
-                      {...field}
-                      type="text"
-                      placeholder="John Doe"
-                      className="w-full h-[50px] pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isLoading}
-                      autoComplete="name"
-                      aria-label="Full Name"
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {isLoading ? 'Creating Account...' : 'Create Account'}
+          </button>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-700 mb-2 block">Email</FormLabel>
-                  <div className="relative">
-                    <EnvelopeSimple size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" weight="regular" />
-                    <input
-                      {...field}
-                      type="email"
-                      placeholder="you@example.com"
-                      className="w-full h-[50px] pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isLoading}
-                      autoComplete="email"
-                      aria-label="Email address"
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-700 mb-2 block">Password</FormLabel>
-                  <div className="relative">
-                    <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" weight="regular" />
-                    <input
-                      {...field}
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      className="w-full h-[50px] pl-12 pr-12 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isLoading}
-                      autoComplete="new-password"
-                      aria-label="Password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowPassword((p) => !p);
-                        haptics.trigger('selection');
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
-                    </button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-700 mb-2 block">Confirm Password</FormLabel>
-                  <div className="relative">
-                    <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" weight="regular" />
-                    <input
-                      {...field}
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      className="w-full h-[50px] pl-12 pr-12 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isLoading}
-                      autoComplete="new-password"
-                      aria-label="Confirm Password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowConfirmPassword((p) => !p);
-                        haptics.trigger('selection');
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showConfirmPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
-                    </button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="agreeToTerms"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-start gap-3 pt-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked === true);
-                          haptics.trigger('selection');
-                        }}
-                        disabled={isLoading}
-                        className="mt-0.5 rounded border-gray-300"
-                      />
-                    </FormControl>
-                    <FormLabel className="text-[13px] text-gray-600 leading-relaxed cursor-pointer font-normal">
-                      I agree to the{' '}
-                      <a
-                        href="https://pawfectmatch.app/terms"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#4A90E2] hover:underline"
-                      >
-                        Terms of Service
-                      </a>{' '}
-                      and{' '}
-                      <a
-                        href="https://pawfectmatch.app/privacy"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#4A90E2] hover:underline"
-                      >
-                        Privacy Policy
-                      </a>
-                    </FormLabel>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-[50px] bg-[#FF8B7B] hover:bg-[#FF7A68] active:bg-[#FF6957] text-white text-[15px] font-semibold rounded-xl transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
-            </button>
-
-            <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-[13px]">
-                <span className="px-3 bg-white text-gray-500">or</span>
-              </div>
+          <div className="relative my-7">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border-light)]" />
             </div>
+            <div className="relative flex justify-center text-[13px]">
+              <span className="px-3 bg-white text-[var(--text-secondary)]">or</span>
+            </div>
+          </div>
 
-            <OAuthButtons
-              onGoogleSignIn={() => handleOAuthSuccess('google')}
-              onAppleSignIn={() => handleOAuthSuccess('apple')}
-              disabled={isLoading}
-            />
-          </form>
-        </Form>
+          <OAuthButtons
+            onGoogleSignIn={() => handleOAuthSuccess('google')}
+            onAppleSignIn={() => handleOAuthSuccess('apple')}
+            disabled={isLoading}
+          />
+        </form>
+      </Form>
 
-        {/* Sign in link */}
-        <div className="text-center mt-6">
-          <p className="text-[14px] text-gray-600">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={onSwitchToSignIn}
-              disabled={isLoading}
-              className="text-[#4A90E2] font-medium hover:underline focus:outline-none disabled:opacity-50"
-            >
-              Sign in
-            </button>
-          </p>
-        </div>
+      {/* Sign in link */}
+      <div className="text-center mt-6">
+        <p className="text-[14px] text-[var(--text-secondary)]">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={onSwitchToSignIn}
+            disabled={isLoading}
+            className="text-[var(--coral-primary)] font-medium hover:underline focus:outline-none disabled:opacity-50"
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
 
       <AgeGateModal open={showAgeGate} onVerified={handleAgeVerified} onClose={() => setShowAgeGate(false)} />
     </div>

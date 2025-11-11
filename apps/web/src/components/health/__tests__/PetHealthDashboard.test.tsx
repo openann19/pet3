@@ -8,11 +8,11 @@ import type {
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { PetHealthDashboard } from '../PetHealthDashboard';
+import { PetHealthDashboard } from '@/components/health/PetHealthDashboard';
 import { format, differenceInDays, isPast } from 'date-fns';
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div {...props}>{children}</div>
   ),
   useAnimatedStyleValue: vi.fn((style: unknown) => {

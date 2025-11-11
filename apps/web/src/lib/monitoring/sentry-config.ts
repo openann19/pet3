@@ -93,7 +93,7 @@ class SentryConfigImpl {
     message: string;
     category?: string;
     level?: 'debug' | 'info' | 'warning' | 'error';
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
   }): void {
     Sentry.addBreadcrumb(breadcrumb);
   }

@@ -27,7 +27,7 @@ import {
 } from 'react-native-reanimated';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -564,8 +564,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       setTimeout(() => handleNext(), 400);
                     }}
                     className={`relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${petType === type.value
-                        ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
-                        : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
+                      ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
+                      : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
                       }`}
                     onMouseEnter={petTypeButtonHover.handleEnter}
                     onMouseLeave={petTypeButtonHover.handleLeave}
@@ -612,8 +612,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     setTimeout(() => handleNext(), 300);
                   }}
                   className={`relative p-4 rounded-xl border-2 text-left transition-all duration-300 ${selectedTemplate?.id === template.id
-                      ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
-                      : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
+                    ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
+                    : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
                     }`}
                 >
                   <div className="flex items-start gap-3">
@@ -957,6 +957,11 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
             <AnimatedView style={emojiStyle}>🐾</AnimatedView>
             {editingPet ? 'Edit Pet Profile' : 'Create Pet Profile'}
           </DialogTitle>
+          <DialogDescription>
+            {editingPet
+              ? 'Update your pet\'s profile information'
+              : 'Fill out the form to create a new pet profile'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-6">

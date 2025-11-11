@@ -8,52 +8,52 @@
 @layer theme {
   :root {
     /* Default (Light theme, English) - Coral solid colors */
-    --btn-primary-bg: #FF8B7B;
-    --btn-primary-bg-solid: #FF8B7B;
+    --btn-primary-bg: #FF715B;
+    --btn-primary-bg-solid: #FF715B;
     --btn-primary-fg: #ffffff;
-    --btn-primary-hover-bg: #FF7A68;
-    --btn-primary-hover-bg-solid: #FF7A68;
+    --btn-primary-hover-bg: #FF5A40;
+    --btn-primary-hover-bg-solid: #FF5A40;
     --btn-primary-hover-fg: #ffffff;
-    --btn-primary-press-bg: #FF6957;
-    --btn-primary-press-bg-solid: #FF6957;
+    --btn-primary-press-bg: #FF4430;
+    --btn-primary-press-bg-solid: #FF4430;
     --btn-primary-press-fg: #ffffff;
     --btn-primary-disabled-bg: #f1f5f9;
-    --btn-primary-disabled-fg: #94a3b8;
-    --btn-primary-focus-ring: rgba(255, 139, 123, 0.4);
+    --btn-primary-disabled-fg: #BDBDBD;
+    --btn-primary-focus-ring: rgba(255, 113, 91, 0.4);
 
-    --btn-secondary-bg: #64748b;
-    --btn-secondary-fg: #ffffff;
-    --btn-secondary-hover-bg: #475569;
-    --btn-secondary-hover-fg: #ffffff;
-    --btn-secondary-press-bg: #334155;
-    --btn-secondary-press-fg: #ffffff;
+    --btn-secondary-bg: #FFE4B2;
+    --btn-secondary-fg: #222222;
+    --btn-secondary-hover-bg: #FFD580;
+    --btn-secondary-hover-fg: #222222;
+    --btn-secondary-press-bg: #FFC966;
+    --btn-secondary-press-fg: #222222;
     --btn-secondary-disabled-bg: #f1f5f9;
-    --btn-secondary-disabled-fg: #94a3b8;
-    --btn-secondary-focus-ring: #475569;
+    --btn-secondary-disabled-fg: #BDBDBD;
+    --btn-secondary-focus-ring: rgba(255, 113, 91, 0.4);
 
-    --btn-destructive-bg: #dc2626;
+    --btn-destructive-bg: #FF715B;
     --btn-destructive-fg: #ffffff;
-    --btn-destructive-hover-bg: #b91c1c;
+    --btn-destructive-hover-bg: #FF5A40;
     --btn-destructive-hover-fg: #ffffff;
-    --btn-destructive-press-bg: #991b1b;
+    --btn-destructive-press-bg: #FF4430;
     --btn-destructive-press-fg: #ffffff;
     --btn-destructive-disabled-bg: #f1f5f9;
-    --btn-destructive-disabled-fg: #94a3b8;
-    --btn-destructive-focus-ring: #ef4444;
+    --btn-destructive-disabled-fg: #BDBDBD;
+    --btn-destructive-focus-ring: rgba(255, 113, 91, 0.4);
 
-    --btn-outline-border: #cbd5e1;
+    --btn-outline-border: #FF715B;
     --btn-outline-bg: transparent;
-    --btn-outline-fg: #0f172a;
-    --btn-outline-hover-border: #94a3b8;
-    --btn-outline-hover-bg: #f8fafc;
-    --btn-outline-hover-fg: #020617;
-    --btn-outline-press-border: #94a3b8;
-    --btn-outline-press-bg: #f1f5f9;
-    --btn-outline-press-fg: #020617;
-    --btn-outline-disabled-border: #e2e8f0;
+    --btn-outline-fg: #FF715B;
+    --btn-outline-hover-border: #FF5A40;
+    --btn-outline-hover-bg: #FFF9F0;
+    --btn-outline-hover-fg: #FF5A40;
+    --btn-outline-press-border: #FF4430;
+    --btn-outline-press-bg: #FFF9F0;
+    --btn-outline-press-fg: #FF4430;
+    --btn-outline-disabled-border: #E5E5E5;
     --btn-outline-disabled-bg: transparent;
-    --btn-outline-disabled-fg: #94a3b8;
-    --btn-outline-focus-ring: rgba(255, 107, 107, 0.3);
+    --btn-outline-disabled-fg: #BDBDBD;
+    --btn-outline-focus-ring: rgba(255, 113, 91, 0.3);
 
     /* OAuth button variant - white background with brand-colored icon/text */
     --btn-oauth-bg: #ffffff;
@@ -71,19 +71,19 @@
     --btn-oauth-focus-ring: rgba(255, 107, 107, 0.3);
 
     --btn-ghost-bg: transparent;
-    --btn-ghost-fg: #0f172a;
-    --btn-ghost-hover-bg: #f8fafc;
-    --btn-ghost-hover-fg: #020617;
-    --btn-ghost-press-bg: #f1f5f9;
-    --btn-ghost-press-fg: #020617;
+    --btn-ghost-fg: #222222;
+    --btn-ghost-hover-bg: #FFF9F0;
+    --btn-ghost-hover-fg: #FF715B;
+    --btn-ghost-press-bg: #FFF9F0;
+    --btn-ghost-press-fg: #FF5A40;
     --btn-ghost-disabled-bg: transparent;
-    --btn-ghost-disabled-fg: #94a3b8;
-    --btn-ghost-focus-ring: #64748b;
+    --btn-ghost-disabled-fg: #BDBDBD;
+    --btn-ghost-focus-ring: rgba(255, 113, 91, 0.3);
 
-    --btn-link-fg: #4A90E2;
-    --btn-link-hover-fg: #4A90E2;
-    --btn-link-disabled-fg: #94a3b8;
-    --btn-link-focus-ring: rgba(74, 144, 226, 0.3);
+    --btn-link-fg: #FF715B;
+    --btn-link-hover-fg: #FF5A40;
+    --btn-link-disabled-fg: #BDBDBD;
+    --btn-link-focus-ring: rgba(255, 113, 91, 0.3);
 
     /* Minimum touch target size */
     --btn-min-size: 44px;
@@ -102,18 +102,18 @@
 
   .dark-theme {
     /* Dark theme, English (same as Bulgarian) - Coral solid colors */
-    --btn-primary-bg: #FF8B7B;
-    --btn-primary-bg-solid: #FF8B7B;
+    --btn-primary-bg: #FF715B;
+    --btn-primary-bg-solid: #FF715B;
     --btn-primary-fg: #ffffff;
-    --btn-primary-hover-bg: #FF7A68;
-    --btn-primary-hover-bg-solid: #FF7A68;
+    --btn-primary-hover-bg: #FF5A40;
+    --btn-primary-hover-bg-solid: #FF5A40;
     --btn-primary-hover-fg: #ffffff;
-    --btn-primary-press-bg: #FF6957;
-    --btn-primary-press-bg-solid: #FF6957;
+    --btn-primary-press-bg: #FF4430;
+    --btn-primary-press-bg-solid: #FF4430;
     --btn-primary-press-fg: #ffffff;
     --btn-primary-disabled-bg: #1e293b;
-    --btn-primary-disabled-fg: #475569;
-    --btn-primary-focus-ring: rgba(255, 139, 123, 0.4);
+    --btn-primary-disabled-fg: #BDBDBD;
+    --btn-primary-focus-ring: rgba(255, 113, 91, 0.4);
 
     --btn-secondary-bg: #475569;
     --btn-secondary-fg: #ffffff;
@@ -174,10 +174,10 @@
     --btn-ghost-disabled-fg: #475569;
     --btn-ghost-focus-ring: #64748b;
 
-    --btn-link-fg: #4A90E2;
-    --btn-link-hover-fg: #4A90E2;
-    --btn-link-disabled-fg: #475569;
-    --btn-link-focus-ring: rgba(74, 144, 226, 0.3);
+    --btn-link-fg: #FF715B;
+    --btn-link-hover-fg: #FF5A40;
+    --btn-link-disabled-fg: #BDBDBD;
+    --btn-link-focus-ring: rgba(255, 113, 91, 0.3);
   }
 
   /* Locale-specific overrides can be added here if needed */

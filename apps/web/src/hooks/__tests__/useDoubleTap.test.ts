@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDoubleTap } from '../useDoubleTap';
+import { useDoubleTap } from '@/hooks/useDoubleTap';
 
 describe('useDoubleTap', () => {
   let mockElement: HTMLDivElement;

@@ -36,8 +36,8 @@ describe('EnhancedNotificationService', () => {
   beforeEach(() => {
     service = new EnhancedNotificationService();
     vi.clearAllMocks();
-    vi.mocked(APIClient.post).mockResolvedValue({ data: null } as any);
-    vi.mocked(APIClient.get).mockResolvedValue({ data: null } as any);
+    vi.mocked(APIClient.post).mockResolvedValue({ data: null } as Awaited<ReturnType<typeof APIClient.post>>);
+    vi.mocked(APIClient.get).mockResolvedValue({ data: null } as Awaited<ReturnType<typeof APIClient.get>>);
   });
 
   describe('notifyMatchCreated', () => {
@@ -171,8 +171,8 @@ describe('EnhancedNotificationService', () => {
     it('should detect duplicate notifications', () => {
       const notificationId = 'test-123';
 
-      const first = (service as any).isDuplicate(notificationId);
-      const second = (service as any).isDuplicate(notificationId);
+      const first = (service as unknown as { isDuplicate: (id: string) => boolean }).isDuplicate(notificationId);
+      const second = (service as unknown as { isDuplicate: (id: string) => boolean }).isDuplicate(notificationId);
 
       expect(first).toBe(false);
       expect(second).toBe(true);

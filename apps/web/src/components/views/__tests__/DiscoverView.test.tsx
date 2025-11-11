@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import DiscoverView from '../DiscoverView';
+import DiscoverView from '@/components/views/DiscoverView';
 import { useApp } from '@/contexts/AppContext';
 import { useStorage } from '@/hooks/use-storage';
 import { usePetDiscovery } from '@/hooks/usePetDiscovery';
@@ -208,6 +208,11 @@ describe('DiscoverView', () => {
     vi.mocked(adoptionApi.getAdoptionProfiles).mockResolvedValue({
       profiles: [],
     });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Rendering', () => {
@@ -445,4 +450,3 @@ describe('DiscoverView', () => {
     });
   });
 });
-

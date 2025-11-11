@@ -138,14 +138,22 @@ export function PremiumInput({
     transform: [{ scale: labelScale.value }, { translateY: labelY.value }],
   })) as AnimatedStyle;
 
+  // Use theme colors that match CSS variables
+  // These values match --coral-primary (#FF715B), --error (#FF715B), --border-light (#E5E5E5)
+  const THEME_COLORS = {
+    primary: '#FF715B',
+    error: '#FF715B',
+    borderLight: '#E5E5E5',
+  };
+
   const borderStyle = useAnimatedStyle(() => ({
     borderWidth: borderWidth.value,
     borderColor:
       borderColor.value === 1
         ? error
-          ? 'rgb(239, 68, 68)'
-          : 'rgb(99, 102, 241)'
-        : 'rgba(0, 0, 0, 0.1)',
+          ? THEME_COLORS.error
+          : THEME_COLORS.primary
+        : THEME_COLORS.borderLight,
   })) as AnimatedStyle;
 
   const iconStyle = useAnimatedStyle(() => ({
@@ -172,8 +180,8 @@ export function PremiumInput({
       <div
         className={cn(
           'relative flex items-center rounded-xl transition-all',
-          'focus-within:ring-2 focus-within:ring-primary/20',
-          error && 'ring-2 ring-red-500/20',
+          'focus-within:ring-2 focus-within:ring-[var(--coral-primary)]/20',
+          error && 'ring-2 ring-[var(--error)]/20',
           disabled && 'opacity-50 cursor-not-allowed',
           variants[variant],
           sizes[size],
@@ -209,8 +217,8 @@ export function PremiumInput({
             className={cn(
               'absolute left-4 pointer-events-none transition-colors',
               'text-muted-foreground font-medium',
-              isFocused && 'text-primary',
-              error && 'text-red-500',
+              isFocused && 'text-[var(--coral-primary)]',
+              error && 'text-[var(--error)]',
               size === 'sm' && 'text-sm',
               size === 'lg' && 'text-base'
             )}
@@ -268,10 +276,10 @@ export function PremiumInput({
             </button>
           )}
 
-          {error && <WarningCircle size={16} className="text-red-500 shrink-0" />}
+          {error && <WarningCircle size={16} className="text-[var(--error)] shrink-0" />}
 
           {!error && hasValue && !showClearButton && (
-            <CheckCircle size={16} className="text-green-500 shrink-0" />
+            <CheckCircle size={16} className="text-[var(--success)] shrink-0" />
           )}
 
           {rightIcon && <div className="shrink-0 text-muted-foreground">{rightIcon}</div>}
@@ -283,7 +291,7 @@ export function PremiumInput({
           id={error ? errorId : helperTextId}
           className={cn(
             'mt-1.5 text-xs flex items-center gap-1',
-            error ? 'text-red-500' : 'text-muted-foreground'
+            error ? 'text-[var(--error)]' : 'text-muted-foreground'
           )}
           role={error ? 'alert' : undefined}
         >

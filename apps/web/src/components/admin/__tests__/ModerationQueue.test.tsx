@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ModerationQueue } from '../ModerationQueue';
+import { ModerationQueue } from '@/components/admin/ModerationQueue';
 import { moderationService, photoService } from '@/lib/backend-services';
 import { userService } from '@/lib/user-service';
 
@@ -145,6 +145,11 @@ describe('ModerationQueue', () => {
       id: 'moderator1',
       name: 'Test Moderator',
     } as never);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders moderation queue', async () => {

@@ -16,7 +16,7 @@ import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { useTargetSizeRef } from '@/hooks/use-target-size';
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[12px] font-semibold disabled:pointer-events-none disabled:cursor-default [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0 outline-none focus:outline-none transition-colors duration-200 min-h-[44px] min-w-[44px] focus-ring",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] font-semibold disabled:pointer-events-none disabled:cursor-default [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0 outline-none focus:outline-none transition-colors duration-200 min-h-[44px] min-w-[44px] focus-ring",
   {
     variants: {
       variant: {
@@ -36,8 +36,8 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-[50px] px-6 has-[>svg]:px-4 [&_svg]:size-5 text-[15px]',
-        sm: 'h-[48px] rounded-[12px] gap-1.5 px-4 has-[>svg]:px-3 [&_svg]:size-4 min-h-[44px] text-[14px]',
-        lg: 'h-[56px] rounded-[12px] px-6 has-[>svg]:px-5 text-[15px] [&_svg]:size-6',
+        sm: 'h-[48px] rounded-[var(--radius-md)] gap-1.5 px-4 has-[>svg]:px-3 [&_svg]:size-4 min-h-[44px] text-[14px]',
+        lg: 'h-[56px] rounded-[var(--radius-md)] px-6 has-[>svg]:px-5 text-[15px] [&_svg]:size-6',
         icon: 'size-12 min-w-[44px] min-h-[44px]',
       },
     },

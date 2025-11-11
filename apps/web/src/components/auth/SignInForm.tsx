@@ -142,10 +142,10 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
   return (
     <div className="w-full bg-white rounded-[24px] p-8 sm:p-12">
       <div className="text-center mb-8">
-        <h2 className="text-[32px] font-bold text-gray-900 mb-2 tracking-tight">
+        <h2 className="text-[32px] font-bold text-[var(--text-primary)] mb-2 tracking-tight">
           {t.auth?.signInTitle || 'Welcome Back'}
         </h2>
-        <p className="text-[15px] text-gray-500">
+        <p className="text-[15px] text-[var(--text-secondary)]">
           {t.auth?.signInSubtitle || 'Sign in to continue'}
         </p>
       </div>
@@ -164,25 +164,25 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-700 block mb-2">
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] block mb-2">
                   {t.auth?.email || 'Email'}
                 </FormLabel>
                 <div className="relative">
                   <EnvelopeSimple
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none"
                   />
                   <input
                     {...field}
                     type="email"
                     placeholder={t.auth?.emailPlaceholder || 'you@example.com'}
-                    className="w-full h-[50px] pl-12 pr-4 bg-white border border-[#E5E7EB] rounded-[12px] text-[15px] text-[#1F2937] placeholder:text-[#9CA3AF] focus:border-[#D1D5DB] focus:outline-none disabled:opacity-50 transition-colors"
+                    className="w-full h-[50px] pl-12 pr-4 bg-white border border-[var(--border-light)] rounded-[12px] text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 focus:outline-none disabled:opacity-50 transition-colors"
                     disabled={isLoading}
                     autoComplete="email"
                     aria-label="Email address"
                   />
                 </div>
-                <FormMessage className="text-[13px] text-red-600 mt-1" />
+                <FormMessage className="text-[13px] text-[var(--error)] mt-1" />
               </FormItem>
             )}
           />
@@ -192,19 +192,19 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-700 block mb-2">
+                <FormLabel className="text-[13px] font-medium text-[var(--text-primary)] block mb-2">
                   {t.auth?.password || 'Password'}
                 </FormLabel>
                 <div className="relative">
                   <LockKey
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none"
                   />
                   <input
                     {...field}
                     type={showPassword ? 'text' : 'password'}
                     placeholder={t.auth?.passwordPlaceholder || '••••••••'}
-                    className="w-full h-[50px] pl-12 pr-12 bg-white border border-[#E5E7EB] rounded-[12px] text-[15px] text-[#1F2937] placeholder:text-[#9CA3AF] focus:border-[#D1D5DB] focus:outline-none disabled:opacity-50 transition-colors"
+                    className="w-full h-[50px] pl-12 pr-12 bg-white border border-[var(--border-light)] rounded-[12px] text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 focus:outline-none disabled:opacity-50 transition-colors"
                     disabled={isLoading}
                     autoComplete="current-password"
                     aria-label="Password"
@@ -215,13 +215,13 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
                       setShowPassword((v) => !v);
                       haptics.trigger('selection');
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors focus:outline-none"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                <FormMessage className="text-[13px] text-red-600 mt-1" />
+                <FormMessage className="text-[13px] text-[var(--error)] mt-1" />
               </FormItem>
             )}
           />
@@ -233,7 +233,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
                 void handleForgotPassword();
               }}
               disabled={isLoading}
-              className="text-[13px] text-[#4A90E2] font-medium hover:underline focus:outline-none disabled:opacity-50"
+              className="text-[13px] text-[var(--coral-primary)] font-medium hover:underline focus:outline-none disabled:opacity-50"
             >
               {t.auth?.forgotPassword ?? 'Forgot password?'}
             </button>
@@ -242,17 +242,17 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-[50px] bg-[#FF8B7B] hover:bg-[#FF7A68] active:bg-[#FF6957] text-white text-[15px] font-semibold rounded-[12px] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+            className="w-full h-[50px] bg-[var(--coral-primary)] hover:bg-[var(--coral-hover)] active:bg-[var(--coral-active)] text-white text-[15px] font-semibold rounded-[12px] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
           >
             {isLoading ? t.common.loading || 'Loading...' : t.auth?.signIn || 'Sign In'}
           </button>
 
           <div className="relative my-7">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-[var(--border-light)]" />
             </div>
             <div className="relative flex justify-center text-[13px]">
-              <span className="px-4 bg-white text-gray-500">
+              <span className="px-4 bg-white text-[var(--text-secondary)]">
                 {t.auth?.or || 'or'}
               </span>
             </div>
@@ -277,12 +277,12 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
           />
 
           <div className="text-center mt-6">
-            <p className="text-[14px] text-gray-600">
+            <p className="text-[14px] text-[var(--text-secondary)]">
               {t.auth?.noAccount || "Don't have an account?"}{' '}
               <button
                 type="button"
                 onClick={onSwitchToSignUp}
-                className="text-[#4A90E2] font-medium hover:underline focus:outline-none disabled:opacity-50"
+                className="text-[var(--coral-primary)] font-medium hover:underline focus:outline-none disabled:opacity-50"
                 disabled={isLoading}
               >
                 {t.auth?.signUp || 'Sign up'}

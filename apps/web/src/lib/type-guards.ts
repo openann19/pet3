@@ -1,92 +1,119 @@
 /**
- * Type Guards and Type Utilities
+ * Type Guard Utilities
  *
- * Utilities for type-safe runtime checks and unknown type handling
+ * Runtime validation functions for type safety
+ * Use these to validate API responses and objects before accessing properties
  */
 
 /**
- * Check if value is a valid string
+ * Type guard to check if a value is a valid object (not null, not array)
+ */
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Type guard to check if a value has a specific property
+ */
+export function hasProperty<K extends string>(
+  value: unknown,
+  key: K
+): value is Record<K, unknown> {
+  return isObject(value) && key in value;
+}
+
+/**
+ * Type guard to check if a value is a string
  */
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
 /**
- * Check if value is a valid number
+ * Type guard to check if a value is a number
  */
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === 'number' && !Number.isNaN(value);
 }
 
 /**
- * Check if value is a valid boolean
+ * Type guard to check if a value is a boolean
  */
 export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
 
 /**
- * Check if value is a valid object (not null, not array)
+ * Type guard to check if a value is an array
  */
-export function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-/**
- * Check if value is an array
- */
-export function isArray(value: unknown): value is unknown[] {
+export function isArray<T>(value: unknown): value is T[] {
   return Array.isArray(value);
 }
 
 /**
- * Type-safe property access
+ * Type guard to validate API response structure
  */
-export function hasProperty<K extends string>(obj: unknown, key: K): obj is Record<K, unknown> {
-  return isObject(obj) && key in obj;
+export interface APIResponse<T = unknown> {
+  data: T;
+  status: number;
+  headers?: Record<string, string>;
+}
+
+export function isValidAPIResponse<T = unknown>(value: unknown): value is APIResponse<T> {
+  if (!isObject(value)) return false;
+  if (!hasProperty(value, 'data')) return false;
+  if (!hasProperty(value, 'status') || !isNumber(value.status)) return false;
+  return true;
 }
 
 /**
- * Get property with type guard
+ * Type guard to validate user object structure
  */
-export function getProperty<T>(
-  obj: unknown,
-  key: string,
-  guard: (value: unknown) => value is T
-): T | undefined {
-  if (hasProperty(obj, key)) {
-    const value = obj[key];
-    if (guard(value)) {
-      return value;
-    }
-  }
-  return undefined;
+export interface User {
+  id: string;
+  email?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export function isValidUser(value: unknown): value is User {
+  if (!isObject(value)) return false;
+  if (!hasProperty(value, 'id') || !isString(value.id)) return false;
+  return true;
 }
 
 /**
- * Window with feature flags extension
+ * Type guard to validate pet object structure
  */
-export interface WindowWithFeatureFlags extends Window {
-  __FEATURE_FLAGS__?: Partial<Record<string, boolean | string | number>>;
+export interface Pet {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export function isValidPet(value: unknown): value is Pet {
+  if (!isObject(value)) return false;
+  if (!hasProperty(value, 'id') || !isString(value.id)) return false;
+  return true;
 }
 
 /**
- * Type guard for window with feature flags
+ * Type guard to check if value is not null or undefined
  */
-export function hasFeatureFlags(window: Window): window is WindowWithFeatureFlags {
-  return '__FEATURE_FLAGS__' in window;
+export function isNotNullOrUndefined<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined;
 }
 
 /**
- * Screen with refresh rate extension
+ * Type guard to validate error object
  */
-export interface ScreenWithRefreshRate extends Screen {
-  refreshRate?: number;
+export interface ErrorWithStatus extends Error {
+  status?: number;
+  code?: string;
 }
 
-/**
- * Type guard for screen with refresh rate
- */
-export function hasRefreshRate(screen: Screen): screen is ScreenWithRefreshRate {
-  return 'refreshRate' in screen;
+export function isErrorWithStatus(value: unknown): value is ErrorWithStatus {
+  return value instanceof Error && (
+    'status' in value || 'code' in value
+  );
 }

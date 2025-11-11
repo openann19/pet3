@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import UsersView from '../UsersView';
+import UsersView from '@/components/admin/UsersView';
 import { adminApi } from '@/api/admin-api';
 import { useStorage } from '@/hooks/use-storage';
 
@@ -56,6 +56,11 @@ describe('UsersView', () => {
     (mockAdminApi as { suspendUser?: ReturnType<typeof vi.fn>; banUser?: ReturnType<typeof vi.fn>; activateUser?: ReturnType<typeof vi.fn> }).suspendUser = vi.fn().mockResolvedValue(undefined);
     (mockAdminApi as { suspendUser?: ReturnType<typeof vi.fn>; banUser?: ReturnType<typeof vi.fn>; activateUser?: ReturnType<typeof vi.fn> }).banUser = vi.fn().mockResolvedValue(undefined);
     (mockAdminApi as { suspendUser?: ReturnType<typeof vi.fn>; banUser?: ReturnType<typeof vi.fn>; activateUser?: ReturnType<typeof vi.fn> }).activateUser = vi.fn().mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders users view', async () => {

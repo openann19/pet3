@@ -36,14 +36,14 @@ function MainTabs(): React.JSX.Element {
     <Tab.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#6366f1',
+          backgroundColor: '#FF715B',
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: 'bold',
         },
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: '#FF715B',
+        tabBarInactiveTintColor: '#666',
       }}
     >
       <Tab.Screen
@@ -146,7 +146,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Chat',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -158,7 +158,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Pet Details',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -170,7 +170,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Map',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -182,7 +182,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Notifications',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -194,7 +194,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Saved Posts',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -206,7 +206,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Settings',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}
@@ -226,7 +226,7 @@ export default function App(): React.JSX.Element {
                   headerShown: true,
                   title: 'Playdates',
                   headerStyle: {
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#FF715B',
                   },
                   headerTintColor: '#fff',
                 }}

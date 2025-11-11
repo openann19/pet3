@@ -1,15 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { usePinchZoom } from '../usePinchZoom';
+import { usePinchZoom } from '@/hooks/usePinchZoom';
 
 // Helper to create TouchEventInit with touches array (polyfill accepts arrays and converts to TouchList)
+// Type-safe helper that properly constructs TouchEventInit for test environment
 function createTouchEventInit(touches: Touch[], changedTouches?: Touch[]): TouchEventInit {
   // Polyfill accepts Touch[] arrays and converts them internally
+  // Create proper TouchList-like objects for test environment
+  const touchesList = Object.assign(touches, {
+    item: (index: number) => touches[index] || null,
+    length: touches.length,
+  }) as unknown as TouchList;
+
+  const changedTouchesList = changedTouches
+    ? (Object.assign(changedTouches, {
+        item: (index: number) => changedTouches[index] || null,
+        length: changedTouches.length,
+      }) as unknown as TouchList)
+    : undefined;
+
   return {
-    touches: touches as unknown as TouchList,
-    changedTouches: changedTouches ? (changedTouches as unknown as TouchList) : undefined,
+    touches: touchesList,
+    changedTouches: changedTouchesList,
     bubbles: true,
-  } as unknown as TouchEventInit;
+  };
 }
 
 describe('usePinchZoom', () => {

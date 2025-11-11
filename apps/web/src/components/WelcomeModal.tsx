@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { useStorage } from '@/hooks/use-storage';
 import { Heart, Sparkle, PawPrint, X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useApp } from '@/contexts/AppContext';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
@@ -135,6 +135,10 @@ export default function WelcomeModal(): JSX.Element | null {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden border-0">
+        <DialogTitle className="sr-only">Welcome to PawfectMatch</DialogTitle>
+        <DialogDescription className="sr-only">
+          Discover perfect companions for your pet with AI-powered matching, secure messaging, and a vibrant community
+        </DialogDescription>
         <div className="relative bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
           <AnimatedView
             style={bgAnimatedStyle}
@@ -150,7 +154,8 @@ export default function WelcomeModal(): JSX.Element | null {
             <button
               type="button"
               onClick={handleClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors z-10 shadow-md"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors z-10 shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
+              aria-label="Close welcome dialog"
             >
               <X size={16} />
             </button>

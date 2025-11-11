@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
 import type {
   AdoptionListingFilters,
@@ -146,6 +146,9 @@ export function AdoptionFiltersSheet({
       <SheetContent className="w-full sm:w-[400px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Filter Adoption Listings</SheetTitle>
+          <SheetDescription>
+            Use filters to find the perfect pet for adoption. Select species, size, traits, and more.
+          </SheetDescription>
         </SheetHeader>
 
         <div className="py-6 space-y-6">
@@ -157,8 +160,17 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={species}
                   variant={localFilters.species?.includes(species) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
                   onClick={() => handleSpeciesToggle(species)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSpeciesToggle(species);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={localFilters.species?.includes(species) ? 'true' : 'false'}
                 >
                   {species.charAt(0).toUpperCase() + species.slice(1)}
                 </Badge>
@@ -174,8 +186,17 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={size}
                   variant={localFilters.size?.includes(size) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
                   onClick={() => handleSizeToggle(size)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSizeToggle(size);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={localFilters.size?.includes(size) ? 'true' : 'false'}
                 >
                   {size.charAt(0).toUpperCase() + size.slice(1)}
                 </Badge>
@@ -369,8 +390,17 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={level}
                   variant={localFilters.energyLevel?.includes(level) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
                   onClick={() => handleEnergyLevelToggle(level)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleEnergyLevelToggle(level);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={localFilters.energyLevel?.includes(level) ? 'true' : 'false'}
                 >
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </Badge>
@@ -407,8 +437,17 @@ export function AdoptionFiltersSheet({
                 <Badge
                   key={status}
                   variant={localFilters.status?.includes(status) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-offset-2"
                   onClick={() => handleStatusToggle(status)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleStatusToggle(status);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={localFilters.status?.includes(status) ? 'true' : 'false'}
                 >
                   {status.replace('_', ' ')}
                 </Badge>
@@ -428,7 +467,7 @@ export function AdoptionFiltersSheet({
                 })
               }
             >
-              <SelectTrigger id="sortBy">
+              <SelectTrigger id="sortBy" aria-label="Sort adoption listings by">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

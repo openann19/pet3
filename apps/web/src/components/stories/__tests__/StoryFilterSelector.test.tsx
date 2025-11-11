@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import StoryFilterSelector, { type StoryFilterSelectorProps } from '../StoryFilterSelector';
+import StoryFilterSelector, { type StoryFilterSelectorProps } from '@/components/stories/StoryFilterSelector';
 import { STORY_FILTERS, FILTER_CATEGORIES } from '@/lib/story-templates';
 import type { StoryFilter } from '@/lib/story-templates';
 
@@ -21,6 +21,11 @@ const defaultProps: StoryFilterSelectorProps = {
 describe('StoryFilterSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Rendering', () => {

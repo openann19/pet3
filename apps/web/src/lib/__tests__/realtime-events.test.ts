@@ -33,7 +33,7 @@ describe('RealtimeEvents', () => {
 
   describe('joinRoom', () => {
     it('should send join_room event', async () => {
-      const sendSpy = vi.spyOn(events as any, 'sendWithAck');
+      const sendSpy = vi.spyOn(events as unknown as { sendWithAck: () => Promise<unknown> }, 'sendWithAck');
       sendSpy.mockResolvedValue(undefined);
 
       await events.joinRoom('room-123', 'user-456');
@@ -47,7 +47,7 @@ describe('RealtimeEvents', () => {
 
   describe('sendMessage', () => {
     it('should send message event', async () => {
-      const sendSpy = vi.spyOn(events as any, 'sendWithAck');
+      const sendSpy = vi.spyOn(events as unknown as { sendWithAck: () => Promise<unknown> }, 'sendWithAck');
       sendSpy.mockResolvedValue(undefined);
 
       const message = {

@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { CreateLostAlertDialog } from '../CreateLostAlertDialog';
+import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog';
 
 vi.mock('@/effects/reanimated/animated-view', () => ({
-  AnimatedView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
     <div {...props}>{children}</div>
   ),
   useAnimatedStyleValue: vi.fn((style: unknown) => {

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AdoptionDetailDialog } from '../AdoptionDetailDialog';
+import { AdoptionDetailDialog } from '@/components/adoption/AdoptionDetailDialog';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
@@ -25,7 +25,7 @@ vi.mock('@/lib/haptics', () => ({
   },
   triggerHaptic: vi.fn(() => undefined),
 }));
-vi.mock('../AdoptionApplicationDialog', () => ({
+vi.mock('@/components/adoption/AdoptionApplicationDialog', () => ({
   AdoptionApplicationDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="application-dialog">Application Dialog</div> : null,
 }));
@@ -74,6 +74,11 @@ describe('AdoptionDetailDialog', () => {
         },
       },
     } as never);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders nothing when profile is null', () => {

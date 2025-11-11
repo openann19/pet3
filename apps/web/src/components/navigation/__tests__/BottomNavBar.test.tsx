@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import BottomNavBar from '../BottomNavBar';
+import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { renderWithProviders } from '@/test/utilities';
 
 // Mock dependencies
@@ -271,4 +271,3 @@ describe('BottomNavBar', () => {
     });
   });
 });
-

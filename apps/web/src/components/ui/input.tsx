@@ -8,13 +8,13 @@ function Input({ className, type, ...props }: ComponentProps<'input'>) {
       type={type}
       data-slot="input"
       className={cn(
-        'flex h-[50px] w-full min-w-0 rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[15px] text-[#1F2937] transition-colors duration-200 outline-none',
-        'placeholder:text-[#9CA3AF]',
+        'flex h-[50px] w-full min-w-0 rounded-[var(--radius-md)] border border-[var(--border-light)] bg-white px-4 text-[var(--text-md)] text-[var(--text-primary)] transition-colors duration-200 outline-none',
+        'placeholder:text-[var(--text-tertiary)]',
         'selection:bg-primary selection:text-primary-foreground',
         'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
-        'focus:border-[#D1D5DB] focus:outline-none',
-        'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-        'aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20',
+        'focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)] focus:ring-opacity-20 focus:outline-none',
+        'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[var(--muted)] disabled:text-[var(--disabled)]',
+        'aria-invalid:border-[var(--error)] aria-invalid:ring-2 aria-invalid:ring-[var(--error)]/20',
         'read-only:bg-muted/20 read-only:cursor-default',
         className
       )}

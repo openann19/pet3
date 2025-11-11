@@ -15,11 +15,19 @@ describe('useTypingManager', () => {
     mockOn = vi.fn();
     mockOff = vi.fn();
 
+    // Create type-safe mock client that matches RealtimeClient interface
     mockRealtimeClient = {
       emit: mockEmit,
       on: mockOn,
       off: mockOff,
-    } as unknown as RealtimeClient;
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      setAccessToken: vi.fn(),
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+      publish: vi.fn(),
+      trigger: vi.fn(),
+    } as RealtimeClient;
   });
 
   afterEach(() => {
@@ -51,8 +59,11 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 
@@ -75,13 +86,19 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
-      vi.advanceTimersByTime(0);
     });
 
     await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    act(() => {
       result.current.stopTyping();
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 
@@ -104,12 +121,17 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 
-    expect(result.current.isTyping).toBe(true);
+    await waitFor(() => {
+      expect(result.current.isTyping).toBe(true);
+    });
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
@@ -131,8 +153,11 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.handleInputChange('Hello');
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(100);
     });
 
@@ -151,13 +176,19 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
-      vi.advanceTimersByTime(0);
     });
 
     await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    act(() => {
       result.current.handleInputChange('');
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 
@@ -176,13 +207,19 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
-      vi.advanceTimersByTime(0);
     });
 
     await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    act(() => {
       result.current.handleMessageSend();
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 
@@ -352,17 +389,29 @@ describe('useTypingManager', () => {
     expect(result.current.typingUsers).toEqual([]);
     expect(result.current.isTyping).toBe(false);
 
-    await act(async () => {
+    act(() => {
       result.current.startTyping();
-      vi.advanceTimersByTime(0);
     });
-    expect(result.current.isTyping).toBe(true);
 
     await act(async () => {
-      result.current.stopTyping();
       vi.advanceTimersByTime(0);
     });
-    expect(result.current.isTyping).toBe(false);
+
+    await waitFor(() => {
+      expect(result.current.isTyping).toBe(true);
+    });
+
+    act(() => {
+      result.current.stopTyping();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isTyping).toBe(false);
+    });
   });
 
   it('debounces typing start', async () => {
@@ -376,16 +425,27 @@ describe('useTypingManager', () => {
       })
     );
 
-    await act(async () => {
+    act(() => {
       result.current.handleInputChange('H');
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(100);
     });
-    await act(async () => {
+
+    act(() => {
       result.current.handleInputChange('He');
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(100);
     });
-    await act(async () => {
+
+    act(() => {
       result.current.handleInputChange('Hel');
+    });
+
+    await act(async () => {
       vi.advanceTimersByTime(0);
     });
 

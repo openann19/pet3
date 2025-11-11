@@ -156,13 +156,18 @@ export default function AuditLogView() {
 }
 
 function ActionIcon({ action }: { action: string }) {
-  const iconMap: Record<string, React.ComponentType<any>> = {
-    resolve_report: Flag,
-    suspend_user: Prohibit,
-    ban_user: Prohibit,
-    reactivate_user: CheckCircle,
-    approve_verification: ShieldCheck,
-    deny_verification: ShieldCheck,
+  type IconComponent = React.ComponentType<{
+    size?: number | string;
+    className?: string;
+    weight?: string;
+  }>;
+  const iconMap: Record<string, IconComponent> = {
+    resolve_report: Flag as IconComponent,
+    suspend_user: Prohibit as IconComponent,
+    ban_user: Prohibit as IconComponent,
+    reactivate_user: CheckCircle as IconComponent,
+    approve_verification: ShieldCheck as IconComponent,
+    deny_verification: ShieldCheck as IconComponent,
   };
 
   const Icon = iconMap[action] ?? ListBullets;

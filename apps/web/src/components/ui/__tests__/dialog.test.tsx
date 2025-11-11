@@ -14,7 +14,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-} from '../dialog';
+} from '@/components/ui/dialog';
 import * as useReducedMotionHook from '@/hooks/useReducedMotion';
 
 // Mock the useReducedMotion hook

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSmartHighlight } from '../use-smart-highlight';
+import { useSmartHighlight } from '@/hooks/use-smart-highlight';
 
 // Use global mock from setup.ts - no local mock needed
 
