@@ -15,9 +15,13 @@ vi.mock('@/lib/api/admin', () => ({
   },
 }));
 vi.mock('@/hooks/use-storage');
-vi.mock('@/lib/utils', () => ({
-  generateULID: vi.fn(() => 'test-ulid-123'),
-}));
+vi.mock('@/lib/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/utils')>();
+  return {
+    ...actual,
+    generateULID: vi.fn(() => 'test-ulid-123'),
+  };
+});
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
