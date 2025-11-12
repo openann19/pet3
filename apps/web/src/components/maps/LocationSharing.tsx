@@ -90,7 +90,12 @@ export function LocationBubble({
               <SheetTitle className="text-xl font-bold">
                 {(t.map as { location?: string })?.location || 'Location'}
               </SheetTitle>
-              <Button variant="ghost" size="icon" onClick={() = aria-label="X"> setShowFullMap(false)}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowFullMap(false)}
+                aria-label="Close map"
+              >
                 <X size={20} />
               </Button>
             </div>

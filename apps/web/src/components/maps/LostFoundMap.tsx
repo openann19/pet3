@@ -202,7 +202,12 @@ export default function LostFoundMap({
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() = aria-label="X"> setSelectedAlert(null)}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSelectedAlert(null)}
+              aria-label="Close alert"
+            >
               <X size={20} />
             </Button>
           </div>
