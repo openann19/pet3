@@ -176,7 +176,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
                     {...field}
                     type="email"
                     placeholder={t.auth?.emailPlaceholder || 'you@example.com'}
-                    className="w-full h-[50px] pl-12 pr-4 bg-white border border-[var(--border-light)] rounded-[12px] text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 focus:outline-none disabled:opacity-50 transition-colors"
+                    className="w-full h-12 pl-12 pr-4 bg-white border border-(--color-neutral-6) rounded-xl text-base text-(--color-fg) placeholder:text-(--color-fg-secondary) focus:border-(--color-accent-9) focus:ring-2 focus:ring-(--color-focus-ring) focus:ring-offset-2 focus:outline-none disabled:opacity-50 transition-colors"
                     disabled={isLoading}
                     autoComplete="email"
                     aria-label="Email address"
@@ -204,7 +204,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
                     {...field}
                     type={showPassword ? 'text' : 'password'}
                     placeholder={t.auth?.passwordPlaceholder || '••••••••'}
-                    className="w-full h-[50px] pl-12 pr-12 bg-white border border-[var(--border-light)] rounded-[12px] text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--coral-primary)] focus:ring-2 focus:ring-[var(--coral-primary)]/20 focus:outline-none disabled:opacity-50 transition-colors"
+                    className="w-full h-12 pl-12 pr-12 bg-white border border-(--color-neutral-6) rounded-xl text-base text-(--color-fg) placeholder:text-(--color-fg-secondary) focus:border-(--color-accent-9) focus:ring-2 focus:ring-(--color-focus-ring) focus:ring-offset-2 focus:outline-none disabled:opacity-50 transition-colors"
                     disabled={isLoading}
                     autoComplete="current-password"
                     aria-label="Password"
@@ -242,7 +242,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-[50px] bg-[var(--coral-primary)] hover:bg-[var(--coral-hover)] active:bg-[var(--coral-active)] text-white text-[15px] font-semibold rounded-[12px] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+            className="w-full h-12 bg-(--color-accent-9) hover:bg-(--color-accent-10) active:bg-(--color-accent-11) text-white text-base font-semibold rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-(--color-focus-ring) focus:ring-offset-2"
           >
             {isLoading ? t.common.loading || 'Loading...' : t.auth?.signIn || 'Sign In'}
           </button>
