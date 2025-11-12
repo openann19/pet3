@@ -12,7 +12,8 @@ import type {
   BillingIssue,
   RevenueMetrics,
 } from '@/lib/payments-types';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { APIClient } from '@/lib/api-client';
 
 let server: ReturnType<typeof createServer>;
 
@@ -307,8 +308,73 @@ afterAll(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
+beforeEach(() => {
+  // Mock APIClient methods to return test data
+  vi.spyOn(APIClient, 'get').mockImplementation(async (url: string) => {
+    if (url.includes('/payments/entitlements')) {
+      return { data: { entitlements: mockEntitlements }, status: 200 };
+    }
+    if (url.includes('/payments/subscription')) {
+      return { data: { subscription: mockSubscription }, status: 200 };
+    }
+    if (url.includes('/payments/billing-issue')) {
+      return { data: { billingIssue: mockBillingIssue }, status: 200 };
+    }
+    if (url.includes('/payments/audit-logs')) {
+      return { data: { logs: [] }, status: 200 };
+    }
+    if (url.includes('/payments/admin/subscriptions')) {
+      return { data: { subscriptions: [mockSubscription] }, status: 200 };
+    }
+    if (url.includes('/payments/admin/metrics')) {
+      return { data: { metrics: mockMetrics }, status: 200 };
+    }
+    if (url.includes('/payments/usage/counter')) {
+      return { data: { usageCounter: { type: 'swipe', count: 10, limit: 100, resetAt: new Date().toISOString() } }, status: 200 };
+    }
+    return { data: {}, status: 404 };
+  });
+
+  vi.spyOn(APIClient, 'post').mockImplementation(async (url: string) => {
+    if (url.includes('/payments/subscription')) {
+      return { data: { subscription: mockSubscription }, status: 201 };
+    }
+    if (url.includes('/payments/billing-issue')) {
+      return { data: { billingIssue: mockBillingIssue }, status: 201 };
+    }
+    if (url.includes('/payments/consumables/redeem')) {
+      return { data: { success: true, remaining: 4 }, status: 200 };
+    }
+    if (url.includes('/payments/consumables')) {
+      return { data: { entitlements: mockEntitlements }, status: 200 };
+    }
+    if (url.includes('/payments/usage')) {
+      return { data: { success: true, remaining: 90, limit: 100 }, status: 200 };
+    }
+    return { data: {}, status: 201 };
+  });
+
+  vi.spyOn(APIClient, 'put').mockImplementation(async (url: string) => {
+    if (url.includes('/payments/entitlements')) {
+      return { data: { entitlements: mockEntitlements }, status: 200 };
+    }
+    return { data: {}, status: 200 };
+  });
+
+  vi.spyOn(APIClient, 'patch').mockImplementation(async (url: string) => {
+    if (url.includes('/payments/subscription')) {
+      return { data: { subscription: mockSubscription }, status: 200 };
+    }
+    if (url.includes('/payments/billing-issue')) {
+      return { data: { billingIssue: { ...mockBillingIssue, resolved: true } }, status: 200 };
+    }
+    return { data: {}, status: 200 };
+  });
+});
+
 afterEach(() => {
   vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 
 describe('PaymentsApi.getUserEntitlements', () => {
@@ -322,12 +388,9 @@ describe('PaymentsApi.getUserEntitlements', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.getUserEntitlements('user-1')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -341,12 +404,9 @@ describe('PaymentsApi.updateEntitlements', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'put').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.updateEntitlements('user-1', 'premium')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -361,17 +421,14 @@ describe('PaymentsApi.getUserSubscription', () => {
   });
 
   it('should return null for non-existent subscription', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: { subscription: null } }),
-    } as Response);
+    vi.spyOn(APIClient, 'get').mockResolvedValueOnce({
+      data: { subscription: null },
+      status: 200,
+    });
 
     const subscription = await paymentsApi.getUserSubscription('user-1');
 
     expect(subscription).toBeNull();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -386,12 +443,9 @@ describe('PaymentsApi.createSubscription', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'post').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.createSubscription('user-1', 'plan-1', 'web')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -405,12 +459,9 @@ describe('PaymentsApi.updateSubscription', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'patch').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.updateSubscription('sub-1', {})).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -424,12 +475,9 @@ describe('PaymentsApi.addConsumable', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'patch').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.addConsumable('user-1', 'boosts', 5)).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -444,12 +492,9 @@ describe('PaymentsApi.redeemConsumable', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'patch').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.redeemConsumable('user-1', 'boosts', 'key-1')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -465,16 +510,14 @@ describe('PaymentsApi.getUserBillingIssue', () => {
 
   it('should return null for no issue', async () => {
     const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: { issue: null } }),
-    } as Response);
+    vi.spyOn(APIClient, 'get').mockResolvedValueOnce({
+      data: { billingIssue: null },
+      status: 200,
+    });
 
     const issue = await paymentsApi.getUserBillingIssue('user-1');
 
     expect(issue).toBeNull();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -488,14 +531,11 @@ describe('PaymentsApi.createBillingIssue', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'post').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(
       paymentsApi.createBillingIssue('user-1', 'sub-1', 'payment_failed')
     ).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -505,12 +545,9 @@ describe('PaymentsApi.resolveBillingIssue', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'patch').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.resolveBillingIssue('issue-1')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -522,12 +559,9 @@ describe('PaymentsApi.getAuditLogs', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.getAuditLogs()).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -539,12 +573,9 @@ describe('PaymentsApi.getAllSubscriptions', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.getAllSubscriptions()).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -559,12 +590,9 @@ describe('PaymentsApi.getRevenueMetrics', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.getRevenueMetrics()).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -579,12 +607,9 @@ describe('PaymentsApi.getUsageCounter', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.getUsageCounter('user-1', 'swipe')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
 
@@ -599,11 +624,8 @@ describe('PaymentsApi.incrementUsage', () => {
   });
 
   it('should throw on error', async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(APIClient, 'post').mockRejectedValueOnce(new Error('Network error'));
 
     await expect(paymentsApi.incrementUsage('user-1', 'swipe')).rejects.toThrow();
-
-    global.fetch = originalFetch;
   });
 });
