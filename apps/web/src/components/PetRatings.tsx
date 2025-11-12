@@ -172,12 +172,12 @@ export function PetRatings({ trustProfile, ratings = [], compact = false }: PetR
                     </div>
                   </div>
                   {rating.comment && (
-                    <p className="text-sm text-muted-foreground leading-relaxed pl-[52px]">
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-13">
                       {rating.comment}
                     </p>
                   )}
                   {rating.helpful > 0 && (
-                    <div className="flex items-center gap-2 pl-[52px]">
+                    <div className="flex items-center gap-2 pl-13">
                       <Button
                         variant="ghost"
                         size="sm"

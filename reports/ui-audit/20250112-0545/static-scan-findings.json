@@ -1,53 +1,5 @@
 [
   {
-    "file": "apps/web/src/components/AdminConsole.tsx",
-    "line": 89,
-    "issue": "className=\"flex items-center justify-center min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/AnimatedBackground.tsx",
-    "line": 118,
-    "issue": "className=\"absolute top-0 left-1/4 w-[900px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/AnimatedBackground.tsx",
-    "line": 124,
-    "issue": "className=\"absolute bottom-0 right-1/4 w-[900px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/AnimatedBackground.tsx",
-    "line": 130,
-    "issue": "className=\"absolute top-1/3 right-1/3 w-[800px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/AnimatedBackground.tsx",
-    "line": 136,
-    "issue": "className=\"absolute top-2/3 left-1/3 w-[700px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/AnimatedBackground.tsx",
-    "line": 142,
-    "issue": "className=\"absolute top-1/2 left-1/2 w-[600px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
     "file": "apps/web/src/components/AuthScreen.tsx",
     "line": 66,
     "issue": "<button",
@@ -121,27 +73,11 @@
   },
   {
     "file": "apps/web/src/components/ChatRoomsList.tsx",
-    "line": 112,
-    "issue": "className=\"absolute -top-1 -right-1 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/ChatRoomsList.tsx",
     "line": 75,
     "issue": "onClick={() => onSelectRoom(room)}",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/ChatWindowNew.tsx",
-    "line": 716,
-    "issue": "className=\"flex items-center gap-2 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/ChatWindowNew.tsx",
@@ -249,14 +185,6 @@
   },
   {
     "file": "apps/web/src/components/CreatePetDialog.tsx",
-    "line": 605,
-    "issue": "className=\"grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/CreatePetDialog.tsx",
     "line": 954,
     "issue": "className=\"max-w-3xl max-h-[",
     "severity": "MED",
@@ -354,7 +282,7 @@
   {
     "file": "apps/web/src/components/DiscoverMapMode.tsx",
     "line": 156,
-    "issue": "className=\"relative h-[calc(100vh-14rem)] max-h-[",
+    "issue": "className=\"relative h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -362,7 +290,7 @@
   {
     "file": "apps/web/src/components/DiscoverMapMode.tsx",
     "line": 166,
-    "issue": "className=\"relative h-[calc(100vh-14rem)] max-h-[",
+    "issue": "className=\"relative h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -617,14 +545,6 @@
   },
   {
     "file": "apps/web/src/components/PetDetailDialog.tsx",
-    "line": 151,
-    "issue": "className=\"relative h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/PetDetailDialog.tsx",
     "line": 247,
     "issue": "className=\"max-h-[",
     "severity": "MED",
@@ -755,22 +675,6 @@
     "file": "apps/web/src/components/PetProfileTemplatesDialog.tsx",
     "line": 238,
     "issue": "className=\"max-w-5xl max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/PetProfileTemplatesDialog.tsx",
-    "line": 337,
-    "issue": "className=\"min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/PetProfileTemplatesDialog.tsx",
-    "line": 346,
-    "issue": "className=\"min-w-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -1457,14 +1361,6 @@
   },
   {
     "file": "apps/web/src/components/admin/AdoptionApplicationReview.tsx",
-    "line": 680,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/AdoptionApplicationReview.tsx",
     "line": 256,
     "issue": "onClick={() => onToggleExpanded(application._id)}",
     "severity": "MED",
@@ -1505,22 +1401,6 @@
   },
   {
     "file": "apps/web/src/components/admin/AdoptionListingReview.tsx",
-    "line": 188,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/AdoptionListingReview.tsx",
-    "line": 221,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/AdoptionListingReview.tsx",
     "line": 66,
     "issue": "<img",
     "severity": "BLOCKER",
@@ -1558,14 +1438,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/AdoptionManagement.tsx",
-    "line": 365,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/AdoptionManagement.tsx",
@@ -1681,14 +1553,6 @@
   },
   {
     "file": "apps/web/src/components/admin/CommunityManagement.tsx",
-    "line": 318,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/CommunityManagement.tsx",
     "line": 72,
     "issue": "onClick={() => onUnhide(postId)}>",
     "severity": "MED",
@@ -1726,14 +1590,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/ContentModerationQueue.tsx",
-    "line": 451,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/ContentModerationQueue.tsx",
@@ -1785,14 +1641,6 @@
   },
   {
     "file": "apps/web/src/components/admin/ContentView.tsx",
-    "line": 89,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/ContentView.tsx",
     "line": 156,
     "issue": "<img",
     "severity": "BLOCKER",
@@ -1830,14 +1678,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/KYCManagement.tsx",
-    "line": 215,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/KYCManagement.tsx",
@@ -1889,22 +1729,6 @@
   },
   {
     "file": "apps/web/src/components/admin/LiveStreamManagement.tsx",
-    "line": 167,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/LiveStreamManagement.tsx",
-    "line": 225,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/LiveStreamManagement.tsx",
     "line": 170,
     "issue": "<button",
     "severity": "HIGH",
@@ -1926,22 +1750,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/LostFoundManagement.tsx",
-    "line": 113,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/LostFoundManagement.tsx",
-    "line": 168,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/LostFoundManagement.tsx",
@@ -2137,14 +1945,6 @@
   },
   {
     "file": "apps/web/src/components/admin/ModerationQueue.tsx",
-    "line": 263,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/ModerationQueue.tsx",
     "line": 393,
     "issue": "className=\"max-w-4xl max-h-[",
     "severity": "MED",
@@ -2233,24 +2033,8 @@
   },
   {
     "file": "apps/web/src/components/admin/PhotoModerationQueue.tsx",
-    "line": 340,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/PhotoModerationQueue.tsx",
     "line": 391,
     "issue": "className=\"max-w-4xl max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/PhotoModerationQueue.tsx",
-    "line": 449,
-    "issue": "className=\"h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -2337,22 +2121,6 @@
   },
   {
     "file": "apps/web/src/components/admin/SupportChatPanel.tsx",
-    "line": 457,
-    "issue": "className=\"flex-1 min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/SupportChatPanel.tsx",
-    "line": 476,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/admin/SupportChatPanel.tsx",
     "line": 228,
     "issue": "onClick={() => setCreateTicketOpen(true)}>",
     "severity": "MED",
@@ -2382,14 +2150,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/SystemMap.tsx",
-    "line": 152,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/UsersView.tsx",
@@ -2470,14 +2230,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/admin/VerificationReviewDashboard.tsx",
-    "line": 305,
-    "issue": "className=\"h-[500px] sm:h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/admin/VerificationReviewDashboard.tsx",
@@ -2646,14 +2398,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/adoption/AdoptionFiltersSheet.tsx",
-    "line": 67,
-    "issue": "className=\"w-full sm:w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/adoption/AdoptionFiltersSheet.tsx",
@@ -2929,14 +2673,6 @@
   },
   {
     "file": "apps/web/src/components/adoption/MyApplicationsView.tsx",
-    "line": 118,
-    "issue": "className=\"flex items-center justify-center min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/adoption/MyApplicationsView.tsx",
     "line": 160,
     "issue": "className=\"h-[",
     "severity": "MED",
@@ -3041,14 +2777,6 @@
   },
   {
     "file": "apps/web/src/components/auth/SignInForm.tsx",
-    "line": 143,
-    "issue": "rounded-[24px]",
-    "severity": "MED",
-    "type": "Hardcoded Radius",
-    "fix": "Use radius tokens (--radius-*)"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignInForm.tsx",
     "line": 212,
     "issue": "<button",
     "severity": "HIGH",
@@ -3102,46 +2830,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignUpForm.tsx",
-    "line": 202,
-    "issue": "className=\"w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignUpForm.tsx",
-    "line": 225,
-    "issue": "className=\"w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignUpForm.tsx",
-    "line": 248,
-    "issue": "className=\"w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignUpForm.tsx",
-    "line": 282,
-    "issue": "className=\"w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/auth/SignUpForm.tsx",
-    "line": 350,
-    "issue": "className=\"w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/auth/SignUpForm.tsx",
@@ -3417,14 +3105,6 @@
   },
   {
     "file": "apps/web/src/components/chat/MessageAttachments.tsx",
-    "line": 64,
-    "issue": "className=\"flex items-center gap-3 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/chat/MessageAttachments.tsx",
     "line": 68,
     "issue": "onClick={togglePlayback}",
     "severity": "MED",
@@ -3534,14 +3214,6 @@
     "severity": "HIGH",
     "type": "Hardcoded Color",
     "fix": "Replace with CSS variable or design token"
-  },
-  {
-    "file": "apps/web/src/components/chat/MessageBubble.tsx",
-    "line": 734,
-    "issue": "className=\"flex items-center gap-2 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/chat/MessageBubble.tsx",
@@ -3898,7 +3570,7 @@
   {
     "file": "apps/web/src/components/chat/StickerPicker.tsx",
     "line": 121,
-    "issue": "className=\"fixed inset-x-0 bottom-0 z-50 max-h-[70vh] bg-card/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-[420px] sm:rounded-2xl sm:border sm:max-h-[",
+    "issue": "className=\"fixed inset-x-0 bottom-0 z-50 max-h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -3906,7 +3578,7 @@
   {
     "file": "apps/web/src/components/chat/StickerPicker.tsx",
     "line": 123,
-    "issue": "className=\"flex flex-col h-full max-h-[70vh] sm:max-h-[",
+    "issue": "className=\"flex flex-col h-full max-h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -4273,14 +3945,6 @@
   },
   {
     "file": "apps/web/src/components/chat/components/ReactionButton.tsx",
-    "line": 43,
-    "issue": "className=\"text-2xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer min-w-[44px] min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/chat/components/ReactionButton.tsx",
     "line": 15,
     "issue": "onClick?: () => void;",
     "severity": "MED",
@@ -4326,14 +3990,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/chat/components/StickerButton.tsx",
-    "line": 41,
-    "issue": "className=\"text-3xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer min-w-[44px] min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/chat/components/StickerButton.tsx",
@@ -4521,14 +4177,6 @@
   },
   {
     "file": "apps/web/src/components/community/AppealDialog.tsx",
-    "line": 95,
-    "issue": "className=\"sm:max-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/community/AppealDialog.tsx",
     "line": 158,
     "issue": "onClick={handleClose}",
     "severity": "MED",
@@ -4553,31 +4201,7 @@
   },
   {
     "file": "apps/web/src/components/community/CommentsSheet.tsx",
-    "line": 263,
-    "issue": "className=\"min-h-[44px] max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/community/CommentsSheet.tsx",
-    "line": 413,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/CommentsSheet.tsx",
     "line": 429,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/CommentsSheet.tsx",
-    "line": 437,
     "issue": "<button",
     "severity": "HIGH",
     "type": "Missing A11y Label (button)",
@@ -4610,7 +4234,7 @@
   {
     "file": "apps/web/src/components/community/CommentsSheet.tsx",
     "line": 413,
-    "issue": "onClick={handleLike} className=\"flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\">",
+    "issue": "onClick={handleLike} className=\"flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -4622,22 +4246,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/community/MediaViewer.tsx",
-    "line": 685,
-    "issue": "className=\"text-white text-sm font-medium min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/community/MediaViewer.tsx",
-    "line": 697,
-    "issue": "className=\"text-white/60 text-sm min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/community/MediaViewer.tsx",
@@ -4769,14 +4377,6 @@
   },
   {
     "file": "apps/web/src/components/community/PostCard.tsx",
-    "line": 528,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/PostCard.tsx",
     "line": 541,
     "issue": "<button",
     "severity": "HIGH",
@@ -4882,7 +4482,7 @@
   {
     "file": "apps/web/src/components/community/PostCard.tsx",
     "line": 528,
-    "issue": "onClick={handleCommentClick} className=\"flex items-center gap-1.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\">",
+    "issue": "onClick={handleCommentClick} className=\"flex items-center gap-1.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -4921,14 +4521,6 @@
   },
   {
     "file": "apps/web/src/components/community/PostComposer.tsx",
-    "line": 398,
-    "issue": "className=\"min-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/community/PostComposer.tsx",
     "line": 441,
     "issue": "<button",
     "severity": "HIGH",
@@ -4946,14 +4538,6 @@
   {
     "file": "apps/web/src/components/community/PostComposer.tsx",
     "line": 552,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/PostComposer.tsx",
-    "line": 738,
     "issue": "<button",
     "severity": "HIGH",
     "type": "Missing A11y Label (button)",
@@ -5050,7 +4634,7 @@
   {
     "file": "apps/web/src/components/community/PostComposer.tsx",
     "line": 738,
-    "issue": "onClick={() = className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\"> handleRemoveTag(tag)} className=\"hover:text-destructive\">",
+    "issue": "onClick={() = className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\"> handleRemoveTag(tag)} className=\"hover:text-destructive\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -5129,22 +4713,6 @@
   },
   {
     "file": "apps/web/src/components/community/PostDetailView.tsx",
-    "line": 391,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/PostDetailView.tsx",
-    "line": 398,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/community/PostDetailView.tsx",
     "line": 342,
     "issue": "<img",
     "severity": "BLOCKER",
@@ -5202,7 +4770,7 @@
   {
     "file": "apps/web/src/components/community/PostDetailView.tsx",
     "line": 391,
-    "issue": "onClick={handleSave} className=\"hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\">",
+    "issue": "onClick={handleSave} className=\"hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -5210,7 +4778,7 @@
   {
     "file": "apps/web/src/components/community/PostDetailView.tsx",
     "line": 398,
-    "issue": "onClick={handleShare} className=\"hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\">",
+    "issue": "onClick={handleShare} className=\"hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -5222,14 +4790,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/community/ReportDialog.tsx",
-    "line": 131,
-    "issue": "className=\"sm:max-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/community/ReportDialog.tsx",
@@ -5283,14 +4843,6 @@
     "file": "apps/web/src/components/demo/PetsDemoPage.tsx",
     "line": 283,
     "issue": "className=\"h-9 px-4 rounded-full grad-brand text-white font-semibold shadow-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/demo/PetsDemoPage.tsx",
-    "line": 293,
-    "issue": "className=\"fixed right-3 md:right-6 bottom-[96px",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -5446,14 +4998,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/discovery/SavedSearchesManager.tsx",
-    "line": 454,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/discovery/SavedSearchesManager.tsx",
@@ -5961,30 +5505,6 @@
   },
   {
     "file": "apps/web/src/components/enhanced/NotificationCenter.tsx",
-    "line": 87,
-    "issue": "className=\"w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/NotificationCenter.tsx",
-    "line": 113,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/NotificationCenter.tsx",
-    "line": 115,
-    "issue": "className=\"flex flex-col items-center justify-center h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/NotificationCenter.tsx",
     "line": 201,
     "issue": "<img",
     "severity": "BLOCKER",
@@ -6110,14 +5630,6 @@
     "severity": "BLOCKER",
     "type": "Missing Alt Text",
     "fix": "Add alt attribute"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/SmartSearch.tsx",
-    "line": 178,
-    "issue": "className=\"absolute top-full mt-2 w-full max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/enhanced/SmartSearch.tsx",
@@ -6281,14 +5793,6 @@
   },
   {
     "file": "apps/web/src/components/enhanced/buttons/SplitButton.tsx",
-    "line": 148,
-    "issue": "className=\"min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/buttons/SplitButton.tsx",
     "line": 123,
     "issue": "<button",
     "severity": "HIGH",
@@ -6302,14 +5806,6 @@
     "severity": "HIGH",
     "type": "Missing A11y Label (button)",
     "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/display/PremiumAvatar.tsx",
-    "line": 170,
-    "issue": "className=\"absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/enhanced/display/PremiumAvatar.tsx",
@@ -6462,22 +5958,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/forms/PremiumSelect.tsx",
-    "line": 195,
-    "issue": "className=\"w-full min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/enhanced/forms/PremiumSelect.tsx",
-    "line": 210,
-    "issue": "className=\"max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/enhanced/forms/PremiumSelect.tsx",
@@ -6849,30 +6329,6 @@
   },
   {
     "file": "apps/web/src/components/gdpr/ConsentBanner.tsx",
-    "line": 245,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentBanner.tsx",
-    "line": 269,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentBanner.tsx",
-    "line": 293,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentBanner.tsx",
     "line": 177,
     "issue": "onClick={handleAcceptEssential}",
     "severity": "MED",
@@ -6910,30 +6366,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentSettings.tsx",
-    "line": 125,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentSettings.tsx",
-    "line": 165,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/gdpr/ConsentSettings.tsx",
-    "line": 204,
-    "issue": "className=\"w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/gdpr/DataDeletion.tsx",
@@ -7017,30 +6449,6 @@
   },
   {
     "file": "apps/web/src/components/health/PetHealthDashboard.tsx",
-    "line": 543,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/health/PetHealthDashboard.tsx",
-    "line": 576,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/health/PetHealthDashboard.tsx",
-    "line": 609,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/health/PetHealthDashboard.tsx",
     "line": 169,
     "issue": "onClick={(): void => onComplete(reminder.id)}>",
     "severity": "MED",
@@ -7090,15 +6498,7 @@
   {
     "file": "apps/web/src/components/lost-found/CreateLostAlertDialog.tsx",
     "line": 65,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/lost-found/CreateLostAlertDialog.tsx",
-    "line": 65,
-    "issue": "onClick={removeButtonAnimation.handlePress} type=\"button\" className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\">",
+    "issue": "onClick={removeButtonAnimation.handlePress} type=\"button\" className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\">",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -7286,14 +6686,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/maps/LostFoundMap.tsx",
-    "line": 165,
-    "issue": "className=\"relative h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/maps/LostFoundMap.tsx",
@@ -7649,14 +7041,6 @@
   },
   {
     "file": "apps/web/src/components/navigation/BottomNavBar.tsx",
-    "line": 309,
-    "issue": "className=\"absolute -top-1 -right-1 min-w-[18px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/navigation/BottomNavBar.tsx",
     "line": 217,
     "issue": "onClick={handleClick}",
     "severity": "MED",
@@ -7694,14 +7078,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/navigation/TopNavBar.tsx",
-    "line": 364,
-    "issue": "className=\"absolute -top-1 -right-1 min-w-[18px] h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/navigation/TopNavBar.tsx",
@@ -7881,35 +7257,11 @@
   },
   {
     "file": "apps/web/src/components/notifications/NotificationBell.tsx",
-    "line": 149,
-    "issue": "className=\"h-5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/notifications/NotificationBell.tsx",
     "line": 52,
     "issue": "onClick={handleClick}",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/notifications/NotificationCenter.tsx",
-    "line": 216,
-    "issue": "className=\"ml-2 px-1.5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/notifications/NotificationCenter.tsx",
-    "line": 250,
-    "issue": "className=\"ml-2 px-1.5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/notifications/NotificationCenter.tsx",
@@ -8001,14 +7353,6 @@
   },
   {
     "file": "apps/web/src/components/notifications/PremiumNotificationBell.tsx",
-    "line": 264,
-    "issue": "className=\"h-5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/notifications/PremiumNotificationBell.tsx",
     "line": 122,
     "issue": "onClick={handleClick}",
     "severity": "MED",
@@ -8049,22 +7393,6 @@
   },
   {
     "file": "apps/web/src/components/notifications/components/NotificationFilters.tsx",
-    "line": 45,
-    "issue": "className=\"ml-2 h-5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/notifications/components/NotificationFilters.tsx",
-    "line": 80,
-    "issue": "className=\"ml-2 h-5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/notifications/components/NotificationFilters.tsx",
     "line": 59,
     "issue": "onClick={() => onViewChange(view === 'grouped' ? 'list' : 'grouped')}",
     "severity": "MED",
@@ -8086,14 +7414,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/notifications/components/NotificationGroupItem.tsx",
-    "line": 105,
-    "issue": "className=\"absolute -top-1 -right-1 h-5 min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/notifications/components/NotificationGroupItem.tsx",
@@ -8187,22 +7507,6 @@
     "file": "apps/web/src/components/payments/PricingModal.tsx",
     "line": 80,
     "issue": "className=\"max-w-5xl max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/payments/PricingModal.tsx",
-    "line": 92,
-    "issue": "className=\"min-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/payments/PricingModal.tsx",
-    "line": 99,
-    "issue": "className=\"min-w-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -8305,22 +7609,6 @@
   },
   {
     "file": "apps/web/src/components/playdate/LocationPicker.tsx",
-    "line": 242,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/playdate/LocationPicker.tsx",
-    "line": 348,
-    "issue": "className=\"relative w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/playdate/LocationPicker.tsx",
     "line": 194,
     "issue": "onClick={onClose}>",
     "severity": "MED",
@@ -8358,14 +7646,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/playdate/PlaydateMap.tsx",
-    "line": 161,
-    "issue": "className=\"relative w-full h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/playdate/PlaydateMap.tsx",
@@ -8422,22 +7702,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/playdate/PlaydateScheduler.tsx",
-    "line": 348,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/playdate/PlaydateScheduler.tsx",
-    "line": 635,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/playdate/PlaydateScheduler.tsx",
@@ -8953,30 +8217,6 @@
   },
   {
     "file": "apps/web/src/components/stories/HighlightsBar.tsx",
-    "line": 66,
-    "issue": "className=\"text-xs font-medium text-muted-foreground max-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/stories/HighlightsBar.tsx",
-    "line": 88,
-    "issue": "className=\"absolute inset-0 rounded-full bg-gradient-to-br from-primary via-accent to-secondary p-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/stories/HighlightsBar.tsx",
-    "line": 118,
-    "issue": "className=\"text-xs font-medium text-foreground max-w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/stories/HighlightsBar.tsx",
     "line": 49,
     "issue": "onClick={() => {",
     "severity": "MED",
@@ -8995,14 +8235,6 @@
     "file": "apps/web/src/components/stories/SaveToHighlightDialog.tsx",
     "line": 130,
     "issue": "className=\"max-w-md max-h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/stories/SaveToHighlightDialog.tsx",
-    "line": 170,
-    "issue": "className=\"h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
@@ -9121,14 +8353,6 @@
   },
   {
     "file": "apps/web/src/components/stories/StoryFilterSelector.tsx",
-    "line": 161,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/stories/StoryFilterSelector.tsx",
     "line": 188,
     "issue": "<img",
     "severity": "BLOCKER",
@@ -9182,14 +8406,6 @@
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
-  },
-  {
-    "file": "apps/web/src/components/stories/StoryTemplateSelector.tsx",
-    "line": 70,
-    "issue": "className=\"h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/stories/StoryTemplateSelector.tsx",
@@ -9289,14 +8505,6 @@
   },
   {
     "file": "apps/web/src/components/streaming/GoLiveDialog.tsx",
-    "line": 207,
-    "issue": "<button",
-    "severity": "HIGH",
-    "type": "Missing A11y Label (button)",
-    "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/streaming/GoLiveDialog.tsx",
     "line": 198,
     "issue": "onClick={addTag} disabled={tags.length >= 5} variant=\"outline\">",
     "severity": "MED",
@@ -9306,7 +8514,7 @@
   {
     "file": "apps/web/src/components/streaming/GoLiveDialog.tsx",
     "line": 207,
-    "issue": "onClick={() = className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\"> removeTag(index)}>",
+    "issue": "onClick={() = className=\"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)\" aria-label=\"Button\"> removeTag(index)}>",
     "severity": "MED",
     "type": "Interactive without role",
     "fix": "Ensure proper semantic HTML or role/aria attributes"
@@ -9528,28 +8736,12 @@
     "fix": "Ensure proper semantic HTML or role/aria attributes"
   },
   {
-    "file": "apps/web/src/components/ui/drawer.tsx",
-    "line": 55,
-    "issue": "className=\"bg-muted mx-auto mt-4 hidden h-2 w-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
     "file": "apps/web/src/components/ui/enhanced-button.tsx",
     "line": 280,
     "issue": "<button",
     "severity": "HIGH",
     "type": "Missing A11y Label (button)",
     "fix": "Add aria-label or title attribute"
-  },
-  {
-    "file": "apps/web/src/components/ui/navigation-menu.tsx",
-    "line": 75,
-    "issue": "className=\"relative top-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
   },
   {
     "file": "apps/web/src/components/ui/navigation-menu.tsx",
@@ -9849,14 +9041,6 @@
   },
   {
     "file": "apps/web/src/components/views/DiscoverView.tsx",
-    "line": 797,
-    "issue": "className=\"relative h-[500px] sm:h-[",
-    "severity": "MED",
-    "type": "Hardcoded Spacing",
-    "fix": "Use spacing tokens (--space-*)"
-  },
-  {
-    "file": "apps/web/src/components/views/DiscoverView.tsx",
     "line": 1118,
     "issue": "className=\"max-w-2xl max-h-[",
     "severity": "MED",
@@ -9994,7 +9178,7 @@
   {
     "file": "apps/web/src/components/views/MapView.tsx",
     "line": 212,
-    "issue": "className=\"relative h-[calc(100vh-12rem)] max-h-[",
+    "issue": "className=\"relative h-[",
     "severity": "MED",
     "type": "Hardcoded Spacing",
     "fix": "Use spacing tokens (--space-*)"
