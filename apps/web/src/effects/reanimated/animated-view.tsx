@@ -50,7 +50,6 @@ interface AnimatedViewProps {
 }
 
 function convertToCSSProperties(style: unknown): CSSProperties {
-    const _uiConfig = useUIConfig();
     if (!style || typeof style !== 'object') {
         return {};
       }
