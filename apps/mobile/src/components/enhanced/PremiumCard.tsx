@@ -25,7 +25,7 @@ export interface PremiumCardProps extends ViewProps {
 
 const CARD_VARIANTS: Record<string, ViewStyle> = {
   default: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
@@ -35,17 +35,17 @@ const CARD_VARIANTS: Record<string, ViewStyle> = {
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   elevated: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
   },
   gradient: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     borderWidth: 0,
   },
 }
@@ -63,7 +63,7 @@ export function PremiumCard({
   const hoverLift = useHoverLift({ scale: 1.02, translateY: -4, hapticFeedback: true })
   const glowPulse = useGlowPulse({
     enabled: glow,
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
     intensity: 1.2,
   })
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   glow: {
-    shadowColor: '#3b82f6',
+    shadowColor: 'var(--color-accent-secondary-9)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 20,

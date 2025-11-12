@@ -1,5 +1,7 @@
 export type AdoptionStatus = 'available' | 'pending' | 'adopted' | 'on-hold';
 
+export type HouseholdType = 'house' | 'apartment' | 'condo' | 'other';
+
 export interface AdoptionProfile {
   _id: string;
   petId: string;
@@ -38,7 +40,7 @@ export interface AdoptionApplication {
   applicantName: string;
   applicantEmail: string;
   applicantPhone: string;
-  householdType: 'house' | 'apartment' | 'condo' | 'other';
+  householdType: HouseholdType;
   hasYard: boolean;
   hasOtherPets: boolean;
   otherPetsDetails?: string;

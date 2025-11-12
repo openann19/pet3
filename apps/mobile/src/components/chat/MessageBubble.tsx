@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     minWidth: 60,
   },
   ownBubble: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   otherBubble: {
     backgroundColor: '#E5E7EB',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   ownText: {
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
   },
   otherText: {
     color: '#111827',

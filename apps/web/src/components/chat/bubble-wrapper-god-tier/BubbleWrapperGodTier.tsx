@@ -86,7 +86,7 @@ export function BubbleWrapperGodTier({
     enabled: enabled && isDeleting,
     colors:
       deleteContext === 'admin-delete'
-        ? ['#EF4444', '#DC2626', '#991B1B']
+        ? ['var(--color-error-9)', '#DC2626', '#991B1B']
         : ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'],
     particleCount: deleteContext === 'admin-delete' ? 20 : 15,
   });

@@ -55,7 +55,7 @@ function createParticleData(
   const colorCount = Math.max(1, colors.length)
 
   for (let i = 0; i < particleCount; i++) {
-    const color = colors[Math.floor(rng.range(0, colorCount))] ?? colors[0] ?? '#ffffff'
+    const color = colors[Math.floor(rng.range(0, colorCount))] ?? colors[0] ?? 'var(--color-bg-overlay)'
     const w = Math.max(6, Math.floor(rng.range(6, 12)))
     const h = Math.max(6, Math.floor(rng.range(6, 12)))
     const delay = Math.floor(rng.range(0, reduced ? 0 : 400))
@@ -182,7 +182,7 @@ function ConfettiParticleView({
 export function ConfettiBurst({
   enabled = true,
   particleCount = 100,
-  colors = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'],
+  colors = ['var(--color-success-9)', 'var(--color-accent-secondary-9)', 'var(--color-warning-9)', 'var(--color-error-9)', '#a855f7'],
   duration = 1400,
   onComplete,
   seed = 'confetti-burst',

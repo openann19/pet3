@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '700',
     fontSize: 14,
     marginBottom: 8,

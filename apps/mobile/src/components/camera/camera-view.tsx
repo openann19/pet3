@@ -207,13 +207,13 @@ export function CameraView({
           {/* Top controls */}
           <View style={styles.topControls}>
             {onClose && (
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             )}
 
             {enableFlash && (
-              <TouchableOpacity style={styles.flashButton} onPress={handleToggleFlash}>
+              <TouchableOpacity style={styles.flashButton} onPress={handleToggleFlash} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <Text style={styles.flashButtonText}>
                   {flashMode === 'off' ? '⚡' : flashMode === 'on' ? '⚡' : '⚡'}
                 </Text>
@@ -221,7 +221,7 @@ export function CameraView({
             )}
 
             {enableCameraSwitch && (
-              <TouchableOpacity style={styles.switchButton} onPress={handleSwitchCamera}>
+              <TouchableOpacity style={styles.switchButton} onPress={handleSwitchCamera} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <Text style={styles.switchButtonText}>🔄</Text>
               </TouchableOpacity>
             )}
@@ -236,7 +236,7 @@ export function CameraView({
                 disabled={isCapturing}
               >
                 {isCapturing ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color="var(--color-bg-overlay)" />
                 ) : (
                   <View style={styles.captureButtonInner} />
                 )}
@@ -269,7 +269,7 @@ export function CameraView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: 'var(--color-fg)',
   },
   camera: {
     flex: 1,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeButtonText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   flashButtonText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 20,
   },
   switchButton: {
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchButtonText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 20,
   },
   bottomControls: {
@@ -332,11 +332,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#000',
+    borderColor: 'var(--color-fg)',
   },
   captureButtonDisabled: {
     opacity: 0.5,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   recordButton: {
     width: 60,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: 'var(--color-bg-overlay)',
   },
   recordButtonActive: {
     backgroundColor: '#ff0000',
@@ -364,15 +364,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   recordButtonText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: 'bold',
   },
   permissionText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   permissionButtonText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',

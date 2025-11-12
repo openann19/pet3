@@ -32,7 +32,7 @@ import { useReducedMotionSV } from '@petspark/motion'
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
-export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress'> {
+export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress' className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> {
   title?: string
   children?: React.ReactNode
   onPress?: () => void | Promise<void>

@@ -56,8 +56,8 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
 
 const DEFAULT_CATEGORY_SETTINGS: PlaceCategorySettings = {
   categories: [
-    { id: 'park', name: 'Parks', icon: '🌳', color: '#22c55e' },
-    { id: 'vet', name: 'Veterinarians', icon: '🏥', color: '#3b82f6' },
+    { id: 'park', name: 'Parks', icon: '🌳', color: 'var(--color-success-9)' },
+    { id: 'vet', name: 'Veterinarians', icon: '🏥', color: 'var(--color-accent-secondary-9)' },
     { id: 'groomer', name: 'Groomers', icon: '✂️', color: '#a855f7' },
     { id: 'cafe', name: 'Pet Cafes', icon: '☕', color: '#f59e0b' },
     { id: 'store', name: 'Pet Stores', icon: '🛒', color: '#ec4899' },
@@ -89,7 +89,7 @@ export default function MapSettingsView() {
     id: '',
     name: '',
     icon: '',
-    color: '#000000',
+    color: 'var(--color-fg)',
   });
 
   // Load config from backend
@@ -172,7 +172,7 @@ export default function MapSettingsView() {
       categories: [...current.categories, newCategory as PlaceCategory],
     }));
 
-    setNewCategory({ id: '', name: '', icon: '', color: '#000000' });
+    setNewCategory({ id: '', name: '', icon: '', color: 'var(--color-fg)' });
     setIsAddingCategory(false);
     // Auto-save to backend
     void saveConfig().catch((error) => {

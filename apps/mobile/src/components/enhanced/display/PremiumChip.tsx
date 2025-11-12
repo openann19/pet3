@@ -77,16 +77,16 @@ export function PremiumChip({
 
   const variants = {
     default: selected
-      ? { backgroundColor: '#6366f1', borderColor: '#6366f1', textColor: '#ffffff' }
+      ? { backgroundColor: '#6366f1', borderColor: '#6366f1', textColor: 'var(--color-bg-overlay)' }
       : { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb', textColor: '#374151' },
     outlined: selected
       ? { backgroundColor: 'transparent', borderColor: '#6366f1', textColor: '#6366f1' }
       : { backgroundColor: 'transparent', borderColor: '#d1d5db', textColor: '#374151' },
     filled: selected
-      ? { backgroundColor: '#6366f1', borderColor: 'transparent', textColor: '#ffffff' }
+      ? { backgroundColor: '#6366f1', borderColor: 'transparent', textColor: 'var(--color-bg-overlay)' }
       : { backgroundColor: '#f3f4f6', borderColor: 'transparent', textColor: '#374151' },
     gradient: selected
-      ? { backgroundColor: '#6366f1', borderColor: 'transparent', textColor: '#ffffff' }
+      ? { backgroundColor: '#6366f1', borderColor: 'transparent', textColor: 'var(--color-bg-overlay)' }
       : { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb', textColor: '#374151' },
   }
 
@@ -109,7 +109,7 @@ export function PremiumChip({
             paddingHorizontal: sizeStyle.paddingHorizontal,
             height: sizeStyle.height,
             opacity: disabled ? 0.5 : 1,
-            shadowColor: selected ? '#6366f1' : '#000',
+            shadowColor: selected ? '#6366f1' : 'var(--color-fg)',
             shadowOffset: { width: 0, height: selected ? 2 : 1 },
             shadowOpacity: selected ? 0.2 : 0.05,
             shadowRadius: selected ? 4 : 2,

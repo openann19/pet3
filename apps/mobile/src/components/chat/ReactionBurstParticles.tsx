@@ -146,7 +146,7 @@ export function ReactionBurstParticles({
   count = 18,
   radius = 48,
   seed = 'reaction-burst',
-  color = '#3B82F6',
+  color = 'var(--color-accent-secondary-9)',
   size = 6,
   staggerMs = 8,
 }: ReactionBurstParticlesProps): React.ReactElement {

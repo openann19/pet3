@@ -735,7 +735,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button onClick={() => handleRemoveTag(tag)} className="hover:text-destructive">
+                    <button onClick={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleRemoveTag(tag)} className="hover:text-destructive">
                       <X size={12} />
                     </button>
                   </Badge>

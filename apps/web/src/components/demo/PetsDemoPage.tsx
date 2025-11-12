@@ -291,13 +291,13 @@ export default function PetsDemoPage(): ReactElement {
 
       {/* right action rail */}
       <aside className="fixed right-3 md:right-6 bottom-[96px] md:bottom-6 z-30 flex flex-col items-center gap-4">
-        <button className="flex flex-col items-center gap-1" aria-label="Save pet" type="button">
+        <button className="flex flex-col items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Save pet" type="button">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/16">
             <Heart size={24} weight="fill" className="text-pink-500" />
           </div>
           <span className="text-xs text-white/90">{k(pet.stats.saves)}</span>
         </button>
-        <button className="flex flex-col items-center gap-1" aria-label="Messages" type="button">
+        <button className="flex flex-col items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Messages" type="button">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/16">
             <ChatCircleDots size={24} weight="fill" />
           </div>

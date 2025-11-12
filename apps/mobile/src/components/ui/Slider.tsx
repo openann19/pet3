@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   trackFill: {
     height: '100%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     borderRadius: 2,
   },
   thumb: {
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 2,
-    borderColor: '#3b82f6',
-    shadowColor: '#000',
+    borderColor: 'var(--color-accent-secondary-9)',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

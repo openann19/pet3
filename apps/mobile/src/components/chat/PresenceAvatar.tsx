@@ -100,7 +100,7 @@ export function PresenceAvatar({
       ? ['#34d399', '#22d3ee', '#60a5fa']
       : status === 'away'
         ? ['#f59e0b', '#fb7185', '#f97316']
-        : ['#ef4444', '#a855f7', '#6366f1']
+        : ['var(--color-error-9)', '#a855f7', '#6366f1']
 
   return (
     <View style={[styles.root, { width: size, height: size }]}>
@@ -148,5 +148,5 @@ const styles = StyleSheet.create({
   },
   avatarWrap: { overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.04)' },
   fallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#334155' },
-  fallbackText: { color: '#fff', fontWeight: '700' },
+  fallbackText: { color: 'var(--color-bg-overlay)', fontWeight: '700' },
 })

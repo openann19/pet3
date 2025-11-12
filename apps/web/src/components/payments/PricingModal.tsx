@@ -210,7 +210,7 @@ export function PricingModal({ open, onOpenChange, onSuccess }: PricingModalProp
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>All plans include secure payments and instant activation</p>
           <p className="mt-1">
-            Questions? <button className="text-primary hover:underline">Contact Support</button>
+            Questions? <button className="text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">Contact Support</button>
           </p>
         </div>
       </DialogContent>

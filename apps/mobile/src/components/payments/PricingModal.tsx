@@ -175,7 +175,7 @@ const PLANS: Plan[] = [
       'Profile boost',
     ],
     popular: true,
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
   },
   {
     id: 'elite',
@@ -396,13 +396,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 2,
     borderColor: '#e5e7eb',
     alignItems: 'center',
   },
   billingToggleActive: {
-    borderColor: '#3b82f6',
+    borderColor: 'var(--color-accent-secondary-9)',
   },
   billingToggleText: {
     fontSize: 14,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   billingToggleTextActive: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   scrollView: {
     flex: 1,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   popularText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   planHeader: {
     flexDirection: 'row',
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   currentText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   priceContainer: {
     flexDirection: 'row',
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   selectedText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   footer: {
     padding: 20,

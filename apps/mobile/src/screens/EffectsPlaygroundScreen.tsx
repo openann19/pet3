@@ -118,7 +118,7 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
                 color={[0.3, 0.75, 1]}
               />
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleSendWarp}>
+            <TouchableOpacity style={styles.button} onPress={handleSendWarp} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
               <Text style={styles.buttonText}>Trigger Send</Text>
             </TouchableOpacity>
           </View>
@@ -139,10 +139,10 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
               />
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.button} onPress={handleMediaZoom}>
+              <TouchableOpacity style={styles.button} onPress={handleMediaZoom} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <Text style={styles.buttonText}>Open</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleMediaClose}>
+              <TouchableOpacity style={styles.button} onPress={handleMediaClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <Text style={styles.buttonText}>Close</Text>
               </TouchableOpacity>
             </View>
@@ -180,7 +180,7 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
         </FeatureCard>
 
         {/* Reset Button */}
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+        <TouchableOpacity style={styles.resetButton} onPress={handleReset} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.resetButtonText}>Reset All</Text>
         </TouchableOpacity>
       </ScrollView>

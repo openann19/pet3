@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     height: SCREEN_HEIGHT * 0.7,
     borderRadius: 20,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: 'var(--color-bg-overlay)',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -204,9 +204,9 @@ const styles = StyleSheet.create({
   likeText: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     borderWidth: 4,
-    borderColor: '#fff',
+    borderColor: 'var(--color-bg-overlay)',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
@@ -214,9 +214,9 @@ const styles = StyleSheet.create({
   dislikeText: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     borderWidth: 4,
-    borderColor: '#fff',
+    borderColor: 'var(--color-bg-overlay)',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   name: {
     fontSize: 28,

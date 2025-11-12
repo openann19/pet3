@@ -689,6 +689,19 @@ export function applyThemePreset(preset: ThemePresetConfig) {
     root.classList.remove('dark');
   }
 
+  // Inject design tokens for the preset mode
+  // This ensures design token CSS variables are available alongside theme-preset variables
+  if (typeof window !== 'undefined') {
+    try {
+      // Dynamic import to avoid circular dependencies
+      void import('./design-tokens').then(({ injectTokenCSSVariables }) => {
+        injectTokenCSSVariables(preset.mode);
+      });
+    } catch {
+      // Silently fail if design tokens can't be imported
+    }
+  }
+
   // Apply button tokens for this theme (dynamic import for code splitting)
   if (typeof window !== 'undefined') {
     // Use dynamic import to avoid blocking initial render

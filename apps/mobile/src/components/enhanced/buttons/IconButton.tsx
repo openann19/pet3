@@ -97,12 +97,12 @@ export function IconButton({
   const config = SIZE_CONFIG[size]
 
   const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: '#3b82f6' },
+    primary: { backgroundColor: 'var(--color-accent-secondary-9)' },
     ghost: { backgroundColor: 'transparent' },
     outline: {
       backgroundColor: 'transparent',
       borderWidth: 2,
-      borderColor: '#3b82f6',
+      borderColor: 'var(--color-accent-secondary-9)',
     },
     glass: {
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

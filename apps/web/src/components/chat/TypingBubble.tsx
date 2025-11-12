@@ -30,8 +30,8 @@ export function TypingBubble({
       className={cn(
         'relative rounded-2xl p-3 max-w-[85%]',
         isIncoming
-          ? 'bg-[#2E2E2E] text-white rounded-bl-sm'
-          : 'bg-[#005AE0] text-white rounded-br-sm',
+          ? 'bg-(--color-neutral-8) text-white rounded-bl-sm'
+          : 'bg-(--color-accent-9) text-white rounded-br-sm',
         bubbleClassName,
         className
       )}
@@ -40,11 +40,11 @@ export function TypingBubble({
       }}
     >
       {isMobile ? (
-        <TypingDots {...(dotSize !== undefined ? { dotSize } : {})} dotColor={dotColor ?? '#aaa'} />
+        <TypingDots {...(dotSize !== undefined ? { dotSize } : {})} dotColor={dotColor ?? 'var(--color-neutral-a9)'} />
       ) : (
         <TypingDotsWeb
           {...(dotSize !== undefined ? { dotSize } : {})}
-          dotColor={dotColor ?? '#9ca3af'}
+          dotColor={dotColor ?? 'var(--color-neutral-a9)'}
         />
       )}
     </div>

@@ -28,7 +28,7 @@ export function MessageItem({ message, isCurrentUser }: MessageItemProps): JSX.E
           borderRadius: 16,
         }}
       >
-        <Text style={{ color: isCurrentUser ? '#fff' : '#000' }}>{String(message.content)}</Text>
+        <Text style={{ color: isCurrentUser ? 'var(--color-bg-overlay)' : 'var(--color-fg)' }}>{String(message.content)}</Text>
       </View>
     </View>
   )

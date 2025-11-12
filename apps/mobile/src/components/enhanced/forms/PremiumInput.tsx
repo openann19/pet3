@@ -156,7 +156,7 @@ export function PremiumInput({
 
   const borderStyle = useAnimatedStyle(() => ({
     borderWidth: borderWidth.value,
-    borderColor: borderColor.value === 1 ? (error ? '#ef4444' : '#6366f1') : 'rgba(0, 0, 0, 0.1)',
+    borderColor: borderColor.value === 1 ? (error ? 'var(--color-error-9)' : '#6366f1') : 'rgba(0, 0, 0, 0.1)',
   }))
 
   const inputType =
@@ -243,9 +243,9 @@ export function PremiumInput({
             </TouchableOpacity>
           )}
 
-          {error && <AlertCircle size={16} color="#ef4444" />}
+          {error && <AlertCircle size={16} color="var(--color-error-9)" />}
 
-          {!error && hasValue && !showClearButton && <CheckCircle size={16} color="#22c55e" />}
+          {!error && hasValue && !showClearButton && <CheckCircle size={16} color="var(--color-success-9)" />}
 
           {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
         </View>
@@ -253,7 +253,7 @@ export function PremiumInput({
 
       {(error || helperText) && (
         <View style={styles.helperContainer}>
-          {error && <AlertCircle size={12} color="#ef4444" />}
+          {error && <AlertCircle size={12} color="var(--color-error-9)" />}
           <Text style={error ? [styles.helperText, styles.helperError] : styles.helperText}>
             {error || helperText}
           </Text>
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   error: {
-    borderColor: '#ef4444',
+    borderColor: 'var(--color-error-9)',
   },
   disabled: {
     opacity: 0.5,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     color: '#6366f1',
   },
   labelError: {
-    color: '#ef4444',
+    color: 'var(--color-error-9)',
   },
   input: {
     flex: 1,
@@ -339,6 +339,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   helperError: {
-    color: '#ef4444',
+    color: 'var(--color-error-9)',
   },
 })

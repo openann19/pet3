@@ -118,9 +118,9 @@ export function EnhancedPetDetailView({
 
   return (
     <Modal visible={isVisible} transparent animationType="none" onRequestClose={handleClose}>
-      <Pressable style={styles.overlay} onPress={handleClose}>
+      <Pressable style={styles.overlay} onPress={handleClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
         <AnimatedView style={[styles.modal, modalStyle]}>
-          <Pressable onPress={e => e.stopPropagation()}>
+          <Pressable onPress={e = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> e.stopPropagation()}>
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
               {/* Photo Gallery */}
               <View style={styles.imageContainer}>
@@ -207,7 +207,7 @@ export function EnhancedPetDetailView({
             </ScrollView>
           </Pressable>
 
-          <Pressable style={styles.closeButton} onPress={handleClose}>
+          <Pressable style={styles.closeButton} onPress={handleClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
         </AnimatedView>
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   modal: {
     width: '90%',
     maxHeight: '90%',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 24,
     overflow: 'hidden',
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   photoIndicatorText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   verifiedText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   compatibilityScore: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
     marginBottom: 8,
   },
   compatibilityLabel: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   closeText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 20,
     fontWeight: '600',
   },

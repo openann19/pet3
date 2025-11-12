@@ -81,7 +81,7 @@ export function AdvancedFilterPanel({
           )}
         </View>
         {onClose && (
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable onPress={onClose} style={styles.closeButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
         )}
@@ -152,10 +152,10 @@ export function AdvancedFilterPanel({
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable onPress={handleReset} style={styles.resetButton}>
+        <Pressable onPress={handleReset} style={styles.resetButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.resetText}>Reset</Text>
         </Pressable>
-        <Pressable onPress={handleApply} style={styles.applyButton}>
+        <Pressable onPress={handleApply} style={styles.applyButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.applyText}>Apply</Text>
         </Pressable>
       </View>
@@ -165,7 +165,7 @@ export function AdvancedFilterPanel({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 16,
     padding: 24,
     maxHeight: '80%',
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     color: '#1e293b',
   },
   badge: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -235,15 +235,15 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   optionButtonSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
+    borderColor: 'var(--color-accent-secondary-9)',
   },
   optionText: {
     fontSize: 14,
     color: '#475569',
   },
   optionTextSelected: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '500',
   },
   toggle: {
@@ -256,15 +256,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   toggleActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
+    borderColor: 'var(--color-accent-secondary-9)',
   },
   toggleText: {
     fontSize: 14,
     color: '#64748b',
   },
   toggleTextActive: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '500',
   },
   footer: {
@@ -291,12 +291,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     alignItems: 'center',
   },
   applyText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
 })

@@ -82,11 +82,11 @@ export function CardFooter({ children, style, ...props }: CardFooterProps): Reac
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000000',
+    color: 'var(--color-fg)',
     lineHeight: 24,
   },
   cardDescription: {

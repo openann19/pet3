@@ -18,11 +18,11 @@ export interface BadgeProps extends ComponentProps<typeof View> {
 const badgeVariants: Record<BadgeVariant, { container: ViewStyle; text: TextStyle }> = {
   default: {
     container: {
-      backgroundColor: '#3b82f6',
+      backgroundColor: 'var(--color-accent-secondary-9)',
       borderColor: 'transparent',
     },
     text: {
-      color: '#ffffff',
+      color: 'var(--color-bg-overlay)',
     },
   },
   secondary: {
@@ -36,11 +36,11 @@ const badgeVariants: Record<BadgeVariant, { container: ViewStyle; text: TextStyl
   },
   destructive: {
     container: {
-      backgroundColor: '#ef4444',
+      backgroundColor: 'var(--color-error-9)',
       borderColor: 'transparent',
     },
     text: {
-      color: '#ffffff',
+      color: 'var(--color-bg-overlay)',
     },
   },
   outline: {
@@ -49,7 +49,7 @@ const badgeVariants: Record<BadgeVariant, { container: ViewStyle; text: TextStyl
       borderColor: 'rgba(0, 0, 0, 0.2)',
     },
     text: {
-      color: '#000000',
+      color: 'var(--color-fg)',
     },
   },
 }

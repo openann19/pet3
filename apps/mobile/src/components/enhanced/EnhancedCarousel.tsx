@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   indicatorActive: {
     width: 32,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   counter: {
     position: 'absolute',

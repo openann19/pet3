@@ -105,7 +105,7 @@ export function Stepper({
                 )}
               </View>
               <View style={styles.verticalStepLabel}>
-                <Pressable onPress={() => handleStepPress(index)} disabled={isUpcoming}>
+                <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleStepPress(index)} disabled={isUpcoming}>
                   <Text
                     style={[
                       styles.stepLabel,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     top: 20,
     left: 0,
     height: 2,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   horizontalStep: {
     alignItems: 'center',
@@ -224,14 +224,14 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
   },
   stepCircleCompleted: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
+    borderColor: 'var(--color-accent-secondary-9)',
   },
   stepCircleCurrent: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
+    borderColor: 'var(--color-accent-secondary-9)',
     transform: [{ scale: 1.1 }],
-    shadowColor: '#3b82f6',
+    shadowColor: 'var(--color-accent-secondary-9)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -247,10 +247,10 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   stepNumberCompleted: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   stepNumberCurrent: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   stepNumberUpcoming: {
     color: '#64748b',
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   verticalLineCompleted: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   verticalStepLabel: {
     flex: 1,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   stepLabelActive: {
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   stepLabelUpcoming: {
     color: '#64748b',

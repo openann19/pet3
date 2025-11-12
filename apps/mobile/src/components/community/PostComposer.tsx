@@ -99,7 +99,7 @@ export function PostComposer({
           {remainingChars} {t.community?.charsRemaining || 'characters remaining'}
         </Text>
         <View style={styles.actions}>
-          <TouchableOpacity onPress={() => onOpenChange(false)} style={styles.cancelButton}>
+          <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> onOpenChange(false)} style={styles.cancelButton}>
             <Text style={styles.cancelText}>{t.common?.cancel || 'Cancel'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -110,7 +110,7 @@ export function PostComposer({
             disabled={!canPost}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="var(--color-bg-overlay)" />
             ) : (
               <Text style={styles.postText}>{t.common?.post || 'Post'}</Text>
             )}
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
     padding: 24,
   },
   scrollContent: {
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   postText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: 'bold',
     fontSize: 16,
   },

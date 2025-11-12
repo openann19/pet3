@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     borderWidth: 4,
-    borderColor: '#ffffff',
+    borderColor: 'var(--color-bg-overlay)',
   },
   photoPlaceholder: {
     justifyContent: 'center',

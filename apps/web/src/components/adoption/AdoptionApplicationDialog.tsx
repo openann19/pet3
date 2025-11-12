@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import type { AdoptionProfile } from '@/lib/adoption-types';
+import type { AdoptionProfile, HouseholdType } from '@/lib/adoption-types';
 import { adoptionService } from '@/lib/adoption-service';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
@@ -23,8 +23,17 @@ import { PaperPlaneRight } from '@phosphor-icons/react';
 import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useRotation } from '@/effects/reanimated/use-rotation';
+import { spark } from '@/lib/spark';
 
 const logger = createLogger('AdoptionApplicationDialog');
+
+function isValidHouseholdType(value: string): value is HouseholdType {
+  return value === 'house' || value === 'apartment' || value === 'condo' || value === 'other';
+}
+
+function isBoolean(value: boolean | 'indeterminate'): value is boolean {
+  return typeof value === 'boolean';
+}
 
 function LoadingSpinner() {
   const rotationAnimation = useRotation({
@@ -55,11 +64,23 @@ export function AdoptionApplicationDialog({
 }: AdoptionApplicationDialogProps) {
   const { t } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    applicantName: string;
+    applicantEmail: string;
+    applicantPhone: string;
+    householdType: HouseholdType;
+    hasYard: boolean;
+    hasOtherPets: boolean;
+    otherPetsDetails: string;
+    hasChildren: boolean;
+    childrenAges: string;
+    experience: string;
+    reason: string;
+  }>({
     applicantName: '',
     applicantEmail: '',
     applicantPhone: '',
-    householdType: 'house' as 'house' | 'apartment' | 'condo' | 'other',
+    householdType: 'house',
     hasYard: false,
     hasOtherPets: false,
     otherPetsDetails: '',
@@ -195,12 +216,14 @@ export function AdoptionApplicationDialog({
               <Label>{t.adoption?.householdType ?? 'Household Type'}</Label>
               <RadioGroup
                 value={formData.householdType}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    householdType: value as 'house' | 'apartment' | 'condo' | 'other',
-                  })
-                }
+                onValueChange={(value) => {
+                  if (isValidHouseholdType(value)) {
+                    setFormData({
+                      ...formData,
+                      householdType: value,
+                    });
+                  }
+                }}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="house" id="house" />
@@ -233,9 +256,11 @@ export function AdoptionApplicationDialog({
               <Checkbox
                 id="yard"
                 checked={formData.hasYard}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, hasYard: checked as boolean })
-                }
+                onCheckedChange={(checked) => {
+                  if (isBoolean(checked)) {
+                    setFormData({ ...formData, hasYard: checked });
+                  }
+                }}
               />
               <Label htmlFor="yard" className="font-normal cursor-pointer">
                 {t.adoption?.hasYard ?? 'I have a yard'}
@@ -247,9 +272,11 @@ export function AdoptionApplicationDialog({
                 <Checkbox
                   id="other-pets"
                   checked={formData.hasOtherPets}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, hasOtherPets: checked as boolean })
-                  }
+                  onCheckedChange={(checked) => {
+                    if (isBoolean(checked)) {
+                      setFormData({ ...formData, hasOtherPets: checked });
+                    }
+                  }}
                 />
                 <Label htmlFor="other-pets" className="font-normal cursor-pointer">
                   {t.adoption?.hasOtherPets ?? 'I have other pets'}
@@ -269,9 +296,11 @@ export function AdoptionApplicationDialog({
                 <Checkbox
                   id="children"
                   checked={formData.hasChildren}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, hasChildren: checked as boolean })
-                  }
+                  onCheckedChange={(checked) => {
+                    if (isBoolean(checked)) {
+                      setFormData({ ...formData, hasChildren: checked });
+                    }
+                  }}
                 />
                 <Label htmlFor="children" className="font-normal cursor-pointer">
                   {t.adoption?.hasChildren ?? 'I have children'}

@@ -74,7 +74,7 @@ export function MessagePeekNative({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
         <Animated.View
           style={[styles.backdropOverlay, backdropStyle]}
           entering={FadeIn.duration(120)}
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   backdropOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000',
+    backgroundColor: 'var(--color-fg)',
   },
   container: {
     flex: 1,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     width: 400,
     borderWidth: 1,
     borderColor: '#333',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   senderName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
   },
   timestamp: {
     fontSize: 12,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 16,
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     lineHeight: 24,
   },
 })

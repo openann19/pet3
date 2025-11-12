@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   skel: { backgroundColor: 'rgba(200,200,200,0.15)' },
   line: { height: 14, borderRadius: 6, marginBottom: 8 },
   lineSmall: { height: 10, borderRadius: 5, marginBottom: 6 },
-  title: { fontWeight: '600', fontSize: 14, color: '#fff' },
+  title: { fontWeight: '600', fontSize: 14, color: 'var(--color-bg-overlay)' },
   desc: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   host: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 4 },
 })

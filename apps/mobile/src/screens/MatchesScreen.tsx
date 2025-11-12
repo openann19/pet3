@@ -129,7 +129,7 @@ export function MatchesScreen(): React.ReactElement {
         <FeatureCard title="Today">
           <Text style={styles.text}>Your latest matches will show here.</Text>
           {!callManager.isInCall && (
-            <Pressable onPress={handleStartCall} style={styles.callButton}>
+            <Pressable onPress={handleStartCall} style={styles.callButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
               <Text style={styles.callButtonText}>📹 Call Match</Text>
             </Pressable>
           )}

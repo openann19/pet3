@@ -126,7 +126,7 @@ export default function OAuthButtons({
         type="button"
         onClick={handleGoogleSignIn}
         disabled={disabled}
-        className="flex-1 h-[48px] flex items-center justify-center gap-2 bg-white border border-[var(--border-light)] rounded-[12px] text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--muted)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--coral-primary)]/20"
+        className="flex-1 h-12 flex items-center justify-center gap-2 bg-white border border-(--border-light) rounded-xl text-sm font-medium text-(--text-primary) hover:bg-(--muted) transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-(--color-focus-ring) focus:ring-offset-2"
         aria-label="Sign in with Google"
       >
         <GoogleLogo size={18} aria-hidden="true" />
@@ -137,7 +137,7 @@ export default function OAuthButtons({
         type="button"
         onClick={handleAppleSignIn}
         disabled={disabled}
-        className="flex-1 h-[48px] flex items-center justify-center gap-2 bg-black border border-black rounded-[12px] text-[14px] font-medium text-white hover:bg-[#1F2937] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+        className="flex-1 h-12 flex items-center justify-center gap-2 bg-(--color-neutral-12) border border-(--color-neutral-12) rounded-xl text-sm font-medium text-white hover:bg-(--color-neutral-11) transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
         aria-label="Sign in with Apple"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

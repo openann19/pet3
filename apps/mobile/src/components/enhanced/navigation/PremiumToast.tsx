@@ -35,10 +35,10 @@ const SPRING_CONFIG = { stiffness: 400, damping: 30 }
 
 const colors: Record<PremiumToastType, { bg: string; border: string; text: string; icon: string }> =
   {
-    success: { bg: '#dcfce7', border: '#86efac', text: '#166534', icon: '#22c55e' },
-    error: { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b', icon: '#ef4444' },
-    warning: { bg: '#fef3c7', border: '#fde047', text: '#854d0e', icon: '#eab308' },
-    info: { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af', icon: '#3b82f6' },
+    success: { bg: '#dcfce7', border: '#86efac', text: '#166534', icon: 'var(--color-success-9)' },
+    error: { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b', icon: 'var(--color-error-9)' },
+    warning: { bg: '#fef3c7', border: '#fde047', text: '#854d0e', icon: 'var(--color-warning-9)' },
+    info: { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af', icon: 'var(--color-accent-secondary-9)' },
   }
 
 export function PremiumToast({
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minWidth: 320,
     maxWidth: 400,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -225,6 +225,6 @@ const styles = StyleSheet.create({
   dismissText: {
     fontSize: 20,
     fontWeight: '300',
-    color: '#000',
+    color: 'var(--color-fg)',
   },
 })

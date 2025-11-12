@@ -30,7 +30,7 @@ export interface SubscriptionStatusCardProps {
 
 const PLAN_COLORS: Record<string, string> = {
     free: '#6b7280',
-    premium: '#3b82f6',
+    premium: 'var(--color-accent-secondary-9)',
     elite: '#a855f7',
 }
 
@@ -43,7 +43,7 @@ const PLAN_NAMES: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
     active: '#10b981',
     cancelled: '#f59e0b',
-    past_due: '#ef4444',
+    past_due: 'var(--color-error-9)',
     expired: '#6b7280',
 }
 
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     planBadgeText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#ffffff',
+        color: 'var(--color-bg-overlay)',
     },
     statusBadge: {
         paddingHorizontal: 10,
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#ffffff',
+        color: 'var(--color-bg-overlay)',
     },
     billingInfo: {
         gap: 2,

@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
     gap: 12,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#3b82f6', // primary color
-    shadowColor: '#000',
+    backgroundColor: 'var(--color-accent-secondary-9)', // primary color
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
   },
   labelContainer: {
     paddingRight: 20,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
   },
   shimmer: {
     position: 'absolute',

@@ -410,7 +410,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
         </div>
 
         <div className="flex items-center gap-4 mt-2 ml-4">
-          <button onClick={handleLike} className="flex items-center gap-1 group/like">
+          <button onClick={handleLike} className="flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <MotionView whileTap={{ scale: 0.85 }}>
               <Heart
                 size={16}
@@ -434,7 +434,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
             </button>
           )}
 
-          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <DotsThree size={16} weight="bold" className="text-muted-foreground" />
           </button>
         </div>

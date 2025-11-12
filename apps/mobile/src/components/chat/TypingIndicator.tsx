@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: 'var(--color-bg-overlay)',
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
   },
@@ -192,12 +192,12 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   avatarFallbackText: {
     fontSize: 8,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
   },
   textContainer: {
     flexDirection: 'row',
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    color: '#3B82F6',
+    color: 'var(--color-accent-secondary-9)',
     fontWeight: '500',
   },
   dotsContainer: {
@@ -218,6 +218,6 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
 })

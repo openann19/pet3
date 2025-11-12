@@ -71,8 +71,8 @@ export function ToggleButton({
 
   const variantStyles: Record<string, ViewStyle> = {
     primary: checked
-      ? { backgroundColor: '#3b82f6' }
-      : { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#3b82f6' },
+      ? { backgroundColor: 'var(--color-accent-secondary-9)' }
+      : { backgroundColor: 'transparent', borderWidth: 2, borderColor: 'var(--color-accent-secondary-9)' },
     secondary: checked
       ? { backgroundColor: '#64748b' }
       : { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#64748b' },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '600',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   textSm: {
     fontSize: 14,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   textUnchecked: {
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
   },
   disabled: {
     opacity: 0.5,

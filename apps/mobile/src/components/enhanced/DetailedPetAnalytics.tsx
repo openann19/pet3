@@ -223,10 +223,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   badgeText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: '600',
   },

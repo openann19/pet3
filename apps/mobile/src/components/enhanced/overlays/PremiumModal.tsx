@@ -98,9 +98,9 @@ export function PremiumModal({
   }
 
   const variants = {
-    default: { backgroundColor: '#ffffff' },
+    default: { backgroundColor: 'var(--color-bg-overlay)' },
     glass: { backgroundColor: 'rgba(255, 255, 255, 0.9)' },
-    centered: { backgroundColor: '#ffffff' },
+    centered: { backgroundColor: 'var(--color-bg-overlay)' },
   }
 
   return (
@@ -112,7 +112,7 @@ export function PremiumModal({
       testID={testID}
     >
       <AnimatedView style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} />
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
         <View style={styles.container}>
           <AnimatedView
             style={[styles.content, sizeStyles[size], variants[variant], contentStyle, style]}
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   content: {
     width: '100%',
     borderRadius: 16,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,

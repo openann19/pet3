@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',

@@ -143,7 +143,7 @@ export function SplitButton({
           accessibilityLabel="More options"
           accessibilityState={{ disabled }}
         >
-          <Text style={{ color: '#ffffff', fontSize: 16 }}>▼</Text>
+          <Text style={{ color: 'var(--color-bg-overlay)', fontSize: 16 }}>▼</Text>
         </AnimatedPressable>
       </View>
 
@@ -199,13 +199,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   menuButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -220,12 +220,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   menuContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 40,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: '#000000',
+    color: 'var(--color-fg)',
     fontWeight: '500',
   },
   iconContainer: {

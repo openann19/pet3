@@ -194,9 +194,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     bottom: 4,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   textSelected: {
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   textUnselected: {
     color: '#64748b',

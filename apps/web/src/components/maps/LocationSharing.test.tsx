@@ -27,7 +27,9 @@ describe('LocationSharing', () => {
   describe('LocationBubble', () => {
     it('renders location bubble', () => {
       render(<LocationBubble location={mockLocation} />);
-      expect(screen.getByRole('button', { hidden: true })).toBeInTheDocument();
+      // LocationBubble uses MotionView (div) with cursor-pointer, not a button element
+      const bubble = screen.getByText('Location').closest('.cursor-pointer');
+      expect(bubble).toBeInTheDocument();
     });
 
     it('calls onTap when provided', () => {

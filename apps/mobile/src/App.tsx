@@ -11,6 +11,22 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 const logger = createLogger('App')
 
+// Global error handler for production
+if (__DEV__ === false) {
+  const ErrorUtils = require('react-native').ErrorUtils
+  const origHandler = ErrorUtils?.getGlobalHandler?.()
+
+  ErrorUtils?.setGlobalHandler?.((error: Error, isFatal?: boolean) => {
+    logger.error('RNGlobalError', error, {
+      isFatal,
+      message: error?.message,
+      stack: error?.stack,
+    })
+
+    origHandler?.(error, isFatal)
+  })
+}
+
 export default function App(): React.JSX.Element {
   useEffect(() => {
     initBackgroundUploads().catch((error: unknown) => {

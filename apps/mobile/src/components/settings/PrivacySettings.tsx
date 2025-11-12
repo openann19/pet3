@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     },
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     },
     tabs: {
         flexDirection: 'row',
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     },
     section: {
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         margin: 16,
         borderRadius: 12,
     },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     buttonText: {
-        color: '#fff',
+        color: 'var(--color-bg-overlay)',
         fontSize: 16,
         fontWeight: '600',
     },

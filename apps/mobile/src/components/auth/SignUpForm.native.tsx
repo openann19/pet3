@@ -318,7 +318,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps): Re
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color="var(--color-bg-overlay)" />
             ) : (
               <Text style={styles.submitButtonText}>{t.auth.signUp}</Text>
             )}
@@ -326,7 +326,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps): Re
 
           <View style={styles.switchRow}>
             <Text style={styles.switchText}>{t.auth.alreadyHaveAccount} </Text>
-            <TouchableOpacity onPress={onSwitchToSignIn} disabled={isSubmitting}>
+            <TouchableOpacity onPress={onSwitchToSignIn} disabled={isSubmitting} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
               <Text style={styles.switchLink}>{t.auth.signIn}</Text>
             </TouchableOpacity>
           </View>
@@ -339,7 +339,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps): Re
 const styles = StyleSheet.create({
   keyboardAvoider: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   scrollContent: {
     flexGrow: 1,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     fontWeight: '600',
   },

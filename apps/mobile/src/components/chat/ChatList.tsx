@@ -211,7 +211,7 @@ export function ChatList({
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
         >
-          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <Text style={styles.fabIcon}>↓</Text>
             {badgeCount > 0 && (
               <Animated.View style={[styles.badge, badgeAnimatedStyle]}>
@@ -267,25 +267,25 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
   fabIcon: {
     fontSize: 24,
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '600',
   },
   badge: {
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#EF4444',
+    backgroundColor: 'var(--color-error-9)',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: '600',
   },

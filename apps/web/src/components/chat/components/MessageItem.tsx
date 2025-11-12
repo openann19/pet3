@@ -183,7 +183,7 @@ export function MessageItem({
                     isPlaying={false}
                     width={200}
                     height={40}
-                    color={isCurrentUser ? '#ffffff' : '#3B82F6'}
+                    color={isCurrentUser ? 'var(--color-bg-overlay)' : 'var(--color-accent-secondary-9)'}
                   />
                 )}
                 <MessageAttachments attachments={message.attachments} />

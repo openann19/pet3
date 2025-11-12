@@ -13,10 +13,12 @@ import { registerServiceWorker } from './lib/pwa/service-worker-registration';
 
 import App from './App';
 import { ErrorFallback } from './ErrorFallback';
+import GlobalNavErrorTrap from './components/GlobalNavErrorTrap';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UIProvider } from './contexts/UIContext';
 import { QueryProvider } from './providers/QueryProvider';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 import './index.css';
 import './main.css';
@@ -76,14 +78,17 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <BrowserRouter>
+      <GlobalNavErrorTrap />
       <QueryProvider>
-        <AppProvider>
-          <UIProvider>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </UIProvider>
-        </AppProvider>
+        <ThemeProvider>
+          <AppProvider>
+            <UIProvider>
+              <AuthProvider>
+                <App />
+              </AuthProvider>
+            </UIProvider>
+          </AppProvider>
+        </ThemeProvider>
       </QueryProvider>
     </BrowserRouter>
   </ErrorBoundary>

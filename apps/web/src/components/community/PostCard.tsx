@@ -525,7 +525,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                 )}
               </button>
 
-              <button onClick={handleCommentClick} className="flex items-center gap-1.5 group">
+              <button onClick={handleCommentClick} className="flex items-center gap-1.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
                 <ChatCircle
                   size={24}
                   weight="regular"

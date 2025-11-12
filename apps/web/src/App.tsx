@@ -14,7 +14,10 @@ import {
   MapPin,
 } from '@phosphor-icons/react';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
+import { NotFoundPage } from '@/components/error/NotFoundPage';
 import LoadingState from '@/components/LoadingState';
+import { useNavigationErrorTracking } from '@/hooks/use-navigation-error-tracking';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -134,6 +137,18 @@ function App(): JSX.Element {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
   const { t, theme, toggleTheme, language, toggleLanguage } = useApp();
   const { isAuthenticated } = useAuth();
+
+  // Track navigation errors
+  useNavigationErrorTracking({
+    enabled: true,
+    onError: (error) => {
+      rootLogger.error('Navigation error tracked', error.error, {
+        type: error.type,
+        fromPath: error.fromPath,
+        toPath: error.toPath,
+      });
+    },
+  });
   const [hasSeenWelcome, setHasSeenWelcome] = useStorage<boolean>('has-seen-welcome-v2', false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean'
@@ -378,9 +393,11 @@ function App(): JSX.Element {
         <Route
           path="/demo/pets"
           element={
-            <Suspense fallback={<LoadingState />}>
-              <PetsDemoPage />
-            </Suspense>
+            <RouteErrorBoundary>
+              <Suspense fallback={<LoadingState />}>
+                <PetsDemoPage />
+              </Suspense>
+            </RouteErrorBoundary>
           }
         />
         <Route
@@ -388,23 +405,27 @@ function App(): JSX.Element {
           element={
             <>
               {appState === 'welcome' && (
-                <Suspense fallback={<LoadingState />}>
-                  <WelcomeScreen
-                    onGetStarted={handleWelcomeGetStarted}
-                    onSignIn={handleWelcomeSignIn}
-                    onExplore={handleWelcomeExplore}
-                    isOnline={isOnline}
-                  />
-                </Suspense>
+                <RouteErrorBoundary>
+                  <Suspense fallback={<LoadingState />}>
+                    <WelcomeScreen
+                      onGetStarted={handleWelcomeGetStarted}
+                      onSignIn={handleWelcomeSignIn}
+                      onExplore={handleWelcomeExplore}
+                      isOnline={isOnline}
+                    />
+                  </Suspense>
+                </RouteErrorBoundary>
               )}
               {appState === 'auth' && (
-                <Suspense fallback={<LoadingState />}>
-                  <AuthScreen
-                    initialMode={authMode}
-                    onBack={handleAuthBack}
-                    onSuccess={handleAuthSuccess}
-                  />
-                </Suspense>
+                <RouteErrorBoundary>
+                  <Suspense fallback={<LoadingState />}>
+                    <AuthScreen
+                      initialMode={authMode}
+                      onBack={handleAuthBack}
+                      onSuccess={handleAuthSuccess}
+                    />
+                  </Suspense>
+                </RouteErrorBoundary>
               )}
               {appState === 'main' && (
                 <div className="min-h-screen pb-20 sm:pb-24 bg-background text-foreground relative overflow-hidden">
@@ -684,11 +705,10 @@ function App(): JSX.Element {
                         />
 
                         <AnimatedView
-                          className={`${NAV_BUTTON_BASE_CLASSES} relative cursor-pointer ${
-                            currentView === 'lost-found'
+                          className={`${NAV_BUTTON_BASE_CLASSES} relative cursor-pointer ${currentView === 'lost-found'
                               ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                               : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                          }`}
+                            }`}
                           style={lostFoundAnimation.buttonStyle}
                           onMouseEnter={lostFoundAnimation.handleHover}
                           onMouseLeave={lostFoundAnimation.handleLeave}
@@ -845,6 +865,14 @@ function App(): JSX.Element {
                 </div>
               )}
             </>
+          }
+        />
+        <Route
+          path="/404"
+          element={
+            <RouteErrorBoundary>
+              <NotFoundPage />
+            </RouteErrorBoundary>
           }
         />
       </Routes>

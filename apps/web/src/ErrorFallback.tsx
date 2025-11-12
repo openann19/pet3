@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, AlertDescription } from './components/ui/alert';
 import { Button } from './components/ui/button';
 
-import { Warning, ArrowClockwise } from '@phosphor-icons/react';
+import { Warning, ArrowClockwise, House } from '@phosphor-icons/react';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -11,12 +11,25 @@ interface ErrorFallbackProps {
 export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
   if (import.meta.env.DEV) throw error;
 
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const isChunkError = error.message.toLowerCase().includes('chunk') ||
+    error.message.toLowerCase().includes('loading chunk') ||
+    error.name.toLowerCase() === 'chunkloaderror';
+
+  const handleHardReload = (): void => {
+    window.location.reload();
+  };
+
+  const handleGoHome = (): void => {
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <Warning size={20} />
-          <AlertTitle>This spark has encountered a runtime error</AlertTitle>
+          <AlertTitle>Application Error</AlertTitle>
           <AlertDescription>
             Something unexpected happened while running the application. The error details are shown
             below. Contact the spark author and let them know about this issue.
@@ -27,13 +40,32 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps)
           <h3 className="font-semibold text-sm text-muted-foreground mb-2">Error Details:</h3>
           <pre className="text-xs text-destructive bg-muted/50 p-3 rounded border overflow-auto max-h-32">
             {error.message}
+            {error.stack && `\n\n${error.stack}`}
           </pre>
+          {currentPath && (
+            <div className="mt-2 text-xs text-muted-foreground">
+              <p>Location: {currentPath}</p>
+            </div>
+          )}
         </div>
 
-        <Button onClick={resetErrorBoundary} className="w-full" variant="outline">
-          <ArrowClockwise size={16} className="mr-2" />
-          Try Again
-        </Button>
+        <div className="flex flex-col gap-3">
+          {isChunkError ? (
+            <Button onClick={handleHardReload} className="w-full" variant="default">
+              <ArrowClockwise size={16} className="mr-2" />
+              Hard Reload Page
+            </Button>
+          ) : (
+            <Button onClick={resetErrorBoundary} className="w-full" variant="default">
+              <ArrowClockwise size={16} className="mr-2" />
+              Try Again
+            </Button>
+          )}
+          <Button onClick={handleGoHome} className="w-full" variant="outline">
+            <House size={16} className="mr-2" />
+            Go Home
+          </Button>
+        </div>
       </div>
     </div>
   );

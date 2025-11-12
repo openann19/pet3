@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },

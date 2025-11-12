@@ -19,7 +19,7 @@ const DEFAULT_ENABLED = true;
 const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   send: {
     count: 12,
-    colors: ['#3B82F6', '#8B5CF6', '#10B981'],
+    colors: ['var(--color-accent-secondary-9)', '#8B5CF6', '#10B981'],
     minSize: 4,
     maxSize: 10,
     minLifetime: 500,
@@ -32,7 +32,7 @@ const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   },
   delete: {
     count: 8,
-    colors: ['#EF4444', '#DC2626'],
+    colors: ['var(--color-error-9)', '#DC2626'],
     minSize: 6,
     maxSize: 14,
     minLifetime: 400,

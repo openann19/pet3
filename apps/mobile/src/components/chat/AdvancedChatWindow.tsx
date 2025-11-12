@@ -91,7 +91,7 @@ export default function AdvancedChatWindow({
     >
       <View style={styles.header}>
         {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <Text style={styles.backText}>{'<'} Back</Text>
           </TouchableOpacity>
         )}
@@ -131,7 +131,7 @@ export default function AdvancedChatWindow({
           placeholder="Type a message..."
           editable={true}
         />
-        <TouchableOpacity onPress={() => handleSendMessage(inputValue)} style={styles.sendButton}>
+        <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSendMessage(inputValue)} style={styles.sendButton}>
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -142,7 +142,7 @@ export default function AdvancedChatWindow({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   header: {
     flexDirection: 'row',
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   avatarText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   messages: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   messageRow: {
     flexDirection: 'row',
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
     marginRight: 8,
   },
   sendButton: {
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sendText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: 'bold',
     fontSize: 15,
   },

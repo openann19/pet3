@@ -152,7 +152,7 @@ export function PremiumDrawer({
       testID={testID}
     >
       <AnimatedView style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} />
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
         <AnimatedView
           style={[styles.content, sizeStyles[size], sideStyles[side], contentStyle, style]}
         >
@@ -191,9 +191,9 @@ const styles = StyleSheet.create({
   },
   content: {
     position: 'absolute',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 16,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 16,

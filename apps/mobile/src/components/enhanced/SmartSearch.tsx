@@ -133,7 +133,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
   }): React.JSX.Element => {
     if (renderResult) {
       return (
-        <Pressable onPress={() => handleSelect(result.item, query)} style={styles.resultItem}>
+        <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSelect(result.item, query)} style={styles.resultItem}>
           {renderResult(result.item, query)}
         </Pressable>
       )
@@ -141,20 +141,20 @@ export function SmartSearch<T extends Record<string, unknown>>({
 
     const displayValue = String(result.item[result.matchedKey] || '')
     return (
-      <Pressable onPress={() => handleSelect(result.item, query)} style={styles.resultItem}>
+      <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSelect(result.item, query)} style={styles.resultItem}>
         <Text style={styles.resultText}>{displayValue}</Text>
       </Pressable>
     )
   }
 
   const renderHistoryItem = ({ item: historyQuery }: { item: string }): React.JSX.Element => (
-    <Pressable onPress={() => handleHistoryClick(historyQuery)} style={styles.historyItem}>
+    <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleHistoryClick(historyQuery)} style={styles.historyItem}>
       <Text style={styles.historyText}>{historyQuery}</Text>
     </Pressable>
   )
 
   const renderTrendingItem = ({ item: trending }: { item: string }): React.JSX.Element => (
-    <Pressable onPress={() => handleHistoryClick(trending)} style={styles.trendingItem}>
+    <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleHistoryClick(trending)} style={styles.trendingItem}>
       <Text style={styles.trendingText}>{trending}</Text>
     </Pressable>
   )
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: 12,
     marginTop: 8,
     maxHeight: 400,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,

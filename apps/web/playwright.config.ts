@@ -31,6 +31,47 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
+    // UI Audit screenshot projects
+    {
+      name: 'ui-audit-xs',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 375, height: 667 },
+      },
+      testMatch: '**/ui-audit/**/*.spec.ts',
+    },
+    {
+      name: 'ui-audit-sm',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 640, height: 960 },
+      },
+      testMatch: '**/ui-audit/**/*.spec.ts',
+    },
+    {
+      name: 'ui-audit-md',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+      },
+      testMatch: '**/ui-audit/**/*.spec.ts',
+    },
+    {
+      name: 'ui-audit-lg',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1024, height: 768 },
+      },
+      testMatch: '**/ui-audit/**/*.spec.ts',
+    },
+    {
+      name: 'ui-audit-xl',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 720 },
+      },
+      testMatch: '**/ui-audit/**/*.spec.ts',
+    },
   ],
 
   webServer: {

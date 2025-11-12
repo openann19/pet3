@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   toast: {
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,
   },
   message: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 14,
     opacity: 0.9,
   },
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   actionText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 14,
     fontWeight: '600',
   },

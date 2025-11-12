@@ -38,7 +38,7 @@ interface ConfettiState {
 const DEFAULT_STATE: ConfettiState = {
     enabled: false,
     particleCount: 80,
-    colors: ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#ec4899'],
+    colors: ['var(--color-accent-9)', 'var(--color-accent-secondary-9)', 'var(--color-accent-10)', 'var(--color-accent-11)', 'var(--color-accent-8)', 'var(--color-accent-7)'],
     duration: 1400,
     seed: 'confetti',
     key: 0,

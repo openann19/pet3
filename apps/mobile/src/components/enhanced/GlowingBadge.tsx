@@ -27,7 +27,7 @@ const VARIANT_COLORS: Record<
 > = {
   primary: {
     bg: 'rgba(59, 130, 246, 0.1)',
-    text: '#3b82f6',
+    text: 'var(--color-accent-secondary-9)',
     border: 'rgba(59, 130, 246, 0.2)',
     glow: 'rgba(59, 130, 246, 0.6)',
   },
@@ -45,13 +45,13 @@ const VARIANT_COLORS: Record<
   },
   success: {
     bg: 'rgba(34, 197, 94, 0.1)',
-    text: '#22c55e',
+    text: 'var(--color-success-9)',
     border: 'rgba(34, 197, 94, 0.2)',
     glow: 'rgba(34, 197, 94, 0.6)',
   },
   warning: {
     bg: 'rgba(234, 179, 8, 0.1)',
-    text: '#eab308',
+    text: 'var(--color-warning-9)',
     border: 'rgba(234, 179, 8, 0.2)',
     glow: 'rgba(234, 179, 8, 0.6)',
   },

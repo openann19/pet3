@@ -43,6 +43,16 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
   }),
 }));
+vi.mock('@/lib/spark', () => ({
+  spark: {
+    user: vi.fn().mockResolvedValue({
+      id: 'test-user-id',
+      login: 'testuser',
+      avatarUrl: null,
+      email: 'test@example.com',
+    }),
+  },
+}));
 vi.mock('@/effects/reanimated/animated-view', () => ({
   AnimatedView: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useAnimatedStyleValue: vi.fn((style: unknown) => {

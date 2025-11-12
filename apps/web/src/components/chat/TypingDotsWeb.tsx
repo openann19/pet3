@@ -23,7 +23,7 @@ export interface TypingDotsWebProps {
 }
 
 const DEFAULT_DOT_SIZE = 6;
-const DEFAULT_DOT_COLOR = '#9ca3af';
+const DEFAULT_DOT_COLOR = 'var(--color-neutral-a9)';
 const DEFAULT_GAP = 4;
 const DEFAULT_ANIMATION_DURATION = 1200;
 

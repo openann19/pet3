@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   recommendedText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   qualityDescription: {
     fontSize: 14,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkmarkText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     fontWeight: 'bold',
   },

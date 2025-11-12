@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   checkIcon: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
   },
   searchInput: {
     flex: 1,
@@ -369,14 +369,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     gap: 6,
   },
   categoryButtonSelected: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
+    borderColor: 'var(--color-accent-secondary-9)',
   },
   categoryIcon: {
     fontSize: 16,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   categoryTextSelected: {
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
   },
   intensitySection: {
     backgroundColor: '#F9FAFB',
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   sliderFill: {
     height: '100%',
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     borderRadius: 2,
   },
   sliderMax: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   filterItemSelected: {
-    borderColor: '#3B82F6',
+    borderColor: 'var(--color-accent-secondary-9)',
     borderWidth: 3,
   },
   filterPreview: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   filterName: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: 'var(--color-bg-overlay)',
     textAlign: 'center',
   },
   selectedIndicator: {
@@ -498,10 +498,10 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

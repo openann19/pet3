@@ -131,7 +131,7 @@ export function PremiumSelect({
   }))
 
   const variantStyles: Record<string, ViewStyle> = {
-    default: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
+    default: { backgroundColor: 'var(--color-bg-overlay)', borderColor: '#e2e8f0' },
     filled: { backgroundColor: '#f1f5f9', borderColor: 'transparent' },
     outlined: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#e2e8f0' },
     glass: {
@@ -184,7 +184,7 @@ export function PremiumSelect({
 
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={handleClose}>
         <AnimatedView style={[styles.modalBackdrop, modalBackdropStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <AnimatedView style={[styles.modalContent, contentStyle]}>
             {searchable && (
               <View style={styles.searchContainer}>
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   trigger: {
     flexDirection: 'row',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 12,
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   triggerText: {
     flex: 1,
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   placeholder: {
     color: '#94a3b8',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   errorBorder: {
-    borderColor: '#ef4444',
+    borderColor: 'var(--color-error-9)',
   },
   disabled: {
     opacity: 0.5,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   errorText: {
-    color: '#ef4444',
+    color: 'var(--color-error-9)',
   },
   modalBackdrop: {
     flex: 1,
@@ -288,13 +288,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 40,
     maxHeight: '80%',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   optionsList: {
     maxHeight: 400,
@@ -337,11 +337,11 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     fontSize: 16,
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   optionTextSelected: {
     fontWeight: '600',
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
   },
   emptyState: {
     paddingVertical: 24,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   checkIcon: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
     fontWeight: 'bold',
   },
 })

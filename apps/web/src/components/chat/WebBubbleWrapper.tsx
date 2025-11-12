@@ -165,7 +165,7 @@ export function WebBubbleWrapper({
         )}
       >
         {showTyping ? (
-          <TypingDotsWeb dotColor={isIncoming ? '#9ca3af' : '#ffffff'} dotSize={6} />
+          <TypingDotsWeb dotColor={isIncoming ? '#9ca3af' : 'var(--color-bg-overlay)'} dotSize={6} />
         ) : (
           children
         )}

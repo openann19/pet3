@@ -42,7 +42,7 @@ export interface ParticleEffectProps {
 
 export function ParticleEffect({
   count = 20,
-  colors = ['#F97316', '#F59E0B', '#EF4444', '#EC4899', '#A855F7'],
+  colors = ['#F97316', '#F59E0B', 'var(--color-error-9)', '#EC4899', '#A855F7'],
   triggerKey = 0,
   testID = 'particle-effect',
 }: ParticleEffectProps): React.JSX.Element {

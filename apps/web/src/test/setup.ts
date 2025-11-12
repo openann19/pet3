@@ -1,5 +1,5 @@
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { expect, afterEach, beforeEach, vi } from 'vitest';
+import { cleanup, act } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import React from 'react';
 import { createMockMatchMedia } from './mocks/match-media';
@@ -8,6 +8,25 @@ import { createMockResizeObserver } from './mocks/resize-observer';
 import { setupStorageMocks } from './mocks/storage';
 import { setupWebRTCMocks } from './mocks/webrtc';
 import { cleanupTestState, resetAllMocks } from './utilities/test-helpers';
+
+// Suppress React act() warnings for Radix UI components during testing
+const originalError = console.error;
+beforeEach(() => {
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Warning: An update to') &&
+      args[0].includes('inside a test was not wrapped in act')
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterEach(() => {
+  console.error = originalError;
+});
 
 // Mock global fetch
 global.fetch = vi.fn(() =>
@@ -45,6 +64,35 @@ vi.mock('@/effects/reanimated/transitions', async () => {
   return mockModule;
 });
 
+//========== TEST WRAPPER UTILITIES ==========
+// Mock contexts - wrap in act() to handle React state updates
+vi.mock('@/contexts/AppContext', () => ({
+  AppProvider: ({ children }: { children: React.ReactNode }) => React.createElement('div', { 'data-testid': 'app-provider' }, children),
+  useApp: () => ({
+    theme: 'light',
+    toggleTheme: vi.fn(),
+    setTheme: vi.fn(),
+    themePreset: 'default',
+    setThemePreset: vi.fn(),
+    language: 'en',
+    toggleLanguage: vi.fn(),
+    setLanguage: vi.fn(),
+    t: {
+      app: { title: 'PetSpark' },
+      common: { loading: 'Loading...', error: 'Error', cancel: 'Cancel', save: 'Save' },
+      chat: { createProfile: 'Create Profile', createProfileDesc: 'Create your profile first', title: 'Chat', selectConversation: 'Select a conversation', selectConversationDesc: 'Choose a conversation to start chatting' },
+      discover: { title: 'Discover', noMorePets: 'No more pets', loading: 'Loading pets...' },
+      matches: { title: 'Matches', noMatches: 'No matches yet' },
+      profile: { myPets: 'My Pets' },
+      maps: { title: 'Map' },
+      adoption: { title: 'Adoption' },
+      community: { title: 'Community' },
+      lostfound: { title: 'Lost & Found' },
+      errors: { operationFailed: 'Operation failed' }
+    }
+  })
+}));
+
 // Mock missing native modules
 vi.mock('ffmpeg-kit-react-native', () => ({
   FFmpegKit: {
@@ -63,6 +111,78 @@ vi.mock('@/types/next-server', () => ({
     redirect: vi.fn((url) => ({ redirect: url })),
   },
 }));
+
+// Mock window.matchMedia for responsive design tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock URL.createObjectURL and revokeObjectURL
+Object.defineProperty(URL, 'createObjectURL', {
+  writable: true,
+  value: vi.fn(() => 'mocked-object-url'),
+});
+Object.defineProperty(URL, 'revokeObjectURL', {
+  writable: true,
+  value: vi.fn(),
+});
+
+// Mock File and FileReader
+global.File = vi.fn().mockImplementation((chunks: any[], filename: string, options?: any) => ({
+  name: filename,
+  size: chunks.reduce((acc: number, chunk: any) => acc + (chunk.length || 0), 0),
+  type: options?.type || '',
+  lastModified: Date.now(),
+})) as any;
+
+const MockFileReader: any = vi.fn().mockImplementation(() => ({
+  readAsDataURL: vi.fn(),
+  readAsText: vi.fn(),
+  readAsArrayBuffer: vi.fn(),
+  result: null,
+  error: null,
+  onload: null,
+  onerror: null,
+  onabort: null,
+  onloadstart: null,
+  onloadend: null,
+  onprogress: null,
+  abort: vi.fn(),
+  EMPTY: 0,
+  LOADING: 1,
+  DONE: 2,
+  readyState: 0,
+}));
+
+MockFileReader.EMPTY = 0;
+MockFileReader.LOADING = 1;
+MockFileReader.DONE = 2;
+
+global.FileReader = MockFileReader;
 
 
 // Mock other common browser APIs
@@ -790,7 +910,7 @@ vi.mock('@/lib/websocket-manager', () => ({
 // Tests that don't need it can use vi.unmock if needed
 vi.mock('@/contexts/UIContext', async () => {
   const actual = await vi.importActual<typeof import('@/contexts/UIContext')>('@/contexts/UIContext');
-  
+
   // Use actual implementation - tests should wrap with UIProvider when needed
   return actual;
 });

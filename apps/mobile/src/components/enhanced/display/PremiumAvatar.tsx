@@ -90,10 +90,10 @@ export function PremiumAvatar({
   }[variant]
 
   const statusColors = {
-    online: '#22c55e',
+    online: 'var(--color-success-9)',
     offline: '#9ca3af',
-    away: '#eab308',
-    busy: '#ef4444',
+    away: 'var(--color-warning-9)',
+    busy: 'var(--color-error-9)',
   }
 
   const statusSizes = {
@@ -173,7 +173,7 @@ export function PremiumAvatar({
                 height: statusSizes[size],
                 borderRadius: statusSizes[size] / 2,
                 backgroundColor: statusColors[status],
-                borderColor: '#ffffff',
+                borderColor: 'var(--color-bg-overlay)',
                 borderWidth: 2,
                 bottom: 0,
                 right: 0,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#f3f4f6',
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: 'var(--color-bg-overlay)',
   },
   image: {
     resizeMode: 'cover',
@@ -245,10 +245,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: 'var(--color-bg-overlay)',
   },
   badgeText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: 'bold',
   },
 })

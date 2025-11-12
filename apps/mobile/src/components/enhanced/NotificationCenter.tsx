@@ -152,7 +152,7 @@ export function NotificationCenter(): React.JSX.Element {
       </ScrollView>
 
       {notifications.length > 0 && (
-        <Pressable style={styles.clearButton} onPress={clearAll} accessibilityRole="button">
+        <Pressable style={styles.clearButton} onPress={clearAll} accessibilityRole="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.clearButtonText}>Clear all</Text>
         </Pressable>
       )}
@@ -171,7 +171,7 @@ function Header({
     <View style={styles.headerRow}>
       <Text style={styles.headerTitle}>Notifications</Text>
       {unreadCount > 0 && (
-        <Pressable style={styles.markAllButton} onPress={onMarkAll} accessibilityRole="button">
+        <Pressable style={styles.markAllButton} onPress={onMarkAll} accessibilityRole="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.markAllText}>Mark all read</Text>
         </Pressable>
       )}
@@ -256,7 +256,7 @@ function EmptyState(): React.JSX.Element {
 const styles = StyleSheet.create({
   wrapper: {
     borderRadius: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     overflow: 'hidden',
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     color: '#475569',
   },
   filterChipTextActive: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   scrollContainer: {
     maxHeight: 420,
@@ -353,10 +353,10 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 16,
     borderRadius: 18,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,

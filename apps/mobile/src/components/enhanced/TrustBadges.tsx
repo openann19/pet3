@@ -21,13 +21,13 @@ export interface TrustBadgesProps {
 const BADGE_CONFIG = {
   verified: {
     icon: '✓',
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
     bgColor: 'rgba(59, 130, 246, 0.1)',
     borderColor: 'rgba(59, 130, 246, 0.3)',
   },
   health: {
     icon: '❤️',
-    color: '#ef4444',
+    color: 'var(--color-error-9)',
     bgColor: 'rgba(239, 68, 68, 0.1)',
     borderColor: 'rgba(239, 68, 68, 0.3)',
   },
@@ -45,7 +45,7 @@ const BADGE_CONFIG = {
   },
   'top-rated': {
     icon: '🏆',
-    color: '#eab308',
+    color: 'var(--color-warning-9)',
     bgColor: 'rgba(234, 179, 8, 0.1)',
     borderColor: 'rgba(234, 179, 8, 0.3)',
   },
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,

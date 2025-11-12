@@ -83,7 +83,7 @@ export function MediaEditor({ source, onDone, onCancel }: MediaEditorProps): Rea
 
   return (
     <div
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#000' }}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--color-fg)' }}
     >
       <GestureDetector gesture={panZoom}>
         <AnimatedView style={animatedStyle}>
@@ -102,7 +102,7 @@ export function MediaEditor({ source, onDone, onCancel }: MediaEditorProps): Rea
               style={{
                 width: '100%',
                 height: '100%',
-                backgroundColor: '#000',
+                backgroundColor: 'var(--color-fg)',
               }}
             />
           )}
@@ -159,7 +159,7 @@ function ToolChip({ active, onPress, label }: ToolChipProps): React.ReactElement
     >
       <Animated.Text
         style={{
-          color: active ? '#fff' : '#aaa',
+          color: active ? 'var(--color-bg-overlay)' : '#aaa',
           fontSize: 12,
           fontWeight: active ? '600' : '400',
         }}
@@ -184,7 +184,7 @@ function ToolButton({
   disabled = false,
 }: ToolButtonProps): React.ReactElement {
   const backgroundColor = disabled ? '#666' : variant === 'primary' ? '#0af' : '#444';
-  const textColor = variant === 'primary' && !disabled ? '#000' : '#fff';
+  const textColor = variant === 'primary' && !disabled ? 'var(--color-fg)' : 'var(--color-bg-overlay)';
 
   const handleClick = disabled ? undefined : onPress;
   const styleProps: {

@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: 'var(--color-fg)',
   },
   remoteVideo: {
     width: width,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 3,
-    borderColor: '#ffffff',
+    borderColor: 'var(--color-bg-overlay)',
   },
   avatarText: {
     fontSize: 32,
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: 'var(--color-bg-overlay)',
     backgroundColor: '#3a3a3a',
   },
   localVideo: {
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     height: 2,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   tab: {
     flexDirection: 'row',
@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   tabDefaultActive: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
+    backgroundColor: 'var(--color-bg-overlay)',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -226,14 +226,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   tabPillsActive: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
   },
   tabUnderline: {
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
   tabUnderlineActive: {
-    borderBottomColor: '#3b82f6',
+    borderBottomColor: 'var(--color-accent-secondary-9)',
   },
   tabDisabled: {
     opacity: 0.5,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabLabelActive: {
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   tabLabelInactive: {
     color: '#64748b',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   badgeTextActive: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
   },
   badgeTextInactive: {
     color: '#64748b',

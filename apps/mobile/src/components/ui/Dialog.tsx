@@ -328,10 +328,10 @@ const styles = StyleSheet.create({
   content: {
     width: '90%',
     maxWidth: 400,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-bg-overlay)',
     borderRadius: DIMENS.radius.dialog,
     padding: DIMENS.component.sheet.paddingVertical,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: {
       width: 0,
       height: DIMENS.elevation.dialog,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 24,
-    color: '#000000',
+    color: 'var(--color-fg)',
     marginBottom: DIMENS.spacing.sm,
   },
   description: {
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 24,
     lineHeight: 24,
-    color: '#000000',
+    color: 'var(--color-fg)',
     fontWeight: '300',
   },
 })

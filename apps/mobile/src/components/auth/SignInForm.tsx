@@ -202,7 +202,7 @@ export default function SignInForm({
         </View>
         {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
 
-        <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton}>
+        <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
           <Text style={styles.forgotText}>{t.auth?.forgotPassword || 'Forgot password?'}</Text>
         </TouchableOpacity>
 
@@ -214,7 +214,7 @@ export default function SignInForm({
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="var(--color-bg-overlay)" />
           ) : (
             <Text style={styles.submitText}>{t.auth?.signIn || 'Sign In'}</Text>
           )}
@@ -228,7 +228,7 @@ export default function SignInForm({
 
         <View style={styles.switchRow}>
           <Text style={styles.switchText}>{t.auth?.noAccount || "Don't have an account?"} </Text>
-          <TouchableOpacity onPress={onSwitchToSignUp}>
+          <TouchableOpacity onPress={onSwitchToSignUp} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <Text style={styles.signUpText}>{t.auth?.signUp || 'Sign up'}</Text>
           </TouchableOpacity>
         </View>
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--color-bg-overlay)',
   },
   title: {
     fontSize: 28,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 16,
     fontWeight: 'bold',
   },

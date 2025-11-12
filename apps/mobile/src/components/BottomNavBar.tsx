@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
   },
   badgeText: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 9,
     fontWeight: '700',
   },

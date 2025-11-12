@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   errorText: {
-    color: colors.danger || '#EF4444',
+    color: colors.danger || 'var(--color-error-9)',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,

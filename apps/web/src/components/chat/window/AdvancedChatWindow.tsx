@@ -468,7 +468,7 @@ function TypingIndicator({ typingUsers }: TypingIndicatorProps): JSX.Element {
         </AvatarFallback>
       </Avatar>
       <div className="rounded-xl px-2.5 py-1.5 bg-white/10 border border-white/10">
-        <LiquidDots enabled dotColor="#9ca3af" />
+        <LiquidDots enabled dotColor="var(--color-neutral-a9)" />
       </div>
     </AnimatedView>
   );

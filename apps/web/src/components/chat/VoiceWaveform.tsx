@@ -30,7 +30,7 @@ export function VoiceWaveform({
   isPlaying = false,
   width = 200,
   height = 40,
-  color = '#3B82F6',
+  color = 'var(--color-accent-secondary-9)',
   className,
 }: VoiceWaveformProps) {
     const _uiConfig = useUIConfig();

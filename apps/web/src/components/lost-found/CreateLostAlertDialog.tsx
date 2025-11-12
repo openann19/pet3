@@ -62,7 +62,7 @@ function FeatureBadge({ feature, index, onRemove }: FeatureBadgeProps): JSX.Elem
       <Badge variant="secondary" className="gap-1">
         {feature}
         <AnimatedView style={removeButtonAnimation.animatedStyle}>
-          <button onClick={removeButtonAnimation.handlePress} type="button">
+          <button onClick={removeButtonAnimation.handlePress} type="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
             <X size={12} />
           </button>
         </AnimatedView>

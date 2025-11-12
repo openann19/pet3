@@ -76,9 +76,9 @@ export function UltraButton({
   )
 
   const variantStyles: Record<string, ViewStyle> = {
-    default: { backgroundColor: '#3b82f6' },
-    destructive: { backgroundColor: '#ef4444' },
-    outline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#3b82f6' },
+    default: { backgroundColor: 'var(--color-accent-secondary-9)' },
+    destructive: { backgroundColor: 'var(--color-error-9)' },
+    outline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: 'var(--color-accent-secondary-9)' },
     secondary: { backgroundColor: '#64748b' },
   }
 
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     zIndex: 1,
   },
 })

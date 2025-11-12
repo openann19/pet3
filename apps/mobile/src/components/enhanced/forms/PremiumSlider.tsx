@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#000000',
+    color: 'var(--color-fg)',
   },
   value: {
     fontSize: 14,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   trackFill: {
     height: '100%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     borderRadius: 4,
   },
   sliderWrapper: {
@@ -197,18 +197,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     transform: [{ translateX: -20 }],
-    backgroundColor: '#000000',
+    backgroundColor: 'var(--color-fg)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
   },
   tooltipText: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontSize: 12,
     fontWeight: '600',
   },

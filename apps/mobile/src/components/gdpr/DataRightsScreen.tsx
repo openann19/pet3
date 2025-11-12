@@ -138,7 +138,7 @@ export function DataRightsScreen({ userId, onDeletionComplete }: DataRightsScree
                     disabled={isExporting}
                 >
                     {isExporting ? (
-                        <ActivityIndicator color="#fff" />
+                        <ActivityIndicator color="var(--color-bg-overlay)" />
                     ) : (
                         <Text style={styles.buttonText}>Export My Data</Text>
                     )}
@@ -162,7 +162,7 @@ export function DataRightsScreen({ userId, onDeletionComplete }: DataRightsScree
                     disabled={isDeleting}
                 >
                     {isDeleting ? (
-                        <ActivityIndicator color="#fff" />
+                        <ActivityIndicator color="var(--color-bg-overlay)" />
                     ) : (
                         <Text style={styles.buttonText}>Delete My Account</Text>
                     )}
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     },
     section: {
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     },
@@ -194,12 +194,12 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderRadius: 12,
         padding: 16,
         margin: 16,
         marginBottom: 8,
-        shadowColor: '#000',
+        shadowColor: 'var(--color-fg)',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DC2626',
     },
     buttonText: {
-        color: '#fff',
+        color: 'var(--color-bg-overlay)',
         fontSize: 16,
         fontWeight: '600',
     },

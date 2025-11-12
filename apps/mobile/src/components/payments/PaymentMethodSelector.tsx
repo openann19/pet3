@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     defaultBadgeText: {
         fontSize: 11,
         fontWeight: '600',
-        color: '#ffffff',
+        color: 'var(--color-bg-overlay)',
     },
     setDefaultButton: {
         paddingHorizontal: 8,
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     selectedIndicatorText: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#ffffff',
+        color: 'var(--color-bg-overlay)',
     },
     emptyState: {
         padding: 32,

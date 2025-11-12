@@ -85,7 +85,7 @@ export function PremiumErrorState({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <AlertCircle size={48} color="#ef4444" />
+        <AlertCircle size={48} color="var(--color-error-9)" />
       </View>
       <Text style={styles.title}>{title}</Text>
       {errorMessage && <Text style={styles.message}>{errorMessage}</Text>}
@@ -101,7 +101,7 @@ export function PremiumErrorState({
             onPress={handleRetry}
             variant="primary"
             size="md"
-            icon={<ArrowClockwise size={16} color="#ffffff" />}
+            icon={<ArrowClockwise size={16} color="var(--color-bg-overlay)" />}
           >
             {retryLabel}
           </PremiumButton>

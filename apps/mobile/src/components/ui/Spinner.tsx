@@ -96,7 +96,7 @@ export function Spinner({
 
   const variantStyles = {
     default: {
-      borderColor: '#3b82f6', // primary color
+      borderColor: 'var(--color-accent-secondary-9)', // primary color
       borderTopColor: 'transparent',
     },
     subtle: {
@@ -104,9 +104,9 @@ export function Spinner({
       borderTopColor: 'rgba(59, 130, 246, 0.4)', // primary/40
     },
     premium: {
-      borderColor: '#3b82f6',
+      borderColor: 'var(--color-accent-secondary-9)',
       borderTopColor: 'transparent',
-      shadowColor: '#3b82f6',
+      shadowColor: 'var(--color-accent-secondary-9)',
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.3,
       shadowRadius: 8,

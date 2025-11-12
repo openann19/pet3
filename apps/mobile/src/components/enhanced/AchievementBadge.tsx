@@ -15,7 +15,7 @@ export interface AchievementBadgeProps {
 
 export function AchievementBadge({
   size = 32,
-  color = '#3b82f6',
+  color = 'var(--color-accent-secondary-9)',
   testID = 'achievement-badge',
 }: AchievementBadgeProps): React.JSX.Element {
   const scale = useSharedValue(0)

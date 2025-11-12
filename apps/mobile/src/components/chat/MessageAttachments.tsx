@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   playIcon: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
   },
   voiceContent: {
     flex: 1,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   },
   waveformBar: {
     flex: 1,
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--color-accent-secondary-9)',
     opacity: 0.4,
     borderRadius: 2,
     minHeight: 4,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   downloadIcon: {
     fontSize: 16,
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
   },
   videoContainer: {
     borderRadius: 12,
@@ -321,18 +321,18 @@ const styles = StyleSheet.create({
   videoPlaceholder: {
     width: '100%',
     aspectRatio: 16 / 9,
-    backgroundColor: '#000',
+    backgroundColor: 'var(--color-fg)',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
   },
   videoIcon: {
     fontSize: 48,
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
   },
   videoLabel: {
     fontSize: 12,
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     opacity: 0.8,
   },
   documentContainer: {
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   documentIconText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#3b82f6',
+    color: 'var(--color-accent-secondary-9)',
   },
   documentContent: {
     flex: 1,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   documentName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#000',
+    color: 'var(--color-fg)',
   },
   documentSize: {
     fontSize: 12,

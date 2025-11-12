@@ -531,7 +531,7 @@ const getHighlightItemStyles = (theme: ReturnType<typeof useTheme>['theme']): Hi
     },
     check: {
       fontSize: 16,
-      color: '#ffffff',
+      color: 'var(--color-bg-overlay)',
       fontWeight: 'bold',
     },
     pinContainer: {

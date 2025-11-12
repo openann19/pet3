@@ -49,7 +49,7 @@ export interface ConfettiBurstProps {
 export function ConfettiBurst({
   enabled = true,
   particleCount = 120,
-  colors = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'],
+  colors = ['var(--color-accent-9)', 'var(--color-accent-secondary-9)', 'var(--color-accent-10)', 'var(--color-accent-11)', 'var(--color-accent-8)'],
   duration = 1400,
   onComplete,
   className,
@@ -68,7 +68,7 @@ export function ConfettiBurst({
       const r = useSharedValue(0);
       const s = useSharedValue(rng.range(0.85, 1.25));
       const o = useSharedValue(0);
-      const color = colors[i % colors.length] ?? colors[0] ?? '#22c55e';
+      const color = colors[i % colors.length] ?? colors[0] ?? 'var(--color-accent-9)';
       const w = rng.rangeInt(6, 12);
       const h = rng.rangeInt(6, 12);
       const delay = i * (reduced ? 0 : 5);

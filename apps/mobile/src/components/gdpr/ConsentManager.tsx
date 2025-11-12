@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     },
     section: {
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     },
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--color-bg-overlay)',
         borderRadius: 12,
         padding: 16,
         margin: 16,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        shadowColor: '#000',
+        shadowColor: 'var(--color-fg)',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,

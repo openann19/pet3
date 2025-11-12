@@ -49,11 +49,11 @@ export function PremiumButton({
   }, [disabled, loading, onPress])
 
   const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: '#3b82f6' },
+    primary: { backgroundColor: 'var(--color-accent-secondary-9)' },
     secondary: { backgroundColor: '#64748b' },
     accent: { backgroundColor: '#8b5cf6' },
     ghost: { backgroundColor: 'transparent' },
-    gradient: { backgroundColor: '#3b82f6' }, // Simplified for mobile
+    gradient: { backgroundColor: 'var(--color-accent-secondary-9)' }, // Simplified for mobile
   }
 
   const sizeStyles: Record<
@@ -88,7 +88,7 @@ export function PremiumButton({
       testID={testID}
     >
       {loading ? (
-        <ActivityIndicator color="#ffffff" size="small" />
+        <ActivityIndicator color="var(--color-bg-overlay)" size="small" />
       ) : (
         <View style={styles.content}>
           {icon && iconPosition === 'left' && <View style={styles.icon}>{icon}</View>}
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'var(--color-fg)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
-    color: '#ffffff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '600',
   },
   ghostText: {

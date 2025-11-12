@@ -41,7 +41,7 @@ function getStatusColors(status: 'online' | 'away' | 'busy' | 'offline'): {
             return {
                 start: '#34d399', // emerald-400
                 middle: '#22d3ee', // cyan-400
-                end: '#3b82f6', // blue-500
+                end: 'var(--color-accent-secondary-9)', // blue-500
             };
         case 'away':
             return {
@@ -51,7 +51,7 @@ function getStatusColors(status: 'online' | 'away' | 'busy' | 'offline'): {
             };
         case 'busy':
             return {
-                start: '#ef4444', // rose-500
+                start: 'var(--color-error-9)', // rose-500
                 middle: '#d946ef', // fuchsia-500
                 end: '#6366f1', // indigo-500
             };

@@ -214,7 +214,7 @@ function Button({
   variant = 'primary',
   disabled = false,
 }: ButtonProps): React.ReactElement {
-  const textColor = variant === 'primary' && !disabled ? '#000' : '#fff';
+  const textColor = variant === 'primary' && !disabled ? 'var(--color-fg)' : 'var(--color-bg-overlay)';
 
   const handleClick = disabled ? undefined : onPress;
 
@@ -247,10 +247,10 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#000',
+    backgroundColor: 'var(--color-fg)',
   },
   title: {
-    color: '#fff',
+    color: 'var(--color-bg-overlay)',
     fontWeight: '800',
     fontSize: 18,
     marginBottom: 16,
