@@ -305,13 +305,13 @@ export default function LoadingState() {
         </AnimatedView>
 
         {/* Floating hearts */}
-        <AnimatedView style={[heart1Style, { left: '30%', top: '50%' }]} className="absolute">
+        <AnimatedView style={heart1Style} className="absolute left-[30%] top-1/2">
           <Heart size={16} weight="fill" className="text-accent" />
         </AnimatedView>
-        <AnimatedView style={[heart2Style, { left: '50%', top: '50%' }]} className="absolute">
+        <AnimatedView style={heart2Style} className="absolute left-1/2 top-1/2">
           <Heart size={16} weight="fill" className="text-accent" />
         </AnimatedView>
-        <AnimatedView style={[heart3Style, { left: '70%', top: '50%' }]} className="absolute">
+        <AnimatedView style={heart3Style} className="absolute left-[70%] top-1/2">
           <Heart size={16} weight="fill" className="text-accent" />
         </AnimatedView>
       </AnimatedView>
