@@ -241,9 +241,9 @@ export default function PetsDemoPage(): ReactElement {
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-[16px]">{pet.name}</span>
+                <span className="font-semibold text-base">{pet.name}</span>
                 {pet.shelter.verified && (
-                  <span className="inline-flex items-center gap-1 text-[12px] px-2 h-6 rounded-full bg-white/15">
+                  <span className="inline-flex items-center gap-1 text-xs px-2 h-6 rounded-full bg-white/15">
                     <ShieldCheck size={14} /> {t.verified}
                   </span>
                 )}
@@ -254,18 +254,18 @@ export default function PetsDemoPage(): ReactElement {
             </div>
           </div>
 
-          <p className="text-white/90 max-w-lg text-[15px]">
+          <p className="text-white/90 max-w-lg text-base">
             {pet.name} is a {pet.ageYears}
             {t.years} {pet.sex.toLowerCase()} looking for a loving home.
           </p>
 
           {/* facts + chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-[12px] px-2 h-7 rounded-full glass">
+            <span className="inline-flex items-center gap-1 text-xs px-2 h-7 rounded-full glass">
               <MapPin size={14} /> {pet.distanceKm.toFixed(1)} km {t.away}
             </span>
             {pet.tags.map((tag) => (
-              <span key={tag} className="text-[12px] px-2 h-7 rounded-full bg-white/12">
+              <span key={tag} className="text-xs px-2 h-7 rounded-full bg-white/12">
                 {tag}
               </span>
             ))}
@@ -290,7 +290,7 @@ export default function PetsDemoPage(): ReactElement {
       </section>
 
       {/* right action rail */}
-      <aside className="fixed right-3 md:right-6 bottom-[96px] md:bottom-6 z-30 flex flex-col items-center gap-4">
+      <aside className="fixed right-3 md:right-6 bottom-24 md:bottom-6 z-30 flex flex-col items-center gap-4">
         <button className="flex flex-col items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Save pet" type="button">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/16">
             <Heart size={24} weight="fill" className="text-pink-500" />

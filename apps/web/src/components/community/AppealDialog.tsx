@@ -92,7 +92,7 @@ export function AppealDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" aria-describedby="appeal-description">
+      <DialogContent className="sm:max-w-125" aria-describedby="appeal-description">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Scales className="w-5 h-5 text-primary" />

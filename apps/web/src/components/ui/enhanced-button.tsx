@@ -237,10 +237,10 @@ export function EnhancedButton({
   // Size styles
   const sizeClasses = useMemo(() => {
     const sizes = {
-      default: 'h-11 px-4 py-2 text-sm min-h-[44px] min-w-[44px]',
-      sm: 'h-9 px-3 py-1.5 text-sm rounded-md gap-1.5 min-h-[44px] min-w-[44px]',
-      lg: 'h-14 px-6 py-3 text-base rounded-md min-h-[44px] min-w-[44px]',
-      icon: 'size-11 min-w-[44px] min-h-[44px] p-0',
+      default: 'h-11 px-4 py-2 text-sm min-h-11 min-w-11',
+      sm: 'h-9 px-3 py-1.5 text-sm rounded-md gap-1.5 min-h-11 min-w-11',
+      lg: 'h-14 px-6 py-3 text-base rounded-md min-h-11 min-w-11',
+      icon: 'size-11 min-w-11 min-h-11 p-0',
     };
 
     return sizes[size] ?? sizes.default;

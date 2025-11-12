@@ -64,7 +64,7 @@ export function AdoptionFiltersSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:w-[400px] overflow-y-auto">
+      <SheetContent className="w-full sm:w-100 overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Filter Adoption Listings</SheetTitle>
           <SheetDescription>

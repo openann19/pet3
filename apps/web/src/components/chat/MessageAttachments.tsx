@@ -61,7 +61,7 @@ function VoiceAttachment({ attachment }: VoiceAttachmentProps): React.JSX.Elemen
   const waveform = attachment.waveform ?? Array.from({ length: 30 }, () => 0.5);
 
   return (
-    <div className="flex items-center gap-3 min-w-[200px]">
+    <div className="flex items-center gap-3 min-w-50">
       <Button
         size="icon"
         variant="ghost"

@@ -794,7 +794,7 @@ export default function DiscoverView() {
             }}
           />
         ) : (
-          <div className="relative h-[500px] sm:h-[600px] flex items-center justify-center mb-6">
+          <div className="relative h-125 sm:h-150 flex items-center justify-center mb-6">
             <AnimatePresence mode="wait">
               {currentPet && (
                 <AnimatedView

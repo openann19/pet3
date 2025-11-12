@@ -153,7 +153,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
 
   if (!userLocation) {
     return (
-      <div className="relative h-[calc(100vh-14rem)] max-h-[700px] bg-background rounded-2xl overflow-hidden border border-border shadow-xl flex items-center justify-center">
+      <div className="relative h-[calc(100vh-14rem)] max-h-175 bg-background rounded-2xl overflow-hidden border border-border shadow-xl flex items-center justify-center">
         <div className="text-center space-y-4 p-8">
           <MapPin size={64} className="mx-auto text-primary/30" weight="duotone" />
           <p className="text-lg font-semibold text-foreground/70">{t.map.loading}</p>
@@ -163,7 +163,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
   }
 
   return (
-    <div className="relative h-[calc(100vh-14rem)] max-h-[700px] bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
+    <div className="relative h-[calc(100vh-14rem)] max-h-175 bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
       <MapLibreMap
         center={mapCenter}
         zoom={12}

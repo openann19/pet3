@@ -61,7 +61,7 @@ export function NavButton({
   return (
     <AnimatedView
       style={combinedStyle}
-      className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px] relative ${activeClasses} ${className}`}
+      className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-15 sm:min-w-18 relative ${activeClasses} ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={bounceAnimation.handlePress}

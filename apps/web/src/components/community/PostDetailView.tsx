@@ -388,14 +388,14 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                       <ChatCircle size={24} />
                       <span className="text-sm font-medium">{comments.length}</span>
                     </button>
-                    <button onClick={handleSave} className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+                    <button onClick={handleSave} className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
                       <BookmarkSimple
                         size={24}
                         weight={isSaved ? 'fill' : 'regular'}
                         className={isSaved ? 'text-primary' : ''}
                       />
                     </button>
-                    <button onClick={handleShare} className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+                    <button onClick={handleShare} className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
                       <Share size={24} />
                     </button>
                   </div>

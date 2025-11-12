@@ -63,7 +63,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                   />
                 </div>
               </div>
-              <span className="text-xs font-medium text-muted-foreground max-w-[80px] truncate">
+              <span className="text-xs font-medium text-muted-foreground max-w-20 truncate">
                 New
               </span>
             </MotionView>
@@ -85,7 +85,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-accent to-secondary p-[2px]">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-accent to-secondary p-1">
                   <div className="w-full h-full rounded-full bg-background" />
                 </div>
 
@@ -115,7 +115,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                 </div>
               </div>
 
-              <span className="text-xs font-medium text-foreground max-w-[80px] truncate text-center leading-tight">
+              <span className="text-xs font-medium text-foreground max-w-20 truncate text-center leading-tight">
                 {highlight.title}
               </span>
             </MotionView>

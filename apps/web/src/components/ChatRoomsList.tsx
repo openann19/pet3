@@ -109,7 +109,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                     <MotionView
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 min-w-[24px] h-6 rounded-full bg-linear-to-br from-accent to-primary flex items-center justify-center shadow-lg px-2"
+                      className="absolute -top-1 -right-1 min-w-6 h-6 rounded-full bg-linear-to-br from-accent to-primary flex items-center justify-center shadow-lg px-2"
                     >
                       <MotionView
                         className="text-white text-xs font-bold"

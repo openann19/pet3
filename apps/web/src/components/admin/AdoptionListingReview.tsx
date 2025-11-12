@@ -185,7 +185,7 @@ export function AdoptionListingReview() {
             <CardDescription>Click to review listing details</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[600px]">
+            <ScrollArea className="h-150">
               <div className="space-y-3">
                 {pendingListings.length === 0 ? (
                   <div className="text-center py-12">
@@ -218,7 +218,7 @@ export function AdoptionListingReview() {
                 <p className="text-muted-foreground">Select a listing to review</p>
               </div>
             ) : (
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-150 pr-4">
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <Avatar className="w-16 h-16">

@@ -102,7 +102,7 @@ export function NotificationGroupItem({
               {group.notifications.length > 1 && (
                 <Badge
                   variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full text-xs font-bold"
+                  className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full text-xs font-bold"
                 >
                   {group.notifications.length}
                 </Badge>

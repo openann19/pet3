@@ -451,7 +451,7 @@ export default function SavedSearchesManager({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[500px]">
+            <ScrollArea className="h-125">
               {sortedSearches.length === 0 ? (
                 <div className="text-center py-12">
                   <BookmarkSimple size={48} className="mx-auto text-muted-foreground mb-3" />

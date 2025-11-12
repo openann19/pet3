@@ -67,7 +67,7 @@ export default function StoryTemplateSelector({
         </ScrollArea>
       </div>
 
-      <ScrollArea className="h-[320px]">
+      <ScrollArea className="h-80">
         <div className="grid grid-cols-3 gap-3 pr-4">
           <Presence mode="popLayout">
             {filteredTemplates.map((template, index) => (

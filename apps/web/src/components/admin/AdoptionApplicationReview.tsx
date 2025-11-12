@@ -677,7 +677,7 @@ export default function AdoptionApplicationReview() {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[700px] pr-4">
+          <ScrollArea className="h-175 pr-4">
             <div className="space-y-3">
               {filteredApplications().length === 0 ? (
                 <div className="text-center py-12">

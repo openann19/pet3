@@ -164,7 +164,7 @@ export function LiveStreamManagement() {
             <CardDescription>Click to view details</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[600px]">
+            <ScrollArea className="h-150">
               <div className="space-y-3">
                 {streams.map((stream) => (
                   <button
@@ -222,7 +222,7 @@ export function LiveStreamManagement() {
                 <p className="text-muted-foreground">Select a stream to view details</p>
               </div>
             ) : (
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-150 pr-4">
                 <div className="space-y-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">

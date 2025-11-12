@@ -315,7 +315,7 @@ export default function CommunityManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-150">
             <div className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-12">

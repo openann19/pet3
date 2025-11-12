@@ -84,7 +84,7 @@ export function NotificationCenter() {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[400px] p-0" align="end">
+      <PopoverContent className="w-100 p-0" align="end">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold text-lg">Notifications</h3>
           {unreadCount > 0 && (
@@ -110,9 +110,9 @@ export function NotificationCenter() {
           </TabsList>
 
           <TabsContent value={filter} className="mt-0">
-            <ScrollArea className="h-[400px]">
+            <ScrollArea className="h-100">
               {filteredNotifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-75 text-muted-foreground">
                   <Bell size={48} className="mb-4 opacity-50" />
                   <p>No notifications</p>
                 </div>

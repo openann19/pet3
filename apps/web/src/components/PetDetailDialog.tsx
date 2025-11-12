@@ -148,7 +148,7 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
               <X size={20} className="text-white drop-shadow-lg" weight="bold" />
             </AnimatedView>
 
-            <div className="relative h-[400px] bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
+            <div className="relative h-100 bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
               <AnimatedView key={currentIndex} style={photoStyle} className="w-full h-full">
                 <img
                   src={currentPhoto}

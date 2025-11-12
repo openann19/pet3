@@ -731,7 +731,7 @@ function MessageBubble({
           )}
 
           {message.type === 'voice' && message.metadata?.voiceNote && (
-            <div className="flex items-center gap-2 min-w-[200px]">
+            <div className="flex items-center gap-2 min-w-50">
               <Waveform size={20} />
               <div className="flex-1 h-8 bg-muted/50 rounded-full flex items-center gap-1 px-2">
                 {voiceWaveform.animatedStyles.map((style, index) => (
@@ -868,7 +868,7 @@ function MessageBubble({
             style={contextMenuStyle}
             className={cn(
               'absolute z-50 bg-card border border-border rounded-lg shadow-lg p-1',
-              'flex flex-col gap-1 min-w-[160px]',
+              'flex flex-col gap-1 min-w-40',
               isOwn ? 'right-0' : 'left-0'
             )}
             onClick={(e?: React.MouseEvent) => {

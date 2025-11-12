@@ -454,7 +454,7 @@ export default function SupportChatPanel() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 min-h-[80px]"
+                    className="flex-1 min-h-20"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.metaKey) {
                         void handleSendMessage().catch((error) => {
@@ -473,7 +473,7 @@ export default function SupportChatPanel() {
                     }}
                     disabled={!newMessage.trim() || sendingMessage}
                     size="icon"
-                    className="h-[80px]"
+                    className="h-20"
                     aria-label="Send message"
                   >
                     <PaperPlaneTilt size={20} />

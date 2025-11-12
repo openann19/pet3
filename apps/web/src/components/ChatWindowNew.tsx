@@ -713,7 +713,7 @@ export default function ChatWindow({
                               <AnimatedView
                                 style={voiceButtonTap.animatedStyle}
                                 onClick={() => toggleVoicePlayback(message.id)}
-                                className="flex items-center gap-2 min-w-[200px] cursor-pointer"
+                                className="flex items-center gap-2 min-w-50 cursor-pointer"
                                 onMouseEnter={voiceButtonHover.handleEnter}
                                 onMouseLeave={voiceButtonHover.handleLeave}
                               >

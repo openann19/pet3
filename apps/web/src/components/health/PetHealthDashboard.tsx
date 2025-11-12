@@ -540,7 +540,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-100">
                   {sortedVaccinations.length === 0 ? (
                     <div className="text-center py-12">
                       <Syringe size={48} className="mx-auto text-muted-foreground mb-3" />
@@ -573,7 +573,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-100">
                   {sortedHealthRecords.length === 0 ? (
                     <div className="text-center py-12">
                       <FileText size={48} className="mx-auto text-muted-foreground mb-3" />
@@ -606,7 +606,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-100">
                   {sortedReminders.length === 0 ? (
                     <div className="text-center py-12">
                       <Bell size={48} className="mx-auto text-muted-foreground mb-3" />

@@ -212,7 +212,7 @@ export function KYCManagement() {
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-4">
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-150">
             <div className="space-y-4">
               {filteredSessions.length === 0 ? (
                 <AnimatedView className="text-center py-12">

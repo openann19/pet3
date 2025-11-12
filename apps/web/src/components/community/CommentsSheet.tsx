@@ -260,7 +260,7 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                     ? t.community?.replyPlaceholder || 'Write a reply...'
                     : t.community?.commentPlaceholder || 'Write a comment...'
                 }
-                className="min-h-[44px] max-h-[120px] resize-none"
+                className="min-h-11 max-h-30 resize-none"
                 maxLength={500}
               />
               <Button
@@ -410,7 +410,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
         </div>
 
         <div className="flex items-center gap-4 mt-2 ml-4">
-          <button onClick={handleLike} className="flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <button onClick={handleLike} className="flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
             <MotionView whileTap={{ scale: 0.85 }}>
               <Heart
                 size={16}
@@ -434,7 +434,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
             </button>
           )}
 
-          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
             <DotsThree size={16} weight="bold" className="text-muted-foreground" />
           </button>
         </div>

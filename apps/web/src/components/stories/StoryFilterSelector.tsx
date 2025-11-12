@@ -158,7 +158,7 @@ export default function StoryFilterSelector({
         </div>
       )}
 
-      <ScrollArea className="h-[280px]">
+      <ScrollArea className="h-70">
         <div className="grid grid-cols-3 gap-3 pr-4">
           <Presence visible={true}>
             {filteredFilters.map((filter, index) => (

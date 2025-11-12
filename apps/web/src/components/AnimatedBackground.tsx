@@ -115,31 +115,31 @@ export function AnimatedBackground(): ReactElement {
       ))}
 
       <AnimatedView
-        className="absolute top-0 left-1/4 w-[900px] h-[900px] bg-gradient-radial from-primary/18 via-primary/10 to-transparent rounded-full filter blur-[150px]"
+        className="absolute top-0 left-1/4 w-225 h-225 bg-gradient-radial from-primary/18 via-primary/10 to-transparent rounded-full filter blur-[150px]"
         style={gradient1.style}
       >
         <div />
       </AnimatedView>
       <AnimatedView
-        className="absolute bottom-0 right-1/4 w-[900px] h-[900px] bg-gradient-radial from-accent/18 via-accent/10 to-transparent rounded-full filter blur-[150px]"
+        className="absolute bottom-0 right-1/4 w-225 h-225 bg-gradient-radial from-accent/18 via-accent/10 to-transparent rounded-full filter blur-[150px]"
         style={gradient2.style}
       >
         <div />
       </AnimatedView>
       <AnimatedView
-        className="absolute top-1/3 right-1/3 w-[800px] h-[800px] bg-gradient-radial from-secondary/15 via-secondary/8 to-transparent rounded-full filter blur-[130px]"
+        className="absolute top-1/3 right-1/3 w-200 h-200 bg-gradient-radial from-secondary/15 via-secondary/8 to-transparent rounded-full filter blur-[130px]"
         style={gradient3.style}
       >
         <div />
       </AnimatedView>
       <AnimatedView
-        className="absolute top-2/3 left-1/3 w-[700px] h-[700px] bg-gradient-conic from-primary/12 via-accent/12 to-secondary/12 rounded-full filter blur-[110px]"
+        className="absolute top-2/3 left-1/3 w-175 h-175 bg-gradient-conic from-primary/12 via-accent/12 to-secondary/12 rounded-full filter blur-[110px]"
         style={gradient4.style}
       >
         <div />
       </AnimatedView>
       <AnimatedView
-        className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-gradient-radial from-lavender/12 via-lavender/6 to-transparent rounded-full filter blur-[120px]"
+        className="absolute top-1/2 left-1/2 w-150 h-150 bg-gradient-radial from-lavender/12 via-lavender/6 to-transparent rounded-full filter blur-[120px]"
         style={gradient5.style}
       >
         <div />

@@ -146,7 +146,7 @@ function BadgeView({ unreadCount }: BadgeViewProps) {
     <AnimatedView style={badgeStyle} className="absolute -top-1 -right-1">
       <Badge
         variant="destructive"
-        className="h-5 min-w-[20px] px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
+        className="h-5 min-w-5 px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
       >
         {unreadCount > 99 ? '99+' : unreadCount}
       </Badge>

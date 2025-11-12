@@ -110,7 +110,7 @@ export function LostFoundManagement() {
             <CardDescription>Click to view details</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[600px]">
+            <ScrollArea className="h-150">
               <div className="space-y-3">
                 {alerts.map((alert) => (
                   <button
@@ -165,7 +165,7 @@ export function LostFoundManagement() {
                 <p className="text-muted-foreground">Select an alert to view details</p>
               </div>
             ) : (
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-150 pr-4">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-2xl font-bold">{selectedAlert.petSummary.name}</h3>

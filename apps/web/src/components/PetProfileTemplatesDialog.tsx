@@ -134,7 +134,7 @@ export default function PetProfileTemplatesDialog({
         onClick={() => handleSelectTemplate(template)}
         className={cn(
           'relative p-5 rounded-xl text-left transition-all duration-300 group',
-          'min-h-[160px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'min-h-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           'hover:scale-[1.015] active:scale-[0.99]',
           isSelected
             ? 'bg-gradient-to-br from-primary/15 via-primary/10 to-accent/10 shadow-xl border-2 border-transparent'
@@ -334,7 +334,7 @@ export default function PetProfileTemplatesDialog({
                 ref={closeButtonRef}
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="min-w-[100px]"
+                className="min-w-25"
                 style={{ minHeight: '44px' }}
               >
                 Cancel
@@ -343,7 +343,7 @@ export default function PetProfileTemplatesDialog({
                 ref={confirmButtonRef}
                 onClick={handleConfirmSelection}
                 disabled={!selectedTemplate}
-                className="min-w-[140px] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="min-w-35 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ minHeight: '44px' }}
               >
                 <Check size={18} weight="bold" className="mr-2" />

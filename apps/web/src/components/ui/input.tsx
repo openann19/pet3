@@ -9,7 +9,7 @@ function Input({ className, type, ...props }: ComponentProps<'input'>) {
       type={type}
       data-slot="input"
       className={cn(
-        'flex h-[50px] w-full min-w-0 rounded-[var(--radius-md)] border border-(--border-light) bg-white px-4 text-(--text-md) text-(--text-primary) transition-colors duration-200 outline-none',
+        'flex h-13 w-full min-w-0 rounded-[var(--radius-md)] border border-(--border-light) bg-white px-4 text-(--text-md) text-(--text-primary) transition-colors duration-200 outline-none',
         'placeholder:text-(--text-tertiary)',
         'selection:bg-primary selection:text-primary-foreground',
         'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',

@@ -162,7 +162,7 @@ export default function LostFoundMap({
         )}
       </div>
 
-      <div className="relative h-[500px] rounded-lg overflow-hidden border">
+      <div className="relative h-125 rounded-lg overflow-hidden border">
         <MapLibreMap
           center={mapCenter}
           zoom={12}

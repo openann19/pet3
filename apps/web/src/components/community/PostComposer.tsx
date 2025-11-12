@@ -395,7 +395,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
               placeholder={t.community?.postPlaceholder || "Share what's on your mind..."}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[120px] resize-none text-base"
+              className="min-h-30 resize-none text-base"
               maxLength={MAX_CHARS}
             />
             <div className="flex items-center justify-between mt-2">
@@ -735,7 +735,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button onClick={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleRemoveTag(tag)} className="hover:text-destructive">
+                    <button onClick={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button"> handleRemoveTag(tag)} className="hover:text-destructive">
                       <X size={12} />
                     </button>
                   </Badge>

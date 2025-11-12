@@ -89,14 +89,14 @@ export function PricingModal({ open, onOpenChange, onSuccess }: PricingModalProp
           <Button
             variant={billingCycle === 'monthly' ? 'default' : 'outline'}
             onClick={() => setBillingCycle('monthly')}
-            className="min-w-[120px]"
+            className="min-w-30"
           >
             Monthly
           </Button>
           <Button
             variant={billingCycle === 'yearly' ? 'default' : 'outline'}
             onClick={() => setBillingCycle('yearly')}
-            className="min-w-[120px]"
+            className="min-w-30"
           >
             Yearly
             <Badge variant="secondary" className="ml-2">

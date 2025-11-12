@@ -602,7 +602,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 Pre-fill your pet's profile with common traits, or skip to customize everything
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-100 overflow-y-auto pr-2">
               {templates.map((template) => (
                 <AnimatedView
                   key={template.id}

@@ -302,7 +302,7 @@ export function VerificationReviewDashboard(): JSX.Element {
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-6">
-          <ScrollArea className="h-[500px] sm:h-[600px] pr-2 sm:pr-4">
+          <ScrollArea className="h-125 sm:h-150 pr-2 sm:pr-4">
             {loadingPresence.shouldRender && initialLoading && (
               <AnimatedView style={loadingPresence.animatedStyle}>
                 <div className="text-center py-16">

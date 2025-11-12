@@ -682,7 +682,7 @@ export function MediaViewer({
                               )}
                             </Button>
 
-                            <span className="text-white text-sm font-medium min-w-[45px]">
+                            <span className="text-white text-sm font-medium min-w-11">
                               {formatTime(currentTime)}
                             </span>
 
@@ -694,7 +694,7 @@ export function MediaViewer({
                               className="flex-1"
                             />
 
-                            <span className="text-white/60 text-sm min-w-[45px] text-right">
+                            <span className="text-white/60 text-sm min-w-11 text-right">
                               {formatTime(duration || 0)}
                             </span>
 

@@ -129,9 +129,9 @@ export function SplitButton({
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'transition-all duration-300',
               'rounded-l-none',
-              size === 'sm' && 'min-h-[44px]',
-              size === 'md' && 'min-h-[44px]',
-              size === 'lg' && 'min-h-[44px]'
+              size === 'sm' && 'min-h-11',
+              size === 'md' && 'min-h-11',
+              size === 'lg' && 'min-h-11'
             )}
             style={{
               backgroundColor: 'var(--btn-primary-bg)',
@@ -145,7 +145,7 @@ export function SplitButton({
             />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[200px]">
+        <DropdownMenuContent align="end" className="min-w-50">
           <AnimatedView style={menuStyle}>
             {secondaryActions.map((action, index) => (
               <DropdownMenuItem

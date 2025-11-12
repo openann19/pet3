@@ -306,7 +306,7 @@ function Badge({ count, isActive }: BadgeProps) {
   return (
     <AnimatedView
       style={badgeStyle}
-      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-destructive flex items-center justify-center shadow-lg z-20"
+      className="absolute -top-1 -right-1 min-w-5 h-5 px-1.5 rounded-full bg-destructive flex items-center justify-center shadow-lg z-20"
     >
       <span className="text-[10px] font-bold text-destructive-foreground">
         {count > 9 ? '9+' : count}

@@ -149,7 +149,7 @@ export default function SystemMap() {
               <Stack size={24} />
               Architecture Layers
             </h3>
-            <ScrollArea className="h-[500px] pr-4">
+            <ScrollArea className="h-125 pr-4">
               <div className="space-y-6">
                 <div className="border-l-4 border-primary pl-4">
                   <h4 className="font-bold text-lg mb-2">Layer 1: Presentation</h4>

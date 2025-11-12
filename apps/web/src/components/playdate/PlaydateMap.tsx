@@ -158,7 +158,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
 
         {viewMode === 'map' ? (
           <Card className="overflow-hidden mb-6">
-            <div className="relative w-full h-[500px] bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10">
+            <div className="relative w-full h-125 bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center max-w-2xl px-4">
                   <MapTrifold size={64} className="mx-auto mb-4 text-muted-foreground" />

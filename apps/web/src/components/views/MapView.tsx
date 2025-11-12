@@ -209,7 +209,7 @@ export default function MapView() {
 
   return (
     <PageTransitionWrapper key="map-view" direction="up">
-      <div className="relative h-[calc(100vh-12rem)] max-h-[800px] bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
+      <div className="relative h-[calc(100vh-12rem)] max-h-200 bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
         {/* Map Container */}
         <div
           ref={mapRef}

@@ -115,7 +115,7 @@ export function PremiumToast({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       className={cn(
-        'relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl shadow-xl min-w-[320px] max-w-md',
+        'relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl shadow-xl min-w-80 max-w-md',
         'transition-all duration-200',
         colors[type]
       )}

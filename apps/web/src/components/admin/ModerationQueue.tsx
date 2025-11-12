@@ -260,7 +260,7 @@ export function ModerationQueue() {
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-4">
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-150">
             <div className="space-y-4">
               {filteredTasks.length === 0 ? (
                 <div className="text-center py-12">

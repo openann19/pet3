@@ -175,7 +175,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
             transform: [{ translateY: 0 }, { scale: 1 }],
           }}
         >
-          <Card className="absolute top-full mt-2 w-full max-h-[400px] overflow-y-auto shadow-xl border z-50 p-2">
+          <Card className="absolute top-full mt-2 w-full max-h-100 overflow-y-auto shadow-xl border z-50 p-2">
             {query.trim() ? (
               <>
                 {results.length > 0 ? (

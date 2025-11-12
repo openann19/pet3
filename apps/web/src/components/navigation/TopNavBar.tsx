@@ -361,7 +361,7 @@ function NavButton({
     >
       <AnimatedView style={animation.buttonStyle} className="relative">
         {badge !== undefined && badge > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-destructive flex items-center justify-center text-xs font-bold text-destructive-foreground">
+          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1.5 rounded-full bg-destructive flex items-center justify-center text-xs font-bold text-destructive-foreground">
             {badge > 9 ? '9+' : badge}
           </span>
         )}

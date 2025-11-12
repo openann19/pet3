@@ -79,9 +79,9 @@ export function PremiumButton({
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm min-h-[44px] min-w-[44px]',
-    md: 'px-4 py-2 text-base min-h-[44px] min-w-[44px]',
-    lg: 'px-6 py-3 text-lg min-h-[44px] min-w-[44px]',
+    sm: 'px-3 py-1.5 text-sm min-h-11 min-w-11',
+    md: 'px-4 py-2 text-base min-h-11 min-w-11',
+    lg: 'px-6 py-3 text-lg min-h-11 min-w-11',
   };
 
   return (

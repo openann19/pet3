@@ -86,7 +86,7 @@ export default function ContentView() {
         </TabsList>
       </Tabs>
 
-      <ScrollArea className="h-[600px]">
+      <ScrollArea className="h-150">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredPets.map((pet: Pet, index: number) => (
             <Card

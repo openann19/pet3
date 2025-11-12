@@ -167,7 +167,7 @@ export default function SaveToHighlightDialog({
               </div>
             </MotionView>
           ) : (
-            <ScrollArea className="h-[400px] pr-4">
+            <ScrollArea className="h-100 pr-4">
               <div className="space-y-3 py-4">
                 {userHighlights.length === 0 ? (
                   <div className="text-center py-12">

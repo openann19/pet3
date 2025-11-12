@@ -105,7 +105,7 @@ export function SmartToast({
     <AnimatedView
       style={animatedStyle}
       className={cn(
-        'relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl shadow-xl min-w-[320px] max-w-md',
+        'relative flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl shadow-xl min-w-80 max-w-md',
         colors[type]
       )}
     >

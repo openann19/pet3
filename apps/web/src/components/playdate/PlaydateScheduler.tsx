@@ -345,7 +345,7 @@ export default function PlaydateScheduler({
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[500px]">
+                <ScrollArea className="h-125">
                   <Presence>
                     {showCreateForm && (
                       <MotionView
@@ -632,7 +632,7 @@ export default function PlaydateScheduler({
                 <CardDescription>Your meetup history</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[500px]">
+                <ScrollArea className="h-125">
                   {matchPlaydates.filter(
                     (p) => p.status === 'completed' || p.status === 'cancelled'
                   ).length === 0 ? (

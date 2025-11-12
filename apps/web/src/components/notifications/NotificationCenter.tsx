@@ -213,7 +213,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                     {count > 0 && (
                       <Badge
                         variant="secondary"
-                        className="ml-2 px-1.5 min-w-[20px] h-5 rounded-full text-xs font-bold"
+                        className="ml-2 px-1.5 min-w-5 h-5 rounded-full text-xs font-bold"
                       >
                         {count}
                       </Badge>
@@ -247,7 +247,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             >
               Unread
               {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-2 px-1.5 min-w-[20px] h-5 rounded-full">
+                <Badge variant="secondary" className="ml-2 px-1.5 min-w-5 h-5 rounded-full">
                   {unreadCount}
                 </Badge>
               )}

@@ -115,7 +115,7 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="text-center">
           <MotionView
             animate={{ rotate: 360 }}

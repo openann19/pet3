@@ -38,7 +38,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
         onMouseDown={hover.handleMouseDown}
         onMouseUp={hover.handleMouseUp}
         onClick={() => onSelect(sticker.emoji)}
-        className="text-3xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="text-3xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer min-w-11 min-h-11 flex items-center justify-center"
         role="button"
         tabIndex={0}
       >

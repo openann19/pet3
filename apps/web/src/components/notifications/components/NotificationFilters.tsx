@@ -42,7 +42,7 @@ export function NotificationFilters({
             <TabsTrigger value="all">
               All
               {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">
+                <Badge variant="destructive" className="ml-2 h-5 min-w-5 px-1.5 text-xs">
                   {unreadCount}
                 </Badge>
               )}
@@ -77,7 +77,7 @@ export function NotificationFilters({
           >
             {category.label}
             {category.count > 0 && (
-              <Badge variant="secondary" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">
+              <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1.5 text-xs">
                 {category.count}
               </Badge>
             )}

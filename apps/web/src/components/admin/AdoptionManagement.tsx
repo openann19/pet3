@@ -362,7 +362,7 @@ export default function AdoptionManagement(): JSX.Element {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[600px]" role="region" aria-label="Adoption profiles list">
+          <ScrollArea className="h-150" role="region" aria-label="Adoption profiles list">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProfiles.length === 0 ? (
                 <div className="col-span-full text-center py-12" role="status" aria-live="polite">

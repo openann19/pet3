@@ -118,9 +118,9 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
   return (
     <AnimatedView
       style={containerStyle}
-      className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] bg-card/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-[420px] sm:rounded-2xl sm:border sm:max-h-[600px]"
+      className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] bg-card/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-105 sm:rounded-2xl sm:border sm:max-h-150"
     >
-      <div className="flex flex-col h-full max-h-[70vh] sm:max-h-[600px]">
+      <div className="flex flex-col h-full max-h-[70vh] sm:max-h-150">
         <div className="flex items-center justify-between p-4 border-b border-border/40">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">Stickers</h3>

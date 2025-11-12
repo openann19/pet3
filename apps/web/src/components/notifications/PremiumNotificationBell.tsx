@@ -261,7 +261,7 @@ function BadgeAnimation({ unreadCount, hasUrgent }: BadgeAnimationProps): JSX.El
       <AnimatedView style={pulseStyle}>
         <Badge
           variant={hasUrgent ? 'destructive' : 'default'}
-          className="h-5 min-w-[20px] px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
+          className="h-5 min-w-5 px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
           aria-label={`${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
         >
           {unreadCount > 99 ? '99+' : unreadCount}

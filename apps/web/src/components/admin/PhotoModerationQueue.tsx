@@ -337,7 +337,7 @@ export function PhotoModerationQueueAdmin() {
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-6">
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-150">
             {loading && records.length === 0 ? (
               <div className="text-center py-12">Loading...</div>
             ) : records.length === 0 ? (
@@ -446,7 +446,7 @@ export function PhotoModerationQueueAdmin() {
 
                 <div>
                   <div className="text-sm font-medium mb-2">{t.photoModeration.auditLog}</div>
-                  <ScrollArea className="h-[200px] border rounded p-4">
+                  <ScrollArea className="h-50 border rounded p-4">
                     {auditLogs.length === 0 ? (
                       <div className="text-sm text-muted-foreground">No audit logs</div>
                     ) : (

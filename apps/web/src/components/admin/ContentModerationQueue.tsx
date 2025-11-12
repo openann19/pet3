@@ -448,7 +448,7 @@ export function ContentModerationQueue() {
             </Tabs>
           </div>
 
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-150">
             <div className="space-y-4">
               {loading && filteredItems.length === 0 ? (
                 <div className="text-center py-12">

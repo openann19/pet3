@@ -192,7 +192,7 @@ export function PremiumSelect({
           />
         </SelectTrigger>
 
-        <SelectContent className="w-full min-w-[200px]">
+        <SelectContent className="w-full min-w-50">
           <AnimatedView style={contentStyle}>
             {searchable && (
               <div className="p-2 border-b">
@@ -207,7 +207,7 @@ export function PremiumSelect({
               </div>
             )}
 
-            <div className="max-h-[300px] overflow-y-auto">
+            <div className="max-h-75 overflow-y-auto">
               {filteredOptions.length === 0 ? (
                 <div className="px-2 py-6 text-center text-sm text-muted-foreground">
                   No options found

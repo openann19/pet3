@@ -239,7 +239,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
           </TabsList>
 
           <TabsContent value="list" className="mt-4">
-            <ScrollArea className="h-[500px]">
+            <ScrollArea className="h-125">
               <div className="space-y-3">
                 <div className="mb-4">
                   <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
@@ -345,7 +345,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
 
           <TabsContent value="map" className="mt-4">
             <Card className="overflow-hidden">
-              <div className="relative w-full h-[500px] bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 flex items-center justify-center">
+              <div className="relative w-full h-125 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 flex items-center justify-center">
                 <div className="text-center">
                   <MapTrifold size={64} className="mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-xl font-semibold mb-2">Interactive Map View</h3>

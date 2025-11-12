@@ -415,7 +415,7 @@ export function NotificationTabs({
             ref={indicatorRef}
             aria-hidden
             className={cx(
-              'absolute bottom-0 h-[2px] rounded-full',
+              'absolute bottom-0 h-1 rounded-full',
               reducedMotion ? 'transition-none' : 'transition-transform duration-200',
               'bg-[--tabs-indicator,var(--color-blue-500)]'
             )}
@@ -439,7 +439,7 @@ export function NotificationTabs({
                 onKeyDown={(e) => onKeyDownTab(e, i)}
                 className={cx(
                   'relative select-none whitespace-nowrap',
-                  'px-3 h-10 min-w-[44px] min-h-[44px]',
+                  'px-3 h-10 min-w-11 min-h-11',
                   'rounded-full border',
                   selectedBool
                     ? 'bg-[--tab-active-bg,var(--color-gray-900)] text-[--tab-active-fg,var(--color-white)] dark:bg-[--tab-active-bg,var(--color-gray-100)] dark:text-[--tab-active-fg,var(--color-black)] border-transparent'

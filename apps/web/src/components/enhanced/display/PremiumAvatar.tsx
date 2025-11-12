@@ -167,7 +167,7 @@ export function PremiumAvatar({
       )}
 
       {badge !== undefined && (
-        <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-background shadow-lg">
+        <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-5 h-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-background shadow-lg">
           {typeof badge === 'number' && badge > 99 ? '99+' : badge}
         </div>
       )}
