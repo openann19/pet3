@@ -1,3 +1,4 @@
+import { isTruthy } from '@petspark/shared'
 import { useSharedValue, withTiming, useAnimatedStyle, withRepeat } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import { useReducedMotionSV } from '../reduced-motion'

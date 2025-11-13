@@ -8,7 +8,8 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react'
-import { useSharedValue, useAnimatedStyle, interpolateColor, type SharedValue } from 'react-native-reanimated'
+import { useSharedValue, useAnimatedStyle, type SharedValue } from '@petspark/motion'
+import { interpolateColor } from 'framer-motion'
 import { createSpringAnimation, createTimingAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
 import type { BaseAnimationConfig } from '../core/types'

@@ -1,3 +1,4 @@
+import { isTruthy } from '@petspark/shared'
 import React, { useEffect } from 'react'
 import Animated, {
   useSharedValue,

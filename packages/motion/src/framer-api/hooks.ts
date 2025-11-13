@@ -17,19 +17,39 @@ import {
 import { convertTransformToStyle } from './useMotionStyle'
 
 /**
- * Equivalent to useSharedValue from Reanimated
- * Returns a MotionValue that can be animated
+ * SharedValue type for compatibility with Reanimated
+ * Wraps MotionValue to provide .value getter/setter
  */
-export function useSharedValue<T extends number | string>(
-  initial: T
-): MotionValue<T> {
-  return useMotionValue(initial)
+export interface SharedValue<T> extends MotionValue<T> {
+  value: T
 }
 
 /**
- * SharedValue type for compatibility
+ * Equivalent to useSharedValue from Reanimated
+ * Returns a MotionValue with a .value property for compatibility
  */
-export type SharedValue<T> = MotionValue<T>
+export function useSharedValue<T extends number | string>(
+  initial: T
+): SharedValue<T> {
+  const mv = useMotionValue(initial)
+  
+  // Add .value property that proxies to get/set
+  return new Proxy(mv as SharedValue<T>, {
+    get(target, prop) {
+      if (prop === 'value') {
+        return target.get()
+      }
+      return Reflect.get(target, prop)
+    },
+    set(target, prop, value) {
+      if (prop === 'value') {
+        target.set(value)
+        return true
+      }
+      return Reflect.set(target, prop, value)
+    }
+  })
+}
 
 /**
  * Animate a motion value with spring physics
