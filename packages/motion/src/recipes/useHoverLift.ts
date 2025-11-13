@@ -1,3 +1,4 @@
+import { isTruthy } from '@petspark/shared'
 import { useEffect } from 'react'
 import { useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-native-reanimated'
 import { motion } from '../tokens'

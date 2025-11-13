@@ -1,4 +1,4 @@
-import { Easing } from 'react-native-reanimated'
+import { Easing } from './index'
 
 /**
  * Production Motion Tokens
@@ -11,13 +11,12 @@ const createPolyEasing = (power: number) => {
     // poly returns EasingFunction directly
     return Easing.poly(power)
   }
-  // Fallback for web - use bezierFn which returns EasingFunction directly
-  // bezier returns a factory, bezierFn returns the function
-  if (typeof Easing.bezierFn === 'function') {
-    return Easing.bezierFn(0.25, 0.1, 0.25, 1)
+  // Fallback for web - use bezier
+  if (typeof Easing.cubic === 'function') {
+    return Easing.cubic
   }
   // Ultimate fallback - create a simple cubic easing
-  return Easing.cubic
+  return (t: number) => t * t * t
 }
 
 export const motion = {

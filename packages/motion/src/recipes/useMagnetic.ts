@@ -1,6 +1,17 @@
-import { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated'
+import { useSharedValue, withSpring, useAnimatedStyle } from '@petspark/motion'
 import { useRef, useEffect, useState } from 'react'
-import type { LayoutChangeEvent } from 'react-native'
+
+// Web compatibility type for layout events
+type LayoutChangeEvent = {
+  nativeEvent: {
+    layout: {
+      x: number
+      y: number
+      width: number
+      height: number
+    }
+  }
+}
 import { motion } from '../tokens'
 import { useReducedMotionSV } from '../reduced-motion'
 

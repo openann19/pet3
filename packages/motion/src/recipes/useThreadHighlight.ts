@@ -8,7 +8,13 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react'
-import { useSharedValue, useAnimatedStyle, interpolateColor, type SharedValue } from 'react-native-reanimated'
+import { useSharedValue, useAnimatedStyle, type SharedValue } from '@petspark/motion'
+
+// Simple color interpolation helper (Framer Motion doesn't have interpolateColor)
+const interpolateColor = (progress: number, fromColor: string, toColor: string): string => {
+  // Simplified: just return from or to based on progress
+  return progress > 0.5 ? toColor : fromColor
+}
 import { createSpringAnimation, createTimingAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
 import type { BaseAnimationConfig } from '../core/types'

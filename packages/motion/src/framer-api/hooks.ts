@@ -17,19 +17,53 @@ import {
 import { convertTransformToStyle } from './useMotionStyle'
 
 /**
- * Equivalent to useSharedValue from Reanimated
- * Returns a MotionValue that can be animated
+ * SharedValue type for compatibility with Reanimated
+ * Wraps MotionValue to provide .value getter/setter
  */
-export function useSharedValue<T extends number | string>(
-  initial: T
-): MotionValue<T> {
-  return useMotionValue(initial)
+export interface SharedValue<T> {
+  value: T
+  get(): T
+  set(v: T): void
+  // Include other MotionValue methods for full compatibility
+  [key: string]: unknown
 }
 
 /**
- * SharedValue type for compatibility
+ * Equivalent to useSharedValue from Reanimated
+ * Returns a value wrapper with a .value property for compatibility
  */
-export type SharedValue<T> = MotionValue<T>
+export function useSharedValue<T = number>(
+  initial: T
+): SharedValue<T> {
+  // For number types, use MotionValue with widened type
+  if (typeof initial === 'number') {
+    const mv = useMotionValue(initial as number) as MotionValue<number>
+    return new Proxy(mv as unknown as SharedValue<T>, {
+      get(target, prop) {
+        if (prop === 'value') {
+          return (target as unknown as MotionValue<number>).get()
+        }
+        return Reflect.get(target, prop)
+      },
+      set(target, prop, value) {
+        if (prop === 'value') {
+          (target as unknown as MotionValue<number>).set(value as number)
+          return true
+        }
+        return Reflect.set(target, prop, value)
+      }
+    })
+  }
+  
+  // For non-number types, create a simple wrapper
+  let currentValue = initial
+  return {
+    get value() { return currentValue },
+    set value(v: T) { currentValue = v },
+    get() { return currentValue },
+    set(v: T) { currentValue = v },
+  } as SharedValue<T>
+}
 
 /**
  * Animate a motion value with spring physics
