@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { type ReactNode } from 'react';
 import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useTypingIndicator } from './effects/useTypingIndicator';
 import { useReactionTrail, type ReactionTrailParticle } from './effects/useReactionTrail';
 import { useAiReplyAnimation } from './effects/use-ai-reply-animation';
@@ -121,41 +122,41 @@ export function BubbleWrapperGodTier({
 
   return (
     <div className={cn('relative', className)} ref={bubbleRef}>
-      <AnimatedView style={combinedStyle} className="relative">
+      <motion.div style={combinedStyle} className="relative">
         {isAIMessage && (
-          <AnimatedView style={aiAnimation.containerStyle as AnimatedStyle} className="relative">
-            <AnimatedView
+          <motion.div style={aiAnimation.containerStyle as AnimatedStyle} className="relative">
+            <motion.div
               style={aiAnimation.glowStyle as AnimatedStyle}
               className="absolute inset-0 rounded-2xl pointer-events-none -z-10 bg-linear-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 blur-xl"
             >
               <div />
-            </AnimatedView>
-            <AnimatedView
+            </motion.div>
+            <motion.div
               style={aiAnimation.shimmerStyle as AnimatedStyle}
               className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
             >
               <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent w-1/3" />
-            </AnimatedView>
-          </AnimatedView>
+            </motion.div>
+          </motion.div>
         )}
 
-        <AnimatedView
+        <motion.div
           style={moodTheme.animatedStyle as AnimatedStyle}
           className="absolute inset-0 rounded-2xl pointer-events-none -z-10"
         >
           <div />
-        </AnimatedView>
+        </motion.div>
 
         {showTyping ? (
           <div className="flex items-center gap-1 px-4 py-3">
             {typingIndicator.dotStyles.map((style, index) => (
-              <AnimatedView
+              <motion.div
                 key={index}
                 style={style as AnimatedStyle}
                 className="rounded-full bg-foreground/30"
               >
                 <div />
-              </AnimatedView>
+              </motion.div>
             ))}
           </div>
         ) : (
@@ -163,15 +164,15 @@ export function BubbleWrapperGodTier({
         )}
 
         {reactionTrail.particles.map((particle: ReactionTrailParticle) => (
-          <AnimatedView
+          <motion.div
             key={particle.id}
             style={reactionTrail.getParticleStyle(particle) as AnimatedStyle}
             className="absolute pointer-events-none z-9999 text-2xl"
           >
             {particle.emoji}
-          </AnimatedView>
+          </motion.div>
         ))}
-      </AnimatedView>
+      </motion.div>
 
       {particleExplosion.particles.map((particle) => (
         <ParticleView

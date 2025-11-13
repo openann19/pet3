@@ -1,13 +1,7 @@
 'use client';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 
 import { memo, useEffect, useState, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withSequence,
-} from '@petspark/motion';
 import { communityAPI } from '@/api/community-api';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -36,10 +30,9 @@ import {
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { isTruthy } from '@petspark/shared';
 import { Suspense } from 'react';
 import { CommentsSheet } from './CommentsSheet';
 import { MediaViewer, type MediaItem } from '@/components/lazy-exports';
@@ -66,104 +59,142 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
   const [mediaViewerIndex, setMediaViewerIndex] = useState(0);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showPostDetail, setShowPostDetail] = useState(false);
+  const reducedMotion = useReducedMotion();
 
-  // Container animation
-  const containerOpacity = useSharedValue(0);
-  const containerTranslateY = useSharedValue(20);
+  // Container animation - migrated to Framer Motion
+  const containerOpacity = useMotionValue(0);
+  const containerTranslateY = useMotionValue(20);
 
   useEffect(() => {
-    containerOpacity.value = withTiming(1, timingConfigs.smooth);
-    containerTranslateY.value = withTiming(0, timingConfigs.smooth);
-  }, [containerOpacity, containerTranslateY]);
+    if (reducedMotion) {
+      containerOpacity.set(1);
+      containerTranslateY.set(0);
+      return;
+    }
+    void animate(containerOpacity, 1, {
+      duration: motionDurations.smooth / 1000,
+      ease: [0.2, 0, 0, 1],
+    });
+    void animate(containerTranslateY, 0, {
+      duration: motionDurations.smooth / 1000,
+      ease: [0.2, 0, 0, 1],
+    });
+  }, [containerOpacity, containerTranslateY, reducedMotion]);
 
-  const containerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: containerOpacity.value,
-      transform: [{ translateY: containerTranslateY.value }],
-    };
-  }) as AnimatedStyle;
-
-  // Author button hover
-  const authorButtonHover = useHoverTap({
-    hoverScale: 1,
-    tapScale: 1,
-    damping: 25,
-    stiffness: 400,
-  });
-  const authorButtonTranslateX = useSharedValue(0);
-
-  const authorButtonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: authorButtonTranslateX.value },
-        { scale: authorButtonHover.scale.value },
-      ],
-    };
-  }) as AnimatedStyle;
+  // Author button hover - migrated to Framer Motion
+  const authorButtonTranslateX = useMotionValue(0);
+  const authorButtonScale = useMotionValue(1);
 
   const handleAuthorMouseEnter = useCallback(() => {
-    authorButtonHover.handleMouseEnter();
-    authorButtonTranslateX.value = withSpring(2, springConfigs.smooth);
-  }, [authorButtonHover, authorButtonTranslateX]);
+    if (!reducedMotion) {
+      void animate(authorButtonTranslateX, 2, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(authorButtonScale, 1.05, {
+        type: 'spring',
+        damping: 25,
+        stiffness: 400,
+      });
+    }
+  }, [authorButtonTranslateX, authorButtonScale, reducedMotion]);
 
   const handleAuthorMouseLeave = useCallback(() => {
-    authorButtonHover.handleMouseLeave();
-    authorButtonTranslateX.value = withSpring(0, springConfigs.smooth);
-  }, [authorButtonHover, authorButtonTranslateX]);
-
-  // Avatar hover/tap
-  const avatarHover = useHoverTap({
-    hoverScale: 1.05,
-    tapScale: 0.95,
-    damping: 20,
-    stiffness: 400,
-  });
-
-  // Options button hover/tap
-  const optionsButtonHover = useHoverTap({
-    hoverScale: 1.08,
-    tapScale: 0.95,
-  });
-
-  // Media image opacity
-  const mediaOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    mediaOpacity.value = withTiming(1, timingConfigs.fast);
-  }, [currentMediaIndex, mediaOpacity]);
-
-  const mediaStyle = useAnimatedStyle(() => {
-    return {
-      opacity: mediaOpacity.value,
-    };
-  }) as AnimatedStyle;
-
-  // Like button animation
-  const likeScale = useSharedValue(1);
-
-  useEffect(() => {
-    if (isTruthy(isLiked)) {
-      likeScale.value = withSequence(
-        withSpring(1.3, springConfigs.bouncy),
-        withSpring(1, springConfigs.smooth)
-      );
+    if (!reducedMotion) {
+      void animate(authorButtonTranslateX, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(authorButtonScale, 1, {
+        type: 'spring',
+        damping: 25,
+        stiffness: 400,
+      });
     }
-  }, [isLiked, likeScale]);
+  }, [authorButtonTranslateX, authorButtonScale, reducedMotion]);
 
-  const likeButtonHover = useHoverTap({
-    tapScale: 0.85,
-  });
+  // Avatar hover/tap - migrated to Framer Motion (using built-in props)
+  // Options button hover/tap - migrated to Framer Motion (using built-in props)
 
-  const likeButtonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: likeScale.value * likeButtonHover.scale.value }],
-    };
-  }) as AnimatedStyle;
+  // Media image opacity - migrated to Framer Motion
+  const mediaOpacity = useMotionValue(0);
 
-  // Bookmark button animation
-  const bookmarkHover = useHoverTap({
-    tapScale: 0.85,
-  });
+  useEffect(() => {
+    if (reducedMotion) {
+      mediaOpacity.set(1);
+      return;
+    }
+    void animate(mediaOpacity, 1, {
+      duration: motionDurations.fast / 1000,
+      ease: [0.2, 0, 0, 1],
+    });
+  }, [currentMediaIndex, mediaOpacity, reducedMotion]);
+
+  // Like button animation - migrated to Framer Motion
+  const likeScale = useMotionValue(1);
+  const likeHoverScale = useMotionValue(1);
+  const likeTapScale = useMotionValue(1);
+
+  useEffect(() => {
+    if (isTruthy(isLiked) && !reducedMotion) {
+      // Sequence: scale up then back down
+      void animate(likeScale, 1.3, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping * 0.7,
+        stiffness: springConfigs.smooth.stiffness,
+      }).then(() => {
+        void animate(likeScale, 1, {
+          type: 'spring',
+          damping: springConfigs.smooth.damping,
+          stiffness: springConfigs.smooth.stiffness,
+        });
+      });
+    }
+  }, [isLiked, likeScale, reducedMotion]);
+
+  const combinedLikeScale = useTransform(
+    [likeScale, likeHoverScale, likeTapScale],
+    ([s, h, t]: number[]) => (s ?? 1) * (h ?? 1) * (t ?? 1)
+  );
+
+  const handleLikeMouseEnter = useCallback(() => {
+    if (!reducedMotion) {
+      void animate(likeHoverScale, 1.1, {
+        type: 'spring',
+        damping: 25,
+        stiffness: 400,
+      });
+    }
+  }, [likeHoverScale, reducedMotion]);
+
+  const handleLikeMouseLeave = useCallback(() => {
+    if (!reducedMotion) {
+      void animate(likeHoverScale, 1, {
+        type: 'spring',
+        damping: 25,
+        stiffness: 400,
+      });
+    }
+  }, [likeHoverScale, reducedMotion]);
+
+  const handleLikePress = useCallback(() => {
+    if (!reducedMotion) {
+      void animate(likeTapScale, 0.85, {
+        duration: 0.1,
+        ease: 'easeOut',
+      }).then(() => {
+        void animate(likeTapScale, 1, {
+          duration: 0.2,
+          ease: 'easeIn',
+        });
+      });
+    }
+  }, [likeTapScale, reducedMotion]);
+
+  // Bookmark button animation - migrated to Framer Motion
+  const bookmarkScale = useMotionValue(1);
 
   useEffect(() => {
     setIsLiked(false);
@@ -174,11 +205,11 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
     triggerHaptic('selection');
 
     try {
-      const spark = window.spark;
-      if (!spark) {
+      if (typeof window === 'undefined' || !window.spark) {
         toast.error('User service not available');
         return;
       }
+      const spark = window.spark;
       const user = await spark.user();
       const result = await communityAPI.toggleReaction(
         post.id,
@@ -235,7 +266,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
           await navigator.share({
             title: `Post by ${post.authorName}`,
             text: post.text?.slice(0, 100) ?? '',
-            url: `${window.location.origin}/community/post/${post.id}`,
+            url: typeof window !== 'undefined' ? `${window.location.origin}/community/post/${post.id}` : '',
           });
         } catch (error) {
           // User cancelled share - AbortError is expected
@@ -247,8 +278,9 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
         }
       } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
         try {
+          const origin = typeof window !== 'undefined' ? window.location.origin : '';
           await navigator.clipboard.writeText(
-            `${window.location.origin}/community/post/${post.id}`
+            `${origin}/community/post/${post.id}`
           );
           toast.success(t.community?.linkCopied || 'Link copied to clipboard');
         } catch (error) {
@@ -367,25 +399,38 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
 
   return (
     <>
-      <AnimatedView style={containerStyle}>
+      <motion.div
+        style={{
+          opacity: containerOpacity,
+          y: containerTranslateY,
+        }}
+      >
         <Card
           className="overflow-hidden bg-linear-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm cursor-pointer"
-          onClick={handleCardClick}
+          onClick={() => {
+            handleCardClick({} as React.MouseEvent);
+          }}
         >
           {/* Author Header */}
           <div className="flex items-center justify-between p-4 pb-3">
-            <AnimatedView
-              style={authorButtonStyle}
+            <motion.div
+              style={{
+                x: authorButtonTranslateX,
+                scale: authorButtonScale,
+              }}
               onMouseEnter={handleAuthorMouseEnter}
               onMouseLeave={handleAuthorMouseLeave}
               onClick={() => onAuthorClick?.(post.authorId)}
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <AnimatedView
-                style={avatarHover.animatedStyle}
-                onMouseEnter={avatarHover.handleMouseEnter}
-                onMouseLeave={avatarHover.handleMouseLeave}
-                onClick={avatarHover.handlePress}
+              <motion.div
+                whileHover={reducedMotion ? undefined : { scale: 1.05 }}
+                whileTap={reducedMotion ? undefined : { scale: 0.95 }}
+                transition={{
+                  type: 'spring',
+                  damping: 20,
+                  stiffness: 400,
+                }}
               >
                 <Avatar className="h-11 w-11 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
                   {post.authorAvatar ? (
@@ -396,7 +441,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                     </div>
                   )}
                 </Avatar>
-              </AnimatedView>
+              </motion.div>
               <div className="text-left">
                 <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors duration-200">
                   {post.authorName}
@@ -405,15 +450,18 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                 </p>
               </div>
-            </AnimatedView>
+            </motion.div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <AnimatedView
-                  style={optionsButtonHover.animatedStyle}
-                  onMouseEnter={optionsButtonHover.handleMouseEnter}
-                  onMouseLeave={optionsButtonHover.handleMouseLeave}
-                  onClick={optionsButtonHover.handlePress}
+                <motion.div
+                  whileHover={reducedMotion ? undefined : { scale: 1.08 }}
+                  whileTap={reducedMotion ? undefined : { scale: 0.95 }}
+                  transition={{
+                    type: 'spring',
+                    damping: 25,
+                    stiffness: 400,
+                  }}
                 >
                   <Button
                     variant="ghost"
@@ -423,7 +471,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   >
                     <DotsThree size={22} weight="bold" />
                   </Button>
-                </AnimatedView>
+                </motion.div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleReport} className="text-destructive">
@@ -457,19 +505,21 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
           {post.media && post.media.length > 0 && post.media[currentMediaIndex] && (
             <div className="relative bg-muted">
               <div className="relative aspect-square overflow-hidden">
-                <AnimatedView style={mediaStyle} className="w-full h-full">
-                  <img
-                    key={currentMediaIndex}
-                    src={
-                      typeof post.media[currentMediaIndex] === 'string'
-                        ? post.media[currentMediaIndex]
-                        : (post.media[currentMediaIndex] as { url: string }).url
-                    }
-                    alt="Post media"
-                    className="w-full h-full object-cover cursor-pointer"
-                    onClick={() => handleMediaClick(currentMediaIndex)}
-                  />
-                </AnimatedView>
+                <motion.div style={{ opacity: mediaOpacity }} className="w-full h-full">
+                  {(() => {
+                    const mediaItem = post.media[currentMediaIndex];
+                    const mediaUrl = typeof mediaItem === 'string' ? mediaItem : mediaItem?.url;
+                    return (
+                      <img
+                        key={currentMediaIndex}
+                        src={mediaUrl}
+                        alt="Post media"
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handleMediaClick(currentMediaIndex)}
+                      />
+                    );
+                  })()}
+                </motion.div>
               </div>
 
               {/* Media Navigation Dots */}
@@ -507,11 +557,11 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                 }}
                 className="flex items-center gap-1.5 group"
               >
-                <AnimatedView
-                  style={likeButtonStyle}
-                  onMouseEnter={likeButtonHover.handleMouseEnter}
-                  onMouseLeave={likeButtonHover.handleMouseLeave}
-                  onClick={likeButtonHover.handlePress}
+                <motion.div
+                  style={{ scale: combinedLikeScale }}
+                  onMouseEnter={handleLikeMouseEnter}
+                  onMouseLeave={handleLikeMouseLeave}
+                  onClick={handleLikePress}
                 >
                   <Heart
                     size={24}
@@ -519,7 +569,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                     className={`transition-colors ${isLiked ? 'text-red-500' : 'text-foreground group-hover:text-red-500'
                       }`}
                   />
-                </AnimatedView>
+                </motion.div>
                 {likesCount > 0 && (
                   <span className="text-sm font-medium text-foreground">{likesCount}</span>
                 )}
@@ -557,11 +607,15 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                 void handleSave();
               }}
             >
-              <AnimatedView
-                style={bookmarkHover.animatedStyle}
-                onMouseEnter={bookmarkHover.handleMouseEnter}
-                onMouseLeave={bookmarkHover.handleMouseLeave}
-                onClick={bookmarkHover.handlePress}
+              <motion.div
+                style={{ scale: bookmarkScale }}
+                whileHover={reducedMotion ? undefined : { scale: 1.1 }}
+                whileTap={reducedMotion ? undefined : { scale: 0.85 }}
+                transition={{
+                  type: 'spring',
+                  damping: 25,
+                  stiffness: 400,
+                }}
               >
                 <BookmarkSimple
                   size={24}
@@ -569,7 +623,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   className={`transition-colors ${isSaved ? 'text-primary' : 'text-foreground hover:text-primary'
                     }`}
                 />
-              </AnimatedView>
+              </motion.div>
             </button>
           </div>
 
@@ -628,7 +682,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
             }}
           />
         </Card>
-      </AnimatedView>
+      </motion.div>
 
       <PostDetailView
         open={showPostDetail}

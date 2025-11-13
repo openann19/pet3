@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { adoptionApi } from '@/api/adoption-api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,7 +41,7 @@ import {
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useExpandCollapse } from '@/effects/reanimated/use-expand-collapse';
 import { useRotation } from '@/effects/reanimated/use-rotation';
@@ -56,9 +57,9 @@ function LoadingSpinner() {
 
   return (
     <>
-      <AnimatedView style={rotationAnimation.rotationStyle} className="mr-2 inline-block">
+      <motion.div style={rotationAnimation.rotationStyle} className="mr-2 inline-block">
         <Clock size={16} />
-      </AnimatedView>
+      </motion.div>
       Processing...
     </>
   );
@@ -95,7 +96,7 @@ function ApplicationCard({
   });
 
   return (
-    <AnimatedView key={application._id} style={staggeredAnimation.itemStyle}>
+    <motion.div key={application._id} style={staggeredAnimation.itemStyle}>
       <Card
         className={`overflow-hidden transition-all duration-300 ${
           application.status === 'pending' ? 'border-amber-500/30 shadow-lg shadow-amber-500/5' : ''
@@ -173,7 +174,7 @@ function ApplicationCard({
           </div>
 
           {isExpanded && (
-            <AnimatedView style={expandAnimation.heightStyle} className="overflow-hidden">
+            <motion.div style={expandAnimation.heightStyle} className="overflow-hidden">
               <Separator className="my-3" />
 
               <div className="space-y-3">
@@ -245,7 +246,7 @@ function ApplicationCard({
                   </div>
                 )}
               </div>
-            </AnimatedView>
+            </motion.div>
           )}
         </CardContent>
 
@@ -292,7 +293,7 @@ function ApplicationCard({
           )}
         </CardFooter>
       </Card>
-    </AnimatedView>
+    </motion.div>
   );
 }
 

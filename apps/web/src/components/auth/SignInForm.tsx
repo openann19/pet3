@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react'
-import { MotionView } from '@petspark/motion'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { EnvelopeSimple, LockKey, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +31,7 @@ type UserCredentials = {
 export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
   const { t } = useApp()
   const { login } = useAuth()
+  const prefersReducedMotion = useReducedMotion()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -96,11 +100,11 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
   }
 
   return (
-    <MotionView
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: prefersReducedMotion ? 0.1 : 0.3 }}
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-foreground mb-2">
@@ -238,6 +242,6 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
           </p>
         </div>
       </form>
-    </MotionView>
+    </motion.div>
   )
 }

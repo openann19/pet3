@@ -82,7 +82,7 @@ export class WebRTCSignalingService {
         remoteUserId: this.remoteUserId,
       })
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to initialize signaling service')
       logger.error('Failed to initialize signaling service', err, {
         callId: this.callId,
       })
@@ -110,14 +110,34 @@ export class WebRTCSignalingService {
         from: signal.from,
       })
 
+      // Validate signal type
+      const validTypes: ('offer' | 'answer' | 'candidate')[] = ['offer', 'answer', 'candidate']
+      if (!validTypes.includes(signal.type as 'offer' | 'answer' | 'candidate')) {
+        logger.warn('Invalid signal type', {
+          callId: this.callId,
+          type: signal.type,
+        })
+        return
+      }
+
       // Map RealtimeClient signal to useWebRTC signaling data format
       const signalingData: SignalingData = {
         type: signal.type as 'offer' | 'answer' | 'candidate',
       }
 
       if (signal.type === 'offer' || signal.type === 'answer') {
-        if (signal.data) {
-          signalingData.sdp = signal.data as RTCSessionDescriptionInit
+        if (signal.data !== null && signal.data !== undefined) {
+          // Type guard: ensure data is RTCSessionDescriptionInit
+          const sdp = signal.data as RTCSessionDescriptionInit
+          if (sdp && typeof sdp === 'object' && 'type' in sdp && 'sdp' in sdp) {
+            signalingData.sdp = sdp
+          } else {
+            logger.warn('Invalid SDP format in signal', {
+              callId: this.callId,
+              type: signal.type,
+            })
+            return
+          }
         } else {
           logger.warn('Missing SDP in signal', {
             callId: this.callId,
@@ -126,8 +146,18 @@ export class WebRTCSignalingService {
           return
         }
       } else if (signal.type === 'candidate') {
-        if (signal.data) {
-          signalingData.candidate = signal.data as RTCIceCandidateInit
+        if (signal.data !== null && signal.data !== undefined) {
+          // Type guard: ensure data is RTCIceCandidateInit
+          const candidate = signal.data as RTCIceCandidateInit
+          if (candidate && typeof candidate === 'object' && 'candidate' in candidate) {
+            signalingData.candidate = candidate
+          } else {
+            logger.warn('Invalid candidate format in signal', {
+              callId: this.callId,
+              type: signal.type,
+            })
+            return
+          }
         } else {
           logger.warn('Missing candidate in signal', {
             callId: this.callId,
@@ -140,7 +170,7 @@ export class WebRTCSignalingService {
       // Pass signaling data to useWebRTC hook
       this.onSignalingData(signalingData)
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to handle incoming signal')
       logger.error('Failed to handle incoming signal', err, {
         callId: this.callId,
         type: signal.type,
@@ -154,6 +184,11 @@ export class WebRTCSignalingService {
    */
   async sendOffer(offer: RTCSessionDescriptionInit): Promise<void> {
     try {
+      // Validate offer
+      if (!offer || typeof offer !== 'object' || !('type' in offer) || !('sdp' in offer)) {
+        throw new Error('Invalid offer format')
+      }
+
       const signalData: WebRTCSignalData = {
         type: 'offer',
         from: this.localUserId,
@@ -172,7 +207,7 @@ export class WebRTCSignalingService {
         to: this.remoteUserId,
       })
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to send offer')
       logger.error('Failed to send offer', err, {
         callId: this.callId,
         to: this.remoteUserId,
@@ -187,6 +222,11 @@ export class WebRTCSignalingService {
    */
   async sendAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
     try {
+      // Validate answer
+      if (!answer || typeof answer !== 'object' || !('type' in answer) || !('sdp' in answer)) {
+        throw new Error('Invalid answer format')
+      }
+
       const signalData: WebRTCSignalData = {
         type: 'answer',
         from: this.localUserId,
@@ -205,7 +245,7 @@ export class WebRTCSignalingService {
         to: this.remoteUserId,
       })
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to send answer')
       logger.error('Failed to send answer', err, {
         callId: this.callId,
         to: this.remoteUserId,
@@ -220,6 +260,11 @@ export class WebRTCSignalingService {
    */
   async sendIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
     try {
+      // Validate candidate
+      if (!candidate || typeof candidate !== 'object' || !('candidate' in candidate)) {
+        throw new Error('Invalid candidate format')
+      }
+
       const signalData: WebRTCSignalData = {
         type: 'candidate',
         from: this.localUserId,
@@ -238,7 +283,7 @@ export class WebRTCSignalingService {
         to: this.remoteUserId,
       })
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to send ICE candidate')
       logger.error('Failed to send ICE candidate', err, {
         callId: this.callId,
         to: this.remoteUserId,
@@ -270,7 +315,7 @@ export class WebRTCSignalingService {
         to: this.remoteUserId,
       })
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to send call end')
       logger.error('Failed to send call end', err, {
         callId: this.callId,
         to: this.remoteUserId,

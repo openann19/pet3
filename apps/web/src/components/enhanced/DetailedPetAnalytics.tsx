@@ -1,14 +1,13 @@
-import { useEffect } from 'react';
 import React from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, animate } from '@petspark/motion';
-import { MotionView } from '@petspark/motion';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { TrendUp, Heart, Users, Clock, Star, Lightning } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { Pet, PetTrustProfile } from '@/lib/types';
 import { useUIConfig } from "@/hooks/use-ui-config";
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { cn } from '@/lib/utils';
 
@@ -69,7 +68,7 @@ export function DetailedPetAnalytics({
   return (
     <section aria-label="Pet analytics" className={getSpacingClassesFromConfig({ spaceY: 'xl' })}>
       {compatibilityScore !== undefined && (
-        <AnimatedCard prefersReducedMotion={prefersReducedMotion}>
+        <AnimatedCard>
           <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-accent/5">
             <CardHeader>
               <CardTitle className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'sm' }))}>
@@ -111,10 +110,10 @@ export function DetailedPetAnalytics({
                   <ul role="list" className={getSpacingClassesFromConfig({ spaceY: 'xs' })}>
                     {matchReasons.map((reason, idx) => (
                       <AnimatedListItem key={idx} index={idx}>
-                        <li role="listitem" className={cn('flex items-start', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+                        <div role="listitem" className={cn('flex items-start', getSpacingClassesFromConfig({ gap: 'sm' }))}>
                           <Star size={16} className={cn('text-accent mt-0.5 shrink-0', getTypographyClasses('caption'))} weight="fill" aria-hidden="true" />
                           <span className={getTypographyClasses('body-sm')}>{reason}</span>
-                        </li>
+                        </div>
                       </AnimatedListItem>
                     ))}
                   </ul>
@@ -142,7 +141,7 @@ export function DetailedPetAnalytics({
                       stat.borderColor
                     )}
                     role="group"
-                    aria-label={`${stat.label}: ${stat.value}${stat.suffix || ''}`}
+                    aria-label={`${stat.label}: ${stat.value}${stat.suffix ?? ''}`}
                   >
                     <div className={cn('rounded-lg', getSpacingClassesFromConfig({ padding: 'sm' }), stat.bgColor)}>
                       <stat.icon size={24} className={stat.color} weight="duotone" aria-hidden="true" />
@@ -151,7 +150,7 @@ export function DetailedPetAnalytics({
                       <p className={cn(getTypographyClasses('caption'), 'text-muted-foreground truncate')}>{stat.label}</p>
                       <p className={cn(getTypographyClasses('body'), stat.color, 'truncate')}>
                         {stat.value}
-                        {stat.suffix && <span className={cn(getTypographyClasses('caption'), 'font-normal')}>{stat.suffix}</span>}
+                        {stat.suffix ? <span className={cn(getTypographyClasses('caption'), 'font-normal')}>{stat.suffix}</span> : null}
                       </p>
                     </div>
                   </div>
@@ -207,11 +206,11 @@ export function DetailedPetAnalytics({
                 <ul role="list" className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
                   {personalityTraits.map((trait, idx) => (
                     <AnimatedBadge key={idx} index={idx}>
-                      <li role="listitem">
+                      <div role="listitem">
                         <Badge variant="secondary" className={getTypographyClasses('caption')}>
                           {trait}
                         </Badge>
-                      </li>
+                      </div>
                     </AnimatedBadge>
                   ))}
                 </ul>
@@ -224,11 +223,11 @@ export function DetailedPetAnalytics({
                 <ul role="list" className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
                   {interests.map((interest, idx) => (
                     <AnimatedBadge key={idx} index={idx}>
-                      <li role="listitem">
+                      <div role="listitem">
                         <Badge variant="outline" className={getTypographyClasses('caption')}>
                           {interest}
                         </Badge>
-                      </li>
+                      </div>
                     </AnimatedBadge>
                   ))}
                 </ul>
@@ -241,102 +240,73 @@ export function DetailedPetAnalytics({
   );
 }
 
-function AnimatedCard({ children, prefersReducedMotion = false }: { children: React.ReactNode; prefersReducedMotion?: boolean }) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
+function AnimatedCard({ children }: { children: React.ReactNode }) {
+  const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      opacity.value = 1;
-      translateY.value = 0;
-      return;
-    }
-    const opacityTransition = withTiming(1, { duration: 400 });
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-    const translateYTransition = withTiming(0, { duration: 400 });
-    animate(translateY, translateYTransition.target, translateYTransition.transition);
-  }, [opacity, translateY, prefersReducedMotion]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ translateY: translateY.get() }],
-  }));
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>;
+  return (
+    <motion.div
+      initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reducedMotion ? { duration: 0 } : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 function AnimatedListItem({ index, children }: { index: number; children: React.ReactNode }) {
-  const opacity = useSharedValue(0);
-  const translateX = useSharedValue(-10);
+  const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    const delay = index * 100;
-    setTimeout(() => {
-      const opacityTransition = withTiming(1, { duration: 300 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-      const translateXTransition = withTiming(0, { duration: 300 });
-      animate(translateX, translateXTransition.target, translateXTransition.transition);
-    }, delay);
-  }, [index, opacity, translateX]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ translateX: translateX.get() }],
-  }));
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>;
+  return (
+    <motion.li
+      initial={reducedMotion ? undefined : { opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={reducedMotion ? { duration: 0 } : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.1,
+      }}
+    >
+      {children}
+    </motion.li>
+  );
 }
 
-function AnimatedStatCard({ index, children, prefersReducedMotion = false }: { index: number; children: React.ReactNode; prefersReducedMotion?: boolean }) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.9);
+function AnimatedStatCard({ index, children }: { index: number; children: React.ReactNode }) {
+  const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      opacity.value = 1;
-      scale.value = 1;
-      return;
-    }
-    const delay = index * 50;
-    setTimeout(() => {
-      const opacityTransition = withTiming(1, { duration: 300 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-      const scaleTransition = withTiming(1, { duration: 300 });
-      animate(scale, scaleTransition.target, scaleTransition.transition);
-    }, delay);
-  }, [index, opacity, scale, prefersReducedMotion]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ scale: scale.get() }],
-  }));
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>;
+  return (
+    <motion.div
+      initial={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={reducedMotion ? { duration: 0 } : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-function AnimatedBadge({ index, children, prefersReducedMotion = false }: { index: number; children: React.ReactNode; prefersReducedMotion?: boolean }) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
+function AnimatedBadge({ index, children }: { index: number; children: React.ReactNode }) {
+  const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      opacity.value = 1;
-      scale.value = 1;
-      return;
-    }
-    const delay = index * 50;
-    setTimeout(() => {
-      const opacityTransition = withTiming(1, { duration: 300 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-      const scaleTransition = withTiming(1, { duration: 300 });
-      animate(scale, scaleTransition.target, scaleTransition.transition);
-    }, delay);
-  }, [index, opacity, scale, prefersReducedMotion]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ scale: scale.get() }],
-  }));
-
-  return <MotionView animatedStyle={animatedStyle}>{children}</MotionView>;
+  return (
+    <motion.li
+      initial={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={reducedMotion ? { duration: 0 } : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      }}
+    >
+      {children}
+    </motion.li>
+  );
 }

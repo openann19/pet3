@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState } from 'react';
 import {
@@ -21,7 +22,7 @@ import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
 import { PaperPlaneRight } from '@phosphor-icons/react';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useRotation } from '@/effects/reanimated/use-rotation';
 import { spark } from '@/lib/spark';
 
@@ -43,9 +44,9 @@ function LoadingSpinner() {
   });
 
   return (
-    <AnimatedView style={rotationAnimation.rotationStyle} className="inline-block">
+    <motion.div style={rotationAnimation.rotationStyle} className="inline-block">
       <PaperPlaneRight size={18} />
-    </AnimatedView>
+    </motion.div>
   );
 }
 

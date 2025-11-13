@@ -1,11 +1,12 @@
 /**
+import { motion } from 'framer-motion';
  * Sticker Button Component
  *
  * Interactive sticker button with hover animations
  */
 
 import { useEffect, useRef } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useTargetSize } from '@/hooks/use-target-size';
 
@@ -31,7 +32,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
 
   return (
     <div ref={containerRef}>
-      <AnimatedView
+      <motion.div
         style={hover.animatedStyle}
         onMouseEnter={hover.handleMouseEnter}
         onMouseLeave={hover.handleMouseLeave}
@@ -43,7 +44,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
         tabIndex={0}
       >
         {sticker.emoji}
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }

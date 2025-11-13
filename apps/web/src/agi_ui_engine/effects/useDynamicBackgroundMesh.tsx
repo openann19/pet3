@@ -1,6 +1,7 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { useEffect } from 'react';
 import {
@@ -29,7 +30,7 @@ export interface UseDynamicBackgroundMeshReturn {
  * @example
  * ```tsx
  * const { animatedStyle } = useDynamicBackgroundMesh({ speed: 0.5 })
- * return <AnimatedView style={animatedStyle}>{content}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{content}</motion.div>
  * ```
  */
 export function useDynamicBackgroundMesh(

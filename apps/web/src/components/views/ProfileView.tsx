@@ -1,7 +1,9 @@
-import { useState, lazy, Suspense } from 'react'
-import { useStorage } from '@/hooks/useStorage'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { useMotionVariants, useStaggeredContainer, useHoverLift, useBounceOnTap, useGlowPulse, useIconRotation } from '@/effects/reanimated'
+import { useState, lazy, Suspense } from 'react';
+import type { KeyboardEvent } from 'react';
+import { useStorage } from '@/hooks/use-storage'
+import { motion } from 'framer-motion'
+import { motionDurations, springConfigs } from '@/effects/framer-motion/variants'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { Plus, PawPrint, Pencil, Heart } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,11 +20,15 @@ import { SubscriptionStatusCard } from '@/components/payments/SubscriptionStatus
 import PetHealthDashboard from '@/components/health/PetHealthDashboard'
 import { VerificationButton } from '@/components/verification/VerificationButton'
 import { useApp } from '@/contexts/AppContext'
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary'
+import { getTypographyClasses, getSpacingClassesFromConfig, accessibilityClasses } from '@/lib/typography'
+import { getColorClasses, getShadowClasses } from '@/lib/design-token-utils'
+import { cn } from '@/lib/utils'
 
 // Lazy load heavy components
 const VisualAnalysisDemo = lazy(() => import('@/components/VisualAnalysisDemo').then(module => ({ default: module.default })))
 
-export default function ProfileView() {
+function ProfileViewContent() {
   const { t, themePreset, setThemePreset } = useApp()
   const [userPets] = useStorage<Pet[]>('user-pets', [])
   const [matches] = useStorage<Match[]>('matches', [])
@@ -32,65 +38,88 @@ export default function ProfileView() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showHealthDashboard, setShowHealthDashboard] = useState(false)
   const [selectedHealthPet, setSelectedHealthPet] = useState<Pet | null>(null)
-  const totalMatches = Array.isArray(matches) ? matches.filter(m => m.status === 'active').length : 0
-  const totalSwipes = Array.isArray(swipeHistory) ? swipeHistory.length : 0
-  const likeCount = Array.isArray(swipeHistory) ? swipeHistory.filter(s => s.action === 'like').length : 0
+  
+  const prefersReducedMotion = useReducedMotion()
+  
+  // Defensive data handling
+  const safeMatches = Array.isArray(matches) ? matches : []
+  const safeSwipeHistory = Array.isArray(swipeHistory) ? swipeHistory : []
+  const safeUserPets = Array.isArray(userPets) ? userPets : []
+  
+  const totalMatches = safeMatches.filter(m => m.status === 'active').length
+  const totalSwipes = safeSwipeHistory.length
+  const likeCount = safeSwipeHistory.filter(s => s.action === 'like').length
   const successRate = likeCount > 0 ? Math.round((totalMatches / likeCount) * 100) : 0
 
-  // Animation hooks for empty state
-  const emptyStateIcon = useMotionVariants({
-    initial: { scale: 0, rotate: -180 },
+  // Animation variants with reduced motion support
+  const emptyStateIconVariants = {
+    initial: { scale: prefersReducedMotion ? 1 : 0, rotate: prefersReducedMotion ? 0 : -180 },
     animate: { scale: 1, rotate: 0 },
-    transition: { type: 'spring', stiffness: 200, damping: 15 }
-  })
-  const emptyStatePulse = useGlowPulse({ duration: 2000, enabled: true })
-  const emptyStateTitle = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.2 }
-  })
-  const emptyStateDesc = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.3 }
-  })
-  const emptyStateButton = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.4 }
-  })
-  const emptyStateButtonHover = useHoverLift({ scale: 1.05 })
-  const emptyStateButtonTap = useBounceOnTap({ scale: 0.95 })
+    transition: prefersReducedMotion 
+      ? { duration: 0 }
+      : {
+          ...springConfigs.bouncy,
+          duration: motionDurations.smooth,
+        },
+  }
 
-  // Animation hooks for pet cards
-  const petCardsContainer = useStaggeredContainer({ delay: 0.08 })
-  
-  // Animation hooks for sections
-  const themeSection = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.05 }
-  })
-  const subscriptionSection = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.075 }
-  })
-  const highlightsSection = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.1 }
-  })
-  const analysisSection = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.2 }
-  })
-  const videoSection = useMotionVariants({
-    initial: { opacity: 0, translateY: 20 },
-    animate: { opacity: 1, translateY: 0 },
-    transition: { delay: 0.4 }
-  })
+  const emptyStateTextVariants = {
+    initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: prefersReducedMotion 
+        ? { duration: 0 }
+        : {
+            duration: motionDurations.smooth,
+            ease: 'easeOut',
+          },
+    },
+  }
+
+  const emptyStateButtonVariants = {
+    initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: prefersReducedMotion 
+        ? { duration: 0 }
+        : {
+            delay: 0.4,
+            duration: motionDurations.smooth,
+            ease: 'easeOut',
+          },
+    },
+    hover: prefersReducedMotion ? {} : {
+      scale: 1.05,
+      transition: {
+        duration: motionDurations.fast,
+      },
+    },
+    tap: prefersReducedMotion ? {} : {
+      scale: 0.95,
+    },
+  }
+
+  // Section animation variants
+  const sectionVariants = {
+    initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: prefersReducedMotion 
+        ? { duration: 0 }
+        : {
+            duration: motionDurations.smooth,
+            ease: 'easeOut',
+          },
+    },
+  }
+
+  const cardEntryVariants = {
+    initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 30, scale: prefersReducedMotion ? 1 : 0.9 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+  }
 
   const handleEdit = (pet: Pet) => {
     setEditingPet(pet)
@@ -109,75 +138,110 @@ export default function ProfileView() {
     })
   }
 
-  if (!Array.isArray(userPets) || userPets.length === 0) {
+  const handleKeyDown = (e: KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      action()
+    }
+  }
+
+  if (safeUserPets.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-          <AnimatedView
-            style={emptyStateIcon.animatedStyle}
-            className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-2xl relative"
+      <main aria-label="Profile" className={cn('max-w-2xl mx-auto', getSpacingClassesFromConfig({ paddingX: 'lg' }))}>
+        <div className={cn('flex flex-col items-center justify-center min-h-[60vh] text-center', getSpacingClassesFromConfig({ paddingX: 'lg' }))}>
+          <motion.div
+            initial={emptyStateIconVariants.initial}
+            animate={emptyStateIconVariants.animate}
+            transition={emptyStateIconVariants.transition}
+              className={cn(
+              'w-24 h-24 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center relative',
+              getShadowClasses('glow-primary'),
+              getSpacingClassesFromConfig({ marginY: 'xl' })
+            )}
           >
-            <AnimatedView style={emptyStatePulse.animatedStyle}>
-              <PawPrint size={48} className="text-white" weight="fill" />
-            </AnimatedView>
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent animate-pulse opacity-50" />
-          </AnimatedView>
-          <AnimatedView
-            style={emptyStateTitle.animatedStyle}
-            className="text-2xl font-bold mb-2"
+            <PawPrint size={48} className="text-primary-foreground" weight="fill" aria-hidden="true" />
+            {!prefersReducedMotion && (
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent animate-pulse opacity-50" />
+            )}
+          </motion.div>
+          
+          <motion.h1
+            initial={emptyStateTextVariants.initial}
+            animate={emptyStateTextVariants.animate}
+            transition={emptyStateTextVariants.animate.transition}
+            className={cn(getTypographyClasses('h1'), getSpacingClassesFromConfig({ marginY: 'sm' }))}
           >
             {t.profile.createProfile}
-          </AnimatedView>
-          <AnimatedView
-            style={emptyStateDesc.animatedStyle}
-            className="text-muted-foreground mb-6 max-w-md"
+          </motion.h1>
+          
+          <motion.p
+            initial={emptyStateTextVariants.initial}
+            animate={emptyStateTextVariants.animate}
+            transition={emptyStateTextVariants.animate.transition}
+            className={cn(
+              getTypographyClasses('body'),
+              'text-muted-foreground max-w-md',
+              getSpacingClassesFromConfig({ marginY: 'xl' })
+            )}
           >
             {t.profile.noPetsDesc}
-          </AnimatedView>
-          <AnimatedView style={emptyStateButton.animatedStyle}>
-            <AnimatedView
-              style={emptyStateButtonHover.animatedStyle}
-              onMouseEnter={emptyStateButtonHover.handleEnter}
-              onMouseLeave={emptyStateButtonHover.handleLeave}
-              onClick={emptyStateButtonTap.handlePress}
+          </motion.p>
+          
+          <motion.div
+            initial={emptyStateButtonVariants.initial}
+            animate={emptyStateButtonVariants.animate}
+            transition={emptyStateButtonVariants.animate.transition}
+            variants={emptyStateButtonVariants}
+            whileHover={emptyStateButtonVariants.hover}
+            whileTap={emptyStateButtonVariants.tap}
+          >
+            <Button 
+              size="lg" 
+              onClick={() => { setShowCreateDialog(true); }}
+              className={cn(
+                getColorClasses('primary', 'bg'),
+                'hover:opacity-90',
+                getColorClasses('primaryForeground', 'text'),
+                getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'md' }),
+                getShadowClasses('raised'),
+                accessibilityClasses.focusVisible
+              )}
             >
-              <Button 
-                size="lg" 
-                onClick={() => { setShowCreateDialog(true); }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                <Plus size={20} weight="bold" className="mr-2" />
-                {t.profile.createProfileBtn}
-              </Button>
-            </AnimatedView>
-          </AnimatedView>
+              <Plus size={20} weight="bold" className={getSpacingClassesFromConfig({ marginX: 'sm' })} aria-hidden="true" />
+              {t.profile.createProfileBtn}
+            </Button>
+          </motion.div>
         </div>
 
         <CreatePetDialog 
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
         />
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8 px-2 sm:px-4">
-      <AnimatedView
-        style={themeSection.animatedStyle}
-        className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm py-2 sm:py-0 sm:bg-transparent sm:backdrop-blur-none"
+    <main aria-label="Profile" className={cn('max-w-4xl mx-auto', getSpacingClassesFromConfig({ spaceY: 'xl', paddingX: 'md' }))}>
+      <motion.section
+        initial={sectionVariants.initial}
+        animate={sectionVariants.animate}
+        transition={sectionVariants.animate.transition}
+        className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm sm:bg-transparent sm:backdrop-blur-none"
       >
         <ThemePresetSelector 
           currentPreset={themePreset}
           onPresetChange={handleThemePresetChange}
         />
-      </AnimatedView>
+      </motion.section>
 
-      <AnimatedView
-        style={subscriptionSection.animatedStyle}
+      <motion.section
+        initial={sectionVariants.initial}
+        animate={sectionVariants.animate}
+        transition={sectionVariants.animate.transition}
       >
         <SubscriptionStatusCard />
-      </AnimatedView>
+      </motion.section>
 
       {totalSwipes > 0 && (
         <StatsCard
@@ -187,161 +251,202 @@ export default function ProfileView() {
         />
       )}
 
-      <AnimatedView
-        style={highlightsSection.animatedStyle}
-        className="glass-strong p-6 rounded-3xl border border-white/20"
+      <motion.section
+        initial={sectionVariants.initial}
+        animate={sectionVariants.animate}
+        transition={sectionVariants.animate.transition}
+        className={cn(
+          'glass-strong rounded-3xl border border-border/20',
+          getSpacingClassesFromConfig({ padding: 'xl' }),
+          getShadowClasses('raised')
+        )}
       >
-        <h3 className="text-lg font-bold mb-4">Story Highlights</h3>
+        <h2 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'lg' }))}>Story Highlights</h2>
         <HighlightsBar onlyOwn={true} />
-      </AnimatedView>
+      </motion.section>
 
-      <AnimatedView
-        style={analysisSection.animatedStyle}
+      <motion.section
+        initial={sectionVariants.initial}
+        animate={sectionVariants.animate}
+        transition={sectionVariants.animate.transition}
       >
         <Suspense fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className={cn('flex items-center justify-center', getSpacingClassesFromConfig({ paddingY: '2xl' }))}>
+            <div className={cn('animate-spin rounded-full h-8 w-8 border-b-2', getColorClasses('primary', 'border'))} />
           </div>
         }>
           <VisualAnalysisDemo />
         </Suspense>
-      </AnimatedView>
+      </motion.section>
       
-      <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
+      <header className={cn('flex items-center justify-between flex-wrap', getSpacingClassesFromConfig({ gap: 'md' }))}>
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{t.profile.myPets}</h2>
-          <p className="text-sm text-muted-foreground">
-            {userPets?.length} {userPets?.length === 1 ? t.profile.subtitle : t.profile.subtitlePlural}
+          <h1 className={cn(getTypographyClasses('h1'), getSpacingClassesFromConfig({ marginY: 'xs' }))}>{t.profile.myPets}</h1>
+          <p className={cn(getTypographyClasses('body-sm'), 'text-muted-foreground')}>
+            {safeUserPets.length} {safeUserPets.length === 1 ? t.profile.subtitle : t.profile.subtitlePlural}
           </p>
         </div>
-        <Button onClick={() => { setShowCreateDialog(true); }} className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          <Plus size={18} weight="bold" className="mr-1 sm:mr-2" />
-          <span className="text-sm">{t.profile.addPet}</span>
+        <Button 
+          onClick={() => { setShowCreateDialog(true); }} 
+          className={cn(
+            'shrink-0',
+            getColorClasses('primary', 'bg'),
+            'hover:opacity-90',
+            getColorClasses('primaryForeground', 'text'),
+            getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'md' }),
+            getShadowClasses('raised'),
+            accessibilityClasses.focusVisible
+          )}
+        >
+          <Plus size={18} weight="bold" className={getSpacingClassesFromConfig({ marginX: 'sm' })} aria-hidden="true" />
+          <span className={getTypographyClasses('body-sm')}>{t.profile.addPet}</span>
         </Button>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {(userPets || []).map((pet, idx) => {
-          const cardHover = useHoverLift({ scale: 1.03, translateY: -12 })
-          const cardEntry = useMotionVariants({
-            initial: { opacity: 0, translateY: 30, scale: 0.9 },
-            animate: { opacity: 1, translateY: 0, scale: 1 },
-            transition: { delay: idx * 0.08, type: 'spring', stiffness: 300, damping: 30 }
-          })
-          const imageHover = useHoverLift({ scale: 1.12 })
-          const editButtonHover = useHoverLift({ scale: 1.2 })
-          const editButtonRotation = useIconRotation({ enabled: false, targetRotation: 360 })
-          const editButtonTap = useBounceOnTap({ scale: 0.9 })
-          
-          return (
-            <AnimatedView
-              key={pet.id}
-              style={[cardEntry.animatedStyle, cardHover.animatedStyle]}
-              onMouseEnter={cardHover.handleEnter}
-              onMouseLeave={cardHover.handleLeave}
-            >
-              <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl group relative border border-white/20">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                <div className="relative h-64 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
-                  <AnimatedView
-                    style={imageHover.animatedStyle}
-                    onMouseEnter={imageHover.handleEnter}
-                    onMouseLeave={imageHover.handleLeave}
+      <section aria-label="Pet cards">
+        {safeUserPets.length > 0 ? (
+          <ul className={cn('grid grid-cols-1 md:grid-cols-2 list-none', getSpacingClassesFromConfig({ gap: 'lg' }))}>
+            {safeUserPets.map((pet, idx) => {
+              const cardTransition = prefersReducedMotion 
+                ? { duration: 0 }
+                : { delay: idx * 0.08, type: 'spring' as const, stiffness: 300, damping: 30 }
+              
+              return (
+                <li key={pet.id}>
+                  <motion.div
+                    initial={cardEntryVariants.initial}
+                    animate={cardEntryVariants.animate}
+                    transition={cardTransition}
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.03, y: -12 }}
+                    className={cn(
+                      'overflow-hidden rounded-3xl glass-strong backdrop-blur-2xl group relative border border-border/20',
+                      getShadowClasses('raised'),
+                      accessibilityClasses.focusVisible
+                    )}
+                    role="article"
+                    aria-label={`Pet profile: ${pet.name}`}
                   >
-                    <img
-                      src={pet.photo}
-                      alt={pet.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </AnimatedView>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <AnimatedView
-                    style={[editButtonHover.animatedStyle, editButtonRotation.style, editButtonTap.animatedStyle]}
-                    onMouseEnter={() => {
-                      editButtonHover.handleEnter()
-                    }}
-                    onMouseLeave={() => {
-                      editButtonHover.handleLeave()
-                    }}
-                    onClick={() => {
-                      editButtonTap.handlePress()
-                      handleEdit(pet)
-                    }}
-                    className="absolute top-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    <Pencil size={20} className="text-white drop-shadow-lg" weight="bold" />
-                  </AnimatedView>
-                </div>
-
-              <div className="p-5 bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-md">
-                <h3 className="text-xl font-bold mb-2 truncate">{pet.name}</h3>
-                <p className="text-muted-foreground mb-4">
-                  {pet.breed} • {pet.age} {t.profile.yearsOld} • {pet.gender}
-                </p>
-
-                {pet.bio && (
-                  <p className="text-sm text-foreground mb-4 line-clamp-3">{pet.bio}</p>
-                )}
-
-                {pet.personality && Array.isArray(pet.personality) && pet.personality.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">{t.petProfile.personality.toUpperCase()}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {pet.personality.slice(0, 5).map((trait, idx) => (
-                        <Badge key={idx} variant="secondary">{trait}</Badge>
-                      ))}
+                    <div className={cn(
+                      'absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 pointer-events-none',
+                      prefersReducedMotion ? '' : 'transition-opacity duration-500'
+                    )} />
+                    <div className="relative h-64 overflow-hidden">
+                      <div className={cn(
+                        'absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 z-10 pointer-events-none',
+                        prefersReducedMotion ? '' : 'transition-opacity duration-500'
+                      )} />
+                      <motion.img
+                        src={pet.photo}
+                        alt={`${pet.name} - ${pet.breed}`}
+                        className="w-full h-full object-cover"
+                        whileHover={prefersReducedMotion ? {} : { scale: 1.12 }}
+                        transition={{ duration: prefersReducedMotion ? 0 : motionDurations.smooth }}
+                      />
+                      <div className={cn(
+                        'absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100',
+                        prefersReducedMotion ? '' : 'transition-opacity duration-500'
+                      )} />
+                      <button
+                        onClick={() => handleEdit(pet)}
+                        onKeyDown={(e) => handleKeyDown(e, () => handleEdit(pet))}
+                        className={cn(
+                          'absolute top-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center backdrop-blur-xl',
+                          getShadowClasses('overlay'),
+                          'border border-border/30',
+                          accessibilityClasses.focusVisible,
+                          accessibilityClasses.minTouch
+                        )}
+                        aria-label={`Edit ${pet.name}`}
+                      >
+                        <Pencil size={20} className="text-foreground" weight="bold" aria-hidden="true" />
+                      </button>
                     </div>
-                  </div>
-                )}
 
-                {pet.interests && Array.isArray(pet.interests) && pet.interests.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">{t.petProfile.interests.toUpperCase()}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {pet.interests.slice(0, 5).map((interest, idx) => (
-                        <Badge key={idx} variant="outline">{interest}</Badge>
-                      ))}
+                    <div className={cn(
+                      'bg-linear-to-br from-white/40 to-white/20 backdrop-blur-md',
+                      getSpacingClassesFromConfig({ padding: 'lg' })
+                    )}>
+                      <h3 className={cn(getTypographyClasses('h3'), getSpacingClassesFromConfig({ marginY: 'sm' }), 'truncate')}>{pet.name}</h3>
+                      <p className={cn(getTypographyClasses('body-sm'), 'text-muted-foreground', getSpacingClassesFromConfig({ marginY: 'lg' }))}>
+                        {pet.breed} • {pet.age} {t.profile.yearsOld} • {pet.gender}
+                      </p>
+
+                      {pet.bio && (
+                        <p className={cn(getTypographyClasses('body-sm'), 'text-foreground line-clamp-3', getSpacingClassesFromConfig({ marginY: 'lg' }))}>{pet.bio}</p>
+                      )}
+
+                      {pet.personality && Array.isArray(pet.personality) && pet.personality.length > 0 && (
+                        <div className={getSpacingClassesFromConfig({ marginY: 'lg' })}>
+                          <p className={cn(getTypographyClasses('caption'), 'font-semibold text-muted-foreground', getSpacingClassesFromConfig({ marginY: 'sm' }))}>
+                            {t.petProfile.personality.toUpperCase()}
+                          </p>
+                          <ul className={cn('flex flex-wrap list-none', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+                            {pet.personality.slice(0, 5).map((trait: string, traitIdx: number) => (
+                              <li key={traitIdx}>
+                                <Badge variant="secondary">{trait}</Badge>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {pet.interests && Array.isArray(pet.interests) && pet.interests.length > 0 && (
+                        <div className={getSpacingClassesFromConfig({ marginY: 'lg' })}>
+                          <p className={cn(getTypographyClasses('caption'), 'font-semibold text-muted-foreground', getSpacingClassesFromConfig({ marginY: 'sm' }))}>
+                            {t.petProfile.interests.toUpperCase()}
+                          </p>
+                          <ul className={cn('flex flex-wrap list-none', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+                            {pet.interests.slice(0, 5).map((interest: string, interestIdx: number) => (
+                              <li key={interestIdx}>
+                                <Badge variant="outline">{interest}</Badge>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <div className={getSpacingClassesFromConfig({ spaceY: 'sm' })}>
+                        <VerificationButton
+                          petId={pet.id}
+                          userId={pet.ownerId}
+                          variant="card"
+                          className={getSpacingClassesFromConfig({ marginY: 'sm' })}
+                        />
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedHealthPet(pet)
+                            setShowHealthDashboard(true)
+                          }}
+                        >
+                          <Heart size={16} className={getSpacingClassesFromConfig({ marginX: 'sm' })} weight="fill" aria-hidden="true" />
+                          Health Dashboard
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </motion.div>
+                </li>
+              )
+            })}
+          </ul>
+        ) : null}
+      </section>
 
-                <div className="space-y-2">
-                  <VerificationButton
-                    petId={pet.id}
-                    userId={pet.ownerId}
-                    variant="card"
-                    className="mb-2"
-                  />
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      setSelectedHealthPet(pet)
-                      setShowHealthDashboard(true)
-                    }}
-                  >
-                    <Heart size={16} className="mr-2" weight="fill" />
-                    Health Dashboard
-                  </Button>
-                </div>
-                </div>
-              </div>
-            </AnimatedView>
-          )
-        })}
-      </div>
-
-      <AnimatedView
-        style={videoSection.animatedStyle}
+      <motion.section
+        initial={sectionVariants.initial}
+        animate={sectionVariants.animate}
+        transition={sectionVariants.animate.transition}
       >
         <VideoQualitySettings 
           currentQuality={preferredQuality}
-          onQualityChange={setPreferredQuality}
+          onQualityChange={(quality) => {
+            void setPreferredQuality(quality)
+          }}
         />
-      </AnimatedView>
+      </motion.section>
 
       <CreatePetDialog 
         open={showCreateDialog}
@@ -358,6 +463,14 @@ export default function ProfileView() {
           }}
         />
       )}
-    </div>
+    </main>
+  )
+}
+
+export default function ProfileView() {
+  return (
+    <ScreenErrorBoundary screenName="Profile" enableNavigation={true} enableReporting={false}>
+      <ProfileViewContent />
+    </ScreenErrorBoundary>
   )
 }

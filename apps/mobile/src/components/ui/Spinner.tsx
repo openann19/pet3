@@ -14,7 +14,16 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared'
+import { colors } from '@mobile/theme/colors'
+import { motionTokens } from '@petspark/motion'
+import { Dimens } from '@petspark/shared';
+
+const { radius } = Dimens;
+const motion = {
+  slow: motionTokens.durations.slow,
+  smooth: motionTokens.durations.enterExit,
+};
 
 export interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg'
@@ -57,7 +66,7 @@ export function Spinner({
       // For reduced motion, use a slower, less noticeable animation
       rotation.value = withRepeat(
         withTiming(360, {
-          duration: 2000,
+          duration: motion.slow * 2,
           easing: Easing.linear,
         }),
         -1,
@@ -65,7 +74,7 @@ export function Spinner({
       )
       opacity.value = withRepeat(
         withTiming(0.7, {
-          duration: 1500,
+          duration: motion.smooth,
           easing: Easing.inOut(Easing.ease),
         }),
         -1,
@@ -75,7 +84,7 @@ export function Spinner({
       // Premium smooth animation for normal users
       rotation.value = withRepeat(
         withTiming(360, {
-          duration: 1000,
+          duration: motion.smooth,
           easing: Easing.linear,
         }),
         -1,
@@ -97,21 +106,21 @@ export function Spinner({
 
   const variantStyles = {
     default: {
-      borderColor: 'var(--color-accent-secondary-9)', // primary color
+      borderColor: colors.accent,
       borderTopColor: 'transparent',
     },
     subtle: {
-      borderColor: 'rgba(59, 130, 246, 0.6)', // primary/60
-      borderTopColor: 'rgba(59, 130, 246, 0.4)', // primary/40
+      borderColor: `${colors.accent}99`, // 60% opacity
+      borderTopColor: `${colors.accent}66`, // 40% opacity
     },
     premium: {
-      borderColor: 'var(--color-accent-secondary-9)',
+      borderColor: colors.accent,
       borderTopColor: 'transparent',
-      shadowColor: 'var(--color-accent-secondary-9)',
+      shadowColor: colors.accent,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
-      elevation: 4,
+      elevation: 2,
     },
   } as const
 
@@ -146,7 +155,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: {
-    borderRadius: 9999,
+    borderRadius: radius.full,
     borderStyle: 'solid',
   },
 })

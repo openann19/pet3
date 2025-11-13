@@ -1,10 +1,11 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { PaperPlaneRight } from '@phosphor-icons/react';
 
 export interface StickerButtonProps {
@@ -16,7 +17,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
   const hover = useHoverAnimation({ scale: 1.2 });
 
   return (
-    <AnimatedView
+    <motion.div
       style={hover.animatedStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
@@ -28,7 +29,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
       className="text-3xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
     >
       {sticker.emoji}
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -41,7 +42,7 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
   const hover = useHoverAnimation({ scale: 1.2 });
 
   return (
-    <AnimatedView
+    <motion.div
       style={hover.animatedStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
@@ -51,7 +52,7 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
       className="text-2xl p-2 rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
     >
       {emoji}
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -64,7 +65,7 @@ export function SendButtonIcon(): JSX.Element {
   })) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={iconStyle}
       onMouseEnter={() => {
         translateX.value = withSpring(5, springConfigs.smooth);
@@ -80,6 +81,6 @@ export function SendButtonIcon(): JSX.Element {
       }}
     >
       <PaperPlaneRight size={20} weight="fill" />
-    </AnimatedView>
+    </motion.div>
   );
 }

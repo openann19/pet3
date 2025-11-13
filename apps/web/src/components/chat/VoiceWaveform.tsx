@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Voice Waveform Component
  *
  * Renders animated voice message waveform
@@ -7,7 +8,7 @@
  */
 
 import { useEffect } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useVoiceWaveform } from '@/effects/chat/media/use-voice-waveform';
 import { useAnimatedStyle } from '@petspark/motion';
 import { useUIConfig } from "@/hooks/use-ui-config";
@@ -62,13 +63,13 @@ export function VoiceWaveform({
   });
 
   return (
-    <AnimatedView style={animatedStyle} className={`relative ${className ?? ''}`}>
+    <motion.div style={animatedStyle} className={`relative ${className ?? ''}`}>
       <canvas ref={canvasRef} width={width} height={height} className="w-full h-full" />
       {isPlaying && (
-        <AnimatedView style={playheadStyle}>
+        <motion.div style={playheadStyle}>
           <div />
-        </AnimatedView>
+        </motion.div>
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }

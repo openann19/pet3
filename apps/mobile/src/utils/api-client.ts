@@ -18,10 +18,13 @@
 
 import { Platform } from 'react-native'
 import Constants from 'expo-constants'
+import { isTruthy } from '@petspark/shared'
 import { createLogger } from './logger'
 import { cacheGet, cacheSet } from './offline-cache'
 import { getAuthToken } from './secure-storage'
 import { telemetry } from './telemetry'
+import { validateCertificateForUrl } from './certificate-pinning'
+import { isDeviceSecure } from './device-security'
 import type {
   MatchingApiResponse,
   MatchingApiOptions,
@@ -394,6 +397,42 @@ class APIClient {
   ): Promise<T> {
     const startTime = Date.now()
     let lastError: APIError | null = null
+
+    // Security checks (only in production)
+    if (process.env['NODE_ENV'] === 'production') {
+      // Check device security
+      const deviceSecure = await isDeviceSecure({ allowEmulator: false, allowDevMode: false })
+      if (!deviceSecure) {
+        const securityError = new APIError(
+          'Device security check failed. App cannot proceed.',
+          APIErrorType.FORBIDDEN,
+          403,
+          config.endpoint,
+          { reason: 'device_security_failed' }
+        )
+        logger.error('Device security check failed', { endpoint: config.endpoint })
+        throw securityError
+      }
+
+      // Validate certificate pin (only for HTTPS)
+      if (url.startsWith('https://')) {
+        const certValidation = await validateCertificateForUrl(url)
+        if (!certValidation.isValid) {
+          const certError = new APIError(
+            'Certificate validation failed',
+            APIErrorType.NETWORK,
+            undefined,
+            config.endpoint,
+            { reason: 'certificate_validation_failed', error: certValidation.error }
+          )
+          logger.error('Certificate validation failed', {
+            endpoint: config.endpoint,
+            error: certValidation.error,
+          })
+          throw certError
+        }
+      }
+    }
 
     for (let attempt = 0; attempt <= config.retries; attempt++) {
       const controller = new AbortController()

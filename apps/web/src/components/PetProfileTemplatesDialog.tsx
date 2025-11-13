@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Check, Sparkle, CheckCircle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,14 +20,10 @@ import {
   type PetProfileTemplate,
 } from '@/lib/pet-profile-templates';
 import { cn } from '@/lib/utils';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
+import { getSpacing } from '@/lib/design-tokens';
+import { useMotionValue, animate, useTransform } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 
 interface PetProfileTemplatesDialogProps {
   open: boolean;
@@ -55,38 +52,41 @@ export default function PetProfileTemplatesDialog({
   const [activeTab, setActiveTab] = useState<PetType>('dog');
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const reducedMotion = useReducedMotion();
 
   // Progress bar animation
-  const progressWidth = useSharedValue(0);
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const progressWidth = useMotionValue(0);
+  const progressWidthPercent = useTransform(progressWidth, (value) => `${value}%`);
 
   // Sparkle rotation
-  const sparkleRotate = useSharedValue(0);
-  const sparkleScale = useSharedValue(1);
-  const sparkleStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${sparkleRotate.value}deg` }, { scale: sparkleScale.value }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const sparkleRotate = useMotionValue(0);
+  const sparkleScale = useMotionValue(1);
 
   useEffect(() => {
-    progressWidth.value = withTiming((CURRENT_STEP / TOTAL_STEPS) * 100, { duration: 600 });
+    if (reducedMotion) {
+      progressWidth.set((CURRENT_STEP / TOTAL_STEPS) * 100);
+      sparkleRotate.set(0);
+      sparkleScale.set(1);
+      return;
+    }
 
-    sparkleRotate.value = withRepeat(
-      withSequence(
-        withTiming(10, { duration: 300 }),
-        withTiming(-10, { duration: 300 }),
-        withTiming(0, { duration: 300 })
-      ),
-      -1,
-      false
-    );
-    sparkleScale.value = withRepeat(
-      withSequence(withTiming(1.1, { duration: 300 }), withTiming(1, { duration: 300 })),
-      -1,
-      false
-    );
-  }, [progressWidth, sparkleRotate, sparkleScale]);
+    void animate(progressWidth, (CURRENT_STEP / TOTAL_STEPS) * 100, {
+      duration: motionDurations.smooth / 1000,
+      ease: [0.2, 0, 0, 1],
+    });
+
+    void animate(sparkleRotate, [10, -10, 0], {
+      duration: 0.9,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+
+    void animate(sparkleScale, [1, 1.1, 1], {
+      duration: 0.6,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+  }, [progressWidth, sparkleRotate, sparkleScale, reducedMotion]);
 
   useEffect(() => {
     if (!open) {
@@ -109,8 +109,14 @@ export default function PetProfileTemplatesDialog({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('keydown', handleKeyDown);
+      }
+    };
   }, [open, selectedTemplate, onOpenChange]);
 
   const handleSelectTemplate = (template: PetProfileTemplate) => {
@@ -142,7 +148,7 @@ export default function PetProfileTemplatesDialog({
         )}
         aria-pressed={isSelected}
         aria-label={`Select ${String(template.name ?? '')} template`}
-        style={{ minHeight: '44px' }}
+        style={{ minHeight: getSpacing('11') }}
       >
         {isSelected && (
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary via-accent to-primary opacity-40 blur-sm animate-in fade-in zoom-in duration-300" />
@@ -176,7 +182,7 @@ export default function PetProfileTemplatesDialog({
                       key={trait}
                       variant="secondary"
                       className="text-xs px-2 py-0.5 bg-muted/60 text-foreground/80 hover:bg-muted/80 transition-colors border border-border/40"
-                      style={{ minHeight: '24px' }}
+                      style={{ minHeight: getSpacing('6') }}
                     >
                       {trait}
                     </Badge>
@@ -185,7 +191,7 @@ export default function PetProfileTemplatesDialog({
                     <Badge
                       variant="secondary"
                       className="text-xs px-2 py-0.5 bg-muted/60 text-foreground/80"
-                      style={{ minHeight: '24px' }}
+                      style={{ minHeight: getSpacing('6') }}
                     >
                       +{template.defaults.personality.length - 3}
                     </Badge>
@@ -200,7 +206,7 @@ export default function PetProfileTemplatesDialog({
                       key={interest}
                       variant="outline"
                       className="text-xs px-2 py-0.5 border-border/50 text-foreground/70 bg-background/40 hover:bg-background/60 transition-colors"
-                      style={{ minHeight: '24px' }}
+                      style={{ minHeight: getSpacing('6') }}
                     >
                       {interest}
                     </Badge>
@@ -209,7 +215,7 @@ export default function PetProfileTemplatesDialog({
                     <Badge
                       variant="outline"
                       className="text-xs px-2 py-0.5 border-border/50 text-foreground/70"
-                      style={{ minHeight: '24px' }}
+                      style={{ minHeight: getSpacing('6') }}
                     >
                       +{template.defaults.interests.length - 3}
                     </Badge>
@@ -244,9 +250,14 @@ export default function PetProfileTemplatesDialog({
           <DialogHeader className="px-8 pt-8 pb-5 border-b border-border/40">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <AnimatedView style={sparkleStyle}>
+                <motion.div
+                  style={{
+                    rotate: sparkleRotate,
+                    scale: sparkleScale,
+                  }}
+                >
                   <Sparkle size={28} weight="fill" className="text-primary" />
-                </AnimatedView>
+                </motion.div>
                 <div>
                   <DialogTitle className="text-2xl font-bold text-foreground">
                     Pet Profile Templates
@@ -263,8 +274,10 @@ export default function PetProfileTemplatesDialog({
               </div>
 
               <div className="h-2 w-32 bg-muted/50 rounded-full overflow-hidden">
-                <AnimatedView
-                  style={progressStyle}
+                <motion.div
+                  style={{
+                    width: progressWidthPercent,
+                  }}
                   className="h-full bg-gradient-to-r from-primary to-accent"
                 />
               </div>
@@ -287,7 +300,7 @@ export default function PetProfileTemplatesDialog({
                     key={type}
                     value={type}
                     className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground transition-all"
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: getSpacing('11') }}
                   >
                     <span className="mr-1.5 text-base">{PET_TYPE_LABELS[type].emoji}</span>
                     <span className="hidden sm:inline">{PET_TYPE_LABELS[type].label}</span>
@@ -335,7 +348,7 @@ export default function PetProfileTemplatesDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 className="min-w-25"
-                style={{ minHeight: '44px' }}
+                style={{ minHeight: getSpacing('11') }}
               >
                 Cancel
               </Button>
@@ -344,7 +357,7 @@ export default function PetProfileTemplatesDialog({
                 onClick={handleConfirmSelection}
                 disabled={!selectedTemplate}
                 className="min-w-35 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: '44px' }}
+                style={{ minHeight: getSpacing('11') }}
               >
                 <Check size={18} weight="bold" className="mr-2" />
                 Use Template

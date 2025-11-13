@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -33,7 +34,7 @@ import { ChatErrorBoundary } from './ChatErrorBoundary';
 import { AnnounceNewMessage, AnnounceTyping } from './LiveRegions';
 import { useOutbox } from '@petspark/chat-core';
 import { flags } from '@petspark/config';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { LiquidDots } from '../LiquidDots';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -461,7 +462,7 @@ function TypingIndicator({ typingUsers }: TypingIndicatorProps): JSX.Element {
   const anim = useEntryAnimation({ initialY: 20, delay: 0 });
 
   return (
-    <AnimatedView style={anim.animatedStyle} className="flex items-end gap-2 flex-row">
+    <motion.div style={anim.animatedStyle} className="flex items-end gap-2 flex-row">
       <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
         <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
           {typingUsers[0]?.userName?.[0] || '?'}
@@ -470,6 +471,6 @@ function TypingIndicator({ typingUsers }: TypingIndicatorProps): JSX.Element {
       <div className="rounded-xl px-2.5 py-1.5 bg-white/10 border border-white/10">
         <LiquidDots enabled dotColor="var(--color-neutral-a9)" />
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }

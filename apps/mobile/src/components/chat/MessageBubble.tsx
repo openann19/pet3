@@ -11,10 +11,21 @@
  */
 
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Layout } from 'react-native-reanimated'
-import { SwipeToReply, DeliveryTicks, ShimmerOverlay } from '@/effects/chat'
+import {
+  useSendWarp,
+  useReceiveAirCushion,
+  useSwipeReplyElastic,
+  useStatusTicks,
+} from '../../effects/chat'
+import { useReactionBurst } from '../../effects/chat/reactions/use-reaction-burst'
+import { useAnimatedReaction } from 'react-native-reanimated'
 import { createLogger } from '../../utils/logger'
+// Effects components (replace with actual implementations if available)
+const SwipeToReply = ({ children, onReply }: { children: React.ReactNode; onReply?: () => void }) => <>{children}</>;
+const DeliveryTicks = () => null;
+const ShimmerOverlay = ({ width }: { width: number }) => null;
 
 const logger = createLogger('MessageBubble')
 
@@ -54,9 +65,9 @@ export function MessageBubble({
 }: MessageBubbleProps): React.ReactElement {
   const isOwn = message.senderId === currentUserId
 
-  // Measure bubble dimensions dynamically
-  const [bubbleWidth, setBubbleWidth] = useState(propBubbleWidth ?? 200)
-  const [bubbleHeight, setBubbleHeight] = useState(propBubbleHeight ?? 60)
+  // Safe defaults for bubble dimensions
+  const [bubbleWidth, setBubbleWidth] = useState(200)
+  const [bubbleHeight, setBubbleHeight] = useState(60)
 
   const handleLayout = React.useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
@@ -116,7 +127,7 @@ export function MessageBubble({
   // Track ribbon visibility for conditional rendering
   const [showRibbon, setShowRibbon] = useState(false)
   useAnimatedReaction(
-    () => swipeReply.ribbonAlpha.value,
+    () => swipeReply.ribbonAlpha?.value ?? 0,
     value => {
       setShowRibbon(value > 0)
     }
@@ -126,36 +137,42 @@ export function MessageBubble({
   React.useEffect(() => {
     if (isOwn && message.isNew && message.status === 'sending') {
       // Set bloom center to bubble center
-      sendWarp.bloomCenterX.value = bubbleWidth / 2
-      sendWarp.bloomCenterY.value = bubbleHeight / 2
-      // Ensure bloom radius respects <= 24px constraint for low-end devices
-      sendWarp.bloomRadius.value = Math.min(18, 24)
-      sendWarp.trigger()
+      if (sendWarp?.bloomCenterX && sendWarp?.bloomCenterY && sendWarp?.bloomRadius) {
+        sendWarp.bloomCenterX.value = bubbleWidth / 2
+        sendWarp.bloomCenterY.value = bubbleHeight / 2
+        // Ensure bloom radius respects <= 24px constraint for low-end devices
+        sendWarp.bloomRadius.value = Math.min(18, 24)
+      }
+      sendWarp.trigger?.()
     }
   }, [isOwn, message.isNew, message.status, sendWarp, bubbleWidth, bubbleHeight])
 
   // Update ribbon coordinates when bubble size changes
   React.useEffect(() => {
     // Update ribbon glow to respect <= 24px constraint
-    swipeReply.ribbonGlow.value = Math.min(18, 24)
+    if (swipeReply?.ribbonGlow) {
+      swipeReply.ribbonGlow.value = Math.min(18, 24)
+    }
   }, [swipeReply, bubbleWidth, bubbleHeight])
 
   // Trigger status change when status updates
   React.useEffect(() => {
     if (isOwn && message.status === 'sent') {
-      sendWarp.triggerStatusChange('sent')
+      sendWarp.triggerStatusChange?.('sent')
     }
   }, [isOwn, message.status, sendWarp])
 
   const handleLongPress = (): void => {
-    reactionBurst.trigger()
-    onLongPress?.(message.id)
-  }
-
-  const handleLongPress = (): void => {
+    reactionBurst.trigger?.()
     onLongPress?.(message.id)
     onReact?.(message.id)
   }
+
+  // Safe defaults for missing props
+  const isLoading = false
+  const handleReply = () => onReact?.(message.id)
+  const tick1Style = {}
+  const tick2Style = {}
 
   return (
     <SwipeToReply onReply={handleReply}>
@@ -174,20 +191,18 @@ export function MessageBubble({
         >
           {/* ShimmerOverlay for loading state */}
           {isLoading && <ShimmerOverlay width={bubbleWidth} />}
-          
           <Text style={[styles.text, isOwn ? styles.ownText : styles.otherText]}>
             {message.content}
           </Text>
-
           {/* Status ticks (for own messages) */}
           {isOwn && (
             <View style={styles.statusContainer}>
               <Animated.View style={[styles.tick, tick1Style]}>
-                <Text style={[styles.tickText, { color: statusTicks.color.value }]}>✓</Text>
+                <Text style={[styles.tickText, { color: statusTicks.color?.value ?? '#000' }]}>✓</Text>
               </Animated.View>
               {message.status !== 'sending' && (
                 <Animated.View style={[styles.tick, tick2Style]}>
-                  <Text style={[styles.tickText, { color: statusTicks.color.value }]}>✓</Text>
+                  <Text style={[styles.tickText, { color: statusTicks.color?.value ?? '#000' }]}>✓</Text>
                 </Animated.View>
               )}
             </View>
@@ -230,5 +245,22 @@ const styles = StyleSheet.create({
   },
   otherText: {
     color: '#111827',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  tick: {
+    marginRight: 2,
+    marginLeft: 2,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tickText: {
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 })

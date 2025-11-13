@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useRef, useEffect } from 'react';
-import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { useUIConfig } from "@/hooks/use-ui-config";
 import { isTruthy } from '@petspark/shared';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
+import { getMinTouchTargetClasses } from '@/lib/design-token-utils';
 
 export interface SegmentedControlOption {
   label: string;
@@ -84,25 +85,7 @@ export function SegmentedControl({
     return () => resizeObserver.disconnect();
   }, [updateIndicator]);
 
-  const indicatorVariants: Variants = prefersReducedMotion
-    ? {
-        animate: {
-          x: indicatorPosition,
-          width: indicatorWidth,
-          transition: { duration: 0 },
-        },
-      }
-    : {
-        animate: {
-          x: indicatorPosition,
-          width: indicatorWidth,
-          transition: {
-            type: 'spring',
-            damping: springConfigs.smooth.damping,
-            stiffness: springConfigs.smooth.stiffness,
-          },
-        },
-      };
+  // Use style directly instead of Variants since MotionValue can't be used in Variants
 
   const handleOptionClick = useCallback(
     (optionValue: string) => {
@@ -121,9 +104,9 @@ export function SegmentedControl({
   );
 
   const sizes = {
-    sm: cn('px-2 py-1 min-h-[44px]', getTypographyClasses('caption')),
-    md: cn('px-3 py-1.5 min-h-[44px]', getTypographyClasses('body')),
-    lg: cn('px-4 py-2 min-h-[44px]', getTypographyClasses('body')),
+    sm: cn('px-2 py-1', getMinTouchTargetClasses(), getTypographyClasses('caption')),
+    md: cn('px-3 py-1.5', getMinTouchTargetClasses(), getTypographyClasses('body')),
+    lg: cn('px-4 py-2', getMinTouchTargetClasses(), getTypographyClasses('body')),
   };
 
   return (
@@ -138,15 +121,21 @@ export function SegmentedControl({
       )}
     >
       <motion.div
-        variants={indicatorVariants}
-        animate="animate"
         style={{
           x: indicatorPosition,
           width: indicatorWidth,
         }}
+        transition={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : {
+                type: 'spring',
+                damping: springConfigs.smooth.damping,
+                stiffness: springConfigs.smooth.stiffness,
+              }
+        }
         className={cn(
-          'absolute top-1 bottom-1 bg-(--background) rounded-lg shadow-sm',
-          prefersReducedMotion ? '' : 'transition-all duration-200'
+          'absolute top-1 bottom-1 bg-(--background) rounded-lg shadow-sm'
         )}
       />
       {options.map((option) => {

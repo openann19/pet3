@@ -2,25 +2,16 @@
 
 import type { ReactNode, ButtonHTMLAttributes, MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-  interpolate,
-  animate,
-} from '@petspark/motion';
-import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { getTypographyClasses } from '@/lib/typography';
+import { getMinTouchTargetClasses } from '@/lib/design-token-utils';
 
 const logger = createLogger('EnhancedButton');
 
@@ -56,7 +47,7 @@ export function EnhancedButton({
   disabled,
   ...props
 }: EnhancedButtonProps): React.JSX.Element {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedMotion();
   const hoverLift = useHoverLift({
     scale: reducedMotion ? 1 : 1.05,
     translateY: reducedMotion ? 0 : -4,
@@ -67,76 +58,72 @@ export function EnhancedButton({
   });
 
   // Glow effect
-  const glowOpacity = useSharedValue(0);
-  const glowProgress = useSharedValue(0);
+  const glowOpacity = useMotionValue(0);
+  const glowProgress = useMotionValue(0);
 
   // Loading spinner rotation
-  const loadingRotation = useSharedValue(0);
+  const loadingRotation = useMotionValue(0);
 
-  // Combined animation style
-  const combinedAnimatedStyle = useAnimatedStyle(() => {
-    const hoverScale = enableHoverLift ? hoverLift.scale.get() : 1;
-    const tapScale = enableBounceOnTap ? bounceOnTap.scale.get() : 1;
-    const hoverY = enableHoverLift ? hoverLift.translateY.get() : 0;
+  // Fallback motion values for when effects are disabled
+  const fallbackScale = useMotionValue(1);
+  const fallbackTranslateY = useMotionValue(0);
 
-    return {
-      transform: [{ scale: hoverScale * tapScale }, { translateY: hoverY }],
-    };
-  });
+  // Combined scale and translateY for hover and tap
+  const combinedScale = useTransform(
+    [
+      enableHoverLift ? hoverLift.scale : fallbackScale,
+      enableBounceOnTap ? bounceOnTap.scale : fallbackScale,
+    ],
+    ([hoverScale, tapScale]: number[]) => (hoverScale ?? 1) * (tapScale ?? 1)
+  );
 
-  // Glow animation style
-  const glowAnimatedStyle = useAnimatedStyle(() => {
-    if (!enableGlow) {
-      return { opacity: 0 };
-    }
+  const combinedTranslateY = enableHoverLift ? hoverLift.translateY : fallbackTranslateY;
 
-    const opacity = interpolate(
-      glowProgress.get(),
-      [0, 0.5, 1],
-      [0.3, 0.6, 0.3],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity: glowOpacity.get() * opacity,
-    };
+  // Glow animation opacity - interpolated from glowProgress
+  const glowAnimatedOpacity = useTransform(glowProgress, (value) => {
+    if (!enableGlow) return 0;
+    // Interpolate: [0, 0.5, 1] -> [0.3, 0.6, 0.3]
+    const progress = Math.max(0, Math.min(1, value));
+    const opacity = progress < 0.5 
+      ? 0.3 + (progress / 0.5) * 0.3 
+      : 0.6 - ((progress - 0.5) / 0.5) * 0.3;
+    return glowOpacity.get() * opacity;
   });
 
   // Loading spinner animation
   useEffect(() => {
-    if (loading) {
-      const timingTransition = withTiming(360, {
-        duration: 1000,
-        easing: (t) => t,
+    if (loading && !reducedMotion) {
+      void animate(loadingRotation, 360, {
+        duration: 1,
+        ease: 'linear',
+        repeat: Infinity,
+        repeatType: 'loop',
       });
-      const repeatTransition = withRepeat(timingTransition, -1, false);
-      animate(loadingRotation, repeatTransition.target, repeatTransition.transition);
     } else {
-      animate(loadingRotation, 0, { duration: 0 });
+      loadingRotation.set(0);
     }
-  }, [loading, loadingRotation]);
-
-  const loadingSpinnerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${loadingRotation.get()}deg` }],
-    };
-  });
+  }, [loading, loadingRotation, reducedMotion]);
 
   // Start glow animation when enabled
   useEffect(() => {
     if (enableGlow && !reducedMotion) {
-      const timingTransition = withTiming(1, {
-        duration: 2000,
-        easing: (t) => t,
+      void animate(glowProgress, 1, {
+        duration: 2,
+        ease: 'linear',
+        repeat: Infinity,
+        repeatType: 'reverse',
       });
-      const repeatTransition = withRepeat(timingTransition, -1, true);
-      animate(glowProgress, repeatTransition.target, repeatTransition.transition);
-      const opacityTransition = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      void animate(glowOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     } else {
-      const opacityTransition = withTiming(0, timingConfigs.fast);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
-      glowProgress.value = 0;
+      void animate(glowOpacity, 0, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+      glowProgress.set(0);
     }
   }, [enableGlow, reducedMotion, glowOpacity, glowProgress]);
 
@@ -157,11 +144,17 @@ export function EnhancedButton({
 
         // Trigger glow pulse on click
         if (enableGlow && !reducedMotion) {
-          const sequence = withSequence(
-            withSpring(1, springConfigs.bouncy),
-            withSpring(0.6, springConfigs.smooth)
-          );
-          animate(glowOpacity, sequence.target, sequence.transition);
+          void animate(glowOpacity, 1, {
+            type: 'spring',
+            damping: springConfigs.bouncy.damping,
+            stiffness: springConfigs.bouncy.stiffness,
+          }).then(() => {
+            void animate(glowOpacity, 0.6, {
+              type: 'spring',
+              damping: springConfigs.smooth.damping,
+              stiffness: springConfigs.smooth.stiffness,
+            });
+          });
         }
 
         onClick?.(e);
@@ -195,8 +188,11 @@ export function EnhancedButton({
     }
 
     if (enableGlow) {
-      const opacityTransition = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      void animate(glowOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
   }, [disabled, loading, reducedMotion, enableHoverLift, enableGlow, hoverLift, glowOpacity]);
 
@@ -210,8 +206,11 @@ export function EnhancedButton({
     }
 
     if (enableGlow) {
-      const opacityTransition = withSpring(0.3, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      void animate(glowOpacity, 0.3, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
   }, [disabled, loading, reducedMotion, enableHoverLift, enableGlow, hoverLift, glowOpacity]);
 
@@ -237,20 +236,16 @@ export function EnhancedButton({
   // Size styles with typography tokens
   const sizeClasses = useMemo(() => {
     const sizes = {
-      default: cn('h-11 px-4 py-2 min-h-[44px] min-w-[44px]', getTypographyClasses('body')),
-      sm: cn('h-9 px-3 py-1.5 rounded-md gap-1.5 min-h-[44px] min-w-[44px]', getTypographyClasses('caption')),
-      lg: cn('h-14 px-6 py-3 rounded-md min-h-[44px] min-w-[44px]', getTypographyClasses('h3')),
-      icon: 'size-11 min-w-[44px] min-h-[44px] p-0',
+      default: cn('h-11 px-4 py-2', getMinTouchTargetClasses(), getTypographyClasses('body')),
+      sm: cn('h-9 px-3 py-1.5 rounded-md gap-1.5', getMinTouchTargetClasses(), getTypographyClasses('caption')),
+      lg: cn('h-14 px-6 py-3 rounded-md', getMinTouchTargetClasses(), getTypographyClasses('h3')),
+      icon: cn('size-11 p-0', getMinTouchTargetClasses()),
     };
 
     return sizes[size] ?? sizes.default;
   }, [size]);
 
-  const combinedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
-  const glowStyleValue = useAnimatedStyleValue(glowAnimatedStyle);
-  const loadingStyleValue = useAnimatedStyleValue(loadingSpinnerStyle);
-
-  const isDisabled = disabled || loading;
+  const isDisabled = Boolean(disabled) || Boolean(loading);
 
   // Determine glow color based on variant
   const resolvedGlowColor = useMemo(() => {
@@ -271,8 +266,11 @@ export function EnhancedButton({
   }, [glowColor, variant]);
 
   return (
-    <AnimatedView
-      style={combinedStyleValue}
+    <motion.div
+      style={{
+        scale: combinedScale,
+        y: combinedTranslateY,
+      }}
       className="inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -296,20 +294,22 @@ export function EnhancedButton({
         {...props}
       >
         {enableGlow && (
-          <div
+          <motion.div
             className="absolute inset-0 pointer-events-none rounded-md"
             style={{
               backgroundColor: resolvedGlowColor,
-              ...glowStyleValue,
+              opacity: glowAnimatedOpacity,
             }}
           />
         )}
 
         <span className="relative z-10 flex items-center justify-center gap-2">
           {loading ? (
-            <div
+            <motion.div
               className="h-5 w-5 rounded-full border-2 border-current border-t-transparent"
-              style={loadingStyleValue}
+              style={{
+                rotate: loadingRotation,
+              }}
               aria-hidden="true"
             />
           ) : (
@@ -321,6 +321,6 @@ export function EnhancedButton({
           )}
         </span>
       </button>
-    </AnimatedView>
+    </motion.div>
   );
 }

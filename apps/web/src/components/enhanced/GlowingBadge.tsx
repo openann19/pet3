@@ -1,23 +1,14 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  interpolate,
-  animate,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useGlowPulse } from '@/effects/reanimated';
-import { createLogger } from '@/lib/logger';
+import { motion, useMotionValue, animate, useMotionValueEvent } from 'framer-motion';
+import React, { useMemo, useEffect, useState, memo } from 'react';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { cn } from '@/lib/utils';
-import { useUIConfig } from "@/hooks/use-ui-config";
-import { isTruthy } from '@petspark/shared';
-
-const logger = createLogger('GlowingBadge');
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { getSpacing, getColor } from '@/lib/design-tokens';
+import { getSpacingClassesFromConfig, getTypographyClasses } from '@/lib/design-token-utils';
+import { useTheme } from '@/hooks/useTheme';
+import { colorWithOpacity } from '@/hooks/useDesignTokens';
 
 export type GlowingBadgeVariant = 'primary' | 'secondary' | 'accent' | 'success' | 'warning';
 
@@ -30,20 +21,23 @@ export interface GlowingBadgeProps {
   'aria-label'?: string;
 }
 
-const VARIANT_STYLES: Record<GlowingBadgeVariant, string> = {
-  primary: 'bg-primary/10 text-primary border-primary/20',
-  secondary: 'bg-secondary/10 text-secondary border-secondary/20',
-  accent: 'bg-accent/10 text-accent border-accent/20',
-  success: 'bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400',
-  warning: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-400',
-};
-
-const VARIANT_GLOW_COLORS: Record<GlowingBadgeVariant, string> = {
-  primary: 'rgba(var(--primary), 0.6)',
-  secondary: 'rgba(var(--secondary), 0.6)',
-  accent: 'rgba(var(--accent), 0.6)',
-  success: 'rgba(34, 197, 94, 0.6)',
-  warning: 'rgba(234, 179, 8, 0.6)',
+// Variant styles will be computed dynamically with design tokens
+const getVariantStyles = (variant: GlowingBadgeVariant): string => {
+  const baseClasses = 'backdrop-blur-sm';
+  switch (variant) {
+    case 'primary':
+      return `${baseClasses} bg-primary/10 text-primary border-primary/20`;
+    case 'secondary':
+      return `${baseClasses} bg-secondary/10 text-secondary border-secondary/20`;
+    case 'accent':
+      return `${baseClasses} bg-accent/10 text-accent border-accent/20`;
+    case 'success':
+      return `${baseClasses} bg-success/10 text-success border-success/20`;
+    case 'warning':
+      return `${baseClasses} bg-warning/10 text-warning border-warning/20`;
+    default:
+      return `${baseClasses} bg-primary/10 text-primary border-primary/20`;
+  }
 };
 
 export function GlowingBadge({
@@ -54,101 +48,134 @@ export function GlowingBadge({
   className,
   'aria-label': ariaLabel,
 }: GlowingBadgeProps): JSX.Element {
-    const _uiConfig = useUIConfig();
-    const scale = useSharedValue(0.8);
-  const opacity = useSharedValue(0);
-  const pulseOpacity = useSharedValue(0.5);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const { theme } = useTheme();
+  const themeMode: 'light' | 'dark' = theme;
+  const glowProgress = useMotionValue(0);
+  // Use design token for initial glow radius (10px = spacing '2' which is 8px, so we use '2' * 1.25)
+  const initialGlowRadius = parseInt(getSpacing('2'), 10) * 1.25;
+  const maxGlowRadius = initialGlowRadius * 2;
+  const [glowRadius, setGlowRadius] = useState(initialGlowRadius);
 
-  const glowPulse = useGlowPulse({
-    duration: 2000,
-    intensity: 0.4,
-    enabled: glow,
-    color: VARIANT_GLOW_COLORS[variant],
-  });
+  // Get variant colors using design tokens
+  const variantGlowColor = useMemo(() => {
+    const colorKey: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' = 
+      variant === 'success' ? 'success' : 
+      variant === 'warning' ? 'warning' : 
+      variant;
+    const color = getColor(colorKey, themeMode);
+    return colorWithOpacity(color, 0.6);
+  }, [variant, themeMode]);
 
+  // Glow pulse animation
   useEffect(() => {
-    try {
-      const scaleTransition = withTiming(1, { duration: 300 });
-      animate(scale, scaleTransition.target, scaleTransition.transition);
-      const opacityTransition = withTiming(1, { duration: 300 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to initialize badge animation', err, { variant });
+    if (!glow || prefersReducedMotion) {
+      glowProgress.set(0);
+      setGlowRadius(0);
+      return;
     }
-  }, [scale, opacity, variant]);
 
-  useEffect(() => {
-    if (isTruthy(pulse)) {
-      try {
-        const sequence = withSequence(
-          withTiming(1, { duration: 1000 }),
-          withTiming(0.5, { duration: 1000 })
-        );
-        const repeatTransition = withRepeat(sequence, -1, true);
-        animate(pulseOpacity, repeatTransition.target, repeatTransition.transition);
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        logger.error('Failed to initialize pulse animation', err, { variant });
-      }
-    } else {
-      const opacityTransition = withTiming(1, { duration: 200 });
-      animate(pulseOpacity, opacityTransition.target, opacityTransition.transition);
-    }
-  }, [pulse, pulseOpacity, variant]);
-
-  const badgeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.get() }],
-      opacity: opacity.get(),
-    };
-  });
-
-  const pulseStyle = useAnimatedStyle(() => {
-    const opacityValue = interpolate(pulseOpacity.get(), [0.5, 1], [0.5, 1], {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
+    const animation = animate(glowProgress, [0, 0.5, 1], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
     });
-    return {
-      opacity: opacityValue,
+
+    return () => {
+      animation.stop();
     };
+  }, [glow, glowProgress, prefersReducedMotion]);
+
+  // Update glow radius reactively
+  useMotionValueEvent(glowProgress, 'change', (latest) => {
+    if (glow && !prefersReducedMotion) {
+      const radius = latest < 0.5 
+        ? initialGlowRadius + (latest * 2) * initialGlowRadius  // 0 -> 0.5: initial -> max
+        : maxGlowRadius - ((latest - 0.5) * 2) * initialGlowRadius; // 0.5 -> 1: max -> initial
+      setGlowRadius(radius);
+    }
   });
 
-  const variantStyles = useMemo<string>(() => VARIANT_STYLES[variant], [variant]);
+  const variantStyles = useMemo<string>(() => getVariantStyles(variant), [variant]);
 
-  const combinedStyle = useMemo(() => {
-    if (isTruthy(glow)) {
-      return {
-        ...badgeStyle,
-        ...glowPulse.animatedStyle,
-      };
-    }
-    return badgeStyle;
-  }, [badgeStyle, glow, glowPulse.animatedStyle]);
+  const badgeVariants = {
+    hidden: {
+      scale: 0.8,
+      opacity: 0,
+    },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: prefersReducedMotion
+        ? { duration: 0.1 }
+        : {
+            duration: motionDurations.smooth,
+            ease: [0.2, 0, 0, 1],
+          },
+    },
+  };
+
+  const pulseVariants = {
+    pulse: {
+      opacity: [0.5, 1, 0.5],
+      scale: [1, 1.1, 1],
+      transition: prefersReducedMotion
+        ? { duration: 0 }
+        : {
+            duration: 1.5,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          },
+    },
+    static: {
+      opacity: 1,
+      scale: 1,
+    },
+  };
 
   return (
-    <AnimatedView
-      style={combinedStyle}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={badgeVariants}
       className={cn(
-        'inline-flex items-center gap-1 px-3 py-1 rounded-full',
-        'text-xs font-semibold border backdrop-blur-sm',
+        'inline-flex items-center rounded-full border backdrop-blur-sm',
+        getSpacingClassesFromConfig({ gap: 'xs', paddingX: 'lg', paddingY: 'xs' }),
+        getTypographyClasses('caption'),
+        'font-semibold',
         variantStyles,
         className
       )}
       role="status"
       aria-label={ariaLabel}
+      style={
+        glow && !prefersReducedMotion && glowRadius > 0
+          ? {
+              boxShadow: `0 0 ${glowRadius}px ${variantGlowColor}`,
+              filter: `drop-shadow(0 0 ${glowRadius * 0.5}px ${variantGlowColor})`,
+            }
+          : undefined
+      }
     >
       {pulse && (
-        <AnimatedView
-          style={pulseStyle}
-          className="w-2 h-2 rounded-full bg-current"
+        <motion.div
+          variants={pulseVariants}
+          animate={pulse ? 'pulse' : 'static'}
+          className="rounded-full bg-current"
+          style={{
+            width: getSpacing('2'),
+            height: getSpacing('2'),
+          }}
           role="presentation"
           aria-hidden="true"
         >
           <span className="sr-only">Pulsing indicator</span>
-        </AnimatedView>
+        </motion.div>
       )}
       {children}
-    </AnimatedView>
+    </motion.div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedGlowingBadge = memo(GlowingBadge);

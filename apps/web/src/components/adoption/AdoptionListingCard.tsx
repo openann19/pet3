@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 
 interface AdoptionListingCardProps {
   listing: AdoptionListing;
@@ -70,7 +71,7 @@ function AdoptionListingCardComponent({
 
           {/* Favorite Button */}
           {onFavorite && (
-            <AnimatedView
+            <motion.div
               style={favoriteHover.animatedStyle}
               onMouseEnter={favoriteHover.handleMouseEnter}
               onMouseLeave={favoriteHover.handleMouseLeave}
@@ -91,7 +92,7 @@ function AdoptionListingCardComponent({
                   className={isFavorited ? 'text-destructive' : 'text-foreground'}
                 />
               </button>
-            </AnimatedView>
+            </motion.div>
           )}
 
           {/* Fee Badge */}

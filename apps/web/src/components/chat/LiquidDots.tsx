@@ -7,9 +7,7 @@
  */
 
 import React, { useEffect, useMemo } from 'react'
-import type { CSSProperties } from 'react'
-import { useAnimatedStyle, useSharedValue, withRepeat, withTiming, animate } from '@petspark/motion'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion'
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion'
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng'
 
@@ -36,24 +34,27 @@ export function LiquidDots({
   seed = 'liquid-dots'
 }: LiquidDotsProps) {
   const reduced = useReducedMotion()
-  const sharedTime = useSharedValue(0)
+  const sharedTime = useMotionValue(0)
   const duration = getReducedMotionDuration(1200, reduced)
 
   useEffect(() => {
-    sharedTime.value = 0
+    sharedTime.set(0)
 
     if (!enabled || reduced) {
       return () => {
-        sharedTime.value = 0
+        sharedTime.set(0)
       }
     }
 
-    const timingTransition = withTiming(1, { duration });
-    const repeatTransition = withRepeat(timingTransition, -1, false);
-    animate(sharedTime, repeatTransition.target, repeatTransition.transition);
+    void animate(sharedTime, 1, {
+      duration: duration / 1000,
+      ease: 'linear',
+      repeat: Infinity,
+      repeatType: 'loop',
+    })
 
     return () => {
-      sharedTime.value = 0
+      sharedTime.set(0)
     }
   }, [duration, enabled, reduced, sharedTime])
 
@@ -75,29 +76,29 @@ export function LiquidDots({
       style={{ flexDirection: 'row' }}
     >
       {dotConfigs.map((dot, index) => {
-        const animatedStyle = useAnimatedStyle(() => {
-          const time = sharedTime.get()
-          const translateY = reduced ? 0 : Math.sin(omega * time + dot.phase + index * 0.5) * dot.amplitude
-          const opacity = reduced ? 1 : 0.6 + 0.4 * Math.sin(omega * time + dot.phase + index * 0.5 + Math.PI / 3)
+        const translateY = useTransform(sharedTime, (time) => {
+          if (reduced) return 0
+          return Math.sin(omega * time + dot.phase + index * 0.5) * dot.amplitude
+        })
 
-          const style: CSSProperties = {
-            width: dotSize,
-            height: dotSize,
-            borderRadius: dotSize / 2,
-            backgroundColor: dotColor,
-            filter: 'blur(0.4px)',
-            boxShadow: `0 0 ${dotSize * 0.6}px ${dotColor}40`,
-            transform: [{ translateY }],
-            opacity
-          }
-
-          return style
-        }, [dot.amplitude, dot.phase, dotColor, dotSize, index, omega, reduced, sharedTime])
+        const opacity = useTransform(sharedTime, (time) => {
+          if (reduced) return 1
+          return 0.6 + 0.4 * Math.sin(omega * time + dot.phase + index * 0.5 + Math.PI / 3)
+        })
 
         return (
-          <AnimatedView
+          <motion.div
             key={`${dot.phase}-${index}`}
-            style={animatedStyle}
+            style={{
+              width: dotSize,
+              height: dotSize,
+              borderRadius: dotSize / 2,
+              backgroundColor: dotColor,
+              filter: 'blur(0.4px)',
+              boxShadow: `0 0 ${dotSize * 0.6}px ${dotColor}40`,
+              y: translateY,
+              opacity,
+            }}
           />
         )
       })}

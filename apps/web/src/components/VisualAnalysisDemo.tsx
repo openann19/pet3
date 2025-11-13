@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-} from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate, AnimatePresence, useTransform } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { Sparkle, Eye, ArrowRight } from '@phosphor-icons/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,79 +38,68 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   // Animated values
-  const iconRotate = useSharedValue(0);
-  const iconBoxShadow = useSharedValue(0);
-  const photoOpacity = useSharedValue(0);
-  const photoScale = useSharedValue(0.95);
-  const sparkleRotate = useSharedValue(0);
-  const dotScale = useSharedValue(1);
+  const iconRotate = useMotionValue(0);
+  const iconBoxShadow = useMotionValue(0);
+  const photoOpacity = useMotionValue(0);
+  const photoScale = useMotionValue(0.95);
+  const sparkleRotate = useMotionValue(0);
+  const dotScale = useMotionValue(1);
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${iconRotate.value}deg` }],
-    boxShadow: `0 0 ${20 + iconBoxShadow.value * 10}px rgba(245,158,11,${0.3 + iconBoxShadow.value * 0.2})`,
-  })) as AnimatedStyle;
-
-  const photoStyle = useAnimatedStyle(() => ({
-    opacity: photoOpacity.value,
-    transform: [{ scale: photoScale.value }],
-  })) as AnimatedStyle;
-
-  const sparkleStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${sparkleRotate.value}deg` }],
-  })) as AnimatedStyle;
-
-  const dotStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: dotScale.value }],
-  })) as AnimatedStyle;
-
-  const promptPresence = useAnimatePresence({
-    isVisible: !showResult && !analyzing,
-    enterTransition: 'slideUp',
-    exitTransition: 'slideDown',
-  });
-
-  const analyzingPresence = useAnimatePresence({
-    isVisible: analyzing,
-    enterTransition: 'slideUp',
-    exitTransition: 'slideDown',
-  });
-
-  const resultPresence = useAnimatePresence({
-    isVisible: showResult,
-    enterTransition: 'scale',
-    exitTransition: 'fade',
+  const iconBoxShadowValue = useTransform(iconBoxShadow, (value) => {
+    const radius = 20 + value * 10;
+    const opacity = 0.3 + value * 0.2;
+    return `0 0 ${radius}px rgba(245,158,11,${opacity})`;
   });
 
   useEffect(() => {
-    iconRotate.value = withRepeat(withTiming(360, { duration: 2000 }), -1, false);
-    iconBoxShadow.value = withRepeat(
-      withSequence(withTiming(1, { duration: 1000 }), withTiming(0, { duration: 1000 })),
-      -1,
-      true
-    );
-    photoOpacity.value = withTiming(1, { duration: 300 });
-    photoScale.value = withTiming(1, { duration: 300 });
-  }, [selectedIndex, iconRotate, iconBoxShadow, photoOpacity, photoScale]);
-
-  useEffect(() => {
-    if (analyzing) {
-      sparkleRotate.value = withRepeat(withTiming(360, { duration: 1000 }), -1, false);
-      dotScale.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 500 }),
-          withTiming(1.5, { duration: 500 }),
-          withTiming(1, { duration: 500 })
-        ),
-        -1,
-        false
-      );
-    } else {
-      sparkleRotate.value = 0;
-      dotScale.value = 1;
+    if (reducedMotion) {
+      iconRotate.set(0);
+      iconBoxShadow.set(0);
+      photoOpacity.set(1);
+      photoScale.set(1);
+      return;
     }
-  }, [analyzing, sparkleRotate, dotScale]);
+
+    void animate(iconRotate, 360, {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'linear',
+    });
+    void animate(iconBoxShadow, [1, 0], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+    void animate(photoOpacity, 1, { duration: 0.3 });
+    void animate(photoScale, 1, { duration: 0.3 });
+  }, [selectedIndex, iconRotate, iconBoxShadow, photoOpacity, photoScale, reducedMotion]);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      sparkleRotate.set(0);
+      dotScale.set(1);
+      return;
+    }
+
+    if (analyzing) {
+      void animate(sparkleRotate, 360, {
+        duration: 1,
+        repeat: Infinity,
+        ease: 'linear',
+      });
+      void animate(dotScale, [1, 1.5, 1], {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+    } else {
+      sparkleRotate.set(0);
+      dotScale.set(1);
+    }
+  }, [analyzing, sparkleRotate, dotScale, reducedMotion]);
 
   const currentPet = DEMO_PETS[selectedIndex];
   if (!currentPet) return null;
@@ -141,12 +123,15 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
       <div className="flex items-start gap-4 mb-6">
-        <AnimatedView
-          style={iconStyle}
-          className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0"
+        <motion.div
+          style={{
+            rotate: iconRotate,
+            boxShadow: iconBoxShadowValue,
+          }}
+          className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0"
         >
           <Eye size={24} weight="fill" className="text-white" />
-        </AnimatedView>
+        </motion.div>
         <div className="flex-1">
           <h3 className="text-xl font-bold mb-1">AI Visual Analysis Demo</h3>
           <p className="text-sm text-muted-foreground">
@@ -157,9 +142,12 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <AnimatedView
+          <motion.div
             key={selectedIndex}
-            style={photoStyle}
+            style={{
+              opacity: photoOpacity,
+              scale: photoScale,
+            }}
             className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-4"
           >
             <img src={currentPet.photo} alt="Demo pet" className="w-full h-full object-cover" />
@@ -168,7 +156,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
                 Sample {selectedIndex + 1}/{DEMO_PETS.length}
               </Badge>
             </div>
-          </AnimatedView>
+          </motion.div>
 
           <div className="flex gap-2">
             <Button
@@ -178,9 +166,13 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
             >
               {analyzing ? (
                 <>
-                  <AnimatedView style={sparkleStyle}>
+                  <motion.div
+                    style={{
+                      rotate: sparkleRotate,
+                    }}
+                  >
                     <Sparkle size={18} weight="fill" />
-                  </AnimatedView>
+                  </motion.div>
                   <span className="ml-2">Analyzing...</span>
                 </>
               ) : (
@@ -197,59 +189,81 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
         </div>
 
         <div>
-          {promptPresence.shouldRender && !showResult && !analyzing && (
-            <AnimatedView
-              style={promptPresence.animatedStyle}
-              className="flex items-center justify-center h-full text-center p-8"
-            >
-              <div>
-                <Eye size={48} className="text-muted-foreground/30 mx-auto mb-4" weight="duotone" />
-                <p className="text-muted-foreground">
-                  Click "Analyze This Photo" to see AI in action
-                </p>
-              </div>
-            </AnimatedView>
-          )}
-
-          {analyzingPresence.shouldRender && analyzing && (
-            <AnimatedView style={analyzingPresence.animatedStyle} className="space-y-4">
-              <Card className="p-4 bg-background/50">
-                <div className="flex items-center gap-3 mb-4">
-                  <AnimatedView style={sparkleStyle}>
-                    <Sparkle size={24} weight="fill" className="text-primary" />
-                  </AnimatedView>
-                  <div>
-                    <h4 className="font-semibold">Analyzing photo...</h4>
-                    <p className="text-xs text-muted-foreground">Processing visual features</p>
-                  </div>
+          <AnimatePresence mode="wait">
+            {!showResult && !analyzing && (
+              <motion.div
+                key="prompt"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex items-center justify-center h-full text-center p-8"
+              >
+                <div>
+                  <Eye size={48} className="text-muted-foreground/30 mx-auto mb-4" weight="duotone" />
+                  <p className="text-muted-foreground">
+                    Click "Analyze This Photo" to see AI in action
+                  </p>
                 </div>
+              </motion.div>
+            )}
 
-                <div className="space-y-2">
-                  {[
-                    'Detecting breed...',
-                    'Estimating age...',
-                    'Analyzing personality...',
-                    'Calculating confidence...',
-                  ].map((text, idx) => (
-                    <div
-                      key={text}
-                      className="flex items-center gap-2 text-sm animate-in fade-in slide-in-from-left duration-300"
-                      style={{ animationDelay: `${idx * 400}ms` }}
+            {analyzing && (
+              <motion.div
+                key="analyzing"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-4"
+              >
+                <Card className="p-4 bg-background/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <motion.div
+                      style={{
+                        rotate: sparkleRotate,
+                      }}
                     >
-                      <AnimatedView
-                        style={dotStyle}
-                        className="w-1.5 h-1.5 rounded-full bg-primary"
-                      />
-                      {text}
+                      <Sparkle size={24} weight="fill" className="text-primary" />
+                    </motion.div>
+                    <div>
+                      <h4 className="font-semibold">Analyzing photo...</h4>
+                      <p className="text-xs text-muted-foreground">Processing visual features</p>
                     </div>
-                  ))}
-                </div>
-              </Card>
-            </AnimatedView>
-          )}
+                  </div>
 
-          {resultPresence.shouldRender && showResult && (
-            <AnimatedView style={resultPresence.animatedStyle} className="h-full">
+                  <div className="space-y-2">
+                    {[
+                      'Detecting breed...',
+                      'Estimating age...',
+                      'Analyzing personality...',
+                      'Calculating confidence...',
+                    ].map((text, idx) => (
+                      <div
+                        key={text}
+                        className="flex items-center gap-2 text-sm animate-in fade-in slide-in-from-left duration-300"
+                        style={{ animationDelay: `${idx * 400}ms` }}
+                      >
+                        <motion.div
+                          style={{
+                            scale: dotScale,
+                          }}
+                          className="w-1.5 h-1.5 rounded-full bg-primary"
+                        />
+                        {text}
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+
+            {showResult && (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="h-full"
+              >
               <Card className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold text-lg">Analysis Results</h4>
@@ -304,8 +318,9 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
                   </div>
                 </div>
               </Card>
-            </AnimatedView>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </Card>

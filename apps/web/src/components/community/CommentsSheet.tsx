@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,50 +18,66 @@ import type { Comment } from '@/lib/community-types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { ArrowBendUpLeft, DotsThree, Heart, PaperPlaneRight, X } from '@phosphor-icons/react';
+
 import { formatDistanceToNow } from 'date-fns';
-import { Presence, motion, MotionView } from '@petspark/motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const logger = createLogger('CommentsSheet');
 
 function EmptyCommentsView({ t }: { t: ReturnType<typeof useApp>['t'] }) {
-  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
-  const scale = useSharedValue(1)
+  const reducedMotion = useReducedMotion();
+  const entryVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reducedMotion
+        ? { duration: 0.1 }
+        : {
+            ...springConfigs.smooth,
+            duration: motionDurations.smooth,
+          },
+    },
+  };
 
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.1, { duration: 1000 }),
-        withTiming(1, { duration: 1000 })
-      ),
-      -1,
-      false
-    )
-  }, [scale])
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
-  })) as AnimatedStyle
+  const pulseVariants = {
+    pulse: {
+      scale: [1, 1.1, 1],
+      transition: reducedMotion
+        ? { duration: 0 }
+        : {
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          },
+    },
+  };
 
   return (
-    <AnimatedView
-      style={entry.animatedStyle}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={entryVariants}
       className="text-center py-16"
     >
-      <AnimatedView
-        style={pulseStyle}
+      <motion.div
+        variants={pulseVariants}
+        animate={reducedMotion ? undefined : 'pulse'}
         className="text-6xl mb-4"
       >
         💬
-      </AnimatedView>
+      </motion.div>
       <h3 className="text-lg font-semibold text-foreground mb-2">
         {t.community?.noComments || 'No comments yet'}
       </h3>
       <p className="text-sm text-muted-foreground">
         {t.community?.beFirst || 'Be the first to share your thoughts!'}
       </p>
-    </AnimatedView>
+    </motion.div>
   )
 }
 
@@ -78,14 +96,30 @@ function CommentListItem({
   replies: Comment[]
   postAuthor: string
 }) {
-  const entry = useEntryAnimation({
-    initialY: 20,
-    initialOpacity: 0,
-    delay: index * 50
-  })
+  const reducedMotion = useReducedMotion();
+  const staggerDelay = reducedMotion ? 0 : index * 0.03;
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reducedMotion
+        ? { duration: 0.1 }
+        : {
+            ...springConfigs.smooth,
+            duration: motionDurations.smooth,
+            delay: staggerDelay,
+          },
+    },
+  };
 
   return (
-    <AnimatedView style={entry.animatedStyle}>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
+    >
       <CommentItem 
         comment={comment}
         onReply={onReply}
@@ -108,7 +142,7 @@ function CommentListItem({
           })}
         </div>
       )}
-    </AnimatedView>
+    </motion.div>
   )
 }
 
@@ -260,34 +294,11 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                 </div>
               ))
             ) : comments.length === 0 ? (
-              <MotionView
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
-              >
-                <MotionView
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="text-6xl mb-4"
-                >
-                  💬
-                </MotionView>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {t.community?.noComments || 'No comments yet'}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t.community?.beFirst || 'Be the first to share your thoughts!'}
-                </p>
-              </MotionView>
+              <EmptyCommentsView t={t} />
             ) : (
-              <Presence visible={topLevelComments.length > 0}>
-                {topLevelComments.map((comment, index) => {
+              <AnimatePresence>
+                {topLevelComments.length > 0 &&
+                  topLevelComments.map((comment, index) => {
                   const commentId = getCommentId(comment);
                   if (!commentId) return null;
                   return (
@@ -302,15 +313,15 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                     />
                   );
                 })}
-              </Presence>
+              </AnimatePresence>
             )}
           </div>
         </ScrollArea>
 
         <div className="shrink-0 border-t border-border bg-card/50 backdrop-blur-xl">
-          <Presence visible={!!replyingTo}>
+          <AnimatePresence>
             {replyingTo && (
-              <MotionView
+              <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -333,17 +344,9 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                     {t.common?.cancel || 'Cancel'}
                   </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelReply}
-                  className="h-7 text-xs"
-                >
-                  {t.common?.cancel || 'Cancel'}
-                </Button>
-              </div>
-            </AnimatedView>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="px-6 py-4">
             <div className="flex gap-3 items-end">
@@ -367,12 +370,12 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                 className="h-11 w-11 shrink-0"
               >
                 {submitting ? (
-                  <MotionView
+                  <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   >
                     <PaperPlaneRight size={20} weight="bold" />
-                  </MotionView>
+                  </motion.div>
                 ) : (
                   <PaperPlaneRight size={20} weight="bold" />
                 )}
@@ -412,11 +415,27 @@ function CommentThread({
 
   const replies = getReplies(commentId);
 
+  const reducedMotion = useReducedMotion();
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reducedMotion
+        ? { duration: 0.1 }
+        : {
+            ...springConfigs.smooth,
+            duration: motionDurations.smooth,
+            delay: index * 0.05,
+          },
+    },
+  };
+
   return (
-    <MotionView
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
     >
       <CommentItem
         comment={comment}
@@ -441,7 +460,7 @@ function CommentThread({
           })}
         </div>
       )}
-    </MotionView>
+    </motion.div>
   );
 }
 
@@ -453,45 +472,43 @@ interface CommentItemProps {
 }
 
 function RotatingIcon() {
-  const rotate = useSharedValue(0)
-
+  const [angle, setAngle] = useState(0);
   useEffect(() => {
-    rotate.value = withRepeat(
-      withTiming(360, { duration: 1000 }),
-      -1,
-      false
-    )
-  }, [rotate])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${String(rotate.value)}deg` }]
-  })) as AnimatedStyle
+    let active = true;
+    let frame: number;
+    const animateRotate = () => {
+      setAngle((prev) => (prev + 6) % 360);
+      if (active) frame = requestAnimationFrame(animateRotate);
+    };
+    frame = requestAnimationFrame(animateRotate);
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+  const animatedStyle = { transform: `rotate(${angle}deg)` };
 
   return (
-    <AnimatedView style={animatedStyle}>
+    <motion.div style={animatedStyle}>
       <PaperPlaneRight size={20} weight="bold" />
-    </AnimatedView>
+    </motion.div>
   )
 }
 
 function CharacterCount({ count }: { count: number }) {
-  const opacity = useSharedValue(0)
-
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    opacity.value = withTiming(1, timingConfigs.fast)
-  }, [opacity])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value
-  })) as AnimatedStyle
+    setVisible(true);
+  }, []);
+  const animatedStyle = { opacity: visible ? 1 : 0, transition: 'opacity 0.2s' };
 
   return (
-    <AnimatedView
+    <motion.div
       style={animatedStyle}
       className="text-xs text-muted-foreground mt-2 text-right"
     >
       {count}/500
-    </AnimatedView>
+    </motion.div>
   )
 }
 
@@ -545,7 +562,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
 
         <div className="flex items-center gap-4 mt-2 ml-4">
           <button onClick={handleLike} className="flex items-center gap-1 group/like focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
-            <MotionView whileTap={{ scale: 0.85 }}>
+            <motion.div whileTap={{ scale: 0.85 }}>
               <Heart
                 size={16}
                 weight={isLiked ? 'fill' : 'regular'}
@@ -553,7 +570,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
                   String(isLiked ? 'text-red-500' : 'text-muted-foreground group-hover/like:text-red-500')
                 }`}
               />
-            </AnimatedView>
+            </motion.div>
             {likesCount > 0 && (
               <span className="text-xs font-medium text-muted-foreground">{likesCount}</span>
             )}

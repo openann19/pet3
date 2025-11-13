@@ -6,7 +6,8 @@
  */
 
 import { useApp } from '@/contexts/AppContext';
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useAnimatedStyleValue, type AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { motion } from 'framer-motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal';
 import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt';
@@ -430,13 +431,12 @@ function MessageBubble({
   };
 
   const getStatusIcon = () => {
-    const statusStyle = deliveryTransition.animatedStyle as AnimatedStyle;
 
     if (message.status === 'sending') {
       return (
-        <AnimatedView style={statusStyle}>
+        <motion.div style={statusStyleValue}>
           <Clock size={12} className="text-muted-foreground" />
-        </AnimatedView>
+        </motion.div>
       );
     }
     if (message.status === 'failed') {
@@ -452,22 +452,22 @@ function MessageBubble({
     }
     if (message.status === 'read') {
       return (
-        <AnimatedView style={statusStyle}>
+        <motion.div style={statusStyleValue}>
           <Checks size={12} className="text-primary" />
-        </AnimatedView>
+        </motion.div>
       );
     }
     if (message.status === 'delivered') {
       return (
-        <AnimatedView style={statusStyle}>
+        <motion.div style={statusStyleValue}>
           <Checks size={12} className="text-muted-foreground" />
-        </AnimatedView>
+        </motion.div>
       );
     }
     return (
-      <AnimatedView style={statusStyle}>
+          <motion.div style={statusStyleValue}>
         <Check size={12} className="text-muted-foreground" />
-      </AnimatedView>
+          </motion.div>
     );
   };
 
@@ -575,6 +575,14 @@ function MessageBubble({
     };
   });
 
+  // Convert animated styles to CSS
+  const statusStyleValue = useAnimatedStyleValue(deliveryTransition.animatedStyle as AnimatedStyle);
+  const contextMenuStyleValue = useAnimatedStyleValue(contextMenuStyle);
+  const reactionsPickerStyleValue = useAnimatedStyleValue(reactionsPickerStyle);
+  const combinedAnimatedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
+  const combinedGlowStyleValue = useAnimatedStyleValue(combinedGlowStyle);
+  const combinedBackgroundStyleValue = useAnimatedStyleValue(combinedBackgroundStyle);
+
   if (isDeleting && roomType === 'group' && !isOwn) {
     return (
       <>
@@ -604,8 +612,8 @@ function MessageBubble({
           handleLongPress();
         }}
       >
-        <AnimatedView
-          style={combinedAnimatedStyle as AnimatedStyle}
+        <motion.div
+          style={combinedAnimatedStyleValue}
           className={cn(
             'relative group px-3 py-2 rounded-2xl shadow-sm max-w-[78%]',
             'text-sm leading-relaxed wrap-break-word',
@@ -624,18 +632,18 @@ function MessageBubble({
           onTouchEnd={handlePress}
           onTouchCancel={handlePressOut}
         >
-          <AnimatedView
-            style={combinedGlowStyle as AnimatedStyle}
+          <motion.div
+            style={combinedGlowStyleValue}
             className="absolute inset-0 rounded-2xl pointer-events-none"
           >
             <div />
-          </AnimatedView>
-          <AnimatedView
-            style={combinedBackgroundStyle as AnimatedStyle}
+          </motion.div>
+          <motion.div
+            style={combinedBackgroundStyleValue}
             className="absolute inset-0 rounded-2xl pointer-events-none"
           >
             <div />
-          </AnimatedView>
+          </motion.div>
           {/* Message Content */}
           {message.type === 'text' && (
             <BubbleWrapperGodTier
@@ -664,15 +672,15 @@ function MessageBubble({
                 {isAIMessage && typingReveal.revealedText.length > 0 ? (
                   <AnimatedAIWrapper enabled={true}>
                     <>
-                      <AnimatedView style={typingReveal.animatedStyle as AnimatedStyle}>
+                      <motion.div style={useAnimatedStyleValue(typingReveal.animatedStyle as AnimatedStyle)}>
                         {typingReveal.revealedText}
-                      </AnimatedView>
+                      </motion.div>
                       {!typingReveal.isComplete && (
-                        <AnimatedView style={typingReveal.cursorStyle as AnimatedStyle}>
+                        <motion.div style={useAnimatedStyleValue(typingReveal.cursorStyle as AnimatedStyle)}>
                           <span className="inline-block w-0.5 h-4 bg-current ml-1 animate-pulse">
                             |
                           </span>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                     </>
                   </AnimatedAIWrapper>
@@ -735,13 +743,13 @@ function MessageBubble({
               <Waveform size={20} />
               <div className="flex-1 h-8 bg-muted/50 rounded-full flex items-center gap-1 px-2">
                 {voiceWaveform.animatedStyles.map((style, index) => (
-                  <AnimatedView
+                  <motion.div
                     key={index}
-                    style={style as AnimatedStyle}
+                    style={useAnimatedStyleValue(style as AnimatedStyle)}
                     className="bg-primary w-1 rounded-full"
                   >
                     <div />
-                  </AnimatedView>
+                  </motion.div>
                 ))}
               </div>
               <span className="text-xs">
@@ -860,12 +868,12 @@ function MessageBubble({
                 );
               }
             })()}
-        </AnimatedView>
+        </motion.div>
 
         {/* Context Menu */}
         {showContextMenu && (
-          <AnimatedView
-            style={contextMenuStyle}
+          <motion.div
+            style={contextMenuStyleValue}
             className={cn(
               'absolute z-50 bg-card border border-border rounded-lg shadow-lg p-1',
               'flex flex-col gap-1 min-w-40',
@@ -920,13 +928,13 @@ function MessageBubble({
                 <span>{t.chat?.delete || 'Delete'}</span>
               </button>
             )}
-          </AnimatedView>
+          </motion.div>
         )}
 
         {/* Reactions Picker */}
         {showReactions && (
-          <AnimatedView
-            style={reactionsPickerStyle}
+          <motion.div
+            style={reactionsPickerStyleValue}
             className={cn(
               'absolute z-50 bg-card border border-border rounded-full shadow-lg p-2',
               'flex items-center gap-2',
@@ -944,7 +952,7 @@ function MessageBubble({
                 <span className="text-xl">{type}</span>
               </button>
             ))}
-          </AnimatedView>
+          </motion.div>
         )}
       </div>
 

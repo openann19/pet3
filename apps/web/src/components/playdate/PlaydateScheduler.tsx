@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -228,12 +229,16 @@ export default function PlaydateScheduler({
       const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
         playdate.location.address
       )}`;
-      window.open(searchUrl, '_blank');
+      if (typeof window !== 'undefined') {
+        window.open(searchUrl, '_blank');
+      }
       return;
     }
 
     const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${playdate.location.lat},${playdate.location.lng}`;
-    window.open(directionsUrl, '_blank');
+    if (typeof window !== 'undefined') {
+      window.open(directionsUrl, '_blank');
+    }
     haptics.success();
   }, []);
 
@@ -272,7 +277,7 @@ export default function PlaydateScheduler({
   const createFormPresence = useAnimatePresence({ isVisible: showCreateForm })
 
   return (
-    <AnimatedView
+    <motion.div
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
       style={containerEntry.animatedStyle}
     >
@@ -494,8 +499,9 @@ export default function PlaydateScheduler({
                             </Button>
                           </div>
                         </div>
-                    </AnimatedView>
-                  )}
+                      </MotionView>
+                    )}
+                  </Presence>
 
                     {matchPlaydates.filter(
                       (p) => p.status !== 'completed' && p.status !== 'cancelled'
@@ -517,7 +523,7 @@ export default function PlaydateScheduler({
                             const isPastDate = isPast(new Date(playdate.date));
 
                             return (
-                              <AnimatedView
+                              <motion.div
                                 key={playdate.id}
                                 className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
                                 style={cardEntry.animatedStyle}
@@ -614,7 +620,7 @@ export default function PlaydateScheduler({
                                     </Button>
                                   </div>
                                 </div>
-                              </MotionView>
+                              </motion.div>
                             );
                           })}
                       </div>
@@ -651,7 +657,7 @@ export default function PlaydateScheduler({
                           })
                           
                           return (
-                            <AnimatedView
+                            <motion.div
                               key={playdate.id}
                               className="p-4 rounded-lg border bg-card opacity-75"
                               style={historyCardEntry.animatedStyle}
@@ -677,7 +683,7 @@ export default function PlaydateScheduler({
                               <MapPin size={14} />
                               {playdate.location.name}
                             </div>
-                          </AnimatedView>
+                          </motion.div>
                           )
                         })}
                     </div>
@@ -724,6 +730,6 @@ export default function PlaydateScheduler({
           </Suspense>
         </ErrorBoundary>
       )}
-    </MotionView>
+    </motion.div>
   );
 }

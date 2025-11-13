@@ -4,6 +4,8 @@ import { useRef, useEffect } from 'react';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { useFeatureFlags } from '@/config/feature-flags';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { isBrowser } from '@/utils/ssr-safe';
+import { getMotionDuration } from '@/lib/design-tokens';
 
 /**
  * GlowTrail Component
@@ -18,15 +20,21 @@ export default function GlowTrail() {
   const { enableGlowTrail } = useFeatureFlags();
 
   useEffect(() => {
-    if (!enableGlowTrail || reducedMotion) {
+    if (!enableGlowTrail || reducedMotion || !isBrowser()) {
       return;
     }
 
-    const el = r.current!;
+    const el = r.current;
+    if (!el) return;
+
     const pts: { x: number; y: number; el: HTMLDivElement }[] = [];
     const pool: HTMLDivElement[] = [];
 
+    // Use motion duration token for fade timeout
+    const fadeDuration = Number.parseInt(getMotionDuration('fast').replace('ms', ''), 10) || 200;
+
     const mk = () => {
+      if (!isBrowser() || typeof document === 'undefined') return null;
       const d = document.createElement('div');
       d.className = 'pointer-events-none fixed w-3 h-3 rounded-full blur-[6px] bg-primary/40';
       document.body.appendChild(d);
@@ -35,6 +43,7 @@ export default function GlowTrail() {
 
     const onMove = (e: MouseEvent) => {
       const d = pool.pop() ?? mk();
+      if (!d) return;
       d.style.left = `${e.clientX - 6}px`;
       d.style.top = `${e.clientY - 6}px`;
       d.style.opacity = '1';
@@ -44,7 +53,7 @@ export default function GlowTrail() {
       setTimeout(() => {
         d.style.opacity = '0';
         pool.push(d);
-      }, 200);
+      }, fadeDuration);
 
       if (pts.length > 40) {
         const removed = pts.shift();

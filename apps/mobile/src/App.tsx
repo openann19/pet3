@@ -1,3 +1,4 @@
+import { AgeVerification, isAgeVerified } from './components/compliance'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { OfflineIndicator } from './components/OfflineIndicator'
 import { AppNavigator } from './navigation/AppNavigator'
@@ -5,6 +6,7 @@ import { QueryProvider } from './providers/QueryProvider'
 import { colors } from './theme/colors'
 import { initBackgroundUploads } from './utils/background-uploads'
 import { createLogger } from './utils/logger'
+import { initializeSecurity } from './utils/security-init'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -31,21 +33,28 @@ export default function App(): React.JSX.Element {
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null)
 
   useEffect(() => {
+    // Initialize security
+    initializeSecurity({
+      allowEmulator: __DEV__,
+      allowDevMode: __DEV__,
+      strictMode: false,
+    }).catch((error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error))
+      logger.error('Failed to initialize security', err)
+    })
+
     initBackgroundUploads().catch((error: unknown) => {
       const err = error instanceof Error ? error : new Error(String(error))
       logger.error('Failed to initialize background uploads', err)
     })
 
     // Check age verification
-    isAgeVerified().then((verified) => {
+    isAgeVerified().then((verified: boolean) => {
       setAgeVerified(verified)
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       logger.warn('Failed to check age verification', { error })
       setAgeVerified(true) // Allow access if check fails
     })
-
-    // Initialize error tracking
-    errorTracking.setUserContext('anonymous')
   }, [])
 
   // Show age verification if not verified
@@ -54,7 +63,7 @@ export default function App(): React.JSX.Element {
       <ErrorBoundary>
         <SafeAreaProvider>
           <AgeVerification
-            onVerified={(verified) => setAgeVerified(verified)}
+            onVerified={(verified: boolean) => setAgeVerified(verified)}
             requiredAge={13}
           />
         </SafeAreaProvider>
@@ -64,7 +73,7 @@ export default function App(): React.JSX.Element {
 
   // Show loading while checking age verification
   if (ageVerified === null) {
-    return null // Or show a loading screen
+    return <></>
   }
 
   return (

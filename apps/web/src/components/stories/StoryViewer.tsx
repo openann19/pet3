@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -29,11 +30,10 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/reanimated';
-import * as Reanimated from '@petspark/motion';
-import { interpolate, Extrapolation } from '@petspark/motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMotionValue, useTransform } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useCallback, useEffect, useRef, useState, memo } from 'react';
 import { toast } from 'sonner';
 import SaveToHighlightDialog from './SaveToHighlightDialog';
 
@@ -70,7 +70,8 @@ export default function StoryViewer({
   const progressIntervalRef = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaContainerRef = useRef<HTMLDivElement>(null);
-  const swipeProgress = Reanimated.useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const swipeProgressMotion = useMotionValue(0);
 
   const currentStory = stories[currentIndex];
   const isOwn = currentStory?.userId === currentUserId;
@@ -161,24 +162,20 @@ export default function StoryViewer({
     swipeThreshold: 50,
   });
 
-  const swipeOpacityStyle = Reanimated.useAnimatedStyle(() => {
-    const opacity = interpolate(
-      swipeProgress.value,
-      [-1, 0, 1],
-      [0.5, 1, 0.5],
-      Extrapolation.CLAMP
-    );
-    return { opacity };
+  // Calculate swipe progress from gesture state (normalize swipeDistance to -1 to 1 range)
+  const swipeProgressValue = Math.max(-1, Math.min(1, gestureState.swipeDistance / 100));
+  
+  // Update motion value when gesture state changes
+  useEffect(() => {
+    swipeProgressMotion.set(swipeProgressValue);
+  }, [swipeProgressValue, swipeProgressMotion]);
+
+  const swipeOpacity = useTransform(swipeProgressMotion, [-1, 0, 1], [0.5, 1, 0.5], {
+    clamp: true,
   });
 
-  const swipeScaleStyle = Reanimated.useAnimatedStyle(() => {
-    const scale = interpolate(
-      swipeProgress.value,
-      [-1, 0, 1],
-      [0.95, 1, 0.95],
-      Extrapolation.CLAMP
-    );
-    return { transform: [{ scale }] };
+  const swipeScale = useTransform(swipeProgressMotion, [-1, 0, 1], [0.95, 1, 0.95], {
+    clamp: true,
   });
 
   const startProgress = useCallback(() => {
@@ -189,6 +186,7 @@ export default function StoryViewer({
     const duration = currentStory?.duration || 5;
     const interval = 50;
 
+    if (typeof window === 'undefined') return;
     progressIntervalRef.current = window.setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + (interval / (duration * 1000)) * 100;
@@ -340,7 +338,7 @@ export default function StoryViewer({
           .share({
             title: `Story by ${currentStory.userName}`,
             text: currentStory.caption || '',
-            url: `${window.location.origin}/stories/${currentStory.id}`,
+            url: typeof window !== 'undefined' ? `${window.location.origin}/stories/${currentStory.id}` : '',
           })
           .catch(() => {
             // Share cancelled
@@ -390,19 +388,14 @@ export default function StoryViewer({
     transition: transitionConfig,
   });
 
-  const mediaContainerStyle = Reanimated.useAnimatedStyle(() => {
-    const opacity = gestureState.isSwiping ? 0.5 : 1;
-    const scale = gestureState.isSwiping ? 0.95 : gestureState.pinchScale;
-    return {
-      opacity,
-      transform: [{ scale }],
-    };
-  });
+  // Media container style - using regular state values directly
+  const mediaContainerOpacity = gestureState.isSwiping ? 0.5 : 1;
+  const mediaContainerScale = gestureState.isSwiping ? 0.95 : gestureState.pinchScale;
 
   if (!currentStory) return null;
 
   return (
-    <AnimatedView
+    <motion.div
       style={viewerEntry.animatedStyle}
       className="fixed inset-0 z-100 bg-black"
       role="dialog"
@@ -427,7 +420,7 @@ export default function StoryViewer({
                 aria-valuemax={100}
                 aria-label={`Story ${String(idx + 1 ?? '')} of ${String(stories.length ?? '')}`}
               >
-                <AnimatedView
+                <motion.div
                   className="h-full bg-white"
                   style={{
                     width:
@@ -540,20 +533,25 @@ export default function StoryViewer({
         </div>
 
         {/* Media container with pinch-zoom support */}
-        <AnimatedView
+        <motion.div
           ref={mediaContainerRef}
           className="relative w-full h-full max-w-2xl mx-auto touch-none"
-          style={[mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]}
+          style={{
+            opacity: reducedMotion
+              ? mediaContainerOpacity
+              : Math.min(mediaContainerOpacity, swipeOpacity.get()),
+            scale: reducedMotion ? mediaContainerScale : Math.min(mediaContainerScale, swipeScale.get()),
+          }}
         >
           {currentStory.type === 'photo' && (
-            <AnimatedView key={currentStory.id} style={imageEntry.animatedStyle}>
+            <motion.div key={currentStory.id} style={imageEntry.animatedStyle}>
               <img
                 src={currentStory.mediaUrl}
                 alt={currentStory.caption || 'Story'}
                 className="w-full h-full object-contain select-none"
                 draggable={false}
               />
-            </AnimatedView>
+            </motion.div>
           )}
 
           {currentStory.type === 'video' && (
@@ -571,22 +569,22 @@ export default function StoryViewer({
 
           {currentStory.caption && (
             <div className="absolute bottom-24 left-0 right-0 px-4">
-              <AnimatedView
+              <motion.div
                 className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
                 style={captionAnimation.animatedStyle}
               >
                 <p className="text-white text-center">{currentStory.caption}</p>
-              </AnimatedView>
+              </motion.div>
             </div>
           )}
-        </AnimatedView>
+        </motion.div>
 
         {/* Interaction area */}
         {!isOwn && (
           <div className="absolute bottom-0 left-0 right-0 z-20 p-4 space-y-3">
             <AnimatePresence>
               {showReactions && (
-                <AnimatedView
+                <motion.div
                   key="reactions"
                   style={reactionsAnimation.animatedStyle}
                   className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
@@ -595,7 +593,7 @@ export default function StoryViewer({
                 >
                   <div className="flex justify-center gap-4">
                     {STORY_REACTION_EMOJIS.map((emoji) => (
-                      <AnimatedView
+                      <motion.div
                         key={emoji}
                         as="button"
                         className="text-4xl focus:outline-none focus:ring-2 focus:ring-white rounded-lg p-2"
@@ -609,10 +607,10 @@ export default function StoryViewer({
                         aria-label={`React with ${String(emoji ?? '')}`}
                       >
                         {emoji}
-                      </AnimatedView>
+                      </motion.div>
                     ))}
                   </div>
-                </AnimatedView>
+                </motion.div>
               )}
             </AnimatePresence>
 
@@ -658,7 +656,7 @@ export default function StoryViewer({
         {/* Analytics for story owner */}
         {isOwn && (
           <div className="absolute bottom-4 left-4 right-4 z-20">
-            <AnimatedView
+            <motion.div
               className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
               style={analyticsAnimation.animatedStyle}
               role="region"
@@ -684,7 +682,7 @@ export default function StoryViewer({
                   View Insights
                 </Button>
               </div>
-            </AnimatedView>
+            </motion.div>
           </div>
         )}
       </div>
@@ -699,6 +697,9 @@ export default function StoryViewer({
           }}
         />
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedStoryViewer = memo(StoryViewer);

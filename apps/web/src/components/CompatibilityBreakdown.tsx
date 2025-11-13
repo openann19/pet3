@@ -1,4 +1,8 @@
-import { MotionView, MotionText } from '@petspark/motion';
+'use client';
+
+import { motion } from 'framer-motion';
+import { springConfigs } from '@/effects/framer-motion/variants';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import type { CompatibilityFactors } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
@@ -35,6 +39,7 @@ export default function CompatibilityBreakdown({
   factors,
   className,
 }: CompatibilityBreakdownProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [animatedValues, setAnimatedValues] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -51,80 +56,85 @@ export default function CompatibilityBreakdown({
     return () => clearTimeout(timer);
   }, [factors]);
 
+  const emojiStyle = { fontSize: '1.5em', marginRight: '0.5em' };
   return (
     <div
       className={`rounded-3xl glass-strong premium-shadow backdrop-blur-2xl border border-white/20 ${className}`}
     >
       <div className="p-6 bg-linear-to-br from-white/20 to-white/10">
-        <MotionView
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0.1 } : springConfigs.smooth}
           className="text-lg font-bold mb-4 flex items-center gap-2 bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
         >
-          <AnimatedView style={emojiStyle} className="inline-block">
+          <motion.div style={emojiStyle} className="inline-block">
             📊
-          </AnimatedView>
+          </motion.div>
           Compatibility Breakdown
-        </AnimatedView>
+        </motion.div>
         <div className="space-y-4">
           {Object.entries(factors).map(([key, _value], idx) => {
-            const animatedPercentage = Math.round((animatedValues[key] || 0) * 100);
+            const animatedPercentage = Math.round((animatedValues[key] ?? 0) * 100);
             const label = factorLabels[key as keyof typeof factorLabels];
             const icon = factorIcons[key as keyof typeof factorIcons];
             const colorClass = factorColors[key as keyof typeof factorColors];
 
+            const delay = prefersReducedMotion ? 0 : idx * 0.1;
             return (
-              <FactorItem
+              <motion.div
                 key={key}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300, damping: 30 }}
-                whileHover={{ scale: 1.02, x: 5 }}
+                transition={prefersReducedMotion ? { duration: 0.1 } : { delay, ...springConfigs.smooth }}
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium flex items-center gap-2">
-                    <MotionText
-                      whileHover={{ scale: 1.3, rotate: 360 }}
-                      transition={{ duration: 0.5 }}
+                    <motion.span
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.3, rotate: 360 }}
+                      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
                     >
                       {icon}
-                    </MotionText>
+                    </motion.span>
                     {label}
                   </span>
-                  <MotionText
+                  <motion.span
                     className="text-sm font-bold text-muted-foreground tabular-nums"
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 + 0.3 }}
+                    transition={prefersReducedMotion ? { duration: 0.1 } : { delay: delay + 0.3 }}
                   >
                     {animatedPercentage}%
-                  </MotionText>
+                  </motion.span>
                 </div>
                 <div className="relative">
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <MotionView
+                    <motion.div
                       className={`h-full bg-linear-to-r ${colorClass} rounded-full relative overflow-hidden`}
                       initial={{ width: 0 }}
                       animate={{ width: `${animatedPercentage}%` }}
-                      transition={{ delay: idx * 0.1 + 0.2, duration: 0.8, ease: 'easeOut' }}
+                      transition={prefersReducedMotion ? { duration: 0.1 } : { delay: delay + 0.2, duration: 0.8, ease: 'easeOut' }}
                     >
-                      <MotionView
-                        className="absolute inset-0 bg-white/30"
-                        animate={{
-                          x: ['-100%', '100%'],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: 'linear',
-                          delay: idx * 0.1 + 0.5,
-                        }}
-                        style={{ width: '50%' }}
-                      />
-                    </MotionView>
+                      {!prefersReducedMotion && (
+                        <motion.div
+                          className="absolute inset-0 bg-white/30"
+                          animate={{
+                            x: ['-100%', '100%'],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'linear',
+                            delay: delay + 0.5,
+                          }}
+                          style={{ width: '50%' }}
+                        />
+                      )}
+                    </motion.div>
                   </div>
                 </div>
-              </MotionView>
+              </motion.div>
             );
           })}
         </div>

@@ -14,10 +14,14 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared'
+import { colors } from '@mobile/theme/colors'
+import { Dimens } from '@petspark/shared'
+import { elevation } from '@mobile/theme/tokens'
 
 import type { IconProps } from 'react-native-vector-icons/Icon'
 
@@ -98,11 +102,7 @@ export function PremiumModal({
     full: { maxWidth: '100%' },
   }
 
-  const variants = {
-    default: { backgroundColor: 'var(--color-bg-overlay)' },
-    glass: { backgroundColor: 'rgba(255, 255, 255, 0.9)' },
-    centered: { backgroundColor: 'var(--color-bg-overlay)' },
-  }
+  const useGlassEffect = variant === 'glass'
 
   return (
     <Modal
@@ -113,32 +113,72 @@ export function PremiumModal({
       testID={testID}
     >
       <AnimatedView style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity 
+          style={StyleSheet.absoluteFill} 
+          activeOpacity={1} 
+          onPress={handleClose}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Close modal"
+        />
         <View style={styles.container}>
           <AnimatedView
-            style={[styles.content, sizeStyles[size], variants[variant], contentStyle, style]}
+            style={[styles.content, sizeStyles[size], contentStyle, style]}
           >
-            {(title || description) && (
-              <View style={styles.header}>
-                {title && <Text style={styles.title}>{title}</Text>}
-                {description && <Text style={styles.description}>{description}</Text>}
-              </View>
-            )}
+            {useGlassEffect ? (
+              <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill}>
+                <View style={[styles.glassContent, { backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+                  {(title ?? description) && (
+                    <View style={styles.header}>
+                      {title && <Text style={styles.title}>{title}</Text>}
+                      {description && <Text style={styles.description}>{description}</Text>}
+                    </View>
+                  )}
 
-            <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
-              {children}
-            </ScrollView>
+                  <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+                    {children}
+                  </ScrollView>
 
-            {footer && <View style={styles.footer}>{footer}</View>}
+                  {footer && <View style={styles.footer}>{footer}</View>}
 
-            {showCloseButton && (
-              <TouchableOpacity
-                onPress={handleClose}
-                style={styles.closeButton}
-                accessibilityLabel="Close dialog"
-              >
-                <X size={16} color="#6b7280" />
-              </TouchableOpacity>
+                  {showCloseButton && (
+                    <TouchableOpacity
+                      onPress={handleClose}
+                      style={styles.closeButton}
+                      accessibilityLabel="Close dialog"
+                      accessibilityRole="button"
+                    >
+                      <X size={16} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </BlurView>
+            ) : (
+              <>
+                {(title ?? description) && (
+                  <View style={styles.header}>
+                    {title && <Text style={styles.title}>{title}</Text>}
+                    {description && <Text style={styles.description}>{description}</Text>}
+                  </View>
+                )}
+
+                <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+                  {children}
+                </ScrollView>
+
+                {footer && <View style={styles.footer}>{footer}</View>}
+
+                {showCloseButton && (
+                  <TouchableOpacity
+                    onPress={handleClose}
+                    style={styles.closeButton}
+                    accessibilityLabel="Close dialog"
+                    accessibilityRole="button"
+                  >
+                    <X size={16} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </>
             )}
           </AnimatedView>
         </View>
@@ -153,7 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Dimens.spacing.lg,
   },
   container: {
     width: '100%',
@@ -162,43 +202,51 @@ const styles = StyleSheet.create({
   },
   content: {
     width: '100%',
-    borderRadius: 16,
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    borderRadius: Dimens.radius.xl,
+    backgroundColor: colors.card,
+    ...elevation.modal,
     overflow: 'hidden',
   },
+  glassContent: {
+    flex: 1,
+    borderRadius: Dimens.radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
   header: {
-    padding: 24,
-    paddingBottom: 16,
+    padding: Dimens.spacing.xl,
+    paddingBottom: Dimens.spacing.lg,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
+    color: colors.textPrimary,
+    marginBottom: Dimens.spacing.sm,
   },
   description: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
   },
   body: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: Dimens.spacing.xl,
+    paddingVertical: Dimens.spacing.lg,
   },
   footer: {
-    padding: 24,
-    paddingTop: 16,
+    padding: Dimens.spacing.xl,
+    paddingTop: Dimens.spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: colors.border,
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 8,
-    borderRadius: 8,
+    top: Dimens.spacing.lg,
+    right: Dimens.spacing.lg,
+    padding: Dimens.spacing.sm,
+    borderRadius: Dimens.radius.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

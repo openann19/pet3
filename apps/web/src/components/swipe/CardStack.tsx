@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { useSharedValue, withSpring, useAnimatedStyle } from '@petspark/motion';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { springConfigs } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { imagePrefetcher } from '@/lib/image-prefetcher';
 import { useNativeSwipe } from '@/hooks/use-native-swipe';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('CardStack');
@@ -57,6 +56,7 @@ export function CardStack<T extends CardData>({
   prefetchCount = DEFAULT_PREFETCH_COUNT,
   poolSize = DEFAULT_POOL_SIZE,
 }: CardStackProps<T>): React.ReactElement {
+  const reducedMotion = useReducedMotion() || reduceMotion;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pooledCards, setPooledCards] = useState<PooledCard<T>[]>([]);
   const isAnimatingRef = useRef(false);
@@ -94,16 +94,27 @@ export function CardStack<T extends CardData>({
     ),
   });
 
-  const nextCardScale = useSharedValue(0.96);
-  const nextCardTranslateY = useSharedValue(6);
-  const nextCardOpacity = useSharedValue(1);
+  const nextCardScale = useMotionValue(0.96);
+  const nextCardTranslateY = useMotionValue(6);
+  const nextCardOpacity = useMotionValue(1);
 
   useEffect(() => {
-    if (currentCard && !isAnimatingRef.current) {
-      nextCardScale.value = withSpring(1, springConfigs.smooth);
-      nextCardTranslateY.value = withSpring(0, springConfigs.smooth);
+    if (currentCard && !isAnimatingRef.current && !reducedMotion) {
+      void animate(nextCardScale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(nextCardTranslateY, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+    } else if (reducedMotion) {
+      nextCardScale.set(1);
+      nextCardTranslateY.set(0);
     }
-  }, [currentIndex, nextCardScale, nextCardTranslateY]);
+  }, [currentIndex, currentCard, nextCardScale, nextCardTranslateY, reducedMotion]);
 
   useEffect(() => {
     const pool: PooledCard<T>[] = [];
@@ -142,12 +153,7 @@ export function CardStack<T extends CardData>({
     }
   }, [availableCards, prefetchCount]);
 
-  const nextCardStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: nextCardScale.value }, { translateY: nextCardTranslateY.value }],
-      opacity: nextCardOpacity.value,
-    };
-  }) as AnimatedStyle;
+  // Styles are now handled directly via motion.div style props
 
   const handleButtonSwipe = useCallback(
     (direction: 'left' | 'right') => {
@@ -192,9 +198,15 @@ export function CardStack<T extends CardData>({
                 onButtonSwipe={handleButtonSwipe}
               />
             ) : isNext ? (
-              <AnimatedView style={nextCardStyle}>
+              <motion.div
+                style={{
+                  scale: nextCardScale,
+                  y: nextCardTranslateY,
+                  opacity: nextCardOpacity,
+                }}
+              >
                 {renderCard(pooled.card, pooled.index)}
-              </AnimatedView>
+              </motion.div>
             ) : (
               <div
                 style={{
@@ -235,8 +247,8 @@ function SwipeableCard<T extends CardData>({
 
   return (
     <div className="relative" style={{ width, height }}>
-      <AnimatedView
-        style={swipeHook.animatedStyle}
+      <motion.div
+        style={swipeHook.animatedStyle as React.CSSProperties}
         onMouseDown={(e: React.MouseEvent) => {
           const startX = e.clientX;
           const startY = e.clientY;
@@ -279,16 +291,20 @@ function SwipeableCard<T extends CardData>({
               velocityX,
             });
 
-            document.removeEventListener('mousemove', handleMove);
-            document.removeEventListener('mouseup', handleEnd);
-            document.removeEventListener('touchmove', handleMove);
-            document.removeEventListener('touchend', handleEnd);
+            if (typeof document !== 'undefined') {
+              document.removeEventListener('mousemove', handleMove);
+              document.removeEventListener('mouseup', handleEnd);
+              document.removeEventListener('touchmove', handleMove);
+              document.removeEventListener('touchend', handleEnd);
+            }
           };
 
-          document.addEventListener('mousemove', handleMove);
-          document.addEventListener('mouseup', handleEnd);
-          document.addEventListener('touchmove', handleMove, { passive: false });
-          document.addEventListener('touchend', handleEnd);
+          if (typeof document !== 'undefined') {
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', handleEnd);
+          }
         }}
         onTouchStart={(e: React.TouchEvent) => {
           e.preventDefault();
@@ -334,33 +350,37 @@ function SwipeableCard<T extends CardData>({
               velocityX,
             });
 
-            document.removeEventListener('touchmove', handleMove);
-            document.removeEventListener('touchend', handleEnd);
+            if (typeof document !== 'undefined') {
+              document.removeEventListener('touchmove', handleMove);
+              document.removeEventListener('touchend', handleEnd);
+            }
           };
 
-          document.addEventListener('touchmove', handleMove, { passive: false });
-          document.addEventListener('touchend', handleEnd);
+          if (typeof document !== 'undefined') {
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', handleEnd);
+          }
         }}
         className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <div className="absolute inset-0 pointer-events-none">
-          <AnimatedView
-            style={swipeHook.badgeStyle}
+          <motion.div
+            style={swipeHook.badgeStyle as React.CSSProperties}
             className="absolute -top-12 left-1/2 -translate-x-1/2 z-50"
           >
             <div
               className="px-6 py-3 bg-gradient-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
-              style={{ opacity: swipeHook.likeOpacity.value }}
+              style={{ opacity: (swipeHook.likeOpacity as unknown as { value: number }).value }}
             >
               LIKE
             </div>
             <div
               className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
-              style={{ opacity: swipeHook.passOpacity.value }}
+              style={{ opacity: (swipeHook.passOpacity as unknown as { value: number }).value }}
             >
               PASS
             </div>
-          </AnimatedView>
+          </motion.div>
         </div>
 
         {renderCard(card, index)}
@@ -381,7 +401,7 @@ function SwipeableCard<T extends CardData>({
             ♥
           </button>
         </div>
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }

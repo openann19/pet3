@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
@@ -21,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useBounceOnTap, useHoverLift, useModalAnimation } from '@/effects/reanimated';
 import {
   useSharedValue,
@@ -90,7 +91,7 @@ function ParticipantVideo({
   }) as ReturnType<typeof useAnimatedStyle>;
 
   return (
-    <AnimatedView
+    <motion.div
       style={hoverLift.animatedStyle}
       className={cn(
         'relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20',
@@ -126,7 +127,7 @@ function ParticipantVideo({
           {participant.petName && <p className="text-white/70 text-xs">{participant.petName}</p>}
         </div>
         {isRaised && (
-          <AnimatedView
+          <motion.div
             style={pulseStyle}
             className="glass-strong backdrop-blur-xl px-2 py-1 rounded-full flex items-center gap-1"
             role="status"
@@ -134,7 +135,7 @@ function ParticipantVideo({
           >
             <Hand size={16} weight="fill" className="text-yellow-400" aria-hidden="true" />
             <span className="text-white text-xs">Raised hand</span>
-          </AnimatedView>
+          </motion.div>
         )}
       </div>
 
@@ -159,7 +160,7 @@ function ParticipantVideo({
         )}
         {participant.isSpeaking && <SpeakingIndicator />}
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -182,7 +183,7 @@ function SpeakingIndicator(): JSX.Element {
   }) as ReturnType<typeof useAnimatedStyle>;
 
   return (
-    <AnimatedView
+    <motion.div
       style={animatedStyle}
       className="w-2 h-2 bg-green-400 rounded-full"
       role="status"
@@ -439,7 +440,7 @@ export default function GroupCallInterface({
   });
 
   return (
-    <AnimatedView
+    <motion.div
       style={modalAnimation.style}
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
@@ -449,7 +450,7 @@ export default function GroupCallInterface({
       aria-label="Group call interface"
       aria-modal="true"
     >
-      <AnimatedView
+      <motion.div
         className={cn(
           'relative w-full bg-gradient-to-br from-card via-card to-card/80 rounded-3xl overflow-hidden shadow-2xl border border-border/50',
           isFullscreen ? 'h-full' : 'max-w-7xl h-[90vh]'
@@ -614,7 +615,7 @@ export default function GroupCallInterface({
               role="toolbar"
               aria-label="Call controls"
             >
-              <AnimatedView style={muteButton.animatedStyle}>
+              <motion.div style={muteButton.animatedStyle}>
                 <Button
                   onClick={muteButton.handlePress}
                   size="icon"
@@ -640,10 +641,10 @@ export default function GroupCallInterface({
                     <Microphone size={24} weight="fill" className="text-white" aria-hidden="true" />
                   )}
                 </Button>
-              </AnimatedView>
+              </motion.div>
 
               {isVideoCall && (
-                <AnimatedView style={videoButton.animatedStyle}>
+                <motion.div style={videoButton.animatedStyle}>
                   <Button
                     onClick={videoButton.handlePress}
                     size="icon"
@@ -674,10 +675,10 @@ export default function GroupCallInterface({
                       />
                     )}
                   </Button>
-                </AnimatedView>
+                </motion.div>
               )}
 
-              <AnimatedView style={endCallButton.animatedStyle}>
+              <motion.div style={endCallButton.animatedStyle}>
                 <Button
                   onClick={endCallButton.handlePress}
                   size="icon"
@@ -691,9 +692,9 @@ export default function GroupCallInterface({
                     aria-hidden="true"
                   />
                 </Button>
-              </AnimatedView>
+              </motion.div>
 
-              <AnimatedView style={raiseHandButton.animatedStyle}>
+              <motion.div style={raiseHandButton.animatedStyle}>
                 <Button
                   onClick={raiseHandButton.handlePress}
                   size="icon"
@@ -709,9 +710,9 @@ export default function GroupCallInterface({
                     aria-hidden="true"
                   />
                 </Button>
-              </AnimatedView>
+              </motion.div>
 
-              <AnimatedView style={useBounceOnTap({ hapticFeedback: true }).animatedStyle}>
+              <motion.div style={useBounceOnTap({ hapticFeedback: true }).animatedStyle}>
                 <Button
                   size="icon"
                   variant="outline"
@@ -720,18 +721,18 @@ export default function GroupCallInterface({
                 >
                   <ChatCircle size={24} weight="fill" aria-hidden="true" />
                 </Button>
-              </AnimatedView>
+              </motion.div>
             </div>
           </div>
         </div>
-      </AnimatedView>
+      </motion.div>
 
       <style>{`
         .mirror {
           transform: scaleX(-1);
         }
       `}</style>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -856,7 +857,7 @@ function ParticipantsPanel({
   }) as ReturnType<typeof useAnimatedStyle>;
 
   return (
-    <AnimatedView
+    <motion.div
       style={panelStyle}
       className="absolute top-20 right-0 bottom-24 w-80 glass-strong backdrop-blur-2xl border-l border-border/50 z-30"
       role="complementary"
@@ -920,7 +921,7 @@ function ParticipantsPanel({
           </div>
         </ScrollArea>
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -949,7 +950,7 @@ function ActiveIndicator(): JSX.Element {
   }) as ReturnType<typeof useAnimatedStyle>;
 
   return (
-    <AnimatedView
+    <motion.div
       style={animatedStyle}
       className="w-2 h-2 bg-green-500 rounded-full"
       role="status"
@@ -976,7 +977,7 @@ function ConnectingIndicator(): JSX.Element {
   }) as ReturnType<typeof useAnimatedStyle>;
 
   return (
-    <AnimatedView
+    <motion.div
       style={animatedStyle}
       className="w-2 h-2 bg-yellow-500 rounded-full"
       role="status"

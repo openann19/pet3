@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useMemo } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { getColorTokenWithOpacity } from '@/core/tokens';
@@ -49,7 +50,7 @@ const getMoodColors = (mode: 'light' | 'dark' = 'light') => ({
  * @example
  * ```tsx
  * const { animatedStyle, colors } = useMoodColorTheme({ text: messageText })
- * return <AnimatedView style={[animatedStyle, { backgroundColor: colors.primary }]}>{content}</AnimatedView>
+ * return <motion.div style={[animatedStyle, { backgroundColor: colors.primary }]}>{content}</motion.div>
  * ```
  */
 export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodColorThemeReturn {

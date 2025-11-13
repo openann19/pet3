@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useCallback } from 'react';
 import {
@@ -7,7 +8,7 @@ import {
   withSpring,
   withTiming,
 } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
@@ -71,7 +72,7 @@ export function DeleteConfirmationModal({
   backdropOpacity.value = withTiming(0.5, timingConfigs.fast);
 
   return (
-    <AnimatedView
+    <motion.div
       style={backdropStyle}
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
@@ -80,7 +81,7 @@ export function DeleteConfirmationModal({
       )}
       onClick={handleCancel}
     >
-      <AnimatedView
+      <motion.div
         style={modalStyle}
         className={cn(
           'bg-card border border-border rounded-2xl shadow-2xl',
@@ -156,7 +157,7 @@ export function DeleteConfirmationModal({
             Delete
           </button>
         </div>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }

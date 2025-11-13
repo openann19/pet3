@@ -18,9 +18,20 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@mobile/effects/core/use-reduced-motion-sv'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
 import { isTruthy } from '@petspark/shared';
+import { motionTokens } from '@petspark/motion';
+
+const { radius, spacing: spacingTokens, component } = Dimens;
+const TOUCH_TARGET_MIN = component.touchTargetMin;
+const motion = {
+  durations: motionTokens.durations,
+  spring: motionTokens.spring,
+};
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedView = Animated.View
@@ -60,16 +71,11 @@ export interface DialogDescriptionProps {
   style?: TextStyle
 }
 
-// Motion constants (matching web tokens)
-const MOTION_DURATIONS = {
-  fast: 150,
-  normal: 240,
-  smooth: 320,
-} as const
-
+// Use motion tokens for spring config
 const SPRING_CONFIG = {
-  damping: 25,
-  stiffness: 400,
+  damping: motion.spring.smooth.damping,
+  stiffness: motion.spring.smooth.stiffness,
+  mass: motion.spring.smooth.mass,
 } as const
 
 function DialogOverlay({
@@ -85,7 +91,7 @@ function DialogOverlay({
 
   useEffect(() => {
     opacity.value = withTiming(visible ? 1 : 0, {
-      duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.smooth,
+      duration: reducedMotion ? motion.durations.fast : motion.durations.enterExit,
     })
   }, [visible, opacity, reducedMotion])
 
@@ -101,7 +107,9 @@ function DialogOverlay({
       onPress={onPress}
       accessible={false}
       importantForAccessibility="no"
-    />
+    >
+      <BlurView intensity={20} style={StyleSheet.absoluteFill} />
+    </AnimatedPressable>
   )
 }
 
@@ -122,19 +130,19 @@ function DialogContent({
   useEffect(() => {
     if (isTruthy(visible)) {
       opacity.value = withTiming(1, {
-        duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.smooth,
+        duration: reducedMotion ? motion.durations.fast : motion.durations.enterExit,
       })
       scale.value = withSpring(1, SPRING_CONFIG)
       y.value = withSpring(0, SPRING_CONFIG)
     } else {
       opacity.value = withTiming(0, {
-        duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.normal,
+        duration: reducedMotion ? motion.durations.fast : motion.durations.fast,
       })
       scale.value = withTiming(0.95, {
-        duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.normal,
+        duration: reducedMotion ? motion.durations.fast : motion.durations.fast,
       })
       y.value = withTiming(20, {
-        duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.normal,
+        duration: reducedMotion ? motion.durations.fast : motion.durations.fast,
       })
     }
   }, [visible, opacity, scale, y, reducedMotion])
@@ -155,7 +163,7 @@ function DialogContent({
 
   useEffect(() => {
     if (visible) {
-      AccessibilityInfo.announceForAccessibility(accessibilityLabel || 'Dialog opened')
+      AccessibilityInfo.announceForAccessibility(accessibilityLabel ?? 'Dialog opened')
     }
   }, [visible, accessibilityLabel])
 
@@ -171,19 +179,22 @@ function DialogContent({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
     >
-      {children}
-      {showCloseButton && (
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={handleClose}
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Close dialog"
-          accessibilityHint="Closes the dialog"
-        >
-          <Text style={styles.closeButtonText}>×</Text>
-        </TouchableOpacity>
-      )}
+      <BlurView intensity={80} style={StyleSheet.absoluteFill} tint="light" />
+      <View style={styles.contentInner}>
+        {children}
+        {showCloseButton && (
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleClose}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Close dialog"
+            accessibilityHint="Closes the dialog"
+          >
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </AnimatedView>
   )
 }
@@ -282,39 +293,6 @@ export function DialogDescription({ children, style }: DialogDescriptionProps): 
   )
 }
 
-// Design token constants (matching web Dimens)
-const DIMENS = {
-  spacing: {
-    xs: 2,
-    sm: 4,
-    md: 8,
-    lg: 12,
-    xl: 16,
-    '2xl': 20,
-    '3xl': 24,
-    '4xl': 32,
-    '5xl': 40,
-    '6xl': 48,
-  },
-  radius: {
-    sm: 4,
-    md: 8,
-    lg: 12,
-    xl: 16,
-    '2xl': 20,
-    '3xl': 24,
-    dialog: 24,
-  },
-  elevation: {
-    dialog: 12,
-  },
-  component: {
-    touchTargetMin: 48,
-    sheet: {
-      paddingVertical: 24,
-    },
-  },
-} as const
 
 const styles = StyleSheet.create({
   container: {
@@ -329,54 +307,55 @@ const styles = StyleSheet.create({
   content: {
     width: '90%',
     maxWidth: 400,
-    backgroundColor: 'var(--color-bg-overlay)',
-    borderRadius: DIMENS.radius.dialog,
-    padding: DIMENS.component.sheet.paddingVertical,
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: {
-      width: 0,
-      height: DIMENS.elevation.dialog,
-    },
+    backgroundColor: 'transparent',
+    borderRadius: radius['3xl'],
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
-    shadowRadius: DIMENS.elevation.dialog,
-    elevation: DIMENS.elevation.dialog,
+    shadowRadius: 24,
+    elevation: Dimens.elevation.component.dialog,
+  },
+  contentInner: {
+    padding: spacingTokens.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   header: {
-    marginBottom: DIMENS.spacing.lg,
+    marginBottom: spacingTokens.md,
   },
   footer: {
-    marginTop: DIMENS.spacing.lg,
+    marginTop: spacingTokens.md,
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: DIMENS.spacing.md,
+    gap: spacingTokens.md,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 24,
-    color: 'var(--color-fg)',
-    marginBottom: DIMENS.spacing.sm,
+    fontSize: Typography.scale.h3.fontSize,
+    fontWeight: Typography.scale.h3.fontWeight,
+    lineHeight: Typography.scale.h3.lineHeight,
+    color: colors.textPrimary,
+    marginBottom: spacingTokens.sm,
   },
   description: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#666666',
+    fontSize: Typography.scale.bodySmall.fontSize,
+    lineHeight: Typography.scale.bodySmall.lineHeight,
+    color: colors.textSecondary,
   },
   closeButton: {
     position: 'absolute',
-    top: DIMENS.spacing.xl,
-    right: DIMENS.spacing.xl,
-    width: DIMENS.component.touchTargetMin,
-    height: DIMENS.component.touchTargetMin,
+    top: spacingTokens.xl,
+    right: spacingTokens.xl,
+    width: TOUCH_TARGET_MIN,
+    height: TOUCH_TARGET_MIN,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: DIMENS.radius.sm,
+    borderRadius: radius.sm,
     opacity: 0.7,
   },
   closeButtonText: {
-    fontSize: 24,
-    lineHeight: 24,
-    color: 'var(--color-fg)',
+    fontSize: Typography.scale.h2.fontSize,
+    lineHeight: Typography.scale.h2.lineHeight,
+    color: colors.textPrimary,
     fontWeight: '300',
   },
 })

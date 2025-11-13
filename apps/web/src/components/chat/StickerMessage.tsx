@@ -1,11 +1,12 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useCallback, useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import type { Sticker } from '@/lib/sticker-library';
 import { cn } from '@/lib/utils';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useStickerAnimation } from '@/effects/reanimated/use-sticker-animation';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import { springConfigs } from '@/effects/reanimated/transitions';
@@ -82,11 +83,11 @@ export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessa
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={entryStyle}
       className={cn('flex items-center', isOwn ? 'justify-end' : 'justify-start')}
     >
-      <AnimatedView
+      <motion.div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={hoverTap.handlePress ?? undefined}
@@ -97,7 +98,7 @@ export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessa
         )}
       >
         <span className="block">{sticker.emoji}</span>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }

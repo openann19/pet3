@@ -1,3 +1,4 @@
+import React from 'react';
 import { ProfileScreen } from '@mobile/screens/ProfileScreen'
 import { render } from '@testing-library/react-native'
 import { describe, expect, it, vi } from 'vitest'

@@ -4,6 +4,17 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import { PremiumButton } from '../PremiumButton'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
+import { motionTokens } from '@petspark/motion';
+
+const motion = {
+  durations: motionTokens.durations,
+  spring: motionTokens.spring,
+};
+
+const { spacing } = Dimens;
+const { scale: typography } = Typography;
 
 const AnimatedView = Animated.View
 
@@ -34,7 +45,13 @@ export function PremiumEmptyState({
   const reducedMotion = useReducedMotionSV()
 
   useEffect(() => {
-    const springConfig = reducedMotion.value ? { duration: 200 } : { stiffness: 400, damping: 30 }
+    const springConfig = reducedMotion.value 
+      ? { duration: motion.durations.fast } 
+      : { 
+          stiffness: motion.spring.smooth.stiffness, 
+          damping: motion.spring.smooth.damping,
+          mass: motion.spring.smooth.mass,
+        }
     scale.value = withSpring(1, springConfig)
     opacity.value = withSpring(1, springConfig)
   }, [scale, opacity, reducedMotion])
@@ -50,9 +67,9 @@ export function PremiumEmptyState({
   }, [action])
 
   const variants = {
-    default: { paddingVertical: 48, paddingHorizontal: 16 },
-    minimal: { paddingVertical: 32, paddingHorizontal: 16 },
-    illustrated: { paddingVertical: 64, paddingHorizontal: 16 },
+    default: { paddingVertical: spacing['4xl'], paddingHorizontal: spacing.lg },
+    minimal: { paddingVertical: spacing['2xl'], paddingHorizontal: spacing.lg },
+    illustrated: { paddingVertical: spacing['4xl'] + spacing.xl, paddingHorizontal: spacing.lg },
   }
 
   return (
@@ -80,23 +97,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconContainer: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: typography.h3.fontSize,
+    fontWeight: typography.h3.fontWeight,
+    lineHeight: typography.h3.lineHeight,
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   description: {
-    fontSize: 14,
-    color: '#6b7280',
+                      fontSize: typography.bodySmall.fontSize,
+                      lineHeight: typography.bodySmall.lineHeight,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
     maxWidth: 300,
   },
   actionContainer: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 })

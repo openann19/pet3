@@ -99,7 +99,7 @@ export function PostComposer({
           {remainingChars} {t.community?.charsRemaining || 'characters remaining'}
         </Text>
         <View style={styles.actions}>
-          <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> onOpenChange(false)} style={styles.cancelButton}>
+          <TouchableOpacity onPress={() => onOpenChange(false)} style={styles.cancelButton}>
             <Text style={styles.cancelText}>{t.common?.cancel || 'Cancel'}</Text>
           </TouchableOpacity>
           <TouchableOpacity

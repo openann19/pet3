@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Send Button Icon Component
  *
  * Animated send button icon with spring animation
@@ -7,9 +8,9 @@
 import { useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import { PaperPlaneRight } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface SendButtonIconProps {
@@ -38,8 +39,8 @@ export function SendButtonIcon({ isActive = false }: SendButtonIconProps): JSX.E
   }, [isActive, translateX, scale]);
 
   return (
-    <AnimatedView style={iconStyle}>
+    <motion.div style={iconStyle}>
       <PaperPlaneRight size={20} weight="fill" />
-    </AnimatedView>
+    </motion.div>
   );
 }

@@ -1,18 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+'use client';
+
+import { useState, useEffect, useRef, memo } from 'react';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { Microphone, X, Check } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { toast } from 'sonner';
-import { useUIConfig } from "@/hooks/use-ui-config";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('VoiceRecorder');
 
 interface VoiceRecorderProps {
   onRecorded: (audioBlob: Blob, duration: number, waveform: number[]) => void;
@@ -25,8 +21,8 @@ export default function VoiceRecorder({
   onCancel,
   maxDuration = 120,
 }: VoiceRecorderProps) {
-    const _uiConfig = useUIConfig();
-    const [duration, setDuration] = useState(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [duration, setDuration] = useState(0);
   const [waveform, setWaveform] = useState<number[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -37,23 +33,30 @@ export default function VoiceRecorder({
   const timerRef = useRef<number | undefined>(undefined);
 
   // Animation values
-  const containerOpacity = useSharedValue(0);
-  const containerScale = useSharedValue(0.9);
-  const micScale = useSharedValue(1);
+  const containerOpacity = useMotionValue(0);
+  const containerScale = useMotionValue(0.9);
+  const micScale = useMotionValue(1);
 
   useEffect(() => {
     void startRecording();
 
+    if (reducedMotion) {
+      containerOpacity.set(1);
+      containerScale.set(1);
+      micScale.set(1);
+      return;
+    }
+
     // Animate container in
-    containerOpacity.value = withTiming(1, { duration: 300 });
-    containerScale.value = withTiming(1, { duration: 300 });
+    void animate(containerOpacity, 1, { duration: 0.3 });
+    void animate(containerScale, 1, { duration: 0.3 });
 
     // Animate microphone icon
-    micScale.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 750 }), withTiming(1, { duration: 750 })),
-      -1,
-      true
-    );
+    void animate(micScale, [1.2, 1], {
+      duration: 1.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
 
     return () => {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -67,10 +70,10 @@ export default function VoiceRecorder({
         clearInterval(timerRef.current);
       }
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        void audioContextRef.current.close();
       }
     };
-  }, []);
+  }, [containerOpacity, containerScale, micScale, prefersReducedMotion]);
 
   const startRecording = async () => {
     try {
@@ -96,16 +99,20 @@ export default function VoiceRecorder({
       mediaRecorder.start();
       visualize();
 
-      timerRef.current = window.setInterval(() => {
-        setDuration((prev) => {
-          if (prev >= maxDuration) {
-            handleStopAndSend();
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-    } catch {
+      if (typeof window !== 'undefined') {
+        timerRef.current = window.setInterval(() => {
+          setDuration((prev) => {
+            if (prev >= maxDuration) {
+              handleStopAndSend();
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 1000);
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error('Failed to start recording');
+      logger.error('Failed to start recording', err);
       toast.error('Unable to access microphone');
       onCancel();
     }
@@ -172,26 +179,20 @@ export default function VoiceRecorder({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: containerOpacity.value,
-    transform: [{ scale: containerScale.value }],
-  })) as AnimatedStyle;
-
-  const micStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: micScale.value }],
-  })) as AnimatedStyle;
-
-  const containerStyleValue = useAnimatedStyleValue(containerStyle);
-  const micStyleValue = useAnimatedStyleValue(micStyle);
-
   return (
-    <div
-      style={containerStyleValue}
+    <motion.div
+      style={{
+        opacity: containerOpacity,
+        scale: containerScale,
+      }}
       className="flex-1 flex items-center gap-3 glass-effect rounded-2xl p-3"
     >
-      <div style={micStyleValue} className="shrink-0">
+      <motion.div
+        style={{ scale: micScale }}
+        className="shrink-0"
+      >
         <Microphone size={24} weight="fill" className="text-red-500" />
-      </div>
+      </motion.div>
 
       <div className="flex-1 space-y-2">
         <div className="flex items-center gap-2">
@@ -229,24 +230,29 @@ export default function VoiceRecorder({
       >
         <Check size={20} weight="bold" />
       </Button>
-    </div>
+    </motion.div>
   );
 }
 
 function WaveformBar({ value }: { value: number }) {
-  const height = useSharedValue(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const height = useMotionValue(0);
 
   useEffect(() => {
-    height.value = withTiming(value * 100, { duration: 100 });
-  }, [value, height]);
-
-  const barStyle = useAnimatedStyle(() => ({
-    height: `${height.value}%`,
-  })) as AnimatedStyle;
+    if (prefersReducedMotion) {
+      height.set(value * 100);
+      return;
+    }
+    void animate(height, value * 100, { duration: 0.1 });
+  }, [value, height, prefersReducedMotion]);
 
   return (
-    <AnimatedView style={barStyle} className="flex-1 bg-primary rounded-full">
-      <div />
-    </AnimatedView>
+    <motion.div
+      style={{ height: useTransform(height, (h) => `${h}%`) }}
+      className="flex-1 bg-primary rounded-full"
+    />
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedVoiceRecorder = memo(VoiceRecorder);

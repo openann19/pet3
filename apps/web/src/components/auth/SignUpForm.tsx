@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react'
-import { MotionView } from '@petspark/motion'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { EnvelopeSimple, LockKey, User, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +37,7 @@ type SignUpData = {
 export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
   const { t } = useApp()
   const { register } = useAuth()
+  const prefersReducedMotion = useReducedMotion()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -157,11 +161,11 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
   }
 
   return (
-    <MotionView
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: prefersReducedMotion ? 0.1 : 0.3 }}
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-foreground mb-2">
@@ -396,6 +400,6 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         onVerified={() => { handleAgeVerified() }}
         onClose={() => { setShowAgeGate(false); }}
       />
-    </MotionView>
+    </motion.div>
   )
 }

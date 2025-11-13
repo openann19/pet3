@@ -15,11 +15,14 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
+import { spacing, radius, typography, elevation } from '@mobile/theme/tokens'
+import { motion } from '@petspark/motion'
 import type { PetProfile } from '../../types/pet'
+import { safeArrayAccess } from '@mobile/utils/runtime-safety'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3
-const CARD_WIDTH = SCREEN_WIDTH - 40
+const CARD_WIDTH = SCREEN_WIDTH - spacing['4xl'] * 2 // Use spacing token instead of magic number
 
 interface SwipeCardProps {
   pet: PetProfile
@@ -28,10 +31,11 @@ interface SwipeCardProps {
   isTop: boolean
 }
 
+// Use motion tokens for spring config
 const springConfig = {
-  damping: 15,
-  stiffness: 250,
-  mass: 0.9,
+  damping: motion.spring.smooth.damping,
+  stiffness: motion.spring.smooth.stiffness,
+  mass: motion.spring.smooth.mass,
 }
 
 function SwipeCardComponent({
@@ -153,9 +157,12 @@ function SwipeCardComponent({
         </Animated.View>
 
         {/* Pet image */}
-        {pet.photos[0] && (
-          <Image source={{ uri: pet.photos[0] }} style={styles.image} resizeMode="cover" />
-        )}
+        {(() => {
+          const firstPhoto = safeArrayAccess(pet.photos, 0);
+          return firstPhoto ? (
+            <Image source={{ uri: firstPhoto }} style={styles.image} resizeMode="cover" />
+          ) : null;
+        })()}
 
         {/* Pet info */}
         <View style={styles.infoContainer}>
@@ -174,13 +181,9 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: SCREEN_HEIGHT * 0.7,
-    borderRadius: 20,
+    borderRadius: radius.xl,
     backgroundColor: 'var(--color-bg-overlay)',
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...elevation.overlay,
     overflow: 'hidden',
     position: 'absolute',
   },
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
-    borderRadius: 20,
+    borderRadius: radius.xl,
   },
   likeOverlay: {
     backgroundColor: 'rgba(76, 175, 80, 0.8)',
@@ -202,57 +205,59 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(244, 67, 54, 0.8)',
   },
   likeText: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: typography.display.fontSize,
+    fontWeight: typography.display.fontWeight,
     color: 'var(--color-bg-overlay)',
-    borderWidth: 4,
+    borderWidth: spacing.xs,
     borderColor: 'var(--color-bg-overlay)',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingHorizontal: spacing['3xl'],
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
   },
   dislikeText: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: typography.display.fontSize,
+    fontWeight: typography.display.fontWeight,
     color: 'var(--color-bg-overlay)',
-    borderWidth: 4,
+    borderWidth: spacing.xs,
     borderColor: 'var(--color-bg-overlay)',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingHorizontal: spacing['3xl'],
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
   },
   image: {
     width: '100%',
     height: '75%',
   },
   infoContainer: {
-    padding: 20,
+    padding: spacing.xl,
     backgroundColor: 'var(--color-bg-overlay)',
   },
   name: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: typography.h1.fontSize,
+    fontWeight: typography.h1.fontWeight,
     color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   details: {
-    fontSize: 16,
+    fontSize: typography.body.fontSize,
     color: '#666',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   bio: {
-    fontSize: 14,
+    fontSize: typography.bodySm.fontSize,
     color: '#888',
-    lineHeight: 20,
+    lineHeight: typography.bodySm.lineHeight,
   },
 })
 
 // Memoize SwipeCard to prevent unnecessary re-renders
 export const SwipeCard = memo(SwipeCardComponent, (prev, next) => {
+  const prevFirstPhoto = safeArrayAccess(prev.pet.photos, 0);
+  const nextFirstPhoto = safeArrayAccess(next.pet.photos, 0);
   return (
     prev.pet.id === next.pet.id &&
     prev.pet.name === next.pet.name &&
-    prev.pet.photos[0] === next.pet.photos[0] &&
+    prevFirstPhoto === nextFirstPhoto &&
     prev.isTop === next.isTop &&
     prev.onSwipeLeft === next.onSwipeLeft &&
     prev.onSwipeRight === next.onSwipeRight

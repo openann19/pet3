@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useSharedValue, withTiming, useAnimatedStyle, animate } from '@petspark/motion';
-import { MotionView } from '@petspark/motion';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CheckCircle, Heart, Lightning, Sparkle, Star, Trophy } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
@@ -85,31 +85,22 @@ interface BadgeAnimatedProps {
 }
 
 function BadgeAnimated({ index, animated, sizeConfig, config, Icon }: BadgeAnimatedProps) {
-    const _uiConfig = useUIConfig();
-    const staggered = useStaggeredItem({ index, staggerDelay: 50 });
-  const scale = useSharedValue(animated ? 0.8 : 1);
-
-  useEffect(() => {
-    if (animated) {
-      const scaleTransition = withTiming(1, { duration: 300 });
-      animate(scale, scaleTransition.target, scaleTransition.transition);
-    }
-  }, [animated, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: staggered.opacity.get(),
-      transform: [{ translateY: staggered.y.get() }, { scale: scale.get() }],
-    };
-  });
+  const _uiConfig = useUIConfig();
+  const reducedMotion = useReducedMotion();
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <motion.div
       className={`${String(sizeConfig.containerClass ?? '')} ${String(config.bgColor ?? '')} ${String(config.borderColor ?? '')} border rounded-full flex items-center justify-center ${String(config.color ?? '')} transition-all duration-300 hover:scale-110 cursor-default`}
+      initial={animated && !reducedMotion ? { opacity: 0, scale: 0.8, y: 20 } : undefined}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={animated && !reducedMotion ? {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      } : undefined}
     >
       <Icon size={sizeConfig.iconSize} className={config.color} />
-    </MotionView>
+    </motion.div>
   );
 }
 
@@ -162,14 +153,9 @@ interface TrustScoreProps {
 }
 
 export function TrustScore({ score, size = 'md', showLabel = false }: TrustScoreProps) {
-  const strokeDasharray = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
   const circumference = 2 * Math.PI * 20; // r = 20
-
-  useEffect(() => {
-    const targetDash = (score / 100) * circumference;
-    const dashTransition = withTiming(targetDash, { duration: 1000 });
-    animate(strokeDasharray, dashTransition.target, dashTransition.transition);
-  }, [score, circumference, strokeDasharray]);
+  const targetDash = (score / 100) * circumference;
 
   const getScoreColor = (scoreValue: number) => {
     if (scoreValue >= 80) return 'text-green-500';
@@ -191,12 +177,6 @@ export function TrustScore({ score, size = 'md', showLabel = false }: TrustScore
     lg: 'text-base',
   };
 
-  const circleAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      strokeDasharray: `${strokeDasharray.get()} ${circumference}`,
-    };
-  });
-
   return (
     <div className="flex items-center gap-2">
       <div className="relative">
@@ -210,18 +190,22 @@ export function TrustScore({ score, size = 'md', showLabel = false }: TrustScore
             fill="none"
             className="text-muted/20"
           />
-          <MotionView animatedStyle={circleAnimatedStyle}>
-            <circle
-              cx="24"
-              cy="24"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="3"
-              fill="none"
-              strokeLinecap="round"
-              className={getScoreColor(score)}
-            />
-          </MotionView>
+          <motion.circle
+            cx="24"
+            cy="24"
+            r="20"
+            stroke="currentColor"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            className={getScoreColor(score)}
+            initial={{ strokeDasharray: `0 ${circumference}` }}
+            animate={{ strokeDasharray: `${targetDash} ${circumference}` }}
+            transition={reducedMotion ? { duration: 0 } : {
+              duration: 1,
+              ease: 'easeOut',
+            }}
+          />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <span className={`font-bold ${sizeClasses[size]} ${getScoreColor(score)}`}>{score}</span>

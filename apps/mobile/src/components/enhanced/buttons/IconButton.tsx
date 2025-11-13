@@ -9,7 +9,12 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { colors } from '@mobile/theme/colors'
+import { Dimens } from '@petspark/shared';
 import { isTruthy } from '@petspark/shared';
+import { elevation } from '@mobile/theme/tokens';
+
+const { component, radius } = Dimens;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
@@ -28,8 +33,8 @@ export interface IconButtonProps {
 
 const SIZE_CONFIG = {
   sm: { size: 32, iconSize: 16, padding: 8 },
-  md: { size: 44, iconSize: 20, padding: 12 },
-  lg: { size: 56, iconSize: 24, padding: 16 },
+  md: { size: component.touchTargetMin, iconSize: 20, padding: 12 },
+  lg: { size: component.touchTargetMin + 8, iconSize: 24, padding: 16 },
 } as const
 
 export function IconButton({
@@ -98,12 +103,12 @@ export function IconButton({
   const config = SIZE_CONFIG[size]
 
   const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: 'var(--color-accent-secondary-9)' },
+    primary: { backgroundColor: colors.accent },
     ghost: { backgroundColor: 'transparent' },
     outline: {
       backgroundColor: 'transparent',
       borderWidth: 2,
-      borderColor: 'var(--color-accent-secondary-9)',
+      borderColor: colors.accent,
     },
     glass: {
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -126,7 +131,7 @@ export function IconButton({
         {
           width: config.size,
           height: config.size,
-          borderRadius: config.size / 2,
+          borderRadius: radius.full,
         },
         variantStyles[variant],
         pressBounce.animatedStyle,
@@ -141,7 +146,7 @@ export function IconButton({
           style={[
             StyleSheet.absoluteFill,
             {
-              borderRadius: config.size / 2,
+              borderRadius: radius.full,
               backgroundColor: 'rgba(59, 130, 246, 0.3)',
             },
             glowStyle,
@@ -168,11 +173,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...elevation.raised,
   },
   iconContainer: {
     alignItems: 'center',

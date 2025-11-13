@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -30,9 +31,9 @@ import type { Post } from '@/lib/community-types';
 import { PostCard } from '@/components/community/PostCard';
 import { communityService } from '@/lib/community-service';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 const logger = createLogger('CommunityManagement');
 
@@ -66,7 +67,7 @@ function PostItem({ post, isHidden, onHide, onUnhide, onDelete }: PostItemProps)
   }
 
   return (
-    <AnimatedView style={animatedStyle} className="relative">
+    <motion.div style={animatedStyle} className="relative">
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         {isHidden ? (
           <Button size="sm" variant="secondary" onClick={() => onUnhide(postId)}>
@@ -85,7 +86,7 @@ function PostItem({ post, isHidden, onHide, onUnhide, onDelete }: PostItemProps)
         </Button>
       </div>
       <PostCard post={post} />
-    </AnimatedView>
+    </motion.div>
   );
 }
 

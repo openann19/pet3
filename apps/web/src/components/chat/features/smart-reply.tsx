@@ -104,7 +104,7 @@ export function SmartReply({
         sentiment: sentimentResult.sentiment,
       });
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
+      const err = error instanceof Error ? error : new Error('Failed to generate smart reply suggestions');
       logger.error('Failed to generate smart reply suggestions', err, {
         message: message.substring(0, 50),
       });

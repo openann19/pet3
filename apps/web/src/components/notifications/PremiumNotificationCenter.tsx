@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Premium Notification Center
  *
  * Main notification center component with modular architecture
@@ -8,14 +9,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, useMotionValue, animate, useTransform, AnimatePresence } from 'framer-motion';
+import { motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -36,9 +33,6 @@ import {
   SlidersHorizontal,
   Sparkle,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { haptics } from '@/lib/haptics';
 import { useNotifications } from './hooks/useNotifications';
 import { useNotificationActions } from './hooks/useNotificationActions';
@@ -106,47 +100,39 @@ export function PremiumNotificationCenter({
       });
   }, [notifications]);
 
+  const reducedMotion = useReducedMotion();
+  
   // Bell icon animation
-  const bellRotate = useSharedValue(0);
-  const bellScale = useSharedValue(1);
+  const bellRotate = useMotionValue(0);
+  const bellScale = useMotionValue(1);
 
   useEffect(() => {
-    if (isOpen && notifications.unreadCount > 0) {
-      bellRotate.value = withRepeat(
-        withSequence(
-          withTiming(-10, { duration: 125 }),
-          withTiming(10, { duration: 125 }),
-          withTiming(-10, { duration: 125 }),
-          withTiming(0, { duration: 125 })
-        ),
-        2,
-        false
-      );
-      bellScale.value = withRepeat(
-        withSequence(withTiming(1.1, { duration: 200 }), withTiming(1, { duration: 200 })),
-        2,
-        false
-      );
+    if (reducedMotion) {
+      bellRotate.set(0);
+      bellScale.set(1);
+      return;
     }
-  }, [isOpen, notifications.unreadCount, bellRotate, bellScale]);
 
-  const bellStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${bellRotate.value}deg` }, { scale: bellScale.value }],
-  })) as AnimatedStyle;
+    if (isOpen && notifications.unreadCount > 0) {
+      // Shake sequence
+      void animate(bellRotate, [-10, 10, -10, 0], {
+        duration: 0.5,
+        repeat: 1,
+        ease: 'easeInOut',
+      });
+      void animate(bellScale, [1.1, 1], {
+        duration: 0.4,
+        repeat: 1,
+        ease: 'easeInOut',
+      });
+    } else {
+      void animate(bellRotate, 0, { duration: 0.2 });
+      void animate(bellScale, 1, { duration: 0.2 });
+    }
+  }, [isOpen, notifications.unreadCount, bellRotate, bellScale, reducedMotion]);
 
-  const settingsOpacity = useSharedValue(showSettings ? 1 : 0);
-  const settingsHeight = useSharedValue(showSettings ? 1 : 0);
+  const rotate = useTransform(bellRotate, (r) => `${r}deg`);
 
-  useEffect(() => {
-    settingsOpacity.value = withTiming(showSettings ? 1 : 0, timingConfigs.smooth);
-    settingsHeight.value = withTiming(showSettings ? 1 : 0, timingConfigs.smooth);
-  }, [showSettings, settingsOpacity, settingsHeight]);
-
-  const settingsStyle = useAnimatedStyle(() => ({
-    opacity: settingsOpacity.value,
-    height: settingsHeight.value === 1 ? 'auto' : '0',
-    overflow: 'hidden',
-  })) as AnimatedStyle;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -154,9 +140,9 @@ export function PremiumNotificationCenter({
         <SheetHeader className="px-6 py-4 border-b border-border/50 bg-linear-to-br from-background via-primary/5 to-accent/5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AnimatedView style={bellStyle}>
+              <motion.div style={{ rotate, scale: bellScale }}>
                 <BellRinging size={28} weight="fill" className="text-primary" />
-              </AnimatedView>
+              </motion.div>
               <div>
                 <SheetTitle className="text-xl">Notifications</SheetTitle>
                 {notifications.unreadCount > 0 && (
@@ -216,16 +202,24 @@ export function PremiumNotificationCenter({
             </div>
           </div>
 
-          {showSettings && (
-            <AnimatedView style={settingsStyle} className="overflow-hidden">
+          <AnimatePresence>
+            {showSettings && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: motionDurations.smooth, ease: [0.2, 0, 0, 1] }}
+                className="overflow-hidden"
+              >
               <div className="pt-4 space-y-4 border-t border-border/30 mt-4">
                 <NotificationSettings
                   preferences={preferences}
                   onPreferencesChange={setPreferences}
                 />
               </div>
-            </AnimatedView>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </SheetHeader>
 
         <Tabs

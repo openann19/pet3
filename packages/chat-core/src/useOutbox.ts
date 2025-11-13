@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { isTruthy } from '@petspark/shared'
 
 export interface OutboxItem {
   clientId: string

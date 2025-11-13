@@ -19,3 +19,5 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps): React.J
 
   return <SignUpForm onSuccess={handleSuccess} onSwitchToSignIn={handleSwitchToSignIn} />
 }
+
+SignUpScreen.displayName = 'SignUpScreen'

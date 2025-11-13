@@ -1,14 +1,17 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary'
 import LoadingState from '@/components/LoadingState'
 import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { ConsentManager, AgeVerification, isAgeVerified } from '@/components/compliance'
 import { errorTracking } from '@/lib/error-tracking'
 import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value'
+import { motion } from 'framer-motion'
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
-import { useStorage } from '@/hooks/useStorage'
+import { useStorage } from '@/hooks/use-storage'
 import { haptics } from '@/lib/haptics'
 import type { Playdate } from '@/lib/playdate-types'
 import '@/lib/profile-generator-helper'; // Expose generateProfiles to window
@@ -26,6 +29,7 @@ import { isTruthy } from '@petspark/shared';
 import type { View } from '@/lib/routes';
 import { getDefaultView, isValidView } from '@/lib/routes';
 import { useNavigation } from '@/hooks/use-navigation';
+import { Heart, Translate, Sun, Moon, ShieldCheck, Palette, Sparkle, ChatCircle, Users, MapPin, User } from 'phosphor-react'
 
 // Route components - lazy loaded
 const DiscoverView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/DiscoverView'))
@@ -136,7 +140,35 @@ function App() {
   // Button animations
   const closeButtonBounce = useBounceOnTap({ hapticFeedback: true })
 
-  
+  // Convert animated styles to CSS for framer-motion
+  const headerStyle = useAnimatedStyleValue(headerAnimation.headerStyle)
+  const headerShimmerStyle = useAnimatedStyleValue(headerAnimation.shimmerStyle)
+  const logoAnimationStyle = useAnimatedStyleValue(logoAnimation.style)
+  const logoGlowStyle = useAnimatedStyleValue(logoGlow.style)
+  const headerButton1Style = useAnimatedStyleValue(headerButton1.buttonStyle)
+  const headerButton2Style = useAnimatedStyleValue(headerButton2.buttonStyle)
+  const headerButton3Style = useAnimatedStyleValue(headerButton3.buttonStyle)
+  const headerButton4Style = useAnimatedStyleValue(headerButton4.buttonStyle)
+  const headerButton5Style = useAnimatedStyleValue(headerButton5.buttonStyle)
+  const headerButton6Style = useAnimatedStyleValue(headerButton6.buttonStyle)
+  const languageIconRotationStyle = useAnimatedStyleValue(languageIconRotation.style)
+  const loadingTransitionStyle = useAnimatedStyleValue(loadingTransition.style)
+  const pageTransitionStyle = useAnimatedStyleValue(pageTransition.style)
+  const navBarStyle = useAnimatedStyleValue(navBarAnimation.navStyle)
+  const navBarShimmerStyle = useAnimatedStyleValue(navBarAnimation.shimmerStyle)
+  const lostFoundButtonStyle = useAnimatedStyleValue(lostFoundAnimation.buttonStyle)
+  const lostFoundIconStyle = useAnimatedStyleValue(lostFoundAnimation.iconStyle)
+  const lostFoundIndicatorStyle = useAnimatedStyleValue(lostFoundAnimation.indicatorStyle)
+  const generateProfilesModalStyle = useAnimatedStyleValue(generateProfilesModal.style)
+  const generateProfilesContentStyle = useAnimatedStyleValue(generateProfilesContent.style)
+  const statsModalStyle = useAnimatedStyleValue(statsModal.style)
+  const statsContentStyle = useAnimatedStyleValue(statsContent.style)
+  const mapModalStyle = useAnimatedStyleValue(mapModal.style)
+  const mapContentStyle = useAnimatedStyleValue(mapContent.style)
+  const adminModalStyle = useAnimatedStyleValue(adminModal.style)
+  const adminContentStyle = useAnimatedStyleValue(adminContent.style)
+  const themeContentStyle = useAnimatedStyleValue(themeContent.style)
+  const closeButtonBounceStyle = useAnimatedStyleValue(closeButtonBounce.animatedStyle)
 
   // Memoize computed values to prevent unnecessary re-renders
   const totalMatches = useMemo(() => 
@@ -272,44 +304,50 @@ function App() {
       </Suspense>
       
       {/* Ultra-premium glassmorphic header with layered effects */}
-      <AnimatedView 
+      <motion.div 
         className="backdrop-blur-2xl bg-card/90 border-b border-border/50 sticky top-0 z-40 shadow-2xl shadow-primary/20"
-        style={headerAnimation.headerStyle}
+        style={headerStyle}
       >
         <div className="absolute inset-0 bg-linear-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
-        <AnimatedView 
+        <motion.div 
           className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
-          style={headerAnimation.shimmerStyle}
+          style={headerShimmerStyle}
         >
           <div />
-        </AnimatedView>
+        </motion.div>
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 relative">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            <AnimatedView 
+            <motion.div 
               className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
-              style={logoButtonHover.animatedStyle}
+              style={{
+                scale: logoButtonHover.scale,
+                y: logoButtonHover.translateY,
+              }}
               onMouseEnter={logoButtonHover.handleEnter}
               onMouseLeave={logoButtonHover.handleLeave}
             >
-              <AnimatedView className="relative" style={logoAnimation.style}>
-                <AnimatedView
+              <motion.div className="relative" style={logoAnimationStyle}>
+                <motion.div
                   className="absolute inset-0 bg-linear-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
-                  style={logoGlow.style}
+                  style={logoGlowStyle}
                 >
                   <div />
-                </AnimatedView>
+                </motion.div>
                 <Heart className="text-primary drop-shadow-2xl relative z-10 group-hover:scale-125 transition-transform duration-300" size={24} weight="fill" />
-              </AnimatedView>
+              </motion.div>
               <h1 className="text-base sm:text-xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent bg-size-[200%_auto] animate-gradient-x drop-shadow-sm">
                 {t.app.title}
               </h1>
-            </AnimatedView>
-            <AnimatedView 
+            </motion.div>
+            <motion.div 
               className="flex items-center gap-1 sm:gap-2"
-              style={headerButtonsContainer.containerStyle}
+              style={{
+                opacity: headerButtonsContainer.opacity,
+                x: headerButtonsContainer.x,
+              }}
             >
-              <AnimatedView 
-                style={headerButton1.buttonStyle}
+              <motion.div 
+                style={headerButton1Style}
                 onMouseEnter={headerButton1.handleEnter}
                 onMouseLeave={headerButton1.handleLeave}
                 onClick={headerButton1.handleTap}
@@ -317,9 +355,9 @@ function App() {
                 <Suspense fallback={<div className="w-9 h-9" />}>
                   <SyncStatusIndicator />
                 </Suspense>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton2.buttonStyle}
+              </motion.div>
+              <motion.div 
+                style={headerButton2Style}
                 onMouseEnter={headerButton2.handleEnter}
                 onMouseLeave={headerButton2.handleLeave}
                 onClick={headerButton2.handleTap}
@@ -327,9 +365,9 @@ function App() {
                 <Suspense fallback={<div className="w-9 h-9" />}>
                   <PremiumNotificationBell />
                 </Suspense>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton3.buttonStyle}
+              </motion.div>
+              <motion.div 
+                style={headerButton3Style}
                 onMouseEnter={headerButton3.handleEnter}
                 onMouseLeave={headerButton3.handleLeave}
                 onClick={headerButton3.handleTap}
@@ -346,16 +384,16 @@ function App() {
                   aria-pressed={language === 'bg'}
                   title={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
                 >
-                  <AnimatedView style={languageIconRotation.style}>
+                  <motion.div style={languageIconRotationStyle}>
                     <Translate size={18} weight="bold" className="text-foreground" />
-                  </AnimatedView>
+                  </motion.div>
                   <span className="text-xs font-semibold">
                     {language === 'en' ? 'БГ' : 'EN'}
                   </span>
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton4.buttonStyle}
+              </motion.div>
+              <motion.div 
+                style={headerButton4Style}
                 onMouseEnter={headerButton4.handleEnter}
                 onMouseLeave={headerButton4.handleLeave}
                 onClick={headerButton4.handleTap}
@@ -373,9 +411,9 @@ function App() {
                 >
                   <ShieldCheck size={20} weight="bold" className="text-foreground" />
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton5.buttonStyle}
+              </motion.div>
+              <motion.div 
+                style={headerButton5Style}
                 onMouseEnter={headerButton5.handleEnter}
                 onMouseLeave={headerButton5.handleLeave}
                 onClick={headerButton5.handleTap}
@@ -396,9 +434,9 @@ function App() {
                     <Moon size={20} weight="bold" className="text-foreground" />
                   )}
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton6.buttonStyle}
+              </motion.div>
+              <motion.div 
+                style={headerButton6Style}
                 onMouseEnter={headerButton6.handleEnter}
                 onMouseLeave={headerButton6.handleLeave}
                 onClick={headerButton6.handleTap}
@@ -416,49 +454,77 @@ function App() {
                 >
                   <Palette size={20} weight="bold" className="text-foreground" />
                 </Button>
-              </AnimatedView>
-            </AnimatedView>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </AnimatedView>
+      </motion.div>
 
       <Suspense fallback={null}>
         <BillingIssueBanner />
       </Suspense>
 
       {/* Enhanced main content with premium transitions */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10">
+      <main aria-label={t.app.title || 'PetSpark'} className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10">
         <Suspense fallback={
-          <AnimatedView style={loadingTransition.style}>
+          <motion.div style={loadingTransitionStyle}>
             <LoadingState />
-          </AnimatedView>
+          </motion.div>
         }>
-          <AnimatedView
+          <motion.div
             key={currentView}
-            style={pageTransition.style}
+            style={pageTransitionStyle}
           >
-            {currentView === 'discover' && <DiscoverView />}
-            {currentView === 'matches' && <MatchesView onNavigateToChat={() => { navigation.navigateToView('chat'); }} />}
-            {currentView === 'chat' && <ChatView />}
-            {currentView === 'community' && <CommunityView />}
-            {currentView === 'adoption' && <AdoptionView />}
-            {currentView === 'lost-found' && <LostFoundView />}
-            {currentView === 'profile' && <ProfileView />}
-          </AnimatedView>
+            {currentView === 'discover' && (
+              <ScreenErrorBoundary screenName="DiscoverView">
+                <DiscoverView />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'matches' && (
+              <ScreenErrorBoundary screenName="MatchesView">
+                <MatchesView onNavigateToChat={() => { navigation.navigateToView('chat'); }} />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'chat' && (
+              <ScreenErrorBoundary screenName="ChatView">
+                <ChatView />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'community' && (
+              <ScreenErrorBoundary screenName="CommunityView">
+                <CommunityView />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'adoption' && (
+              <ScreenErrorBoundary screenName="AdoptionView">
+                <AdoptionView />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'lost-found' && (
+              <ScreenErrorBoundary screenName="LostFoundView">
+                <LostFoundView />
+              </ScreenErrorBoundary>
+            )}
+            {currentView === 'profile' && (
+              <ScreenErrorBoundary screenName="ProfileView">
+                <ProfileView />
+              </ScreenErrorBoundary>
+            )}
+          </motion.div>
         </Suspense>
       </main>
 
-            <AnimatedView 
-        style={navBarAnimation.navStyle}
+            <motion.div 
+        style={navBarStyle}
         className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/50 z-40 shadow-2xl shadow-primary/20 safe-area-inset-bottom"                                                                               
       >
         <div className="absolute inset-0 bg-linear-to-t from-primary/8 via-accent/4 to-transparent pointer-events-none" />                                      
-        <AnimatedView 
-          style={navBarAnimation.shimmerStyle}
+        <motion.div 
+          style={navBarShimmerStyle}
           className="absolute inset-0 bg-linear-to-r from-transparent via-accent/5 to-transparent pointer-events-none"                                          
         >
           <div />
-        </AnimatedView>
+        </motion.div>
         <div className="max-w-7xl mx-auto px-1 sm:px-2 relative">
           <div className="flex items-center justify-around py-2 sm:py-3 gap-1">
                         <NavButton
@@ -502,13 +568,13 @@ function App() {
               enablePulse={currentView === 'adoption'}
             />
 
-            <AnimatedView
+            <motion.div
               className={`${String(NAV_BUTTON_BASE_CLASSES ?? '')} relative cursor-pointer ${
                 String(currentView === 'lost-found'
                                                                     ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                                                                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/60' ?? '')
               }`}
-              style={lostFoundAnimation.buttonStyle}
+              style={lostFoundButtonStyle}
               onMouseEnter={lostFoundAnimation.handleHover}
               onMouseLeave={lostFoundAnimation.handleLeave}
               onClick={() => {
@@ -517,19 +583,19 @@ function App() {
                 setCurrentView('lost-found')
               }}
             >
-              <AnimatedView style={lostFoundAnimation.iconStyle}>
+              <motion.div style={lostFoundIconStyle}>
                 <MapPin size={22} weight={currentView === 'lost-found' ? 'fill' : 'regular'} />
-              </AnimatedView>
+              </motion.div>
               <span className="text-[10px] sm:text-xs font-semibold leading-tight">{t.nav['lost-found'] || 'Lost & Found'}</span>
               {currentView === 'lost-found' && (
-                <AnimatedView
+                <motion.div
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
-                  style={lostFoundAnimation.indicatorStyle}
+                  style={lostFoundIndicatorStyle}
                 >
                   <div />
-                </AnimatedView>
+                </motion.div>
               )}
-            </AnimatedView>
+            </motion.div>
 
                         <NavButton
               isActive={currentView === 'profile'}
@@ -540,7 +606,7 @@ function App() {
             />
           </div>
         </div>
-      </AnimatedView>
+      </motion.div>
 
       <Suspense fallback={null}>
         <QuickActionsMenu
@@ -555,20 +621,20 @@ function App() {
       </Suspense>
 
       {showGenerateProfiles && (
-        <AnimatedView
-          style={generateProfilesModal.style}
+        <motion.div
+          style={generateProfilesModalStyle}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowGenerateProfiles(false); }}
         >
-          <AnimatedView
-            style={generateProfilesContent.style}
+          <motion.div
+            style={generateProfilesContentStyle}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="bg-card p-6 rounded-2xl shadow-2xl max-w-md w-full border border-border/50"
           >
             <Suspense fallback={<LoadingState />}>
               <GenerateProfilesButton />
             </Suspense>
-            <AnimatedView style={closeButtonBounce.animatedStyle}>
+            <motion.div style={closeButtonBounceStyle}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -576,18 +642,18 @@ function App() {
               >
                 Close
               </Button>
-            </AnimatedView>
-          </AnimatedView>
-        </AnimatedView>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       )}
       {showStats && totalSwipes > 0 && (
-        <AnimatedView
-          style={statsModal.style}
+        <motion.div
+          style={statsModalStyle}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowStats(false); }}
         >
-          <AnimatedView
-            style={statsContent.style}
+          <motion.div
+            style={statsContentStyle}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="max-w-2xl w-full"
           >
@@ -598,7 +664,7 @@ function App() {
                 successRate={successRate}
               />
             </Suspense>
-            <AnimatedView style={closeButtonBounce.animatedStyle}>
+            <motion.div style={closeButtonBounceStyle}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -606,55 +672,55 @@ function App() {
               >
                 Close
               </Button>
-            </AnimatedView>
-          </AnimatedView>
-        </AnimatedView>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       )}
 
       {showMap && (
-        <AnimatedView
-          style={mapModal.style}
+        <motion.div
+          style={mapModalStyle}
           className="fixed inset-0 z-50"
         >
           <Suspense fallback={<LoadingState />}>
-            <AnimatedView
-              style={mapContent.style}
+            <motion.div
+              style={mapContentStyle}
               className="h-full w-full"
             >
               <PlaydateMap
                 playdates={playdates || []}
                 onClose={() => { setShowMap(false); }}
               />
-            </AnimatedView>
+            </motion.div>
           </Suspense>
-        </AnimatedView>
+        </motion.div>
       )}
 
       {showAdminConsole && (
-        <AnimatedView
-          style={adminModal.style}
+        <motion.div
+          style={adminModalStyle}
           className="fixed inset-0 z-50 bg-background"
         >
-          <AnimatedView
-            style={adminContent.style}
+          <motion.div
+            style={adminContentStyle}
             className="h-full w-full"
           >
             <Suspense fallback={<LoadingState />}>
               <AdminConsole onClose={() => { setShowAdminConsole(false); }} />
             </Suspense>
-          </AnimatedView>
-        </AnimatedView>
+          </motion.div>
+        </motion.div>
       )}
 
       {showThemeSettings && (
         <Dialog open={showThemeSettings} onOpenChange={setShowThemeSettings}>
           <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto p-0">
             <DialogTitle className="sr-only">Ultra Theme Settings</DialogTitle>
-            <AnimatedView style={themeContent.style}>
+            <motion.div style={themeContentStyle}>
               <Suspense fallback={<LoadingState />}>
                 <UltraThemeSettings />
               </Suspense>
-            </AnimatedView>
+            </motion.div>
           </DialogContent>
         </Dialog>
       )}

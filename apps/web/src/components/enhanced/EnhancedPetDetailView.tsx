@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Calendar,
   ChatCircle,
@@ -21,15 +21,22 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSwipeGesture } from '@/hooks/use-swipe-gesture';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import React from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withDelay, animate } from '@petspark/motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { haptics } from '@/lib/haptics';
 import type { Pet } from '@/lib/types';
 import { useUIConfig } from "@/hooks/use-ui-config";
-import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
+import { 
+  getTypographyClasses, 
+  getSpacingClassesFromConfig,
+  getSpacingClasses,
+  getRadiusClasses,
+  getShadowClasses,
+} from '@/lib/design-token-utils';
 import { cn } from '@/lib/utils';
+import { dialogVariants, dialogOverlayVariants, springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 
 export interface EnhancedPetDetailViewProps {
   pet: Pet;
@@ -115,66 +122,37 @@ export function EnhancedPetDetailView({
   }, []);
 
   const trustLevel = getTrustLevel(trustScore);
-
-  // Animation hooks
-  const containerOpacity = useSharedValue(0);
-  const containerScale = useSharedValue(0.95);
-  const modalOpacity = useSharedValue(0);
-  const modalScale = useSharedValue(0.95);
-  const photoOpacity = useSharedValue(0);
-
-  // Bounce hooks for buttons
-
-  useEffect(() => {
-    if (isVisible) {
-      const containerOpacityTransition = withSpring(1, { damping: 20, stiffness: 300 });
-      animate(containerOpacity, containerOpacityTransition.target, containerOpacityTransition.transition);
-      const containerScaleTransition = withSpring(1, { damping: 20, stiffness: 300 });
-      animate(containerScale, containerScaleTransition.target, containerScaleTransition.transition);
-      const modalOpacityTransition = withSpring(1, { damping: 20, stiffness: 300 });
-      animate(modalOpacity, modalOpacityTransition.target, modalOpacityTransition.transition);
-      const modalScaleTransition = withSpring(1, { damping: 20, stiffness: 300 });
-      animate(modalScale, modalScaleTransition.target, modalScaleTransition.transition);
-    } else {
-      const containerOpacityTransition = withSpring(0, { damping: 20, stiffness: 300 });
-      animate(containerOpacity, containerOpacityTransition.target, containerOpacityTransition.transition);
-      const modalScaleTransition = withSpring(0.95, { damping: 20, stiffness: 300 });
-      animate(modalScale, modalScaleTransition.target, modalScaleTransition.transition);
-    }
-  }, [isVisible, containerOpacity, containerScale, modalOpacity, modalScale]);
-
-  useEffect(() => {
-    const photoOpacityTransition = withSpring(1, { damping: 20, stiffness: 300 });
-    animate(photoOpacity, photoOpacityTransition.target, photoOpacityTransition.transition);
-  }, [currentPhotoIndex, photoOpacity]);
-
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: containerOpacity.get(),
-  }));
-
-  const modalStyle = useAnimatedStyle(() => ({
-    opacity: modalOpacity.get(),
-    transform: [{ scale: modalScale.get() }],
-  }));
-
-  const photoStyle = useAnimatedStyle(() => ({
-    opacity: photoOpacity.get(),
-  }));
+  const reducedMotion = useReducedMotion();
 
   return (
-    <AnimatedView
-      className="fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex items-center justify-center p-4"
-      onClick={handleClose}
-      style={containerStyle}
-    >
-      <AnimatedView
-        className="w-full max-w-4xl max-h-[90vh] bg-card rounded-3xl shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        style={modalStyle}
-      >
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className={cn(
+            "fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex items-center justify-center",
+            getSpacingClasses('md', 'padding')
+          )}
+          onClick={handleClose}
+          variants={reducedMotion ? undefined : dialogOverlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <motion.div
+            className={cn(
+              "w-full max-w-4xl max-h-[90vh] bg-card overflow-hidden",
+              getRadiusClasses('3xl'),
+              getShadowClasses('modal')
+            )}
+            onClick={(e) => e.stopPropagation()}
+            variants={reducedMotion ? undefined : dialogVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
         <div className="relative h-full flex flex-col">
           {/* Header */}
-          <div className="absolute top-4 right-4 z-10">
+          <div className={cn("absolute top-4 right-4 z-10")}>
             <CloseButton onClose={handleClose} />
           </div>
 
@@ -186,23 +164,41 @@ export function EnhancedPetDetailView({
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
-              <AnimatedView className="w-full h-full" key={currentPhotoIndex} style={photoStyle}>
-                <img
-                  src={photos[currentPhotoIndex]}
-                  alt={pet.name}
-                  className="w-full h-full object-cover"
-                  onLoad={handleImageLoad}
-                  onError={handleImageError}
-                />
-              </AnimatedView>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPhotoIndex}
+                  className="w-full h-full"
+                  initial={reducedMotion ? undefined : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0 }}
+                  transition={reducedMotion ? undefined : {
+                    ...springConfigs.smooth,
+                    duration: motionDurations.smooth,
+                  }}
+                >
+                  <img
+                    src={photos[currentPhotoIndex]}
+                    alt={pet.name}
+                    className="w-full h-full object-cover"
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                  />
+                </motion.div>
+              </AnimatePresence>
 
               {photos.length > 1 && (
                 <>
-                  <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
+                  <div className={cn(
+                    "absolute inset-0 flex items-center justify-between pointer-events-none",
+                    getSpacingClasses('md', 'paddingX')
+                  )}>
                     <PhotoNavButton onClick={handlePrevPhoto} />
                     <PhotoNavButton onClick={handleNextPhoto} />
                   </div>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  <div className={cn(
+                    "absolute bottom-4 left-1/2 -translate-x-1/2 flex",
+                    getSpacingClasses('sm', 'gap')
+                  )}>
                     {photos.map((_, idx) => (
                       <PhotoIndicator
                         key={idx}
@@ -224,7 +220,10 @@ export function EnhancedPetDetailView({
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
+            <div className={cn(
+              getSpacingClasses('lg', 'padding'),
+              getSpacingClasses('lg', 'spaceY')
+            )}>
               {/* Header Info */}
               <PetHeader pet={pet} trustScore={trustScore} trustLevel={trustLevel} />
 
@@ -247,8 +246,10 @@ export function EnhancedPetDetailView({
             />
           )}
         </div>
-      </AnimatedView>
-    </AnimatedView>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -257,24 +258,23 @@ interface CloseButtonProps {
 }
 
 function CloseButton({ onClose }: CloseButtonProps): React.JSX.Element {
-  const bounce = useBounceOnTap();
-
-  const handlePress = useCallback(() => {
-    haptics.trigger('light');
-    onClose();
-  }, [onClose]);
+  const bounce = useBounceOnTap({ onPress: onClose });
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={handlePress}
+      onClick={bounce.handlePress}
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
       aria-label="Close pet detail view"
     >
-      <AnimatedView style={bounce.animatedStyle}>
+      <motion.div
+        variants={bounce.variants}
+        initial="rest"
+        whileTap="tap"
+      >
         <X size={24} weight="bold" />
-      </AnimatedView>
+      </motion.div>
     </Button>
   );
 }
@@ -284,24 +284,23 @@ interface PhotoNavButtonProps {
 }
 
 function PhotoNavButton({ onClick }: PhotoNavButtonProps): React.JSX.Element {
-  const bounce = useBounceOnTap();
-
-  const handlePress = useCallback(() => {
-    haptics.trigger('light');
-    onClick();
-  }, [onClick]);
+  const bounce = useBounceOnTap({ onPress: onClick });
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={handlePress}
+      onClick={bounce.handlePress}
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background pointer-events-auto"
       aria-label="Navigate to next photo"
     >
-      <AnimatedView style={bounce.animatedStyle}>
+      <motion.div
+        variants={bounce.variants}
+        initial="rest"
+        whileTap="tap"
+      >
         <PawPrint size={20} weight="fill" />
-      </AnimatedView>
+      </motion.div>
     </Button>
   );
 }
@@ -313,6 +312,8 @@ interface PhotoIndicatorProps {
 }
 
 function PhotoIndicator({ index, isActive, onClick }: PhotoIndicatorProps): React.JSX.Element {
+  const reducedMotion = useReducedMotion();
+
   return (
     <button
       onClick={onClick}
@@ -320,14 +321,16 @@ function PhotoIndicator({ index, isActive, onClick }: PhotoIndicatorProps): Reac
         }`}
       aria-label={`Go to photo ${index + 1}`}
     >
-      <AnimatedView
+      <motion.div
         className="h-full rounded-full bg-white"
-        style={
-          useAnimatedStyle(() => ({
-            width: isActive ? 24 : 8,
-            opacity: isActive ? 1 : 0.5,
-          })) as AnimatedStyle
-        }
+        animate={reducedMotion ? undefined : {
+          width: isActive ? 24 : 8,
+          opacity: isActive ? 1 : 0.5,
+        }}
+        transition={reducedMotion ? undefined : {
+          ...springConfigs.smooth,
+          duration: motionDurations.normal,
+        }}
       />
     </button>
   );
@@ -338,30 +341,28 @@ interface CompatibilityBadgeProps {
 }
 
 function CompatibilityBadge({ score }: CompatibilityBadgeProps): React.JSX.Element {
-  const badgeOpacity = useSharedValue(0);
-  const badgeScale = useSharedValue(0.8);
-
-  useEffect(() => {
-    const badgeOpacityTransition = withSpring(1, { damping: 20, stiffness: 300 });
-    animate(badgeOpacity, badgeOpacityTransition.target, badgeOpacityTransition.transition);
-    const badgeScaleTransition = withSpring(1, { damping: 20, stiffness: 300 });
-    animate(badgeScale, badgeScaleTransition.target, badgeScaleTransition.transition);
-  }, [badgeOpacity, badgeScale]);
-
-  const badgeStyle = useAnimatedStyle(() => ({
-    opacity: badgeOpacity.get(),
-    transform: [{ scale: badgeScale.get() }],
-  }));
+  const reducedMotion = useReducedMotion();
 
   return (
     <div className="absolute top-4 left-4">
-      <AnimatedView
-        className="flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-primary to-accent backdrop-blur-sm"
-        style={badgeStyle}
+      <motion.div
+        className={cn(
+          "flex items-center rounded-full bg-linear-to-r from-primary to-accent backdrop-blur-sm",
+          getSpacingClasses('sm', 'gap'),
+          getSpacingClasses('md', 'paddingX'),
+          getSpacingClasses('sm', 'paddingY'),
+          getRadiusClasses('full')
+        )}
+        initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={reducedMotion ? undefined : {
+          ...springConfigs.smooth,
+          duration: motionDurations.smooth,
+        }}
       >
-        <TrendUp size={20} weight="bold" className="text-white" />
-        <span className="text-lg font-bold text-white">{score}% Match</span>
-      </AnimatedView>
+        <TrendUp size={20} weight="bold" className="text-white" aria-hidden="true" />
+        <span className={cn(getTypographyClasses('h3'), 'font-bold text-white')}>{score}% Match</span>
+      </motion.div>
     </div>
   );
 }
@@ -375,7 +376,7 @@ interface PetHeaderProps {
 function PetHeader({ pet, trustScore, trustLevel }: PetHeaderProps): React.JSX.Element {
   return (
     <div>
-      <div className="flex items-start justify-between mb-2">
+      <div className={cn("flex items-start justify-between", getSpacingClassesFromConfig({ marginY: 'sm' }))}>
         <div>
           <h1 className={cn(getTypographyClasses('h1'))}>{pet.name}</h1>
           <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>
@@ -383,17 +384,17 @@ function PetHeader({ pet, trustScore, trustLevel }: PetHeaderProps): React.JSX.E
           </p>
         </div>
         {trustScore > 0 && (
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={20} className={trustLevel.color} weight="fill" />
-              <span className={`font-semibold ${String(trustLevel.color ?? '')}`}>{trustLevel.label}</span>
+          <div className={cn('flex flex-col items-end', getSpacingClassesFromConfig({ gap: 'xs' }))}>
+            <div className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+              <ShieldCheck size={20} className={trustLevel.color} weight="fill" aria-hidden="true" />
+              <span className={cn('font-semibold', trustLevel.color)}>{trustLevel.label}</span>
             </div>
-            <span className={cn(getTypographyClasses('body-sm'), 'text-muted-foreground')}>Trust Score: {trustScore}</span>
+            <span className={cn(getTypographyClasses('bodySmall'), 'text-muted-foreground')}>Trust Score: {trustScore}</span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className={cn("flex items-center text-muted-foreground", getSpacingClasses('sm', 'gap'))}>
         <MapPin size={16} weight="fill" />
         <span>{pet.location}</span>
       </div>
@@ -407,13 +408,19 @@ interface MatchReasonsCardProps {
 
 function MatchReasonsCard({ reasons }: MatchReasonsCardProps): React.JSX.Element {
   return (
-    <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-accent/5">
-      <CardContent className="p-4 space-y-2">
-        <h3 className={cn(getTypographyClasses('h3'), 'flex items-center', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+      <CardContent className={cn(
+        getSpacingClassesFromConfig({ padding: 'lg', spaceY: 'sm' })
+      )}>
+        <h3 className={cn(
+          getTypographyClasses('h3'),
+          'flex items-center',
+          getSpacingClassesFromConfig({ gap: 'sm' })
+        )}>
           <Star size={20} className="text-accent" weight="fill" aria-hidden="true" />
           Why This Match Works
         </h3>
-        <ul className="space-y-1.5">
+        <ul className={getSpacingClassesFromConfig({ spaceY: 'xs' })}>
           {reasons.map((reason, idx) => (
             <MatchReasonItem key={idx} reason={reason} index={idx} />
           ))}
@@ -429,26 +436,31 @@ interface MatchReasonItemProps {
 }
 
 function MatchReasonItem({ reason, index }: MatchReasonItemProps): React.JSX.Element {
-  const itemOpacity = useSharedValue(0);
-  const itemX = useSharedValue(-10);
-
-  useEffect(() => {
-    const itemOpacityDelay = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }));
-    animate(itemOpacity, itemOpacityDelay.target, itemOpacityDelay.transition);
-    const itemXDelay = withDelay(index * 50, withSpring(0, { damping: 20, stiffness: 300 }));
-    animate(itemX, itemXDelay.target, itemXDelay.transition);
-  }, [index, itemOpacity, itemX]);
-
-  const itemStyle = useAnimatedStyle(() => ({
-    opacity: itemOpacity.get(),
-    transform: [{ translateX: itemX.get() }],
-  }));
+  const reducedMotion = useReducedMotion();
 
   return (
-    <AnimatedView className="text-sm flex items-start gap-2" style={itemStyle}>
-      <Heart size={14} className="text-primary mt-0.5 shrink-0" weight="fill" />
+    <motion.li
+      className={cn(
+        'flex items-start',
+        getTypographyClasses('bodySmall'),
+        getSpacingClassesFromConfig({ gap: 'sm' })
+      )}
+      initial={reducedMotion ? false : { opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={reducedMotion ? undefined : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      }}
+    >
+      <Heart
+        size={14}
+        className={cn('text-primary shrink-0', getSpacingClassesFromConfig({ marginY: 'xs' }))}
+        weight="fill"
+        aria-hidden="true"
+      />
       <span>{reason}</span>
-    </AnimatedView>
+    </motion.li>
   );
 }
 
@@ -465,16 +477,26 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
         <TabsTrigger value="stats">Stats</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="about" className="space-y-4 mt-4">
+      <TabsContent value="about" className={cn(
+        getSpacingClassesFromConfig({ spaceY: 'lg', marginY: 'lg' })
+      )}>
         <div>
-          <h3 className="font-semibold mb-2">Bio</h3>
-          <p className="text-muted-foreground">{pet.bio}</p>
+          <h3 className={cn(
+            getTypographyClasses('h3'),
+            'font-semibold',
+            getSpacingClassesFromConfig({ marginY: 'sm' })
+          )}>Bio</h3>
+          <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>{pet.bio}</p>
         </div>
 
         {pet.interests && pet.interests.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Interests</h3>
-            <div className="flex flex-wrap gap-2">
+            <h3 className={cn(
+              getTypographyClasses('h3'),
+              'font-semibold',
+              getSpacingClassesFromConfig({ marginY: 'sm' })
+            )}>Interests</h3>
+            <div className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
               {pet.interests.map((interest, idx) => (
                 <Badge key={idx} variant="secondary">
                   {interest}
@@ -486,8 +508,12 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
 
         {pet.lookingFor && pet.lookingFor.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Looking For</h3>
-            <div className="flex flex-wrap gap-2">
+            <h3 className={cn(
+              getTypographyClasses('h3'),
+              'font-semibold',
+              getSpacingClassesFromConfig({ marginY: 'sm' })
+            )}>Looking For</h3>
+            <div className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
               {pet.lookingFor.map((item, idx) => (
                 <Badge key={idx} variant="outline">
                   {item}
@@ -498,11 +524,17 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
         )}
       </TabsContent>
 
-      <TabsContent value="personality" className="space-y-4 mt-4">
+      <TabsContent value="personality" className={cn(
+        getSpacingClassesFromConfig({ spaceY: 'lg', marginY: 'lg' })
+      )}>
         {pet.personality && pet.personality.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-3">Personality Traits</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <h3 className={cn(
+              getTypographyClasses('h3'),
+              'font-semibold',
+              getSpacingClassesFromConfig({ marginY: 'md' })
+            )}>Personality Traits</h3>
+            <div className={cn('grid grid-cols-2', getSpacingClassesFromConfig({ gap: 'md' }))}>
               {pet.personality.map((trait, idx) => (
                 <PersonalityTrait key={idx} trait={trait} index={idx} />
               ))}
@@ -511,9 +543,13 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
         )}
 
         <div>
-          <h3 className="font-semibold mb-2">Activity Level</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+          <h3 className={cn(
+            getTypographyClasses('h3'),
+            'font-semibold',
+            getSpacingClassesFromConfig({ marginY: 'sm' })
+          )}>Activity Level</h3>
+          <div className={getSpacingClassesFromConfig({ spaceY: 'sm' })}>
+            <div className={cn('flex justify-between', getTypographyClasses('bodySmall'))}>
               <span>Energy</span>
               <span className="font-medium">{pet.activityLevel ?? 'Moderate'}</span>
             </div>
@@ -522,8 +558,10 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
         </div>
       </TabsContent>
 
-      <TabsContent value="stats" className="space-y-4 mt-4">
-        <div className="grid grid-cols-2 gap-4">
+      <TabsContent value="stats" className={cn(
+        getSpacingClassesFromConfig({ spaceY: 'lg', marginY: 'lg' })
+      )}>
+        <div className={cn('grid grid-cols-2', getSpacingClassesFromConfig({ gap: 'lg' }))}>
           <StatCard
             icon={Users}
             label="Playdates"
@@ -552,8 +590,12 @@ function PetTabs({ pet }: PetTabsProps): React.JSX.Element {
 
         {pet.badges && pet.badges.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-3">Trust Badges</h3>
-            <div className="flex flex-wrap gap-2">
+            <h3 className={cn(
+              getTypographyClasses('h3'),
+              'font-semibold',
+              getSpacingClassesFromConfig({ marginY: 'md' })
+            )}>Trust Badges</h3>
+            <div className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
               {pet.badges.map((badge, idx) => (
                 <TrustBadgeItem key={idx} badge={badge} index={idx} />
               ))}
@@ -571,29 +613,30 @@ interface PersonalityTraitProps {
 }
 
 function PersonalityTrait({ trait, index }: PersonalityTraitProps): React.JSX.Element {
-  const traitOpacity = useSharedValue(0);
-  const traitScale = useSharedValue(0.9);
-
-  useEffect(() => {
-    const traitOpacityDelay = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }));
-    animate(traitOpacity, traitOpacityDelay.target, traitOpacityDelay.transition);
-    const traitScaleDelay = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }));
-    animate(traitScale, traitScaleDelay.target, traitScaleDelay.transition);
-  }, [index, traitOpacity, traitScale]);
-
-  const traitStyle = useAnimatedStyle(() => ({
-    opacity: traitOpacity.get(),
-    transform: [{ scale: traitScale.get() }],
-  }));
+  const reducedMotion = useReducedMotion();
 
   return (
-    <AnimatedView
-      className="p-3 rounded-lg bg-muted/50 border border-border text-center"
-      style={traitStyle}
+    <motion.div
+      className={cn(
+        'rounded-lg bg-muted/50 border border-border text-center',
+        getSpacingClassesFromConfig({ padding: 'md' })
+      )}
+      initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={reducedMotion ? undefined : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      }}
     >
-      <PawPrint size={24} className="text-primary mx-auto mb-1" weight="fill" />
-      <span className="text-sm font-medium">{trait}</span>
-    </AnimatedView>
+      <PawPrint
+        size={24}
+        className={cn('text-primary mx-auto', getSpacingClassesFromConfig({ marginY: 'xs' }))}
+        weight="fill"
+        aria-hidden="true"
+      />
+      <span className={cn(getTypographyClasses('bodySmall'), 'font-medium')}>{trait}</span>
+    </motion.div>
   );
 }
 
@@ -614,14 +657,14 @@ function StatCard({ icon: Icon, label, value, color }: StatCardProps): React.JSX
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${String(colorClasses[color] ?? '')}`}>
-            <Icon size={24} weight="duotone" />
+      <CardContent className={getSpacingClassesFromConfig({ padding: 'lg' })}>
+        <div className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'md' }))}>
+          <div className={cn('rounded-lg', getSpacingClassesFromConfig({ padding: 'sm' }), colorClasses[color])}>
+            <Icon size={24} weight="duotone" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className={cn(getTypographyClasses('bodySmall'), 'text-muted-foreground')}>{label}</p>
+            <p className={cn(getTypographyClasses('h2'), 'font-bold')}>{value}</p>
           </div>
         </div>
       </CardContent>
@@ -635,28 +678,28 @@ interface TrustBadgeItemProps {
 }
 
 function TrustBadgeItem({ badge, index }: TrustBadgeItemProps): React.JSX.Element {
-  const badgeOpacity = useSharedValue(0);
-  const badgeScale = useSharedValue(0.8);
-
-  useEffect(() => {
-    const badgeOpacityDelay = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }));
-    animate(badgeOpacity, badgeOpacityDelay.target, badgeOpacityDelay.transition);
-    const badgeScaleDelay = withDelay(index * 50, withSpring(1, { damping: 20, stiffness: 300 }));
-    animate(badgeScale, badgeScaleDelay.target, badgeScaleDelay.transition);
-  }, [index, badgeOpacity, badgeScale]);
-
-  const badgeStyle = useAnimatedStyle(() => ({
-    opacity: badgeOpacity.get(),
-    transform: [{ scale: badgeScale.get() }],
-  }));
+  const reducedMotion = useReducedMotion();
 
   return (
-    <AnimatedView style={badgeStyle}>
-      <Badge className="px-3 py-1.5">
-        <ShieldCheck size={14} className="mr-1" weight="fill" />
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={reducedMotion ? undefined : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+        delay: index * 0.05,
+      }}
+    >
+      <Badge className={getSpacingClassesFromConfig({ paddingX: 'md', paddingY: 'xs' })}>
+        <ShieldCheck
+          size={14}
+          className={getSpacingClassesFromConfig({ marginX: 'xs' })}
+          weight="fill"
+          aria-hidden="true"
+        />
         {badge.label}
       </Badge>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -668,8 +711,11 @@ interface ActionButtonsProps {
 
 function ActionButtons({ onLike, onPass, onChat }: ActionButtonsProps): React.JSX.Element {
   return (
-    <div className="border-t border-border p-4 bg-card/95 backdrop-blur-sm">
-      <div className="flex gap-3 max-w-md mx-auto">
+    <div className={cn(
+      'border-t border-border bg-card/95 backdrop-blur-sm',
+      getSpacingClassesFromConfig({ padding: 'lg' })
+    )}>
+      <div className={cn('flex max-w-md mx-auto', getSpacingClassesFromConfig({ gap: 'md' }))}>
         {onPass && <ActionButton variant="outline" icon={X} label="Pass" onClick={onPass} />}
         {onChat && (
           <ActionButton variant="secondary" icon={ChatCircle} label="Chat" onClick={onChat} />
@@ -680,7 +726,7 @@ function ActionButtons({ onLike, onPass, onChat }: ActionButtonsProps): React.JS
             icon={Heart}
             label="Like"
             onClick={onLike}
-            className="bg-linear-to-r from-primary to-accent hover:opacity-90"
+            className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
           />
         )}
       </div>
@@ -703,12 +749,7 @@ function ActionButton({
   onClick,
   className,
 }: ActionButtonProps): React.JSX.Element {
-  const bounce = useBounceOnTap();
-
-  const handlePress = useCallback(() => {
-    haptics.trigger('light');
-    onClick();
-  }, [onClick]);
+  const bounce = useBounceOnTap({ onPress: onClick });
 
   return (
     <Button
@@ -716,13 +757,23 @@ function ActionButton({
         variant === 'outline' ? 'outline' : variant === 'secondary' ? 'secondary' : 'default'
       }
       size="lg"
-      onClick={handlePress}
+      onClick={bounce.handlePress}
       className={`flex-1 rounded-full ${className ?? ''}`}
     >
-      <AnimatedView style={bounce.animatedStyle} className="flex items-center">
-        <Icon size={20} weight={variant === 'primary' ? 'fill' : 'bold'} className="mr-2" />
+      <motion.div
+        variants={bounce.variants}
+        initial="rest"
+        whileTap="tap"
+        className="flex items-center"
+      >
+        <Icon
+          size={20}
+          weight={variant === 'primary' ? 'fill' : 'bold'}
+          className={getSpacingClassesFromConfig({ marginX: 'sm' })}
+          aria-hidden="true"
+        />
         {label}
-      </AnimatedView>
+      </motion.div>
     </Button>
   );
 }

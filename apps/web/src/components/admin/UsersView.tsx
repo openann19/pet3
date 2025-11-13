@@ -1,4 +1,5 @@
 import { adminApi } from '@/api/admin-api';
+import { motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { badgeVariants } from '@/components/ui/badge';
 import { Badge } from '@/components/ui/badge';
@@ -268,7 +269,7 @@ export default function UsersView() {
             })
             
             return (
-              <AnimatedView key={user.id} style={entry.animatedStyle}>
+              <motion.div key={user.id} style={entry.animatedStyle}>
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -314,7 +315,7 @@ export default function UsersView() {
                     </div>
                   </CardContent>
                 </Card>
-              </AnimatedView>
+              </motion.div>
             )
           })}
         </div>

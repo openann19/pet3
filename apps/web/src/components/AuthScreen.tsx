@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Translate } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import SignInForm from './auth/SignInForm';
 import SignUpForm from './auth/SignUpForm';
 
@@ -62,7 +63,7 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
     <div className="fixed inset-0 bg-(--background-cream) overflow-auto">
       <div className="min-h-screen flex flex-col">
         {/* Header with back button and language toggle */}
-        <AnimatedView style={headerStyle} className="p-4 sm:p-6 flex items-center justify-between">
+        <motion.div style={headerStyle} className="p-4 sm:p-6 flex items-center justify-between">
           <button
             onClick={handleBack}
             className="w-11 h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors focus:outline-none"
@@ -70,7 +71,7 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
           >
             <ArrowLeft size={20} className="text-gray-700" />
           </button>
-          <AnimatedView style={languageButtonStyle}>
+          <motion.div style={languageButtonStyle}>
             <button
               onClick={() => {
                 haptics.trigger('selection');
@@ -83,28 +84,28 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
               <Translate size={18} weight="regular" aria-hidden />
               <span>{language === 'en' ? 'БГ' : 'EN'}</span>
             </button>
-          </AnimatedView>
-        </AnimatedView>
+          </motion.div>
+        </motion.div>
 
         <div className="flex-1 flex items-center justify-center px-6 pb-12">
           <div className="w-full max-w-md">
             {signInPresence.shouldRender && mode === 'signin' && (
-              <AnimatedView style={signInPresence.animatedStyle}>
+              <motion.div style={signInPresence.animatedStyle}>
                 <SignInForm
                   key="signin"
                   onSuccess={onSuccess}
                   onSwitchToSignUp={() => { handleModeSwitch('signup'); }}
                 />
-              </AnimatedView>
+              </motion.div>
             )}
             {signUpPresence.shouldRender && mode === 'signup' && (
-              <AnimatedView style={signUpPresence.animatedStyle}>
+              <motion.div style={signUpPresence.animatedStyle}>
                 <SignUpForm
                   key="signup"
                   onSuccess={onSuccess}
                   onSwitchToSignIn={() => { handleModeSwitch('signin'); }}
                 />
-              </AnimatedView>
+              </motion.div>
             )}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { kycApi } from '@/api/kyc-api';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,7 +26,7 @@ import {
   Warning,
   XCircle,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -71,10 +72,10 @@ export function KYCManagement() {
     if (!presence.shouldRender) return null
     
     return (
-      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+      <motion.div style={presence.animatedStyle} className="text-center py-12">
         <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No sessions in this category</p>
-      </AnimatedView>
+      </motion.div>
     )
   }
 
@@ -87,7 +88,7 @@ export function KYCManagement() {
     })
     
     return (
-      <AnimatedView style={entry.animatedStyle}>
+      <motion.div style={entry.animatedStyle}>
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { handleSessionClick(session); }}
@@ -138,7 +139,7 @@ export function KYCManagement() {
             <ArrowRight size={20} className="text-muted-foreground shrink-0" />
           </div>
         </Card>
-      </AnimatedView>
+      </motion.div>
     )
   }
 
@@ -298,13 +299,13 @@ export function KYCManagement() {
           <ScrollArea className="h-150">
             <div className="space-y-4">
               {filteredSessions.length === 0 ? (
-                <AnimatedView className="text-center py-12">
+                <motion.div className="text-center py-12">
                   <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No sessions in this category</p>
-                </AnimatedView>
+                </motion.div>
               ) : (
                 filteredSessions.map((session) => (
-                  <AnimatedView key={session.id} layout>
+                  <motion.div key={session.id} layout>
                     <Card
                       className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => handleSessionClick(session)}
@@ -359,7 +360,7 @@ export function KYCManagement() {
                         <ArrowRight size={20} className="text-muted-foreground shrink-0" />
                       </div>
                     </Card>
-                  </AnimatedView>
+                  </motion.div>
                 ))
               )}
             </div>

@@ -35,26 +35,26 @@ export type SharedValue<T> = MotionValue<T>
  * Animate a motion value with spring physics
  * Equivalent to: sharedValue.value = withSpring(target, config)
  */
-export function animateWithSpring(
-  motionValue: MotionValue<number>,
+export function animateWithSpring<T extends number>(
+  motionValue: MotionValue<T>,
   target: number,
   config?: ReanimatedSpringConfig
 ): Promise<void> {
   const transition = convertSpringToFramer(config)
-  return animate(motionValue, target, transition)
+  return animate(motionValue as MotionValue<number>, target, transition)
 }
 
 /**
  * Animate a motion value with timing
  * Equivalent to: sharedValue.value = withTiming(target, config)
  */
-export function animateWithTiming(
-  motionValue: MotionValue<number>,
+export function animateWithTiming<T extends number>(
+  motionValue: MotionValue<T>,
   target: number,
   config?: ReanimatedTimingConfig
 ): Promise<void> {
   const transition = convertTimingToFramer(config)
-  return animate(motionValue, target, transition)
+  return animate(motionValue as MotionValue<number>, target, transition)
 }
 
 /**

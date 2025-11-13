@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { MonitorPlay, Check } from '@phosphor-icons/react';
@@ -8,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { VideoQuality } from '@/lib/call-types';
 import { haptics } from '@/lib/haptics';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 interface VideoQualitySettingsProps {
   currentQuality: VideoQuality;
@@ -92,7 +93,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
   }, [hoverTap, onSelect, option.value]);
 
   return (
-    <AnimatedView
+    <motion.div
       style={hoverTap.animatedStyle}
       onMouseEnter={hoverTap.handleMouseEnter}
       onMouseLeave={hoverTap.handleMouseLeave}
@@ -118,11 +119,11 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
           <span className="text-sm font-mono opacity-80">{option.resolution}</span>
           <span className="text-xs opacity-70 text-left">{option.description}</span>
         </div>
-        <AnimatedView style={checkAnimatedStyle}>
+        <motion.div style={checkAnimatedStyle}>
           <Check size={24} weight="bold" />
-        </AnimatedView>
+        </motion.div>
       </Button>
-    </AnimatedView>
+    </motion.div>
   );
 }
 

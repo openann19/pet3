@@ -1,13 +1,43 @@
 /**
- * Design Tokens - Centralized Export
- * Single source of truth for all design system values
+ * Design Tokens - Centralized Export (DEPRECATED)
+ * 
+ * @deprecated This file is kept for backward compatibility only.
+ * Please import from @petspark/shared/tokens instead:
+ * 
+ * import { Typography, Dimens } from '@petspark/shared/tokens';
+ * import { motionTokens } from '@petspark/shared';
+ * 
+ * This file will be removed in a future version.
  */
 
-export { Dimens } from './dimens';
-export { Typography } from './typography';
+// Re-export from shared package
+export { Dimens, Typography } from '@petspark/shared';
+
+// Import motion tokens from motion package
+// The motion package exports motionTokens from its main index
+import { motionTokens } from '@petspark/motion';
+
+export { motionTokens };
+export const Motion = {
+  durations: {
+    instant: motionTokens.durations.instant,
+    fast: motionTokens.durations.fast,
+    normal: motionTokens.durations.standard,
+    smooth: motionTokens.durations.enterExit,
+    slow: motionTokens.durations.slow,
+    slower: motionTokens.durations.deliberate,
+  },
+  easing: {
+    standard: motionTokens.easing.standard,
+    decelerate: 'ease-out',
+    accelerate: 'ease-in',
+    emphasized: motionTokens.easing.emphasis,
+  },
+} as const;
+
+// Keep platform-specific exports
 export { buttonTokens, getButtonTokens } from './button-colors';
 export type { ButtonTokenSet } from '../types/button-tokens';
-export { Motion } from './motion';
 export { getColorToken, getColorTokenWithOpacity, getColorCSSVar, ColorTokens } from './colors';
 
 /**

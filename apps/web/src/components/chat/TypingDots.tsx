@@ -1,19 +1,10 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  withDelay,
-  Easing,
-  animate,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface TypingDotsProps {
   dotSize?: number;
@@ -35,121 +26,65 @@ export function TypingDots({
   animationDuration = DEFAULT_ANIMATION_DURATION,
   className,
 }: TypingDotsProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const scale1 = useSharedValue(1);
-  const scale2 = useSharedValue(1);
-  const scale3 = useSharedValue(1);
-  const opacity1 = useSharedValue(0.5);
-  const opacity2 = useSharedValue(0.5);
-  const opacity3 = useSharedValue(0.5);
+  const _uiConfig = useUIConfig();
+  const reducedMotion = useReducedMotion();
+  const scale1 = useMotionValue(1);
+  const scale2 = useMotionValue(1);
+  const scale3 = useMotionValue(1);
+  const opacity1 = useMotionValue(0.5);
+  const opacity2 = useMotionValue(0.5);
+  const opacity3 = useMotionValue(0.5);
 
   useEffect(() => {
-    const delay2 = 150;
-    const delay3 = 300;
+    if (reducedMotion) return;
+    
+    const delay2 = 150 / 1000; // Convert to seconds
+    const delay3 = 300 / 1000;
+    const duration = animationDuration / 1000; // Convert to seconds
 
-    const scale1Sequence = withSequence(
-      withTiming(1.4, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const scale1Repeat = withRepeat(scale1Sequence, -1, false);
-    animate(scale1, scale1Repeat.target, scale1Repeat.transition);
+    // Dot 1 animations (no delay)
+    void animate(scale1, [1, 1.4, 1], {
+      duration,
+      repeat: Infinity,
+      ease: [0.4, 0, 0.6, 1],
+    });
+    
+    void animate(opacity1, [0.5, 1, 0.5], {
+      duration,
+      repeat: Infinity,
+      ease: [0.4, 0, 0.6, 1],
+    });
 
-    const scale2Sequence = withSequence(
-      withTiming(1.4, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const scale2Repeat = withRepeat(scale2Sequence, -1, false);
-    const scale2Delay = withDelay(delay2, scale2Repeat);
-    animate(scale2, scale2Delay.target, scale2Delay.transition);
+    // Dot 2 animations (150ms delay)
+    setTimeout(() => {
+      void animate(scale2, [1, 1.4, 1], {
+        duration,
+        repeat: Infinity,
+        ease: [0.4, 0, 0.6, 1],
+      });
+      
+      void animate(opacity2, [0.5, 1, 0.5], {
+        duration,
+        repeat: Infinity,
+        ease: [0.4, 0, 0.6, 1],
+      });
+    }, delay2 * 1000);
 
-    const scale3Sequence = withSequence(
-      withTiming(1.4, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const scale3Repeat = withRepeat(scale3Sequence, -1, false);
-    const scale3Delay = withDelay(delay3, scale3Repeat);
-    animate(scale3, scale3Delay.target, scale3Delay.transition);
-
-    const opacity1Sequence = withSequence(
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(0.5, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const opacity1Repeat = withRepeat(opacity1Sequence, -1, false);
-    animate(opacity1, opacity1Repeat.target, opacity1Repeat.transition);
-
-    const opacity2Sequence = withSequence(
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(0.5, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const opacity2Repeat = withRepeat(opacity2Sequence, -1, false);
-    const opacity2Delay = withDelay(delay2, opacity2Repeat);
-    animate(opacity2, opacity2Delay.target, opacity2Delay.transition);
-
-    const opacity3Sequence = withSequence(
-      withTiming(1, {
-        duration: animationDuration / 2,
-        easing: Easing.out(Easing.ease),
-      }),
-      withTiming(0.5, {
-        duration: animationDuration / 2,
-        easing: Easing.in(Easing.ease),
-      })
-    );
-    const opacity3Repeat = withRepeat(opacity3Sequence, -1, false);
-    const opacity3Delay = withDelay(delay3, opacity3Repeat);
-    animate(opacity3, opacity3Delay.target, opacity3Delay.transition);
-  }, [scale1, scale2, scale3, opacity1, opacity2, opacity3, animationDuration]);
-
-  const dot1Style = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale1.get() }],
-      opacity: opacity1.get(),
-    };
-  });
-
-  const dot2Style = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale2.get() }],
-      opacity: opacity2.get(),
-    };
-  });
-
-  const dot3Style = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale3.get() }],
-      opacity: opacity3.get(),
-    };
-  });
+    // Dot 3 animations (300ms delay)
+    setTimeout(() => {
+      void animate(scale3, [1, 1.4, 1], {
+        duration,
+        repeat: Infinity,
+        ease: [0.4, 0, 0.6, 1],
+      });
+      
+      void animate(opacity3, [0.5, 1, 0.5], {
+        duration,
+        repeat: Infinity,
+        ease: [0.4, 0, 0.6, 1],
+      });
+    }, delay3 * 1000);
+  }, [scale1, scale2, scale3, opacity1, opacity2, opacity3, animationDuration, reducedMotion]);
 
   const staticDotStyle: React.CSSProperties = {
     width: dotSize,
@@ -160,21 +95,30 @@ export function TypingDots({
 
   return (
     <div className={cn('flex items-center', className)} style={{ gap }}>
-      <div style={staticDotStyle}>
-        <AnimatedView style={dot1Style} className="rounded-full w-full h-full">
-          <div />
-        </AnimatedView>
-      </div>
-      <div style={staticDotStyle}>
-        <AnimatedView style={dot2Style} className="rounded-full w-full h-full">
-          <div />
-        </AnimatedView>
-      </div>
-      <div style={staticDotStyle}>
-        <AnimatedView style={dot3Style} className="rounded-full w-full h-full">
-          <div />
-        </AnimatedView>
-      </div>
+      <motion.div
+        style={{
+          ...staticDotStyle,
+          scale: scale1,
+          opacity: opacity1,
+        }}
+        className="rounded-full"
+      />
+      <motion.div
+        style={{
+          ...staticDotStyle,
+          scale: scale2,
+          opacity: opacity2,
+        }}
+        className="rounded-full"
+      />
+      <motion.div
+        style={{
+          ...staticDotStyle,
+          scale: scale3,
+          opacity: opacity3,
+        }}
+        className="rounded-full"
+      />
     </div>
   );
 }

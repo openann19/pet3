@@ -1,44 +1,87 @@
 import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
+import { elevation } from '@mobile/theme/tokens';
+
+const { spacing, radius } = Dimens;
+const { scale: typography } = Typography;
+import React, { memo, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-type FeatureCardProps = {
+interface FeatureCardProps {
   title: string
   subtitle?: string
   children?: ReactNode
 }
 
-export function FeatureCard({ title, subtitle, children }: FeatureCardProps): React.JSX.Element {
+export const FeatureCard = memo(({ title, subtitle, children }: FeatureCardProps): React.JSX.Element => {
+  const accessibilityLabel = useMemo(
+    () => (subtitle !== null && subtitle !== undefined && subtitle !== '' ? `${title}, ${subtitle}` : title),
+    [title, subtitle]
+  )
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-      {children ? <View style={styles.content}>{children}</View> : null}
+    <View
+      style={styles.container}
+      accessible={true}
+      accessibilityRole="article"
+      accessibilityLabel={accessibilityLabel}
+    >
+      <Text
+        style={styles.title}
+        accessible={true}
+        accessibilityRole="header"
+        accessibilityLevel={3}
+      >
+        {title}
+      </Text>
+      {subtitle !== null && subtitle !== undefined && subtitle !== '' ? (
+        <Text
+          style={styles.subtitle}
+          accessible={true}
+          accessibilityRole="text"
+        >
+          {subtitle}
+        </Text>
+      ) : null}
+      {children !== null && children !== undefined ? (
+        <View
+          style={styles.content}
+          accessible={false}
+        >
+          {children}
+        </View>
+      ) : null}
     </View>
   )
-}
+})
+
+FeatureCard.displayName = 'FeatureCard'
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
+    ...elevation.raised,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: typography.h3.fontSize,
+    fontWeight: typography.h3.fontWeight,
+    lineHeight: typography.h3.lineHeight,
     color: colors.textPrimary,
   },
   subtitle: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: spacing.xs,
+    fontSize: typography.bodySmall.fontSize,
+    lineHeight: typography.bodySmall.lineHeight,
     color: colors.textSecondary,
   },
   content: {
-    marginTop: 12,
-    gap: 12,
+    marginTop: spacing.md,
+    gap: spacing.md,
   },
 })

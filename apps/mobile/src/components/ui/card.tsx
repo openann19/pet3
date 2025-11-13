@@ -3,6 +3,12 @@
 import React, { type ReactNode } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import type { ComponentProps } from 'react'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
+import { elevation } from '@mobile/theme/tokens';
+
+const { spacing, radius } = Dimens;
+const { scale: typography } = Typography;
 
 export interface CardProps extends ComponentProps<typeof View> {
   children?: ReactNode
@@ -10,7 +16,11 @@ export interface CardProps extends ComponentProps<typeof View> {
 
 export function Card({ children, style, ...props }: CardProps): React.JSX.Element {
   return (
-    <View style={[styles.card, style]} {...props}>
+    <View
+      style={[styles.card, style]}
+      accessible={false}
+      {...props}
+    >
       {children}
     </View>
   )
@@ -34,7 +44,12 @@ export interface CardTitleProps extends ComponentProps<typeof Text> {
 
 export function CardTitle({ children, style, ...props }: CardTitleProps): React.JSX.Element {
   return (
-    <Text style={[styles.cardTitle, style]} {...props}>
+    <Text
+      style={[styles.cardTitle, style]}
+      accessible
+      accessibilityRole="header"
+      {...props}
+    >
       {children}
     </Text>
   )
@@ -82,46 +97,39 @@ export function CardFooter({ children, style, ...props }: CardFooterProps): Reac
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'var(--color-bg-overlay)',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderColor: colors.border,
+    ...elevation.raised,
     padding: 0,
-    gap: 24,
+    gap: spacing.xl,
   },
   cardHeader: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
     paddingBottom: 0,
-    gap: 6,
+    gap: spacing.sm,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'var(--color-fg)',
-    lineHeight: 24,
+    fontSize: typography.h3.fontSize,
+    fontWeight: typography.h3.fontWeight,
+    lineHeight: typography.h3.lineHeight,
+    color: colors.textPrimary,
   },
   cardDescription: {
-    fontSize: 14,
-    color: 'rgba(0, 0, 0, 0.6)',
-    lineHeight: 20,
+    fontSize: typography.bodySmall.fontSize,
+    lineHeight: typography.bodySmall.lineHeight,
+    color: colors.textSecondary,
   },
   cardContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
     paddingVertical: 0,
   },
   cardFooter: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
     paddingTop: 0,
-    paddingBottom: 24,
+    paddingBottom: spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
   },

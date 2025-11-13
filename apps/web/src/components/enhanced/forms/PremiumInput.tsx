@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect, useId } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations, springConfigs } from '@/effects/framer-motion/variants';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { Eye, EyeSlash, X, CheckCircle, WarningCircle } from '@phosphor-icons/react';
@@ -28,7 +28,7 @@ export interface PremiumInputProps extends Omit<InputHTMLAttributes<HTMLInputEle
   onClear?: () => void;
 }
 
-export function PremiumInput({
+export const PremiumInput = React.memo(function PremiumInput({
   label,
   error,
   helperText,
@@ -54,53 +54,58 @@ export function PremiumInput({
   const [hasValue, setHasValue] = useState(Boolean(value));
   const inputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
-  const inputId = id || generatedId;
+  const inputId = id ?? generatedId;
   const labelId = `${inputId}-label`;
   const helperTextId = helperText ? `${inputId}-helper` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
   const ariaDescribedBy = [helperTextId, errorId].filter(Boolean).join(' ') || undefined;
 
   const hoverLift = useHoverLift({ scale: 1.01 });
-  const labelScale = useSharedValue(hasValue || isFocused ? 0.85 : 1);
-  const labelY = useSharedValue(hasValue || isFocused ? -24 : 0);
-  const borderWidth = useSharedValue(variant === 'outlined' ? 1 : 0);
-  const borderColor = useSharedValue(0);
-  const iconScale = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
+  const labelScale = useMotionValue(hasValue || isFocused ? 0.85 : 1);
+  const labelY = useMotionValue(hasValue || isFocused ? -24 : 0);
+  const borderWidth = useMotionValue(variant === 'outlined' ? 1 : 0);
+  const iconScale = useMotionValue(1);
 
   useEffect(() => {
     const hasContent = Boolean(value && String(value).length > 0);
     setHasValue(hasContent);
 
-    if (hasContent || isFocused) {
-      const scaleTransition = withSpring(0.85, springConfigs.smooth);
-      animate(labelScale, scaleTransition.target, scaleTransition.transition);
-      const yTransition = withSpring(-24, springConfigs.smooth);
-      animate(labelY, yTransition.target, yTransition.transition);
+    const targetScale = hasContent || isFocused ? 0.85 : 1;
+    const targetY = hasContent || isFocused ? -24 : 0;
+
+    if (reducedMotion) {
+      labelScale.set(targetScale);
+      labelY.set(targetY);
     } else {
-      const scaleTransition = withSpring(1, springConfigs.smooth);
-      animate(labelScale, scaleTransition.target, scaleTransition.transition);
-      const yTransition = withSpring(0, springConfigs.smooth);
-      animate(labelY, yTransition.target, yTransition.transition);
+      void animate(labelScale, targetScale, {
+        ...springConfigs.smooth,
+        duration: motionDurations.normal,
+      });
+      void animate(labelY, targetY, {
+        ...springConfigs.smooth,
+        duration: motionDurations.normal,
+      });
     }
-  }, [value, isFocused, labelScale, labelY]);
+  }, [value, isFocused, labelScale, labelY, reducedMotion]);
 
   useEffect(() => {
-    if (isFocused) {
-      const widthTransition = withSpring(2, springConfigs.smooth);
-      animate(borderWidth, widthTransition.target, widthTransition.transition);
-      const colorTransition = withTiming(error ? 1 : 0.5, timingConfigs.fast);
-      animate(borderColor, colorTransition.target, colorTransition.transition);
-      const iconTransition = withSpring(1.1, springConfigs.smooth);
-      animate(iconScale, iconTransition.target, iconTransition.transition);
+    const targetBorderWidth = isFocused ? 1 : (variant === 'outlined' ? 1 : 0);
+
+    if (reducedMotion) {
+      borderWidth.set(targetBorderWidth);
+      iconScale.set(1);
     } else {
-      const widthTransition = withSpring(variant === 'outlined' ? 1 : 0, springConfigs.smooth);
-      animate(borderWidth, widthTransition.target, widthTransition.transition);
-      const colorTransition = withTiming(error ? 1 : 0, timingConfigs.fast);
-      animate(borderColor, colorTransition.target, colorTransition.transition);
-      const iconTransition = withSpring(1, springConfigs.smooth);
-      animate(iconScale, iconTransition.target, iconTransition.transition);
+      void animate(borderWidth, targetBorderWidth, {
+        duration: motionDurations.normal,
+        ease: 'easeOut',
+      });
+      void animate(iconScale, 1, {
+        duration: motionDurations.normal,
+        ease: 'easeOut',
+      });
     }
-  }, [isFocused, error, variant, borderWidth, borderColor, iconScale]);
+  }, [isFocused, variant, borderWidth, iconScale, reducedMotion]);
 
   const handleFocus = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
@@ -146,32 +151,15 @@ export function PremiumInput({
     haptics.impact('light');
   }, [showPassword]);
 
-  const labelStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: labelScale.get() }, { translateY: labelY.get() }],
-  }));
-
   // Use design token colors for animated styles
   // Note: For static styles, CSS variables are used in className
-  const themeMode = _uiConfig.theme.mode || 'light';
+  // Use theme variant or fallback to 'light'
+  const themeMode: 'light' | 'dark' = (_uiConfig.theme.themeVariants?.[0] === 'dark' ? 'dark' : 'light');
   const THEME_COLORS = {
     primary: getColorToken('accent', themeMode),
     error: getColorToken('destructive', themeMode),
     borderLight: getColorToken('border', themeMode),
   };
-
-  const borderStyle = useAnimatedStyle(() => ({
-    borderWidth: borderWidth.get(),
-    borderColor:
-      borderColor.get() === 1
-        ? error
-          ? THEME_COLORS.error
-          : THEME_COLORS.primary
-        : THEME_COLORS.borderLight,
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconScale.get() }],
-  }));
 
   const inputType =
     showPasswordToggle && type === 'password' ? (showPassword ? 'text' : 'password') : type;
@@ -205,8 +193,8 @@ export function PremiumInput({
       <div
         className={cn(
           'relative flex items-center rounded-xl transition-all',
-          'focus-within:ring-2 focus-within:ring-[var(--coral-primary)]/20',
-          error && 'ring-2 ring-[var(--error)]/20',
+          'focus-within:ring-2 focus-within:ring-(--coral-primary)/20',
+          error && 'ring-2 ring-(--error)/20',
           disabled && 'opacity-50 cursor-not-allowed',
           variants[variant],
           sizes[size],
@@ -215,18 +203,26 @@ export function PremiumInput({
         onMouseEnter={hoverLift.handleEnter}
         onMouseLeave={hoverLift.handleLeave}
       >
-        <AnimatedView
-          style={borderStyle}
+        <motion.div
           className="absolute inset-0 rounded-xl pointer-events-none"
+          style={{
+            borderWidth: borderWidth,
+            borderColor: error ? THEME_COLORS.error : THEME_COLORS.primary,
+            borderStyle: 'solid',
+          }}
         />
 
         {leftIcon && (
-          <AnimatedView style={iconStyle} className={cn(
-            'shrink-0 text-muted-foreground',
-            getSpacingClassesFromConfig({ marginX: 'sm' })
-          )} aria-hidden="true">
+          <motion.div
+            style={{ scale: iconScale }}
+            className={cn(
+              'shrink-0 text-muted-foreground',
+              getSpacingClassesFromConfig({ marginX: 'sm' })
+            )}
+            aria-hidden="true"
+          >
             {leftIcon}
-          </AnimatedView>
+          </motion.div>
         )}
 
         {label && (
@@ -240,8 +236,11 @@ export function PremiumInput({
         )}
 
         {label && (
-          <AnimatedView
-            style={labelStyle}
+          <motion.div
+            style={{
+              scale: labelScale,
+              y: labelY,
+            }}
             className={cn(
               'absolute left-4 pointer-events-none transition-colors',
               'text-muted-foreground font-medium',
@@ -253,7 +252,7 @@ export function PremiumInput({
             aria-hidden="true"
           >
             {label}
-          </AnimatedView>
+          </motion.div>
         )}
 
         <input
@@ -269,7 +268,7 @@ export function PremiumInput({
             labelledBy: label ? labelId : undefined,
             describedBy: ariaDescribedBy,
             invalid: error ? true : undefined,
-            label: label ? undefined : (props['aria-label'] || props.placeholder || 'Input'),
+            label: label ? undefined : (props['aria-label'] ?? props.placeholder ?? 'Input'),
           })}
           className={cn(
             'flex-1 bg-transparent outline-none placeholder:text-muted-foreground/50',
@@ -327,7 +326,7 @@ export function PremiumInput({
         </div>
       </div>
 
-      {(error || helperText) && (
+      {(error ?? helperText) && (
         <div
           id={error ? errorId : helperTextId}
           className={cn(
@@ -339,9 +338,9 @@ export function PremiumInput({
           {...(error ? getAriaAlertAttributes({ role: 'alert', live: 'polite' }) : {})}
         >
           {error ? <WarningCircle size={12} aria-hidden="true" /> : null}
-          <span>{error || helperText}</span>
+          <span>{error ?? helperText ?? ''}</span>
         </div>
       )}
     </div>
   );
-}
+});

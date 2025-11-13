@@ -2,15 +2,13 @@
  * Presence Aurora Ring Component — Web
  *
  * Animated aurora ring around avatar for presence indication.
- * Uses React Native Reanimated for smooth animations.
+ * Uses Framer Motion for smooth animations.
  */
 
-import { useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, withRepeat } from '@petspark/motion';
-import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
+import { useEffect } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface PresenceAuroraRingProps {
     src?: string;
@@ -47,29 +45,29 @@ export function PresenceAuroraRing({
     className,
 }: PresenceAuroraRingProps): JSX.Element {
     const reduced = useReducedMotion();
-    const rot = useSharedValue(0);
-    const opacity = useSharedValue(status === 'offline' ? 0 : intensity);
+    const rot = useMotionValue(0);
+    const opacity = useMotionValue(status === 'offline' ? 0 : intensity);
 
-    const dur = getReducedMotionDuration(pulseRate, reduced);
+    const dur = reduced ? 0 : pulseRate / 1000;
 
-    useMemo(() => {
-        rot.value = 0;
-        opacity.value = status === 'offline' ? 0 : intensity;
-
-        if (!reduced && status !== 'offline') {
-            rot.value = withRepeat(withTiming(360, { duration: dur }), -1, false);
-            opacity.value = withRepeat(
-                withTiming(intensity, { duration: dur / 2 }),
-                -1,
-                true
-            );
+    useEffect(() => {
+        if (reduced || status === 'offline') {
+            rot.set(0);
+            opacity.set(status === 'offline' ? 0 : intensity);
+            return;
         }
-    }, [reduced, status, dur, rot, opacity, intensity]);
 
-    const ringStyle = useAnimatedStyle(() => ({
-        transform: [{ rotate: `${rot.value}deg` }],
-        opacity: opacity.value,
-    })) as AnimatedStyle;
+        void animate(rot, 360, {
+            duration: dur,
+            repeat: Infinity,
+            ease: 'linear',
+        });
+        void animate(opacity, [intensity, intensity * 0.6, intensity], {
+            duration: dur / 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+        });
+    }, [reduced, status, dur, rot, opacity, intensity]);
 
     const ringColors =
         status === 'online'
@@ -95,13 +93,16 @@ export function PresenceAuroraRing({
             </Avatar>
 
             {status !== 'offline' && (
-                <AnimatedView
-                    style={ringStyle}
+                <motion.div
+                    style={{
+                        rotate: rot,
+                        opacity,
+                    }}
                     className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${ringColors} blur-[2px] opacity-80`}
                     aria-hidden="true"
                 >
                     <div />
-                </AnimatedView>
+                </motion.div>
             )}
         </div>
     );

@@ -1,13 +1,20 @@
 import type { ComponentProps } from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, type HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 import { getTypographyClasses, getSpacingClassesFromConfig } from "@/lib/typography"
+import { buttonPressVariants } from "@/effects/framer-motion/variants"
+import { useMotionTokens } from "@/hooks/useMotionTokens"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { getMinTouchTargetClasses } from "@/lib/design-token-utils"
 
 const buttonVariants = cva(
   cn(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-all duration-300 disabled:pointer-events-none disabled:cursor-default [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 focus-visible:ring-offset-background aria-invalid:ring-destructive/30 aria-invalid:border-destructive min-h-[44px] min-w-[44px]",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-all duration-300 disabled:pointer-events-none disabled:cursor-default [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 focus-visible:ring-offset-background aria-invalid:ring-destructive/30 aria-invalid:border-destructive",
+    getMinTouchTargetClasses(),
+    "motion-reduce:transition-none",
     getTypographyClasses('button'),
     getSpacingClassesFromConfig({ gap: 'sm' })
   ),           
@@ -28,9 +35,9 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-11 px-4 py-2 has-[>svg]:px-3 [&_svg]:size-5",
-        sm: "h-9 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 [&_svg]:size-4 min-h-[44px]",
+        sm: cn("h-9 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 [&_svg]:size-4", getMinTouchTargetClasses()),
         lg: "h-14 rounded-md px-6 has-[>svg]:px-4 text-base [&_svg]:size-6",
-        icon: "size-11 min-w-[44px] min-h-[44px]",
+        icon: cn("size-11", getMinTouchTargetClasses()),
       },
     },
     defaultVariants: {
@@ -40,24 +47,82 @@ const buttonVariants = cva(
   }
 )
 
+export interface ButtonProps extends Omit<ComponentProps<"button">, "ref">, VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  "aria-label"?: string
+  "aria-describedby"?: string
+  "aria-pressed"?: boolean | "mixed"
+  "aria-expanded"?: boolean
+  "aria-controls"?: string
+  enableAnimations?: boolean
+}
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  type = "button",
+  "aria-label": ariaLabel,
+  "aria-describedby": ariaDescribedBy,
+  "aria-pressed": ariaPressed,
+  "aria-expanded": ariaExpanded,
+  "aria-controls": ariaControls,
+  enableAnimations = true,
+  children,
   ...props
-}: ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+}: ButtonProps) {
+  const reducedMotion = useReducedMotion()
+  const tokens = useMotionTokens()
+  const shouldAnimate = enableAnimations && !reducedMotion
+
+  const motionProps: Partial<Omit<HTMLMotionProps<"button">, "onAnimationStart" | "onAnimationEnd" | "onAnimationIteration">> = shouldAnimate
+    ? {
+        variants: buttonPressVariants,
+        initial: "rest",
+        whileHover: "hover",
+        whileTap: "tap",
+        whileFocus: "focused",
+        transition: {
+          ...tokens.spring.smooth,
+          duration: tokens.durations.normal,
+        },
+      }
+    : {}
+
+  const baseProps = {
+    type: asChild ? undefined : type,
+    "data-slot": "button",
+    className: cn(buttonVariants({ variant, size, className })),
+    "aria-label": ariaLabel,
+    "aria-describedby": ariaDescribedBy,
+    "aria-pressed": ariaPressed,
+    "aria-expanded": ariaExpanded,
+    "aria-controls": ariaControls,
+    ...props,
+  }
+
+  if (asChild) {
+    return (
+      <Slot {...baseProps}>
+        {children}
+      </Slot>
+    )
+  }
+
+  if (shouldAnimate) {
+    const { onAnimationStart: _onAnimationStart, onAnimationEnd: _onAnimationEnd, onAnimationIteration: _onAnimationIteration, onDrag: _onDrag, onDragStart: _onDragStart, onDragEnd: _onDragEnd, ...restProps } = baseProps;
+    return (
+      <motion.button {...motionProps} {...restProps}>
+        {children}
+      </motion.button>
+    )
+  }
 
   return (
-    <Comp
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+    <button {...baseProps}>
+      {children}
+    </button>
   )
 }
 

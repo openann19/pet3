@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import { usePrefersReducedMotion } from '@/utils/reduced-motion'
+import { getMotionDuration, getMotionEasing, getSpacing } from '@/lib/design-tokens'
 
 export interface NavInkBarProps {
   readonly containerRef: React.RefObject<HTMLElement>
@@ -52,12 +53,16 @@ function measureInk(container: HTMLElement, index: number): InkMetrics {
 export default function NavInkBar({
   containerRef,
   activeIndex,
-  durationMs = 280,
-  easing = 'cubic-bezier(0.22, 1, 0.36, 1)',
-  height = 3,
+  durationMs,
+  easing,
+  height,
   offsetY = 0,
   className,
 }: NavInkBarProps): React.ReactElement | null {
+  // Use design tokens for defaults
+  const defaultDuration = durationMs ?? Number.parseInt(getMotionDuration('smooth').replace('ms', ''), 10)
+  const defaultEasing = easing ?? getMotionEasing('easeOut')
+  const defaultHeight = height ?? Number.parseInt(getSpacing('1'), 10)
   const prefersReducedMotion = usePrefersReducedMotion()
   const [metrics, setMetrics] = useState<InkMetrics>(DEFAULT_METRICS)
   const frameRef = useRef<number | null>(null)
@@ -114,13 +119,17 @@ export default function NavInkBar({
       resizeObserver.observe(child)
     })
 
-    container.addEventListener('scroll', handleResize, { passive: true })
-    window.addEventListener('resize', handleResize)
+    if (typeof window !== 'undefined') {
+      container.addEventListener('scroll', handleResize, { passive: true })
+      window.addEventListener('resize', handleResize)
+    }
 
     return () => {
       resizeObserver.disconnect()
-      container.removeEventListener('scroll', handleResize)
-      window.removeEventListener('resize', handleResize)
+      if (typeof window !== 'undefined') {
+        container.removeEventListener('scroll', handleResize)
+        window.removeEventListener('resize', handleResize)
+      }
 
       if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current)
@@ -131,7 +140,7 @@ export default function NavInkBar({
 
   const transitionValue = prefersReducedMotion
     ? 'none'
-    : `transform ${String(durationMs ?? '')}ms ${String(easing ?? '')}, width ${String(durationMs ?? '')}ms ${String(easing ?? '')}`
+    : `transform ${String(defaultDuration)}ms ${String(defaultEasing)}, width ${String(defaultDuration)}ms ${String(defaultEasing)}`
 
   const style = useMemo<React.CSSProperties>(() => {
     return {
@@ -139,9 +148,9 @@ export default function NavInkBar({
       transform: `translate3d(${String(metrics.translateX ?? '')}px, ${String(offsetY ?? '')}px, 0)`
         .replace('translate3d(NaNpx, NaNpx, 0)', 'translate3d(0px, 0px, 0)'),
       transition: transitionValue,
-      height,
+      height: defaultHeight,
     }
-  }, [metrics.width, metrics.translateX, offsetY, transitionValue, height])
+  }, [metrics.width, metrics.translateX, offsetY, transitionValue, defaultHeight])
 
   const shouldRender = metrics.width > 0
 

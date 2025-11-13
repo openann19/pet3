@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import { Button } from '@/components/ui/button';
 import { Sparkle, Plus } from '@phosphor-icons/react';
@@ -7,9 +8,8 @@ import { generateSamplePets } from '@/lib/seedData';
 import type { Pet } from '@/lib/types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
-import { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from '@petspark/motion';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 interface GenerateProfilesButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -24,28 +24,38 @@ export default function GenerateProfilesButton({
 }: GenerateProfilesButtonProps) {
   const [, setAllPets] = useStorage<Pet[]>('all-pets', []);
   const [isGenerating, setIsGenerating] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const buttonHover = useHoverTap({ hoverScale: 1.02, tapScale: 0.98 });
-  const shimmerX = useSharedValue(-100);
-  const iconRotate = useSharedValue(0);
-
-  const shimmerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: shimmerX.value }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
-
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${iconRotate.value}deg` }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const buttonHover = useHoverLift({
+    scale: prefersReducedMotion ? 1 : 1.02,
+    translateY: 0,
+  });
+  const shimmerX = useMotionValue(-100);
+  const iconRotate = useMotionValue(0);
 
   useEffect(() => {
-    if (isGenerating) {
-      shimmerX.value = withRepeat(withTiming(200, { duration: 1500 }), -1, false);
-      iconRotate.value = withRepeat(withTiming(360, { duration: 2000 }), -1, false);
-    } else {
-      shimmerX.value = -100;
-      iconRotate.value = 0;
+    if (prefersReducedMotion) {
+      shimmerX.set(-100);
+      iconRotate.set(0);
+      return;
     }
-  }, [isGenerating, shimmerX, iconRotate]);
+
+    if (isGenerating) {
+      void animate(shimmerX, [200, -100], {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'linear',
+      });
+      void animate(iconRotate, 360, {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'linear',
+      });
+    } else {
+      shimmerX.set(-100);
+      iconRotate.set(0);
+    }
+  }, [isGenerating, shimmerX, iconRotate, prefersReducedMotion]);
 
   const handleGenerateProfiles = async () => {
     if (isGenerating) return;
@@ -68,7 +78,7 @@ export default function GenerateProfilesButton({
       const logger = createLogger('GenerateProfilesButton');
       logger.error(
         'Failed to generate profiles',
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error('Failed to generate profiles')
       );
       haptics.trigger('error');
       toast.error('Error', {
@@ -81,10 +91,12 @@ export default function GenerateProfilesButton({
 
   return (
     <div className={showLabel ? 'w-full' : ''}>
-      <AnimatedView
-        style={buttonHover.animatedStyle}
-        onMouseEnter={buttonHover.handleMouseEnter}
-        onMouseLeave={buttonHover.handleMouseLeave}
+      <motion.div
+        style={{
+          scale: buttonHover.scale,
+        }}
+        onMouseEnter={buttonHover.handleEnter}
+        onMouseLeave={buttonHover.handleLeave}
       >
         <Button
           onClick={() => {
@@ -93,28 +105,46 @@ export default function GenerateProfilesButton({
           disabled={isGenerating}
           variant={variant}
           size={size}
+          aria-label={showLabel ? undefined : (isGenerating ? 'Generating profiles' : 'Generate more profiles')}
+          aria-busy={isGenerating}
           className={
             showLabel
-              ? 'w-full h-12 bg-gradient-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group'
-              : 'relative overflow-hidden'
+              ? 'w-full h-12 bg-linear-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+              : 'relative overflow-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
           }
         >
           {showLabel && (
-            <AnimatedView
-              style={shimmerStyle}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            <motion.div
+              style={{
+                x: shimmerX,
+              }}
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
+              aria-hidden="true"
             />
           )}
-          <AnimatedView style={iconStyle} className={showLabel ? 'mr-2' : ''}>
-            {isGenerating ? <Sparkle size={20} weight="fill" /> : <Plus size={20} weight="bold" />}
-          </AnimatedView>
+          <motion.div
+            style={{
+              rotate: iconRotate,
+            }}
+            className={showLabel ? 'mr-2' : ''}
+            aria-hidden="true"
+          >
+            {isGenerating ? (
+              <Sparkle size={20} weight="fill" aria-hidden="true" />
+            ) : (
+              <Plus size={20} weight="bold" aria-hidden="true" />
+            )}
+          </motion.div>
           {showLabel && (
             <span className="relative z-10 font-semibold">
               {isGenerating ? 'Generating Profiles...' : 'Generate More Profiles'}
             </span>
           )}
         </Button>
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedGenerateProfilesButton = memo(GenerateProfilesButton);

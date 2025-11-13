@@ -1,12 +1,22 @@
+/**
+ * Spinner Component (Web)
+ * 
+ * Professional Framer Motion spinner with smooth animations,
+ * premium variant effects, and performance optimizations.
+ * 
+ * Location: apps/web/src/components/ui/spinner.tsx
+ */
+
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import type { ComponentProps } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { isTruthy } from '@petspark/shared';
 import { getAriaLiveRegionAttributes } from '@/lib/accessibility';
+// Note: spinnerVariants and motionDurations imported but using custom variants for better control
 
 export interface SpinnerProps extends ComponentProps<'div'> {
   size?: 'sm' | 'md' | 'lg';
@@ -56,28 +66,43 @@ function Spinner({
     }
   }, [reducedMotion, rotation, opacity]);
 
-  const variants: Variants = {
+  const variants: Variants = useMemo(() => ({
     spinning: {
       rotate: 360,
       opacity: isTruthy(reducedMotion) ? [1, 0.7, 1] : 1,
+      boxShadow: variant === 'premium' && !reducedMotion
+        ? [
+            '0 0 0px rgba(var(--primary-rgb), 0)',
+            '0 0 12px rgba(var(--primary-rgb), 0.4)',
+            '0 0 0px rgba(var(--primary-rgb), 0)',
+          ]
+        : undefined,
       transition: {
         rotate: {
           duration: isTruthy(reducedMotion) ? 2 : 1,
           ease: 'linear',
           repeat: Infinity,
-          repeatType: 'loop',
+          repeatType: 'loop' as const,
         },
         opacity: isTruthy(reducedMotion)
           ? {
               duration: 1.5,
               ease: 'easeInOut',
               repeat: Infinity,
-              repeatType: 'reverse',
+              repeatType: 'reverse' as const,
+            }
+          : undefined,
+        boxShadow: variant === 'premium' && !reducedMotion
+          ? {
+              duration: 2,
+              ease: 'easeInOut',
+              repeat: Infinity,
+              repeatType: 'reverse' as const,
             }
           : undefined,
       },
     },
-  };
+  }), [reducedMotion, variant]);
 
   const variantClasses = {
     default: 'border-primary border-t-transparent',
@@ -102,7 +127,12 @@ function Spinner({
         variants={variants}
         animate="spinning"
         style={{ rotate: rotation, opacity }}
-        className={cn('rounded-full', sizeClasses[size], variantClasses[variant])}
+        className={cn(
+          'rounded-full',
+          sizeClasses[size],
+          variantClasses[variant],
+          'will-change-transform' // Performance optimization
+        )}
         aria-hidden="true"
       />
       <span className="sr-only">Loading...</span>

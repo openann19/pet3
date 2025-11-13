@@ -15,6 +15,7 @@ export function initializeTheme() {
   try {
     // Apply theme immediately to prevent flash of unstyled content
     // Check both new storage prefix (petspark:) and legacy prefixes (kv:, no prefix) for compatibility
+    // Note: Already guarded by window check at function start
     const savedThemePreset =
       localStorage.getItem('petspark:app-theme-preset-v1') ||
       localStorage.getItem('kv:app-theme-preset-v1') ||
@@ -96,7 +97,7 @@ export function initializeTheme() {
     root.classList.remove('dark');
     try {
       injectTokenCSSVariables('light');
-    } catch (tokenError) {
+    } catch {
       // Silently fail if design tokens can't be injected
     }
   }

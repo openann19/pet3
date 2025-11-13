@@ -1,7 +1,8 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useTypingPlaceholder } from '@/hooks/use-typing-placeholder';
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -26,7 +27,7 @@ export function TypingPlaceholder({
       });
 
   return (
-    <AnimatedView
+    <motion.div
       style={containerStyle as AnimatedStyle}
       className={cn(
         'flex items-end gap-1.5 px-3 py-2 rounded-2xl max-w-[78%]',
@@ -37,14 +38,14 @@ export function TypingPlaceholder({
       )}
     >
       {animatedStyles.map((style, index) => (
-        <AnimatedView
+        <motion.div
           key={index}
           style={style as AnimatedStyle}
           className={cn('rounded-full', isOwn ? 'bg-white/80' : 'bg-muted-foreground/60')}
         >
           <div className="w-full h-full" />
-        </AnimatedView>
+        </motion.div>
       ))}
-    </AnimatedView>
+    </motion.div>
   );
 }

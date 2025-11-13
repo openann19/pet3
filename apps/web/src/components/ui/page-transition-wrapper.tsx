@@ -1,11 +1,11 @@
 'use client';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, JSX } from 'react';
 import { useMemo } from 'react';
-import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
-import { usePageTransitionWrapper } from '@/effects/reanimated/use-page-transition-wrapper';
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useMotionTokens } from '@/hooks/useMotionTokens';
+import { slideUpVariants, fadeVariants } from '@/effects/framer-motion/variants';
 
 export interface PageTransitionWrapperProps {
   children: ReactNode;
@@ -18,27 +18,28 @@ export interface PageTransitionWrapperProps {
 export function PageTransitionWrapper({
   children,
   key: transitionKey = 'default',
-  duration = 300,
+  duration,
   direction = 'up',
   className,
-}: PageTransitionWrapperProps): React.JSX.Element {
-  const reducedMotion = usePrefersReducedMotion();
-  const effectiveDuration = reducedMotion ? 0 : duration;
+}: PageTransitionWrapperProps): JSX.Element {
+  const reducedMotion = useReducedMotion();
+  const tokens = useMotionTokens();
+  const effectiveDuration = duration ?? (reducedMotion ? 0 : tokens.durations.smooth * 1000);
 
-  const transition = usePageTransitionWrapper({
-    key: transitionKey,
-    duration: effectiveDuration,
-    direction,
-  });
-
-  const animatedStyleValue = useAnimatedStyleValue(
-    reducedMotion
-      ? ({
-          opacity: 1,
-          transform: [],
-        } as AnimatedStyle)
-      : transition.style
-  );
+  const variants = useMemo(() => {
+    if (reducedMotion) {
+      return fadeVariants;
+    }
+    switch (direction) {
+      case 'up':
+        return slideUpVariants;
+      case 'down':
+        return slideUpVariants; // Can add slideDownVariants if needed
+      case 'fade':
+      default:
+        return fadeVariants;
+    }
+  }, [direction, reducedMotion]);
 
   const wrapperClassName = useMemo(() => {
     const baseClasses = 'w-full h-full';
@@ -50,8 +51,21 @@ export function PageTransitionWrapper({
   }
 
   return (
-    <AnimatedView style={animatedStyleValue} className={wrapperClassName}>
-      {children}
-    </AnimatedView>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={transitionKey}
+        variants={variants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{
+          ...tokens.spring.smooth,
+          duration: tokens.durations.smooth,
+        }}
+        className={wrapperClassName}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }

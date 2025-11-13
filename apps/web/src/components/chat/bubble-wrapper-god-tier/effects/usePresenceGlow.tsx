@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import {
   useSharedValue,
@@ -10,7 +11,7 @@ import {
 } from '@petspark/motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import type { ReactNode } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -69,12 +70,12 @@ export function PresenceGlow({
     <div className={className} style={{ position: 'relative' }}>
       {children}
       {isActive && (
-        <AnimatedView
+        <motion.div
           style={glowStyle}
           className="absolute inset-0 rounded-full pointer-events-none -z-10"
         >
           <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-md" />
-        </AnimatedView>
+        </motion.div>
       )}
     </div>
   );

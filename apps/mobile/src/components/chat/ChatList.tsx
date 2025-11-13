@@ -24,7 +24,6 @@ import Animated, {
 import { useLiquidDots } from '../../effects/chat/typing/use-liquid-dots'
 import { MagneticScrollFab } from './MagneticScrollFab'
 import { MessageBubble, type Message } from './MessageBubble'
-import { isTruthy } from '@petspark/shared';
 
 /**
  * Typing dot component
@@ -95,7 +94,7 @@ export function ChatList({
       setShowScrollFab(shouldShowFab)
 
       // Update badge count based on unread messages
-      if (isTruthy(shouldShowFab)) {
+      if (shouldShowFab) {
         const unreadCount = Math.floor(distanceFromBottom / 60) // Approximate
         if (unreadCount !== badgeCount) {
           previousBadgeCountRef.current = badgeCount
@@ -195,14 +194,14 @@ export function ChatList({
       {/* Scroll to bottom FAB */}
       {showScrollFab && (
         <Animated.View
-          style={[styles.fabContainer, fabAnimatedStyle]}
+          style={styles.fabContainer}
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
         >
-          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8}>
             <Text style={styles.fabIcon}>↓</Text>
             {badgeCount > 0 && (
-              <Animated.View style={[styles.badge, badgeAnimatedStyle]}>
+              <Animated.View style={styles.badge}>
                 <Text style={styles.badgeText}>
                   {badgeCount > 99 ? '99+' : badgeCount.toString()}
                 </Text>

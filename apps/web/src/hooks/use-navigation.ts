@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import type { View, RouteConfig } from '@/lib/routes';
-import { routes, getSafeRouteParams } from '@/lib/routes';
+import { routes, getSafeRouteParams, isValidView, getDefaultView } from '@/lib/routes';
 
 export interface UseNavigationReturn {
   navigate: (config: RouteConfig) => void;
@@ -22,18 +22,23 @@ export function useNavigation(
 ): UseNavigationReturn {
   const navigate = useCallback(
     (config: RouteConfig) => {
-      // Validate params if schema exists
+      // Validate params if schema exists - this ensures runtime safety
+      // getSafeRouteParams will return safe defaults if validation fails
       if (config.params) {
         getSafeRouteParams(config.view, config.params);
       }
-      setCurrentView(config.view);
+      // Ensure view is valid before setting
+      const validView = isValidView(config.view) ? config.view : getDefaultView();
+      setCurrentView(validView);
     },
     [setCurrentView]
   );
 
   const navigateToView = useCallback(
-    (view: View) => {
-      setCurrentView(view);
+    (view: View | string) => {
+      // Validate view before navigation for runtime safety
+      const validView = isValidView(view) ? view : getDefaultView();
+      setCurrentView(validView);
     },
     [setCurrentView]
   );

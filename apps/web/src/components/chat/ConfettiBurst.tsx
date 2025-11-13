@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Confetti Burst — Web (Reanimated v3)
  * - Physics-like: upward impulse + gravity + lateral drift + spin
  * - Deterministic seeding, reduced motion fast fallback
@@ -6,28 +7,18 @@
  * Location: apps/web/src/components/chat/ConfettiBurst.tsx
  */
 
-import { useEffect, useMemo } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withDelay,
-  Easing,
-  runOnJS,
-  type SharedValue,
-} from '@petspark/motion';
+import { useEffect, useMemo, useState, memo } from 'react';
+import { motion, useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
 import { createSeededRNG } from '@/effects/chat/core/seeded-rng';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface ConfettiParticle {
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-  r: SharedValue<number>;
-  s: SharedValue<number>;
-  o: SharedValue<number>;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  r: MotionValue<number>;
+  s: MotionValue<number>;
+  o: MotionValue<number>;
   color: string;
   w: number;
   h: number;
@@ -58,16 +49,16 @@ export function ConfettiBurst({
   const _uiConfig = useUIConfig();
   const reduced = useReducedMotion();
   const dur = getReducedMotionDuration(duration, reduced);
-  const finished = useSharedValue(0);
+  const [finishedCount, setFinishedCount] = useState(0);
 
   const particles = useMemo<ConfettiParticle[]>(() => {
     const rng = createSeededRNG(seed);
     return Array.from({ length: particleCount }, (_, i) => {
-      const x = useSharedValue(0);
-      const y = useSharedValue(0);
-      const r = useSharedValue(0);
-      const s = useSharedValue(rng.range(0.85, 1.25));
-      const o = useSharedValue(0);
+      const x = useMotionValue(0);
+      const y = useMotionValue(0);
+      const r = useMotionValue(0);
+      const s = useMotionValue(rng.range(0.85, 1.25));
+      const o = useMotionValue(0);
       const color = colors[i % colors.length] ?? colors[0] ?? 'var(--color-accent-9)';
       const w = rng.rangeInt(6, 12);
       const h = rng.rangeInt(6, 12);
@@ -80,54 +71,76 @@ export function ConfettiBurst({
 
   useEffect(() => {
     if (!enabled) return;
+    setFinishedCount(0);
 
-    particles.forEach((p) => {
+    particles.forEach((p, index) => {
       if (reduced) {
-        p.o.value = withTiming(1, { duration: 0 });
-        p.s.value = withTiming(1, { duration: 0 });
-        p.y.value = withTiming(40, { duration: getReducedMotionDuration(120, true) }, () => {
-          p.o.value = withTiming(0, { duration: 120 }, () => {
-            finished.value += 1;
-            if (finished.value === particles.length && onComplete) {
-              runOnJS(onComplete)();
-            }
+        p.o.set(1);
+        p.s.set(1);
+        setTimeout(() => {
+          void animate(p.y, 40, {
+            duration: getReducedMotionDuration(120, true) / 1000,
+            ease: [0.2, 0, 0, 1],
+          }).then(() => {
+            void animate(p.o, 0, {
+              duration: 0.12,
+              ease: [0.2, 0, 0, 1],
+            }).then(() => {
+              setFinishedCount((prev) => {
+                const next = prev + 1;
+                if (next === particles.length && onComplete) {
+                  onComplete();
+                }
+                return next;
+              });
+            });
           });
-        });
+        }, p.delay);
         return;
       }
 
-      p.o.value = withDelay(p.delay, withTiming(1, { duration: 80 }));
-      p.x.value = withDelay(
-        p.delay,
-        withTiming(p.vx, { duration: dur, easing: Easing.out(Easing.cubic) })
-      );
-      p.y.value = withDelay(
-        p.delay,
-        withTiming(p.vy, { duration: dur * 0.35, easing: Easing.out(Easing.quad) }, () => {
-          p.y.value = withTiming(
-            160,
-            { duration: dur * 0.65, easing: Easing.in(Easing.cubic) },
-            () => {
-              p.o.value = withTiming(0, { duration: Math.max(140, dur * 0.25) }, () => {
-                finished.value += 1;
-                if (finished.value === particles.length && onComplete) {
-                  runOnJS(onComplete)();
+      setTimeout(() => {
+        void animate(p.o, 1, {
+          duration: 0.08,
+          ease: [0.2, 0, 0, 1],
+        });
+        
+        void animate(p.x, p.vx, {
+          duration: dur / 1000,
+          ease: [0.33, 1, 0.68, 1],
+        });
+        
+        void animate(p.y, p.vy, {
+          duration: (dur * 0.35) / 1000,
+          ease: [0.25, 0.46, 0.45, 0.94],
+        }).then(() => {
+          void animate(p.y, 160, {
+            duration: (dur * 0.65) / 1000,
+            ease: [0.55, 0.06, 0.68, 0.19],
+          }).then(() => {
+            void animate(p.o, 0, {
+              duration: Math.max(0.14, (dur * 0.25) / 1000),
+              ease: [0.2, 0, 0, 1],
+            }).then(() => {
+              setFinishedCount((prev) => {
+                const next = prev + 1;
+                if (next === particles.length && onComplete) {
+                  onComplete();
                 }
+                return next;
               });
-            }
-          );
-        })
-      );
-      p.r.value = withDelay(
-        p.delay,
-        withRepeat(
-          withTiming(360, { duration: Math.max(600, dur * 0.6), easing: Easing.linear }),
-          -1,
-          false
-        )
-      );
+            });
+          });
+        });
+        
+        void animate(p.r, 360, {
+          duration: Math.max(0.6, (dur * 0.6) / 1000),
+          ease: 'linear',
+          repeat: Infinity,
+        });
+      }, p.delay);
     });
-  }, [enabled, particles, dur, reduced, finished, onComplete]);
+  }, [enabled, particles, dur, reduced, onComplete]);
 
   return (
     <div className={`fixed inset-0 z-50 pointer-events-none ${className ?? ''}`}>
@@ -140,25 +153,28 @@ export function ConfettiBurst({
 
 /**
  * ConfettiParticleView component that renders a single confetti particle with animated style
- * Uses useAnimatedStyle to create reactive styles from particle SharedValues
+ * Uses Framer Motion motion values directly
  */
 function ConfettiParticleView({ particle }: { particle: ConfettiParticle }): React.JSX.Element {
-  const style = useAnimatedStyle(() => ({
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    opacity: particle.o.value,
-    transform: [
-      { translateX: particle.x.value },
-      { translateY: particle.y.value },
-      { rotate: `${particle.r.value}deg` },
-      { scale: particle.s.value },
-    ],
-    width: particle.w,
-    height: particle.h,
-    backgroundColor: particle.color,
-    borderRadius: 2,
-  }));
-
-  return <AnimatedView style={style} />;
+  return (
+    <motion.div
+      style={{
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        x: particle.x,
+        y: particle.y,
+        rotate: particle.r,
+        scale: particle.s,
+        opacity: particle.o,
+        width: particle.w,
+        height: particle.h,
+        backgroundColor: particle.color,
+        borderRadius: 2,
+      }}
+    />
+  );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedConfettiBurst = memo(ConfettiBurst);

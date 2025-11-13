@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useMemo } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
 
@@ -24,7 +25,7 @@ export interface UseAdaptiveBubbleShapeReturn {
  * @example
  * ```tsx
  * const { animatedStyle, borderRadius } = useAdaptiveBubbleShape({ text: messageText })
- * return <AnimatedView style={[animatedStyle, { borderRadius }]}>{content}</AnimatedView>
+ * return <motion.div style={[animatedStyle, { borderRadius }]}>{content}</motion.div>
  * ```
  */
 export function useAdaptiveBubbleShape(

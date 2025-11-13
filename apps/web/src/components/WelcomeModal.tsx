@@ -1,10 +1,11 @@
 import { useCallback, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import { Heart, Sparkle, PawPrint, X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useApp } from '@/contexts/AppContext';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import {
   useSharedValue,
@@ -14,7 +15,7 @@ import {
   withSequence,
   withSpring,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 export default function WelcomeModal(): JSX.Element | null {
   const { t } = useApp();
@@ -194,12 +195,12 @@ export default function WelcomeModal(): JSX.Element | null {
           Discover perfect companions for your pet with AI-powered matching, secure messaging, and a vibrant community
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
-          <AnimatedView
+          <motion.div
             style={bgAnimatedStyle}
             className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"
           />
 
-          <AnimatedView
+          <motion.div
             style={closeButtonHover.animatedStyle}
             onMouseEnter={closeButtonHover.handleMouseEnter}
             onMouseLeave={closeButtonHover.handleMouseLeave}
@@ -213,21 +214,21 @@ export default function WelcomeModal(): JSX.Element | null {
             >
               <X size={16} />
             </button>
-          </AnimatedView>
+          </motion.div>
 
-          <AnimatedView
+          <motion.div
             style={iconAnimatedStyle}
             className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
             style={logoStyle}
           >
-            <AnimatedView style={iconPulseStyle}>
+            <motion.div style={iconPulseStyle}>
               <Heart size={40} className="text-white" weight="fill" />
-            </AnimatedView>
-            <AnimatedView
+            </motion.div>
+            <motion.div
               style={iconGlowStyle}
               className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent"
             />
-          </AnimatedView>
+          </motion.div>
 
           <div className="text-3xl md:text-4xl font-bold text-center mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-300 delay-300">
             {t.welcome.title} 🐾
@@ -256,7 +257,7 @@ export default function WelcomeModal(): JSX.Element | null {
           </div>
 
           <div className="flex justify-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-300 delay-1000">
-            <AnimatedView
+            <motion.div
               style={buttonHover.animatedStyle}
               onMouseEnter={buttonHover.handleMouseEnter}
               onMouseLeave={buttonHover.handleMouseLeave}
@@ -268,11 +269,11 @@ export default function WelcomeModal(): JSX.Element | null {
                 className="px-8 shadow-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 {t.welcome.getStarted}
-                <AnimatedView style={arrowStyle} className="ml-2">
+                <motion.div style={arrowStyle} className="ml-2">
                   →
-                </AnimatedView>
+                </motion.div>
               </Button>
-            </AnimatedView>
+            </motion.div>
           </div>
         </div>
       </DialogContent>

@@ -58,6 +58,17 @@ class PaymentService {
     request: CreateSubscriptionRequest
   ): Promise<CreateSubscriptionResponse> {
     try {
+      // Validate request
+      if (!request.userId || request.userId === '') {
+        throw new Error('User ID is required')
+      }
+      if (!request.planId || request.planId === '') {
+        throw new Error('Plan ID is required')
+      }
+      if (!request.platform || !['ios', 'android', 'web'].includes(request.platform)) {
+        throw new Error('Invalid platform')
+      }
+
       logger.info('Creating subscription', { planId: request.planId, platform: request.platform })
 
       const response = await apiClient.post<CreateSubscriptionResponse>(
@@ -80,7 +91,7 @@ class PaymentService {
 
       return response
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to create subscription')
       logger.error('Failed to create subscription', err, { request })
       throw err
     }
@@ -91,6 +102,11 @@ class PaymentService {
    */
   async validateIOSReceipt(receiptData: string): Promise<ReceiptValidationResult> {
     try {
+      // Validate receipt data
+      if (!receiptData || receiptData === '') {
+        throw new Error('Receipt data is required')
+      }
+
       logger.info('Validating iOS receipt')
 
       const response = await apiClient.post<ReceiptValidationResult>(
@@ -112,7 +128,7 @@ class PaymentService {
 
       return response
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to validate iOS receipt')
       logger.error('Failed to validate iOS receipt', err)
       return {
         valid: false,
@@ -129,6 +145,14 @@ class PaymentService {
     productId: string
   ): Promise<ReceiptValidationResult> {
     try {
+      // Validate inputs
+      if (!purchaseToken || purchaseToken === '') {
+        throw new Error('Purchase token is required')
+      }
+      if (!productId || productId === '') {
+        throw new Error('Product ID is required')
+      }
+
       logger.info('Validating Android purchase', { productId })
 
       const response = await apiClient.post<ReceiptValidationResult>(
@@ -150,7 +174,7 @@ class PaymentService {
 
       return response
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to validate Android purchase')
       logger.error('Failed to validate Android purchase', err)
       return {
         valid: false,
@@ -177,7 +201,7 @@ class PaymentService {
       logger.info('Subscription fetched successfully', { plan: subscription.plan })
       return subscription
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to fetch subscription')
       logger.error('Failed to fetch subscription', err, { userId })
       return null
     }
@@ -198,7 +222,7 @@ class PaymentService {
       logger.info('Subscription cancelled successfully', { subscriptionId })
       return true
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to cancel subscription')
       logger.error('Failed to cancel subscription', err, { userId, subscriptionId })
       return false
     }
@@ -222,7 +246,7 @@ class PaymentService {
       logger.info('Payment method updated successfully', { paymentMethodId })
       return true
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to update payment method')
       logger.error('Failed to update payment method', err, { userId, paymentMethodId })
       return false
     }
@@ -246,7 +270,7 @@ class PaymentService {
       logger.info('Payment methods fetched successfully', { count: methods.length })
       return methods
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to fetch payment methods')
       logger.error('Failed to fetch payment methods', err, { userId })
       return []
     }
@@ -273,7 +297,7 @@ class PaymentService {
 
       return issue
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to fetch billing issues')
       logger.error('Failed to fetch billing issues', err, { userId })
       return null
     }
@@ -303,7 +327,7 @@ class PaymentService {
 
       return response.restored
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
+      const err = error instanceof Error ? error : new Error('Failed to restore purchases')
       logger.error('Failed to restore purchases', err, { userId, platform })
       return false
     }

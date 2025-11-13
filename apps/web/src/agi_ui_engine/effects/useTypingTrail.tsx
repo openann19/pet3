@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useEffect } from 'react';
 import {
@@ -9,7 +10,7 @@ import {
   withSequence,
   Easing,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
 export interface UseTypingTrailReturn {
@@ -25,7 +26,7 @@ export interface UseTypingTrailReturn {
  * @example
  * ```tsx
  * const { animatedStyle } = useTypingTrail()
- * return <AnimatedView style={animatedStyle}>{dots}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{dots}</motion.div>
  * ```
  */
 export function useTypingTrail(): UseTypingTrailReturn {

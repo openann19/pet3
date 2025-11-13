@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import { motion } from 'framer-motion';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -23,7 +24,7 @@ import { adoptionMarketplaceService } from '@/lib/adoption-marketplace-service';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
 import { createLogger } from '@/lib/logger';
-import { FocusRing } from '@/core/tokens';
+import { FocusRing } from '@petspark/shared';
 
 const logger = createLogger('AdoptionListingDetailDialog');
 
@@ -79,6 +80,12 @@ export function AdoptionListingDetailDialog({
     enterTransition: 'slideUp',
     exitTransition: 'fade',
   });
+
+  // Convert animated styles to CSS
+  const photoStyleValue = useAnimatedStyleValue(photoPresence.animatedStyle);
+  const prevButtonStyleValue = useAnimatedStyleValue(prevButtonHover.animatedStyle);
+  const nextButtonStyleValue = useAnimatedStyleValue(nextButtonHover.animatedStyle);
+  const applicationFormStyleValue = useAnimatedStyleValue(applicationFormPresence.animatedStyle);
 
   if (!listing) return null;
 
@@ -183,19 +190,19 @@ export function AdoptionListingDetailDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <div className="relative h-80 bg-muted">
           {photoPresence.shouldRender && (
-            <AnimatedView key={currentPhotoIndex} style={photoPresence.animatedStyle}>
+            <motion.div key={currentPhotoIndex} style={photoStyleValue}>
               <img
                 src={photos[currentPhotoIndex]}
                 alt={`${listing.petName} - Photo ${currentPhotoIndex + 1}`}
                 className="w-full h-full object-cover"
               />
-            </AnimatedView>
+            </motion.div>
           )}
 
           {photos.length > 1 && (
             <>
-              <AnimatedView
-                style={prevButtonHover.animatedStyle}
+              <motion.div
+                style={prevButtonStyleValue}
                 onMouseEnter={prevButtonHover.handleMouseEnter}
                 onMouseLeave={prevButtonHover.handleMouseLeave}
                 onClick={() => {
@@ -210,9 +217,9 @@ export function AdoptionListingDetailDialog({
                 >
                   <CaretLeft size={20} weight="bold" />
                 </button>
-              </AnimatedView>
-              <AnimatedView
-                style={nextButtonHover.animatedStyle}
+              </motion.div>
+              <motion.div
+                style={nextButtonStyleValue}
                 onMouseEnter={nextButtonHover.handleMouseEnter}
                 onMouseLeave={nextButtonHover.handleMouseLeave}
                 onClick={() => {
@@ -227,7 +234,7 @@ export function AdoptionListingDetailDialog({
                 >
                   <CaretRight size={20} weight="bold" />
                 </button>
-              </AnimatedView>
+              </motion.div>
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {photos.map((_, index) => (
                   <button
@@ -356,8 +363,8 @@ export function AdoptionListingDetailDialog({
           )}
 
           {applicationFormPresence.shouldRender && showApplicationForm && (
-            <AnimatedView
-              style={applicationFormPresence.animatedStyle}
+            <motion.div
+              style={applicationFormStyleValue}
               className="space-y-4 p-4 border rounded-lg bg-muted/50"
             >
               <div className="flex items-center justify-between">
@@ -413,7 +420,7 @@ export function AdoptionListingDetailDialog({
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </Button>
               </div>
-            </AnimatedView>
+            </motion.div>
           )}
         </div>
       </DialogContent>

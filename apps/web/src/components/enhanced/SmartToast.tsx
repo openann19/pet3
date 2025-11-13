@@ -1,15 +1,14 @@
 import React, { useEffect, useCallback } from 'react';
-import { useSharedValue, withSpring, useAnimatedStyle, withTiming, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { Presence } from '@petspark/motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, Warning, Info, XCircle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs } from '@/effects/framer-motion/variants';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { getToastAriaAttributes, getAriaButtonAttributes, generateId } from '@/lib/accessibility';
+import { getMinTouchTargetClasses } from '@/lib/design-token-utils';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -66,39 +65,10 @@ export function SmartToast({
   const titleId = generateId('toast-title');
   const descriptionId = description ? generateId('toast-description') : undefined;
   const toastAria = getToastAriaAttributes(type);
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(position === 'top' ? -20 : 20);
-  const translateX = useSharedValue(0);
-  const scale = useSharedValue(0.95);
 
   const handleDismiss = useCallback(() => {
-    if (prefersReducedMotion) {
-      onDismiss(id);
-      return;
-    }
-    const opacityTransition = withTiming(0, { duration: 200 });
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-    const translateXTransition = withTiming(300, { duration: 200 });
-    animate(translateX, translateXTransition.target, translateXTransition.transition);
-    const scaleTransition = withTiming(0.9, { duration: 200 });
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-    setTimeout(() => onDismiss(id), 200);
-  }, [id, onDismiss, opacity, translateX, scale, prefersReducedMotion]);
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      opacity.value = 1;
-      translateY.value = 0;
-      scale.value = 1;
-      return;
-    }
-    const opacityTransition = withSpring(1, springConfigs.smooth);
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-    const translateYTransition = withSpring(0, springConfigs.smooth);
-    animate(translateY, translateYTransition.target, translateYTransition.transition);
-    const scaleTransition = withSpring(1, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-  }, [opacity, translateY, scale, prefersReducedMotion]);
+    setTimeout(() => onDismiss(id), prefersReducedMotion ? 0 : 200);
+  }, [id, onDismiss, prefersReducedMotion]);
 
   // Auto-dismiss after duration
   useEffect(() => {
@@ -114,18 +84,15 @@ export function SmartToast({
     return undefined;
   }, [duration, handleDismiss]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [
-      { translateY: translateY.get() },
-      { translateX: translateX.get() },
-      { scale: scale.get() },
-    ],
-  }));
+  const initialY = position === 'top' ? -20 : 20;
+  const exitX = 300;
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      initial={{ opacity: 0, y: initialY, scale: 0.95, x: 0 }}
+      animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+      exit={{ opacity: 0, x: exitX, scale: 0.9 }}
+      transition={prefersReducedMotion ? { duration: 0 } : springConfigs.smooth}
       role={toastAria.role}
       aria-live={toastAria['aria-live']}
       aria-atomic={toastAria['aria-atomic']}
@@ -167,7 +134,8 @@ export function SmartToast({
       <button
         onClick={handleDismiss}
         className={cn(
-          'shrink-0 opacity-50 hover:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center',
+          'shrink-0 opacity-50 hover:opacity-100 flex items-center justify-center',
+          getMinTouchTargetClasses(),
           prefersReducedMotion ? '' : 'transition-opacity duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)'
         )}
@@ -175,7 +143,7 @@ export function SmartToast({
       >
         <X size={16} aria-hidden="true" />
       </button>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -200,13 +168,13 @@ export function SmartToastContainer({
         position === 'top' ? 'top-4' : 'bottom-4'
       )}
     >
-      <Presence visible={toasts.length > 0}>
+      <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">
             <SmartToast {...toast} onDismiss={onDismiss} position={position} />
           </div>
         ))}
-      </Presence>
+      </AnimatePresence>
     </div>
   );
 }

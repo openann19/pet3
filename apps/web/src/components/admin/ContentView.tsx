@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -231,7 +232,7 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
   })
 
   return (
-    <AnimatedView style={entry.animatedStyle}>
+    <motion.div style={entry.animatedStyle}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-square relative bg-muted">
           {pet.photo ? (
@@ -268,7 +269,7 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
           </Button>
         </CardContent>
       </Card>
-    </AnimatedView>
+    </motion.div>
   )
 }
 

@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Ultra Enhanced Card
  * Card with 3D transforms, hover effects, and smooth animations
  */
@@ -10,7 +11,9 @@ import {
   useParallaxTilt,
   useUltraCardReveal,
 } from '@/effects/reanimated';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { type HTMLAttributes, type ReactNode } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
@@ -82,7 +85,11 @@ export function UltraCard({
   const combinedStyle = {
     ...reveal.animatedStyle,
     ...(enableMagnetic ? magnetic.animatedStyle : {}),
-  };
+  } as AnimatedStyle;
+
+  const combinedStyleValue = useAnimatedStyleValue(combinedStyle);
+  const hoverLiftStyleValue = useAnimatedStyleValue(enableHoverLift ? hoverLift.animatedStyle : (enableTilt ? tilt.animatedStyle : {}) as AnimatedStyle);
+  const glowStyleValue = useAnimatedStyleValue(glow.animatedStyle as AnimatedStyle);
 
   return (
     <div
@@ -92,15 +99,13 @@ export function UltraCard({
       onMouseMove={enableMagnetic ? magnetic.handleMouseMove : undefined}
       className="inline-block"
     >
-      <AnimatedView style={combinedStyle}>
+      <motion.div style={combinedStyleValue}>
         <div
           onMouseMove={enableTilt ? handleTiltMove : undefined}
           onMouseLeave={enableTilt ? tilt.handleLeave : undefined}
           className="relative"
         >
-          <AnimatedView
-            style={enableHoverLift ? hoverLift.animatedStyle : enableTilt ? tilt.animatedStyle : {}}
-          >
+          <motion.div style={hoverLiftStyleValue}>
             <div
               className={cn(
                 'bg-card border border-border rounded-xl shadow-lg transition-shadow duration-300',
@@ -110,15 +115,15 @@ export function UltraCard({
               {...props}
             >
               {enableGlow && (
-                <AnimatedView style={glow.animatedStyle}>
+                <motion.div style={glowStyleValue}>
                   <div className="absolute inset-0 rounded-xl pointer-events-none" />
-                </AnimatedView>
+                </motion.div>
               )}
               <div className="relative z-10">{children}</div>
             </div>
-          </AnimatedView>
+          </motion.div>
         </div>
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }

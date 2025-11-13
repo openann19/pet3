@@ -1,4 +1,5 @@
 import { adminApi } from '@/api/admin-api';
+import { motion } from 'framer-motion';
 import { createLogger } from '@/lib/logger';
 import { PetProfileGenerator } from '@/components/admin/PetProfileGenerator';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ import {
   Users,
   type Icon,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useEffect, useState } from 'react';
 
 interface Report {
@@ -190,7 +191,7 @@ export default function DashboardView() {
             stat.trend === 'up' ? TrendUp : stat.trend === 'down' ? TrendDown : Clock;
 
           return (
-            <AnimatedView key={stat.title}>
+            <motion.div key={stat.title}>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
@@ -204,7 +205,7 @@ export default function DashboardView() {
                   </div>
                 </CardContent>
               </Card>
-            </AnimatedView>
+            </motion.div>
           );
         })}
       </div>

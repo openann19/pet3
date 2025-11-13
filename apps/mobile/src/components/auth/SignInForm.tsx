@@ -202,7 +202,7 @@ export default function SignInForm({
         </View>
         {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
 
-        <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton}>
           <Text style={styles.forgotText}>{t.auth?.forgotPassword || 'Forgot password?'}</Text>
         </TouchableOpacity>
 
@@ -228,7 +228,7 @@ export default function SignInForm({
 
         <View style={styles.switchRow}>
           <Text style={styles.switchText}>{t.auth?.noAccount || "Don't have an account?"} </Text>
-          <TouchableOpacity onPress={onSwitchToSignUp} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity onPress={onSwitchToSignUp}>
             <Text style={styles.signUpText}>{t.auth?.signUp || 'Sign up'}</Text>
           </TouchableOpacity>
         </View>

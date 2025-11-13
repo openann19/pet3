@@ -1,15 +1,16 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 import { type ReactNode, useCallback } from 'react';
 import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useBubbleTilt } from '@/effects/reanimated/use-bubble-tilt';
 import { useBubbleEntry } from '@/effects/reanimated/use-bubble-entry';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { TypingDotsWeb } from './TypingDotsWeb';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface WebBubbleWrapperProps {
@@ -135,7 +136,7 @@ export function WebBubbleWrapper({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
@@ -145,12 +146,12 @@ export function WebBubbleWrapper({
     >
       {/* Glow trail effect */}
       {glowOpacity > 0 && (
-        <AnimatedView style={glowStyle}>
+        <motion.div style={glowStyle}>
           <div />
-        </AnimatedView>
+        </motion.div>
       )}
 
-      <AnimatedView
+      <motion.div
         style={bubbleStyle}
         onMouseEnter={bubbleHover.handleMouseEnter}
         onMouseLeave={bubbleHover.handleMouseLeave}
@@ -169,15 +170,15 @@ export function WebBubbleWrapper({
         ) : (
           children
         )}
-      </AnimatedView>
+      </motion.div>
       {hasReaction && (
-        <AnimatedView
+        <motion.div
           style={reactionEntry.animatedStyle}
           className="absolute -bottom-4 -right-2 text-base pointer-events-none"
         >
           {reactionEmoji}
-        </AnimatedView>
+        </motion.div>
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }

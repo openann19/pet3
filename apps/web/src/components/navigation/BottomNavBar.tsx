@@ -2,25 +2,16 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withDelay,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation';
 import { useBounceOnTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { getAriaNavigationAttributes } from '@/lib/accessibility';
 import { isTruthy } from '@petspark/shared';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 interface NavItem {
   to: string;
@@ -41,61 +32,62 @@ const items: NavItem[] = [
 export default function BottomNavBar() {
   const { pathname } = useLocation();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const barOpacity = useSharedValue(0);
-  const barY = useSharedValue(20);
+  const barOpacity = useMotionValue(0);
+  const barY = useMotionValue(20);
 
   useEffect(() => {
-    barOpacity.value = withDelay(200, withTiming(1, timingConfigs.smooth));
-    barY.value = withDelay(200, withSpring(0, springConfigs.smooth));
-  }, [barOpacity, barY]);
-
-  const barStyle = useAnimatedStyle(() => {
-    return {
-      opacity: barOpacity.value,
-      transform: [{ translateY: barY.value }],
-    };
-  }) as AnimatedStyle;
+    if (prefersReducedMotion) {
+      barOpacity.set(1);
+      barY.set(0);
+      return;
+    }
+    
+    setTimeout(() => {
+      void animate(barOpacity, 1, {
+        duration: motionDurations.smooth,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(barY, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+    }, 200);
+  }, [barOpacity, barY, prefersReducedMotion]);
 
   // Holographic shimmer effect
-  const shimmerX = useSharedValue(-100);
+  const shimmerX = useMotionValue(-100);
   useEffect(() => {
-    shimmerX.value = withRepeat(
-      withSequence(
-        withTiming(300, { duration: 4000 }),
-        withTiming(-100, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-  }, [shimmerX]);
+    if (prefersReducedMotion) return;
+    
+    void animate(shimmerX, [300, -100], {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'linear',
+    });
+  }, [shimmerX, prefersReducedMotion]);
 
-  const shimmerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: shimmerX.value }],
-    };
-  }) as AnimatedStyle;
-
-  const holographicGlow = useSharedValue(0.4);
+  const holographicGlow = useMotionValue(0.4);
   useEffect(() => {
-    holographicGlow.value = withRepeat(
-      withSequence(
-        withTiming(0.7, { duration: 2000 }),
-        withTiming(0.4, { duration: 2000 })
-      ),
-      -1,
-      true
-    );
-  }, [holographicGlow]);
-
-  const glowStyle2 = useAnimatedStyle(() => {
-    return {
-      opacity: holographicGlow.value,
-    };
-  }) as AnimatedStyle;
+    if (prefersReducedMotion) return;
+    
+    void animate(holographicGlow, [0.4, 0.7, 0.4], {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+  }, [holographicGlow, prefersReducedMotion]);
 
   return (
-    <AnimatedView style={barStyle} className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <motion.div
+      style={{
+        opacity: barOpacity,
+        y: barY,
+      }}
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+    >
       <nav 
         className="border-t border-border/40 bg-card/85 backdrop-blur-3xl shadow-2xl relative overflow-hidden"
         aria-label="Bottom navigation"
@@ -106,14 +98,18 @@ export default function BottomNavBar() {
           <div className="absolute inset-0 bg-linear-to-b from-transparent via-accent/5 to-transparent pointer-events-none" />
 
           {/* Animated shimmer effect */}
-          <AnimatedView
-            style={shimmerStyle}
+          <motion.div
+            style={{
+              x: shimmerX,
+            }}
             className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent w-1/2 h-full pointer-events-none"
           />
 
           {/* Pulsing glow effect */}
-          <AnimatedView
-            style={glowStyle2}
+          <motion.div
+            style={{
+              opacity: holographicGlow,
+            }}
             className="absolute inset-0 bg-linear-to-t from-accent/20 via-primary/15 to-accent/20 blur-2xl pointer-events-none"
           />
 
@@ -148,7 +144,7 @@ export default function BottomNavBar() {
           </ul>
         </div>
       </nav>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -173,44 +169,67 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
     hapticFeedback: false,
   });
 
-  const iconScale = useSharedValue(1);
-  const iconY = useSharedValue(0);
-  const glowOpacity = useSharedValue(0);
+  const iconScale = useMotionValue(1);
+  const iconY = useMotionValue(0);
+  const glowOpacity = useMotionValue(0);
+
+  // Combined icon scale from both animation and local state
+  const combinedIconScale = useTransform(
+    [iconScale, animation.iconScale],
+    ([local, anim]: number[]) => (local ?? 1) * (anim ?? 1)
+  );
 
   useEffect(() => {
     if (isActive) {
-      iconScale.value = withSpring(1.15, springConfigs.bouncy);
-      iconY.value = withSpring(-2, springConfigs.smooth);
-      glowOpacity.value = withSpring(1, springConfigs.smooth);
+      void animate(iconScale, 1.15, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping,
+        stiffness: springConfigs.bouncy.stiffness,
+      });
+      void animate(iconY, -2, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(glowOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     } else {
-      iconScale.value = withSpring(1, springConfigs.smooth);
-      iconY.value = withSpring(0, springConfigs.smooth);
-      glowOpacity.value = withSpring(0, springConfigs.smooth);
+      void animate(iconScale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(iconY, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(glowOpacity, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
   }, [isActive, iconScale, iconY, glowOpacity]);
 
   useEffect(() => {
     if (isHovered && !isActive) {
-      iconScale.value = withSpring(1.1, springConfigs.smooth);
+      void animate(iconScale, 1.1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     } else if (!isActive) {
-      iconScale.value = withSpring(1, springConfigs.smooth);
+      void animate(iconScale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
   }, [isHovered, isActive, iconScale]);
-
-  const iconStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: iconScale.value * animation.iconScale.value },
-        { translateY: iconY.value },
-      ],
-    };
-  }) as AnimatedStyle;
-
-  const glowStyle = useAnimatedStyle(() => {
-    return {
-      opacity: glowOpacity.value * 0.6,
-    };
-  }) as AnimatedStyle;
 
   const handleClick = useCallback(() => {
     bounceAnimation.handlePress();
@@ -237,8 +256,12 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
         onClick={handleClick}
         {...navAriaAttrs}
       >
-        <AnimatedView
-          style={animation.buttonStyle}
+        <motion.div
+          style={{
+            scale: animation.scale,
+            y: animation.translateY,
+            rotate: animation.rotation,
+          }}
           className={cn(
             'relative flex flex-col items-center justify-center',
             getSpacingClassesFromConfig({ gap: 'xs' })
@@ -246,33 +269,45 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
         >
           {/* Active indicator background */}
           {isActive && (
-            <AnimatedView
-              style={animation.indicatorStyle}
+            <motion.div
+              style={{
+                opacity: animation.indicatorOpacity,
+                width: animation.indicatorWidth,
+              }}
               className="absolute inset-0 rounded-2xl bg-(--coral-primary)/20 blur-xl"
             >
               <></>
-            </AnimatedView>
+            </motion.div>
           )}
 
           {/* Glow effect for active item */}
           {isActive && (
-            <AnimatedView
-              style={glowStyle}
+            <motion.div
+              style={{
+                opacity: useTransform(glowOpacity, (value) => value * 0.6),
+              }}
               className="absolute inset-0 rounded-2xl bg-(--coral-primary)/30 blur-2xl -z-10"
             >
               <></>
-            </AnimatedView>
+            </motion.div>
           )}
 
           {/* Icon container */}
-          <AnimatedView style={iconStyle} className="relative z-10" aria-hidden="true">
+          <motion.div
+            style={{
+              scale: combinedIconScale,
+              y: iconY,
+            }}
+            className="relative z-10"
+            aria-hidden="true"
+          >
             <span className="text-2xl leading-none select-none">{item.icon}</span>
-          </AnimatedView>
+          </motion.div>
 
           {/* Label */}
           <span
             className={cn(
-              getTypographyClasses('badge'),
+              getTypographyClasses('caption'),
               'transition-all duration-200 relative z-10',
               isActive ? 'text-(--coral-primary) font-bold' : 'text-(--text-secondary) opacity-70'
             )}
@@ -282,17 +317,20 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
 
           {/* Active indicator dot */}
           {isActive && (
-            <AnimatedView
-              style={animation.indicatorStyle}
+            <motion.div
+              style={{
+                opacity: animation.indicatorOpacity,
+                width: animation.indicatorWidth,
+              }}
               className="absolute bottom-0 w-1 h-1 rounded-full bg-(--coral-primary)"
             >
               <></>
-            </AnimatedView>
+            </motion.div>
           )}
 
           {/* Badge */}
           {item.badge && item.badge > 0 && <Badge count={item.badge} isActive={isActive} />}
-        </AnimatedView>
+        </motion.div>
       </Link>
     </li>
   );
@@ -304,33 +342,50 @@ interface BadgeProps {
 }
 
 function Badge({ count, isActive }: BadgeProps) {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
+  const scale = useMotionValue(0);
+  const opacity = useMotionValue(0);
+  const pulseScale = useMotionValue(1);
+
+  // Combined scale
+  const combinedScale = useTransform(
+    [scale, pulseScale],
+    ([s, p]: number[]) => (s ?? 0) * (p ?? 1)
+  );
 
   useEffect(() => {
-    scale.value = withSpring(1, springConfigs.bouncy);
-    opacity.value = withTiming(1, timingConfigs.fast);
+    void animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.bouncy.damping,
+      stiffness: springConfigs.bouncy.stiffness,
+    });
+    void animate(opacity, 1, {
+      duration: motionDurations.fast,
+      ease: [0.2, 0, 0, 1],
+    });
   }, [scale, opacity]);
 
   useEffect(() => {
     if (isTruthy(isActive)) {
-      pulseScale.value = withSpring(1.2, springConfigs.bouncy, () => {
-        pulseScale.value = withSpring(1, springConfigs.smooth);
+      void animate(pulseScale, 1.2, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping,
+        stiffness: springConfigs.bouncy.stiffness,
+      }).then(() => {
+        void animate(pulseScale, 1, {
+          type: 'spring',
+          damping: springConfigs.smooth.damping,
+          stiffness: springConfigs.smooth.stiffness,
+        });
       });
     }
   }, [isActive, pulseScale]);
 
-  const badgeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value * pulseScale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
-
   return (
-    <AnimatedView
-      style={badgeStyle}
+    <motion.div
+      style={{
+        scale: combinedScale,
+        opacity,
+      }}
       className={cn(
         'absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-destructive flex items-center justify-center shadow-lg z-20',
         getSpacingClassesFromConfig({ paddingX: 'xs' })
@@ -338,11 +393,11 @@ function Badge({ count, isActive }: BadgeProps) {
       aria-label={`${count} ${count === 1 ? 'notification' : 'notifications'}`}
     >
       <span className={cn(
-        getTypographyClasses('badge'),
+        getTypographyClasses('caption'),
         'font-bold text-destructive-foreground'
       )}>
         {count > 9 ? '9+' : count}
       </span>
-    </AnimatedView>
+    </motion.div>
   );
 }

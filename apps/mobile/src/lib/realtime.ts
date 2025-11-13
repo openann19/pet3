@@ -51,7 +51,10 @@ export class RealtimeClient {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(callback)
+    const callbacks = this.listeners.get(event);
+    if (callbacks) {
+      callbacks.add(callback);
+    }
   }
 
   off(event: string, callback: EventCallback): void {

@@ -16,11 +16,12 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { colors } from '../../theme/colors'
+import { spacing, typography } from '../../theme/tokens'
 import type { PetProfile } from '../../types/pet'
 import { SwipeCard } from './SwipeCard'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
-const CARD_WIDTH = SCREEN_WIDTH - 40
+const CARD_WIDTH = SCREEN_WIDTH - spacing['4xl'] * 2 // Use spacing token instead of magic number
 const MAX_VISIBLE_CARDS = 3
 
 const SPRING_CONFIG = {
@@ -153,17 +154,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    padding: spacing['4xl'],
   },
   emptyText: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: typography.h2.fontSize,
+    fontWeight: typography.h2.fontWeight,
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
-    fontSize: 16,
+    fontSize: typography.body.fontSize,
     color: colors.textSecondary,
     textAlign: 'center',
   },

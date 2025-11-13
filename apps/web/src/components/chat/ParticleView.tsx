@@ -1,7 +1,8 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
 import type { Particle } from '@/effects/reanimated/particle-engine';
 
 export interface ParticleViewProps {
@@ -36,8 +37,8 @@ export function ParticleView({ particle, className }: ParticleViewProps): React.
     }) as AnimatedStyle;
 
     return (
-        <AnimatedView style={animatedStyle} className={className}>
+        <motion.div style={animatedStyle} className={className}>
             <div />
-        </AnimatedView>
+        </motion.div>
     );
 }

@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  withSequence,
-  withDelay,
-  animate,
-} from '@petspark/motion';
-import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 
 /**
  * Seeded Random Number Generator
@@ -40,57 +34,30 @@ interface ParticleEffectProps {
 }
 
 function ParticleAnimated({ particle }: { particle: Particle }) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-
-  useEffect(() => {
-    const delayMs = particle.delay * 1000;
-    const durationMs = particle.duration * 1000;
-
-    const opacitySequence = withSequence(
-      withTiming(1, { duration: durationMs * 0.2 }),
-      withTiming(1, { duration: durationMs * 0.6 }),
-      withTiming(0, { duration: durationMs * 0.2 })
-    );
-    const opacityDelay = withDelay(delayMs, opacitySequence);
-    animate(opacity, opacityDelay.target, opacityDelay.transition);
-
-    const scaleSequence = withSequence(
-      withTiming(1, { duration: durationMs * 0.2 }),
-      withTiming(1, { duration: durationMs * 0.6 }),
-      withTiming(0, { duration: durationMs * 0.2 })
-    );
-    const scaleDelay = withDelay(delayMs, scaleSequence);
-    animate(scale, scaleDelay.target, scaleDelay.transition);
-
-    const translateXDelay = withDelay(delayMs, withTiming(particle.x, { duration: durationMs }));
-    animate(translateX, translateXDelay.target, translateXDelay.transition);
-
-    const translateYDelay = withDelay(delayMs, withTiming(particle.y, { duration: durationMs }));
-    animate(translateY, translateYDelay.target, translateYDelay.transition);
-  }, [particle, opacity, scale, translateX, translateY]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [
-      { translateX: translateX.get() },
-      { translateY: translateY.get() },
-      { scale: scale.get() },
-    ],
-  }));
-
-  const styleValue = useAnimatedStyleValue(animatedStyle);
+  const reducedMotion = useReducedMotion();
+  const delayMs = particle.delay * 1000;
+  const durationMs = particle.duration * 1000;
 
   return (
-    <div
+    <motion.div
       className="absolute rounded-full"
       style={{
-        ...styleValue,
         width: particle.size,
         height: particle.size,
         backgroundColor: particle.color,
+      }}
+      initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+      animate={{
+        opacity: [0, 1, 1, 0],
+        scale: [0, 1, 1, 0],
+        x: particle.x,
+        y: particle.y,
+      }}
+      transition={reducedMotion ? { duration: 0 } : {
+        duration: durationMs,
+        delay: delayMs / 1000,
+        times: [0, 0.2, 0.8, 1],
+        ease: 'easeOut',
       }}
     />
   );

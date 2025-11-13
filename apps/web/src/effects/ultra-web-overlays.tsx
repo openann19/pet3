@@ -42,6 +42,7 @@ function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const updatePreference = () => {
       setReduced(Boolean(mediaQuery.matches))
@@ -188,12 +189,16 @@ export function ScrollProgressBar({
     updateProgress()
 
     // Listen to scroll and resize events
-    window.addEventListener('scroll', updateProgress, { passive: true })
-    window.addEventListener('resize', updateProgress)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', updateProgress, { passive: true })
+      window.addEventListener('resize', updateProgress)
+    }
 
     return () => {
-      window.removeEventListener('scroll', updateProgress)
-      window.removeEventListener('resize', updateProgress)
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', updateProgress)
+        window.removeEventListener('resize', updateProgress)
+      }
     }
   }, [])
 

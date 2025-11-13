@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import {
   Funnel,
@@ -12,15 +13,10 @@ import {
   ChatCircle,
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-  withSequence,
-} from '@petspark/motion';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -139,20 +135,18 @@ export default function DiscoveryFilters() {
     DEFAULT_PREFERENCES
   );
   const [open, setOpen] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const filterButtonHover = useHoverTap({ hoverScale: 1.05, tapScale: 0.95 });
+  const filterButtonHover = useHoverLift({
+    scale: prefersReducedMotion ? 1 : 1.05,
+    translateY: 0,
+  });
 
   // Animated badge pulse
-  const badgeScale = useSharedValue(1);
-  const badgeAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: badgeScale.value }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const badgeScale = useMotionValue(1);
 
   // Animated emoji rotation
-  const emojiRotate = useSharedValue(0);
-  const emojiAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${emojiRotate.value}deg` }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const emojiRotate = useMotionValue(0);
 
   const currentPrefs = preferences || DEFAULT_PREFERENCES;
   const [minAge, setMinAge] = useState(currentPrefs.minAge);
@@ -203,28 +197,34 @@ export default function DiscoveryFilters() {
     superLikesOnly;
 
   useEffect(() => {
-    if (hasActiveFilters) {
-      badgeScale.value = withRepeat(
-        withSequence(withTiming(1.3, { duration: 750 }), withTiming(1, { duration: 750 })),
-        -1,
-        true
-      );
-    } else {
-      badgeScale.value = 1;
+    if (prefersReducedMotion) {
+      badgeScale.set(1);
+      emojiRotate.set(0);
+      return;
     }
-  }, [hasActiveFilters, badgeScale]);
+
+    if (hasActiveFilters) {
+      void animate(badgeScale, [1.3, 1], {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+    } else {
+      badgeScale.set(1);
+    }
+  }, [hasActiveFilters, badgeScale, prefersReducedMotion]);
 
   useEffect(() => {
-    emojiRotate.value = withRepeat(
-      withSequence(
-        withTiming(10, { duration: 1000 }),
-        withTiming(-10, { duration: 1000 }),
-        withTiming(0, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
-  }, [emojiRotate]);
+    if (prefersReducedMotion) {
+      emojiRotate.set(0);
+      return;
+    }
+    void animate(emojiRotate, [10, -10, 0], {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+  }, [emojiRotate, prefersReducedMotion]);
 
   const allSizes = ['small', 'medium', 'large', 'extra-large'];
 
@@ -334,31 +334,39 @@ export default function DiscoveryFilters() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <div>
-          <AnimatedView
-            style={filterButtonHover.animatedStyle}
-            onMouseEnter={filterButtonHover.handleMouseEnter}
-            onMouseLeave={filterButtonHover.handleMouseLeave}
-            onClick={filterButtonHover.handlePress}
+          <motion.div
+            style={{
+              scale: filterButtonHover.scale,
+            }}
+            onMouseEnter={filterButtonHover.handleEnter}
+            onMouseLeave={filterButtonHover.handleLeave}
+            onClick={() => {
+              setOpen(true);
+            }}
           >
             <Button variant="outline" size="sm" className="gap-2 relative">
               <Funnel size={16} weight={hasActiveFilters ? 'fill' : 'regular'} />
               Filters
               {hasActiveFilters && (
-                <AnimatedView
-                  style={badgeAnimatedStyle}
+                <motion.div
+                  style={{ scale: badgeScale }}
                   className="w-2 h-2 bg-primary rounded-full absolute -top-0.5 -right-0.5"
                 />
               )}
             </Button>
-          </AnimatedView>
+          </motion.div>
         </div>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md overflow-hidden flex flex-col">
         <SheetHeader className="shrink-0">
           <SheetTitle className="text-2xl flex items-center gap-2">
-            <AnimatedView style={emojiAnimatedStyle}>
+            <motion.div
+              style={{
+                rotate: emojiRotate,
+              }}
+            >
               <span>🎯</span>
-            </AnimatedView>
+            </motion.div>
             Discovery Preferences
           </SheetTitle>
         </SheetHeader>

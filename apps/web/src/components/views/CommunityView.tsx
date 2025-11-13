@@ -6,6 +6,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { PostComposer } from '@/components/community/PostComposer';
 import { RankingSkeleton } from '@/components/community/RankingSkeleton';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary';
 import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog';
 import LostFoundMap from '@/components/maps/LostFoundMap';
 import { Badge } from '@/components/ui/badge';
@@ -14,11 +15,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { useStorage } from '@/hooks/use-storage';
+import { getTypographyClasses, getSpacingClassesFromConfig, getColorClasses, focusRing } from '@/lib/design-token-utils';
+import { cn } from '@/lib/utils';
 import type { AdoptionProfile } from '@/lib/adoption-types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import type { LostAlert } from '@/lib/lost-found-types';
 import type { LostPetAlert } from '@/lib/maps/types';
+import { safeArrayAccess } from '@/lib/runtime-safety';
 import {
   ArrowsClockwise,
   Fire,
@@ -29,22 +33,12 @@ import {
   Sparkle,
   TrendUp,
 } from '@phosphor-icons/react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  interpolate,
-  Extrapolation,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import { usePageTransition } from '@/effects/reanimated/use-page-transition';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent, JSX } from 'react';
 import { toast } from 'sonner';
 import { useFeedManagement, useInfiniteScroll } from '@/components/community/features/feed';
 import { VirtualList, VirtualGrid } from '@/components/virtual';
@@ -59,7 +53,7 @@ function convertLostAlertToLostPetAlert(alert: LostAlert): LostPetAlert {
     id: alert.id,
     petId: alert.id,
     petName: alert.petSummary.name ?? 'Unknown',
-    petPhoto: alert.photos[0] ?? '',
+    petPhoto: safeArrayAccess(alert.photos, 0) ?? '',
     breed: alert.petSummary.breed ?? 'Unknown',
     lastSeen: {
       lat: alert.lastSeen.lat ?? 0,
@@ -76,11 +70,12 @@ function convertLostAlertToLostPetAlert(alert: LostAlert): LostPetAlert {
   };
 }
 
-export default function CommunityView(): JSX.Element {
+function CommunityViewContent(): JSX.Element | null {
   const { t } = useApp();
   const [activeTab, setActiveTab] = useState<'feed' | 'adoption' | 'lost-found'>('feed');
   const [feedTab, setFeedTab] = useState<'for-you' | 'following'>('for-you');
-  const [showComposer, setShowComposer] = useState(false);
+  // TODO: Re-enable when PostComposer accepts props
+  // const [showComposer, setShowComposer] = useState(false);
 
   // Feed management hook
   const feedManagement = useFeedManagement({
@@ -88,8 +83,8 @@ export default function CommunityView(): JSX.Element {
     enabled: activeTab === 'feed',
   });
 
-  // Infinite scroll hook
-  const infiniteScroll = useInfiniteScroll({
+  // Infinite scroll hook (used internally by VirtualList)
+  useInfiniteScroll({
     hasMore: feedManagement.hasMore,
     loading: feedManagement.loading,
     onLoadMore: () => void feedManagement.loadFeed(true),
@@ -109,6 +104,50 @@ export default function CommunityView(): JSX.Element {
     activeTab,
   });
 
+  // Convert SharedValue (MotionValue) to MotionValue for Framer Motion compatibility
+  const pullY = useMotionValue(0);
+  const pullRotate = useTransform(pullY, (value: number) => value * 0.1);
+  const [showPullIndicator, setShowPullIndicator] = useState(false);
+
+  // Sync SharedValue (MotionValue) with our MotionValue
+  // pullDistance is a MotionValue<number> from useSharedValue
+  const pullDistanceMotionValue: unknown = pullToRefresh.pullDistance;
+  useEffect((): (() => void) | undefined => {
+    if (pullDistanceMotionValue && typeof pullDistanceMotionValue === 'object' && 'on' in pullDistanceMotionValue) {
+      // Type guard for motion value with 'on' method
+      interface MotionValueWithOn {
+        on: (event: string, callback: (value: unknown) => void) => () => void;
+      }
+      const isMotionValueWithOn = (value: unknown): value is MotionValueWithOn => {
+        if (typeof value !== 'object' || value === null) {
+          return false;
+        }
+        // Safe property check - use Object.prototype.hasOwnProperty
+        if (!Object.prototype.hasOwnProperty.call(value, 'on')) {
+          return false;
+        }
+        // Access property safely using bracket notation after hasOwnProperty check
+        const valueRecord: Record<string, unknown> = value as Record<string, unknown>;
+        const onProperty = valueRecord.on;
+        return typeof onProperty === 'function';
+      };
+      
+      if (isMotionValueWithOn(pullDistanceMotionValue)) {
+        const unsubscribe = pullDistanceMotionValue.on('change', (latest: unknown): void => {
+          const distance = typeof latest === 'number' ? latest : 0;
+          pullY.set(distance);
+          setShowPullIndicator(distance > 0);
+        });
+        return (): void => {
+          if (typeof unsubscribe === 'function') {
+            unsubscribe();
+          }
+        };
+      }
+    }
+    return undefined;
+  }, [pullDistanceMotionValue, pullY]);
+
   // Post actions hook
   const postActions = usePostActions({
     onPostCreated: () => {
@@ -118,20 +157,7 @@ export default function CommunityView(): JSX.Element {
     onRefreshFeed: () => void feedManagement.refreshFeed(),
   });
 
-  const mainTabsOpacity = useSharedValue(0);
-  const mainTabsTranslateY = useSharedValue(20);
-
-  useEffect(() => {
-    mainTabsOpacity.value = withTiming(1, timingConfigs.smooth);
-    mainTabsTranslateY.value = withTiming(0, timingConfigs.smooth);
-  }, [mainTabsOpacity, mainTabsTranslateY]);
-
-  const mainTabsStyle = useAnimatedStyle(() => {
-    return {
-      opacity: mainTabsOpacity.value,
-      transform: [{ translateY: mainTabsTranslateY.value }],
-    };
-  }) as AnimatedStyle;
+  const prefersReducedMotion = useReducedMotion();
 
   const [adoptionProfiles, setAdoptionProfiles] = useState<AdoptionProfile[]>([]);
   const [adoptionLoading, setAdoptionLoading] = useState(true);
@@ -140,7 +166,7 @@ export default function CommunityView(): JSX.Element {
   const [selectedAdoptionProfile, setSelectedAdoptionProfile] = useState<AdoptionProfile | null>(
     null
   );
-  const [favoritedProfiles, setFavoritedProfiles] = useStorage<string[]>(
+  const [favoritedProfiles] = useStorage<string[]>(
     'favorited-adoption-profiles',
     []
   );
@@ -151,7 +177,7 @@ export default function CommunityView(): JSX.Element {
   const [lostFoundLoading, setLostFoundLoading] = useState(false);
   const [showLostAlertDialog, setShowLostAlertDialog] = useState(false);
 
-  const loadLostFoundAlerts = useCallback(async () => {
+  const loadLostFoundAlerts = useCallback(async (): Promise<void> => {
     if (activeTab !== 'lost-found' || lostFoundLoading) return;
 
     setLostFoundLoading(true);
@@ -170,7 +196,7 @@ export default function CommunityView(): JSX.Element {
     void loadLostFoundAlerts();
   }, [loadLostFoundAlerts]);
 
-  const loadAdoptionProfiles = useCallback(async (loadMore = false) => {
+  const loadAdoptionProfiles = useCallback(async (loadMore = false): Promise<void> => {
     if (adoptionLoadingRef.current) return;
 
     try {
@@ -180,7 +206,7 @@ export default function CommunityView(): JSX.Element {
       const response = await adoptionApi.getAdoptionProfiles({ limit: 12 });
 
       if (loadMore) {
-        setAdoptionProfiles((currentProfiles) => [
+        setAdoptionProfiles((currentProfiles: AdoptionProfile[] | undefined): AdoptionProfile[] => [
           ...(Array.isArray(currentProfiles) ? currentProfiles : []),
           ...(Array.isArray(response.profiles)
             ? response.profiles.map(
@@ -276,7 +302,7 @@ export default function CommunityView(): JSX.Element {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
+        const entry = safeArrayAccess(entries, 0);
         if (
           entry?.isIntersecting &&
           adoptionHasMore &&
@@ -297,146 +323,56 @@ export default function CommunityView(): JSX.Element {
     return () => observer.disconnect();
   }, [adoptionHasMore, adoptionLoading, activeTab, loadAdoptionProfiles]);
 
-  const handleMainTabChange = useCallback((value: string) => {
-    setActiveTab(value as 'feed' | 'adoption');
-    haptics.selection();
+  const handleMainTabChange = useCallback((value: string): void => {
+    if (value === 'feed' || value === 'adoption' || value === 'lost-found') {
+      setActiveTab(value);
+      haptics.selection();
+    }
   }, []);
 
-  const handleFeedTabChange = useCallback((value: string) => {
+  const handleFeedTabChange = useCallback((value: string): void => {
     setFeedTab(value as 'for-you' | 'following');
     feedManagement.resetFeed();
     haptics.selection();
   }, [feedManagement]);
 
-  const handleCreatePost = useCallback(() => {
-    setShowComposer(true);
+  const handleCreatePost = useCallback((): void => {
+    // TODO: Re-enable when PostComposer accepts props
+    // setShowComposer(true);
     haptics.impact();
   }, []);
 
-  // Animation hooks
-  const headerTransition = usePageTransition({ isVisible: true, direction: 'down', duration: 300 });
-  const trendingTransition = usePageTransition({
-    isVisible: trendingTags.trendingTags.length > 0,
-    direction: 'up',
-    duration: 300,
-  });
-  const emptyStateTransition = usePageTransition({
-    isVisible: feedManagement.posts.length === 0 && !feedManagement.loading,
-    direction: 'fade',
-    duration: 500,
-  });
+  // Animation variants
+  const emptyStateVariants = {
+    pulse: {
+      scale: [1, 1.1, 1],
+      rotate: [0, 5, -5, 0],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      },
+    },
+  };
 
-  // Empty state animation
-  const emptyScale = useSharedValue(1);
-  const emptyRotation = useSharedValue(0);
-  const loadingRotation = useSharedValue(0);
+  const loadingSpinnerVariants = {
+    spinning: {
+      rotate: 360,
+      transition: {
+        duration: 1,
+        repeat: Infinity,
+        ease: 'linear',
+      },
+    },
+  };
 
-  useEffect(() => {
-    if (feedManagement.posts.length === 0 && !feedManagement.loading) {
-      emptyScale.value = withRepeat(
-        withSequence(withTiming(1.1, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-        -1,
-        true
-      );
-      emptyRotation.value = withRepeat(
-        withSequence(
-          withTiming(5, { duration: 500 }),
-          withTiming(-5, { duration: 500 }),
-          withTiming(0, { duration: 500 })
-        ),
-        -1,
-        false
-      );
-    }
-  }, [feedManagement.posts.length, feedManagement.loading, emptyScale, emptyRotation]);
-
-  useEffect(() => {
-    if (feedManagement.loading || adoptionLoading) {
-      loadingRotation.value = withRepeat(withTiming(360, { duration: 1000 }), -1, false);
-    } else {
-      loadingRotation.value = 0;
-    }
-  }, [feedManagement.loading, adoptionLoading, loadingRotation]);
-
-  const loadingSpinnerStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${loadingRotation.value}deg` }],
-  })) as AnimatedStyle;
-
-  const emptyStateStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: emptyScale.value }, { rotate: `${emptyRotation.value}deg` }],
-  })) as AnimatedStyle;
-
-  // Adoption skeleton animation
-  const adoptionSkeletonOpacity = useSharedValue(0);
-  const adoptionSkeletonTranslateY = useSharedValue(20);
-
-  useEffect(() => {
-    if (adoptionLoading && adoptionProfiles.length === 0) {
-      adoptionSkeletonOpacity.value = withTiming(1, timingConfigs.smooth);
-      adoptionSkeletonTranslateY.value = withTiming(0, timingConfigs.smooth);
-    }
-  }, [
-    adoptionLoading,
-    adoptionProfiles.length,
-    adoptionSkeletonOpacity,
-    adoptionSkeletonTranslateY,
-  ]);
-
-  // Adoption empty state animation
-  const adoptionEmptyScale = useSharedValue(1);
-  const adoptionEmptyRotation = useSharedValue(0);
-
-  useEffect(() => {
-    if (adoptionProfiles.length === 0 && !adoptionLoading) {
-      adoptionEmptyScale.value = withRepeat(
-        withSequence(withTiming(1.1, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-        -1,
-        true
-      );
-      adoptionEmptyRotation.value = withRepeat(
-        withSequence(
-          withTiming(5, { duration: 500 }),
-          withTiming(-5, { duration: 500 }),
-          withTiming(0, { duration: 500 })
-        ),
-        -1,
-        false
-      );
-    }
-  }, [adoptionProfiles.length, adoptionLoading, adoptionEmptyScale, adoptionEmptyRotation]);
-
-  // Adoption profile card entry animation
-  const adoptionCardOpacity = useSharedValue(0);
-  const adoptionCardTranslateY = useSharedValue(20);
-
-  useEffect(() => {
-    if (adoptionProfiles.length > 0) {
-      adoptionCardOpacity.value = withTiming(1, timingConfigs.smooth);
-      adoptionCardTranslateY.value = withTiming(0, timingConfigs.smooth);
-    }
-  }, [adoptionProfiles.length, adoptionCardOpacity, adoptionCardTranslateY]);
-
-  // Adoption loading spinner
-  const adoptionLoadingRotation = useSharedValue(0);
-
-  useEffect(() => {
-    if (adoptionLoading) {
-      adoptionLoadingRotation.value = withRepeat(withTiming(360, { duration: 1000 }), -1, false);
-    } else {
-      adoptionLoadingRotation.value = 0;
-    }
-  }, [adoptionLoading, adoptionLoadingRotation]);
-
-  const adoptionLoadingSpinnerStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${adoptionLoadingRotation.value}deg` }],
-  })) as AnimatedStyle;
 
   // Memoize render callbacks for VirtualList and VirtualGrid
-  const renderPostItem = useCallback((post: typeof feedManagement.posts[0]) => (
+  const renderPostItem = useCallback((post: typeof feedManagement.posts[0]): JSX.Element => (
     <div className="mb-4">
       <ErrorBoundary
         fallback={
-          <div className="p-4 text-sm text-muted-foreground">
+          <div className={cn(getSpacingClassesFromConfig({ padding: 'lg' }), getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'))}>
             Failed to load post. Please refresh.
           </div>
         }
@@ -446,11 +382,11 @@ export default function CommunityView(): JSX.Element {
     </div>
   ), [postActions.handleAuthorClick]);
 
-  const handleAdoptionSelect = useCallback((profile: AdoptionProfile) => {
+  const handleAdoptionSelect = useCallback((profile: AdoptionProfile): void => {
     setSelectedAdoptionProfile(profile);
   }, []);
 
-  const renderAdoptionCard = useCallback((profile: AdoptionProfile) => (
+  const renderAdoptionCard = useCallback((profile: AdoptionProfile): JSX.Element => (
     <AdoptionCard
       profile={profile}
       onSelect={handleAdoptionSelect}
@@ -462,17 +398,17 @@ export default function CommunityView(): JSX.Element {
     />
   ), [favoritedProfiles, postActions.handleToggleFavorite, handleAdoptionSelect]);
 
-  const estimatePostSize = useCallback(() => 400, []);
-  const postKeyExtractor = useCallback((post: typeof feedManagement.posts[0]) => post.id, []);
-  const adoptionKeyExtractor = useCallback((profile: AdoptionProfile) => profile._id, []);
+  const estimatePostSize = useCallback((): number => 400, []);
+  const postKeyExtractor = useCallback((post: typeof feedManagement.posts[0]): string => post.id, []);
+  const adoptionKeyExtractor = useCallback((profile: AdoptionProfile): string => profile._id, []);
 
-  const handleFeedEndReached = useCallback(() => {
+  const handleFeedEndReached = useCallback((): void => {
     if (feedManagement.hasMore && !feedManagement.loading) {
       void feedManagement.loadFeed(true);
     }
   }, [feedManagement.hasMore, feedManagement.loading, feedManagement.loadFeed]);
 
-  const handleAdoptionEndReached = useCallback(() => {
+  const handleAdoptionEndReached = useCallback((): void => {
     if (adoptionHasMore && !adoptionLoading && activeTab === 'adoption') {
       void loadAdoptionProfiles(true);
     }
@@ -480,34 +416,63 @@ export default function CommunityView(): JSX.Element {
 
   return (
     <PageTransitionWrapper key="community-view" direction="up">
-      <div ref={pullToRefresh.containerRef} className="max-w-6xl mx-auto space-y-6 pb-8 relative">
+      <main aria-label="Community" ref={pullToRefresh.containerRef} className={cn('max-w-6xl mx-auto', getSpacingClassesFromConfig({ spaceY: 'xl', paddingX: 'lg', paddingY: '2xl' }), 'relative')}>
         {/* Pull-to-Refresh Indicator */}
-        <AnimatedView
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-          style={[pullToRefresh.pullTranslateStyle, pullToRefresh.pullOpacityStyle]}
-        >
-          <AnimatedView
-            className="bg-card/95 backdrop-blur-xl shadow-xl rounded-full p-3 border border-border/50"
-            style={[pullToRefresh.pullRotationStyle, pullToRefresh.pullScaleStyle]}
+        {showPullIndicator && (
+          <motion.div
+            className="absolute top-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            style={{
+              y: pullY,
+            }}
+            initial={false}
+            transition={{
+              duration: prefersReducedMotion ? 0 : 0.2,
+            }}
+            aria-live="polite"
+            aria-label={pullToRefresh.isRefreshing ? 'Refreshing feed' : 'Pull to refresh'}
           >
-            <ArrowsClockwise
-              size={24}
-              weight="bold"
-              className={`${pullToRefresh.isRefreshing ? 'animate-spin' : ''} text-primary`}
-            />
-          </AnimatedView>
-        </AnimatedView>
+            <motion.div
+              className="bg-card/95 backdrop-blur-xl shadow-xl rounded-full p-3 border border-border/50"
+              style={{
+                rotate: pullRotate,
+              }}
+              animate={
+                pullToRefresh.isRefreshing && !prefersReducedMotion
+                  ? {
+                      rotate: 360,
+                    }
+                  : undefined
+              }
+              transition={{
+                rotate: {
+                  duration: pullToRefresh.isRefreshing && !prefersReducedMotion ? 1 : 0.2,
+                  repeat: pullToRefresh.isRefreshing && !prefersReducedMotion ? Infinity : 0,
+                  ease: 'linear',
+                },
+              }}
+            >
+              <ArrowsClockwise
+                size={24}
+                weight="bold"
+                className="text-primary"
+                aria-hidden="true"
+              />
+            </motion.div>
+          </motion.div>
+        )}
 
-        {/* Header */}
-        <AnimatedView style={headerTransition.style} className="flex items-center justify-between">
+        {/* Header Section */}
+        <header className={cn('flex items-center justify-between', getSpacingClassesFromConfig({ marginY: 'xl' }))}>
           <div>
-            <h1 className="text-3xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            <h1 className={cn(getTypographyClasses('h1'), 'bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent')}>
               {t.community?.title ?? 'Community'}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className={cn(getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'), getSpacingClassesFromConfig({ marginY: 'xs' }))}>
               {activeTab === 'feed'
                 ? (t.community?.feed ?? 'Share and discover pet moments')
-                : (t.adoption?.subtitle ?? 'Find your perfect companion')}
+                : activeTab === 'adoption'
+                  ? (t.adoption?.subtitle ?? 'Find your perfect companion')
+                  : (t.map?.lostAndFound ?? 'Report and find lost pets')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -516,19 +481,21 @@ export default function CommunityView(): JSX.Element {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={async () => {
+                  onClick={() => {
                     haptics.impact();
-                    try {
-                      await feedManagement.refreshFeed();
-                      await trendingTags.loadTrendingTags();
-                      haptics.success();
-                      toast.success(t.community?.refreshed ?? 'Feed refreshed!');
-                    } catch (error) {
-                      const err = error instanceof Error ? error : new Error(String(error));
-                      logger.error('Failed to refresh feed', err);
-                      haptics.error();
-                      toast.error(t.community?.refreshError ?? 'Failed to refresh');
-                    }
+                    void (async () => {
+                      try {
+                        await feedManagement.refreshFeed();
+                        await trendingTags.loadTrendingTags();
+                        haptics.success();
+                        toast.success(t.community?.refreshed ?? 'Feed refreshed!');
+                      } catch (error) {
+                        const err = error instanceof Error ? error : new Error(String(error));
+                        logger.error('Failed to refresh feed', err);
+                        haptics.error();
+                        toast.error(t.community?.refreshError ?? 'Failed to refresh');
+                      }
+                    })();
                   }}
                   aria-label="Refresh feed"
                   disabled={pullToRefresh.isRefreshing}
@@ -538,10 +505,16 @@ export default function CommunityView(): JSX.Element {
                     size={20}
                     weight="bold"
                     className={pullToRefresh.isRefreshing ? 'animate-spin' : ''}
+                    aria-hidden="true"
                   />
                 </Button>
-                <Button size="lg" className="gap-2 shadow-lg" onClick={handleCreatePost}>
-                  <Plus size={20} weight="bold" />
+                <Button 
+                  size="lg" 
+                  className="gap-2 shadow-lg" 
+                  onClick={handleCreatePost}
+                  aria-label={t.community?.createPost ?? 'Create Post'}
+                >
+                  <Plus size={20} weight="bold" aria-hidden="true" />
                   <span className="hidden sm:inline">
                     {t.community?.createPost ?? 'Create Post'}
                   </span>
@@ -550,254 +523,399 @@ export default function CommunityView(): JSX.Element {
               </>
             )}
           </div>
-        </AnimatedView>
+        </header>
 
-        {/* Main Tabs - Feed & Adoption */}
-        <AnimatedView style={mainTabsStyle}>
-          <Tabs value={activeTab} onValueChange={handleMainTabChange}>
-            <TabsList className="grid w-full grid-cols-3 bg-card shadow-md">
-              <TabsTrigger value="feed" className="gap-2">
-                <Fire size={18} weight={activeTab === 'feed' ? 'fill' : 'regular'} />
-                {t.community?.feed ?? 'Feed'}
-              </TabsTrigger>
-              <TabsTrigger value="adoption" className="gap-2">
-                <Heart size={18} weight={activeTab === 'adoption' ? 'fill' : 'regular'} />
-                {t.adoption?.title ?? 'Adoption'}
-              </TabsTrigger>
-              <TabsTrigger value="lost-found" className="gap-2">
-                <MapPin size={18} weight={activeTab === 'lost-found' ? 'fill' : 'regular'} />
-                {t.map?.lostAndFound ?? 'Lost & Found'}
-              </TabsTrigger>
-            </TabsList>
+        {/* Main Tabs - Feed, Adoption, Lost & Found */}
+        <section aria-label="Community tabs">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+              ease: 'easeOut',
+            }}
+          >
+            <Tabs value={activeTab} onValueChange={handleMainTabChange}>
+              <TabsList className="grid w-full grid-cols-3 bg-card shadow-md" role="tablist" aria-label="Community navigation tabs">
+                <TabsTrigger value="feed" className="gap-2" aria-label={t.community?.feed ?? 'Feed tab'}>
+                  <Fire size={18} weight={activeTab === 'feed' ? 'fill' : 'regular'} aria-hidden="true" />
+                  {t.community?.feed ?? 'Feed'}
+                </TabsTrigger>
+                <TabsTrigger value="adoption" className="gap-2" aria-label={t.adoption?.title ?? 'Adoption tab'}>
+                  <Heart size={18} weight={activeTab === 'adoption' ? 'fill' : 'regular'} aria-hidden="true" />
+                  {t.adoption?.title ?? 'Adoption'}
+                </TabsTrigger>
+                <TabsTrigger value="lost-found" className="gap-2" aria-label={t.map?.lostAndFound ?? 'Lost & Found tab'}>
+                  <MapPin size={18} weight={activeTab === 'lost-found' ? 'fill' : 'regular'} aria-hidden="true" />
+                  {t.map?.lostAndFound ?? 'Lost & Found'}
+                </TabsTrigger>
+              </TabsList>
 
             {/* Feed Tab Content */}
-            <TabsContent value="feed" className="mt-6 space-y-6">
-              {/* Trending Tags */}
-              {trendingTags.trendingTags.length > 0 && (
-                <AnimatedView
-                  style={trendingTransition.style}
-                  className="bg-linear-to-br from-card via-card to-card/50 rounded-xl p-4 border border-border/50 shadow-lg"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <TrendUp size={20} className="text-accent" weight="bold" />
-                    <h3 className="font-semibold text-foreground">
-                      {t.community?.trending ?? 'Trending Today'}
-                    </h3>
-                    <Fire size={16} className="text-destructive ml-auto" weight="fill" />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {trendingTags.trendingTags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-primary/20 transition-colors"
-                        onClick={() => haptics.selection()}
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </AnimatedView>
+            <TabsContent value="feed" className={cn(
+              getSpacingClassesFromConfig({ marginY: 'xl', spaceY: 'xl' })
+            )} role="tabpanel" aria-labelledby="feed-tab">
+              {/* Trending Tags Section */}
+              {Array.isArray(trendingTags.trendingTags) && trendingTags.trendingTags.length > 0 && (
+                <section aria-label="Trending tags">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+                      ease: 'easeOut',
+                    }}
+                    className={cn(
+                      'bg-linear-to-br from-card via-card to-card/50 rounded-xl border border-border/50 shadow-lg',
+                      getSpacingClassesFromConfig({ padding: 'lg' })
+                    )}
+                  >
+                    <div className={cn(
+                      'flex items-center',
+                      getSpacingClassesFromConfig({ gap: 'sm', marginY: 'md' })
+                    )}>
+                      <TrendUp size={20} className={getColorClasses('accent', 'text')} weight="bold" aria-hidden="true" />
+                      <h2 className={cn(getTypographyClasses('h3'), 'font-semibold text-foreground')}>
+                        {t.community?.trending ?? 'Trending Today'}
+                      </h2>
+                      <Fire size={16} className={cn(getColorClasses('destructive', 'text'), 'ml-auto')} weight="fill" aria-hidden="true" />
+                    </div>
+                    <ul className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))} role="list">
+                      {trendingTags.trendingTags.map((tag) => {
+                        const tagString = typeof tag === 'string' ? tag : String(tag);
+                        return (
+                          <li key={tagString}>
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                'cursor-pointer hover:bg-primary/20 transition-colors motion-reduce:transition-none',
+                                focusRing
+                              )}
+                              onClick={() => haptics.selection()}
+                              onKeyDown={(e: KeyboardEvent) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  haptics.selection();
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Filter by ${tagString} tag`}
+                            >
+                              #{tagString}
+                            </Badge>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </motion.div>
+                </section>
               )}
 
               {/* Feed Sub-Tabs */}
-              <Tabs value={feedTab} onValueChange={handleFeedTabChange}>
-                <TabsList className="grid w-full grid-cols-2 bg-card shadow-md max-w-md mx-auto">
-                  <TabsTrigger value="for-you" className="gap-2">
-                    <Sparkle size={18} weight={feedTab === 'for-you' ? 'fill' : 'regular'} />
-                    {t.community?.forYou ?? 'For You'}
-                  </TabsTrigger>
-                  <TabsTrigger value="following" className="gap-2">
-                    <Fire size={18} weight={feedTab === 'following' ? 'fill' : 'regular'} />
-                    {t.community?.following ?? 'Following'}
-                  </TabsTrigger>
-                </TabsList>
+              <section aria-label="Feed content">
+                <Tabs value={feedTab} onValueChange={handleFeedTabChange}>
+                  <TabsList className="grid w-full grid-cols-2 bg-card shadow-md max-w-md mx-auto" role="tablist" aria-label="Feed type tabs">
+                    <TabsTrigger value="for-you" className="gap-2" aria-label={t.community?.forYou ?? 'For You tab'}>
+                      <Sparkle size={18} weight={feedTab === 'for-you' ? 'fill' : 'regular'} aria-hidden="true" />
+                      {t.community?.forYou ?? 'For You'}
+                    </TabsTrigger>
+                    <TabsTrigger value="following" className="gap-2" aria-label={t.community?.following ?? 'Following tab'}>
+                      <Fire size={18} weight={feedTab === 'following' ? 'fill' : 'regular'} aria-hidden="true" />
+                      {t.community?.following ?? 'Following'}
+                    </TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value={feedTab} className="mt-6 space-y-4 max-w-3xl mx-auto">
-                  {feedManagement.loading && feedManagement.posts.length === 0 ? (
-                    <RankingSkeleton count={3} variant="post" />
-                  ) : feedManagement.posts.length === 0 ? (
-                    <AnimatedView style={emptyStateTransition.style} className="text-center py-20">
-                      <AnimatedView style={emptyStateStyle} className="text-8xl mb-6">
-                        🐾
-                      </AnimatedView>
-                      <h3 className="text-2xl font-bold text-foreground mb-2">
-                        {t.community?.noPosts ?? 'No posts yet'}
-                      </h3>
-                      <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                        {feedTab === 'following'
-                          ? (t.community?.noFollowingPosts ??
-                            'Follow some pets to see their posts here!')
-                          : (t.community?.noPostsDesc ??
-                            'Be the first to share something amazing!')}
-                      </p>
-                      <Button size="lg" className="gap-2 shadow-lg" onClick={handleCreatePost}>
-                        <Plus size={20} weight="bold" />
-                        {t.community?.createPost ?? 'Create Post'}
-                      </Button>
-                    </AnimatedView>
-                  ) : (
-                    <>
-                      <VirtualList
-                        items={feedManagement.posts}
-                        renderItem={renderPostItem}
-                        estimateSize={estimatePostSize}
-                        overscan={3}
-                        containerClassName="space-y-4"
-                        onEndReached={handleFeedEndReached}
-                        endReachedThreshold={300}
-                        keyExtractor={postKeyExtractor}
-                      />
+                  <TabsContent value={feedTab} className={cn(
+                    'max-w-3xl mx-auto',
+                    getSpacingClassesFromConfig({ marginY: 'xl', spaceY: 'lg' })
+                  )} role="tabpanel" aria-labelledby={`${feedTab}-tab`}>
+                    {feedManagement.loading && Array.isArray(feedManagement.posts) && feedManagement.posts.length === 0 ? (
+                      <RankingSkeleton count={3} variant="post" />
+                    ) : !Array.isArray(feedManagement.posts) || feedManagement.posts.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+                        }}
+                        className={cn(
+                          'text-center',
+                          getSpacingClassesFromConfig({ paddingY: '2xl' })
+                        )}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <motion.div
+                          variants={emptyStateVariants}
+                          animate={prefersReducedMotion ? false : 'pulse'}
+                          className={cn('text-8xl', getSpacingClassesFromConfig({ marginY: 'xl' }))}
+                          aria-hidden="true"
+                        >
+                          🐾
+                        </motion.div>
+                        <h2 className={cn(
+                          getTypographyClasses('h2'),
+                          'text-foreground',
+                          getSpacingClassesFromConfig({ marginY: 'sm' })
+                        )}>
+                          {t.community?.noPosts ?? 'No posts yet'}
+                        </h2>
+                        <p className={cn(
+                          getTypographyClasses('body'),
+                          'text-muted-foreground max-w-md mx-auto',
+                          getSpacingClassesFromConfig({ marginY: '2xl' })
+                        )}>
+                          {feedTab === 'following'
+                            ? (t.community?.noFollowingPosts ??
+                              'Follow some pets to see their posts here!')
+                            : (t.community?.noPostsDesc ??
+                              'Be the first to share something amazing!')}
+                        </p>
+                        <Button 
+                          size="lg" 
+                          className="gap-2 shadow-lg" 
+                          onClick={handleCreatePost}
+                          aria-label={t.community?.createPost ?? 'Create Post'}
+                        >
+                          <Plus size={20} weight="bold" aria-hidden="true" />
+                          {t.community?.createPost ?? 'Create Post'}
+                        </Button>
+                      </motion.div>
+                    ) : (
+                      <>
+                        <VirtualList
+                          items={feedManagement.posts}
+                          renderItem={renderPostItem}
+                          estimateSize={estimatePostSize}
+                          overscan={3}
+                          containerClassName={getSpacingClassesFromConfig({ spaceY: 'lg' })}
+                          onEndReached={handleFeedEndReached}
+                          endReachedThreshold={300}
+                          keyExtractor={postKeyExtractor}
+                        />
 
-                      {/* Loading indicator */}
-                      {feedManagement.loading && feedManagement.posts.length > 0 && (
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground py-4">
-                          <AnimatedView style={loadingSpinnerStyle}>
-                            <Sparkle size={20} />
-                          </AnimatedView>
-                          <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
-                        </div>
-                      )}
-                      {!feedManagement.hasMore && feedManagement.posts.length > 0 && (
-                        <div className="text-center text-muted-foreground text-sm py-8">
-                          {t.community?.endOfFeed ?? "You're all caught up! 🎉"}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </TabsContent>
-              </Tabs>
+                        {/* Loading indicator */}
+                        {feedManagement.loading && Array.isArray(feedManagement.posts) && feedManagement.posts.length > 0 && (
+                          <div 
+                            className={cn(
+                              'flex items-center justify-center text-muted-foreground',
+                              getSpacingClassesFromConfig({ gap: 'sm', paddingY: 'lg' })
+                            )}
+                            role="status"
+                            aria-live="polite"
+                            aria-label="Loading more posts"
+                          >
+                            <motion.div
+                              variants={loadingSpinnerVariants}
+                              animate={prefersReducedMotion ? false : 'spinning'}
+                            >
+                              <Sparkle size={20} aria-hidden="true" />
+                            </motion.div>
+                            <span className={getTypographyClasses('bodySmall')}>{t.common?.loading ?? 'Loading...'}</span>
+                          </div>
+                        )}
+                        {!feedManagement.hasMore && Array.isArray(feedManagement.posts) && feedManagement.posts.length > 0 && (
+                          <div 
+                            className={cn(
+                              'text-center text-muted-foreground',
+                              getTypographyClasses('bodySmall'),
+                              getSpacingClassesFromConfig({ paddingY: '2xl' })
+                            )}
+                            role="status"
+                            aria-live="polite"
+                          >
+                            {t.community?.endOfFeed ?? "You're all caught up! 🎉"}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </section>
             </TabsContent>
 
             {/* Adoption Tab Content */}
-            <TabsContent value="adoption" className="mt-6 space-y-6">
-              {adoptionLoading && adoptionProfiles.length === 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-card rounded-xl overflow-hidden border border-border/50 shadow-md"
-                    >
-                      <Skeleton className="h-64 w-full" />
-                      <div className="p-4 space-y-3">
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-4/5" />
-                        <div className="flex gap-2">
-                          <Skeleton className="h-6 w-20" />
-                          <Skeleton className="h-6 w-20" />
+            <TabsContent value="adoption" className={cn(
+              getSpacingClassesFromConfig({ marginY: 'xl', spaceY: 'xl' })
+            )} role="tabpanel" aria-labelledby="adoption-tab">
+              <section aria-label="Adoption listings">
+                {adoptionLoading && Array.isArray(adoptionProfiles) && adoptionProfiles.length === 0 ? (
+                  <ul className={cn('grid sm:grid-cols-2 lg:grid-cols-3', getSpacingClassesFromConfig({ gap: 'xl' }))} role="list" aria-label="Loading adoption profiles">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <li key={i}>
+                        <div className="bg-card rounded-xl overflow-hidden border border-border/50 shadow-md">
+                          <Skeleton className="h-64 w-full" />
+                          <div className={cn(
+                            getSpacingClassesFromConfig({ padding: 'lg', spaceY: 'md' })
+                          )}>
+                            <Skeleton className="h-6 w-32" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-4/5" />
+                            <div className={getSpacingClassesFromConfig({ gap: 'sm' })}>
+                              <Skeleton className="h-6 w-20" />
+                              <Skeleton className="h-6 w-20" />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : adoptionProfiles.length === 0 ? (
-                <AnimatedView
-                  style={
-                    usePageTransition({ isVisible: true, direction: 'fade', duration: 500 }).style
-                  }
-                  className="text-center py-20"
-                >
-                  <AnimatedView style={emptyStateStyle} className="text-8xl mb-6">
-                    🏠
-                  </AnimatedView>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
-                    {t.adoption?.noProfiles ?? 'No pets available for adoption'}
-                  </h3>
-                  <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                    {t.adoption?.noProfilesDesc ??
-                      'Check back soon for pets looking for their forever homes.'}
-                  </p>
-                </AnimatedView>
-              ) : (
-                <>
-                  <VirtualGrid
-                    items={adoptionProfiles}
-                    renderItem={renderAdoptionCard}
-                    columns={3}
-                    itemHeight={400}
-                    gap={24}
-                    overscan={3}
-                    containerClassName="p-4"
-                    onEndReached={handleAdoptionEndReached}
-                    endReachedThreshold={300}
-                    keyExtractor={adoptionKeyExtractor}
-                  />
+                      </li>
+                    ))}
+                  </ul>
+                ) : !Array.isArray(adoptionProfiles) || adoptionProfiles.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+                    }}
+                    className={cn(
+                      'text-center',
+                      getSpacingClassesFromConfig({ paddingY: '2xl' })
+                    )}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <motion.div
+                      variants={emptyStateVariants}
+                      animate={prefersReducedMotion ? false : 'pulse'}
+                      className={cn('text-8xl', getSpacingClassesFromConfig({ marginY: 'xl' }))}
+                      aria-hidden="true"
+                    >
+                      🏠
+                    </motion.div>
+                    <h2 className={cn(
+                      getTypographyClasses('h2'),
+                      'font-bold text-foreground',
+                      getSpacingClassesFromConfig({ marginY: 'sm' })
+                    )}>
+                      {t.adoption?.noProfiles ?? 'No pets available for adoption'}
+                    </h2>
+                    <p className={cn(
+                      getTypographyClasses('body'),
+                      'text-muted-foreground max-w-md mx-auto',
+                      getSpacingClassesFromConfig({ marginY: '2xl' })
+                    )}>
+                      {t.adoption?.noProfilesDesc ??
+                        'Check back soon for pets looking for their forever homes.'}
+                    </p>
+                  </motion.div>
+                ) : (
+                  <>
+                    <VirtualGrid
+                      items={adoptionProfiles}
+                      renderItem={renderAdoptionCard}
+                      columns={3}
+                      itemHeight={400}
+                      gap={24}
+                      overscan={3}
+                      containerClassName={getSpacingClassesFromConfig({ padding: 'lg' })}
+                      onEndReached={handleAdoptionEndReached}
+                      endReachedThreshold={300}
+                      keyExtractor={adoptionKeyExtractor}
+                    />
 
-                  {/* Loading indicator */}
-                  {adoptionLoading && adoptionProfiles.length > 0 && (
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground py-4">
-                      <AnimatedView style={adoptionLoadingSpinnerStyle}>
-                        <PawPrint size={20} />
-                      </AnimatedView>
-                      <span className="text-sm">{t.common?.loading ?? 'Loading...'}</span>
-                    </div>
-                  )}
-                  {!adoptionHasMore && adoptionProfiles.length > 0 && (
-                    <div className="text-center text-muted-foreground text-sm py-8">
-                      {t.adoption?.endOfList ?? "You've seen all available pets! 🐾"}
-                    </div>
-                  )}
-                </>
-              )}
+                    {/* Loading indicator */}
+                    {adoptionLoading && Array.isArray(adoptionProfiles) && adoptionProfiles.length > 0 && (
+                      <div 
+                        className={cn(
+                          'flex items-center justify-center text-muted-foreground',
+                          getSpacingClassesFromConfig({ gap: 'sm', paddingY: 'lg' })
+                        )}
+                        role="status"
+                        aria-live="polite"
+                        aria-label="Loading more adoption profiles"
+                      >
+                        <motion.div
+                          variants={loadingSpinnerVariants}
+                          animate={prefersReducedMotion ? false : 'spinning'}
+                        >
+                          <PawPrint size={20} aria-hidden="true" />
+                        </motion.div>
+                        <span className={getTypographyClasses('bodySmall')}>{t.common?.loading ?? 'Loading...'}</span>
+                      </div>
+                    )}
+                    {!adoptionHasMore && Array.isArray(adoptionProfiles) && adoptionProfiles.length > 0 && (
+                      <div 
+                        className={cn(
+                          'text-center text-muted-foreground',
+                          getTypographyClasses('bodySmall'),
+                          getSpacingClassesFromConfig({ paddingY: '2xl' })
+                        )}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {t.adoption?.endOfList ?? "You've seen all available pets! 🐾"}
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
             </TabsContent>
 
-            <TabsContent value="lost-found" className="mt-6 space-y-6">
-              <LostFoundMap
-                alerts={lostFoundAlerts}
-                onReportSighting={(alertId, location) => {
-                  void (async () => {
-                    try {
-                      const { userService } = await import('@/lib/user-service');
-                      const currentUser = await userService.user();
-                      if (!currentUser) {
-                        toast.error('You must be logged in to report sightings');
-                        return;
+            <TabsContent value="lost-found" className={cn(
+              getSpacingClassesFromConfig({ marginY: 'xl', spaceY: 'xl' })
+            )} role="tabpanel" aria-labelledby="lost-found-tab">
+              <section aria-label="Lost and found map">
+                <LostFoundMap
+                  alerts={Array.isArray(lostFoundAlerts) ? lostFoundAlerts : []}
+                  onReportSighting={(alertId, location) => {
+                    void (async () => {
+                      try {
+                        const { userService } = await import('@/lib/user-service');
+                        const currentUser = await userService.user();
+                        if (!currentUser) {
+                          toast.error('You must be logged in to report sightings');
+                          return;
+                        }
+                        await lostFoundAPI.createSighting({
+                          alertId,
+                          whenISO: new Date().toISOString(),
+                          lat: typeof location.lat === 'number' ? location.lat : 0,
+                          lon: typeof location.lng === 'number' ? location.lng : 0,
+                          radiusM: 1000,
+                          description: '',
+                          photos: [],
+                          contactMask: '',
+                          reporterId: typeof currentUser.id === 'string' ? currentUser.id : '',
+                          reporterName:
+                            typeof currentUser.name === 'string'
+                              ? currentUser.name
+                              : 'Anonymous',
+                          ...(currentUser.avatarUrl && { reporterAvatar: currentUser.avatarUrl }),
+                        });
+                        toast.success(t.lostFound?.sightingSubmitted ?? 'Sighting reported');
+                      } catch (error) {
+                        const err = error instanceof Error ? error : new Error(String(error));
+                        logger.error('Failed to report sighting', err);
+                        toast.error('Failed to report sighting');
                       }
-                      await lostFoundAPI.createSighting({
-                        alertId,
-                        whenISO: new Date().toISOString(),
-                        lat: location.lat,
-                        lon: location.lng,
-                        radiusM: 1000,
-                        description: '',
-                        photos: [],
-                        contactMask: '',
-                        reporterId: typeof currentUser.id === 'string' ? currentUser.id : '',
-                        reporterName:
-                          typeof currentUser['name'] === 'string'
-                            ? currentUser['name']
-                            : 'Anonymous',
-                        ...(currentUser.avatarUrl && { reporterAvatar: currentUser.avatarUrl }),
-                      });
-                      toast.success(t.lostFound?.sightingSubmitted ?? 'Sighting reported');
-                    } catch (error) {
-                      const err = error instanceof Error ? error : new Error(String(error));
-                      logger.error('Failed to report sighting', err);
-                      toast.error('Failed to report sighting');
-                    }
-                  })();
-                }}
-                onReportLost={() => {
-                  setShowLostAlertDialog(true);
-                  haptics.impact('light');
-                }}
-              />
+                    })();
+                  }}
+                  onReportLost={() => {
+                    setShowLostAlertDialog(true);
+                    haptics.impact('light');
+                  }}
+                />
+              </section>
             </TabsContent>
           </Tabs>
-        </AnimatedView>
-        <PostComposer
-          open={showComposer}
-          onOpenChange={setShowComposer}
-          onPostCreated={postActions.handlePostCreated}
-        />
+        </motion.div>
+        </section>
+        {/* Post Composer */}
+        <PostComposer />
 
         {/* Adoption Detail Dialog */}
-        <AdoptionDetailDialog
-          profile={selectedAdoptionProfile}
-          open={!!selectedAdoptionProfile}
-          onOpenChange={(open) => !open && setSelectedAdoptionProfile(null)}
-        />
+        {selectedAdoptionProfile && (
+          <AdoptionDetailDialog
+            profile={selectedAdoptionProfile}
+            open={Boolean(selectedAdoptionProfile)}
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedAdoptionProfile(null);
+              }
+            }}
+          />
+        )}
 
         {/* Lost Alert Dialog */}
         <CreateLostAlertDialog
@@ -807,7 +925,15 @@ export default function CommunityView(): JSX.Element {
             void loadLostFoundAlerts();
           }}
         />
-      </div>
+      </main>
     </PageTransitionWrapper>
+  );
+}
+
+export default function CommunityView(): JSX.Element | null {
+  return (
+    <ScreenErrorBoundary screenName="Community" enableNavigation={true} enableReporting={false}>
+      <CommunityViewContent />
+    </ScreenErrorBoundary>
   );
 }

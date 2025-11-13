@@ -1,15 +1,7 @@
 'use client';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withDelay,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useApp } from '@/contexts/AppContext';
@@ -30,10 +22,9 @@ import {
 } from '@phosphor-icons/react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 const logger = createLogger('MediaViewer');
 
@@ -58,38 +49,70 @@ function SlideTransition({
   direction,
   isVisible,
 }: SlideTransitionProps): JSX.Element | null {
-  const translateX = useSharedValue(direction > 0 ? 1000 : -1000);
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.9);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const translateX = useMotionValue(direction > 0 ? 1000 : -1000);
+  const opacity = useMotionValue(0);
+  const scale = useMotionValue(0.9);
 
   useEffect(() => {
-    if (isVisible) {
-      translateX.value = withSpring(0, springConfigs.smooth);
-      opacity.value = withTiming(1, timingConfigs.fast);
-      scale.value = withSpring(1, springConfigs.smooth);
-    } else {
-      translateX.value = withSpring(direction > 0 ? -1000 : 1000, springConfigs.smooth);
-      opacity.value = withTiming(0, timingConfigs.fast);
-      scale.value = withTiming(0.9, timingConfigs.fast);
+    if (prefersReducedMotion) {
+      if (isVisible) {
+        translateX.set(0);
+        opacity.set(1);
+        scale.set(1);
+      } else {
+        translateX.set(direction > 0 ? -1000 : 1000);
+        opacity.set(0);
+        scale.set(0.9);
+      }
+      return;
     }
-  }, [isVisible, direction, translateX, opacity, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }, { scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (isVisible) {
+      void animate(translateX, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(opacity, 1, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(scale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+    } else {
+      void animate(translateX, direction > 0 ? -1000 : 1000, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(opacity, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(scale, 0.9, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+    }
+  }, [isVisible, direction, translateX, opacity, scale, prefersReducedMotion]);
 
   if (!isVisible) return null;
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      style={{
+        x: translateX,
+        scale,
+        opacity,
+      }}
       className="absolute inset-0 flex items-center justify-center"
     >
       {children}
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -101,11 +124,12 @@ export function MediaViewer({
   authorName,
 }: MediaViewerProps): JSX.Element | null {
   const { t } = useApp();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
   const [direction, setDirection] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const dragX = useSharedValue(0);
+  const dragX = useMotionValue(0);
   const dragStartX = useRef<number>(0);
 
   // Get current media early for use in callbacks
@@ -128,7 +152,7 @@ export function MediaViewer({
       setIsZoomed(false);
       setDirection(0);
       setIsPlaying(false);
-      dragX.value = 0;
+      dragX.set(0);
       if (videoRef.current) {
         videoRef.current.pause();
       }
@@ -169,11 +193,13 @@ export function MediaViewer({
       clearTimeout(controlsTimeoutRef.current);
     }
     setShowVideoControls(true);
-    controlsTimeoutRef.current = window.setTimeout(() => {
-      if (isPlaying) {
-        setShowVideoControls(false);
-      }
-    }, 3000);
+    if (typeof window !== 'undefined') {
+      controlsTimeoutRef.current = window.setTimeout(() => {
+        if (isPlaying) {
+          setShowVideoControls(false);
+        }
+      }, 3000);
+    }
   }, [isPlaying]);
 
   useEffect(() => {
@@ -222,16 +248,24 @@ export function MediaViewer({
     (clientX: number) => {
       if (!isDragging || isZoomed || currentMedia?.type === 'video') return;
       const delta = clientX - dragStartX.current;
-      dragX.value = delta;
+      dragX.set(delta);
     },
-    [isDragging, isZoomed, dragX]
+    [isDragging, isZoomed, dragX, currentMedia?.type]
   );
 
   const handleDragEnd = useCallback(
     (clientX: number) => {
       if (!isDragging || isZoomed || currentMedia?.type === 'video') {
         setIsDragging(false);
-        dragX.value = withSpring(0, springConfigs.smooth);
+        if (prefersReducedMotion) {
+          dragX.set(0);
+        } else {
+          void animate(dragX, 0, {
+            type: 'spring',
+            damping: springConfigs.smooth.damping,
+            stiffness: springConfigs.smooth.stiffness,
+          });
+        }
         return;
       }
 
@@ -247,9 +281,17 @@ export function MediaViewer({
       }
 
       setIsDragging(false);
-      dragX.value = withSpring(0, springConfigs.smooth);
+      if (prefersReducedMotion) {
+        dragX.set(0);
+      } else {
+        void animate(dragX, 0, {
+          type: 'spring',
+          damping: springConfigs.smooth.damping,
+          stiffness: springConfigs.smooth.stiffness,
+        });
+      }
     },
-    [isDragging, isZoomed, currentIndex, media.length, handlePrevious, handleNext, dragX]
+    [isDragging, isZoomed, currentIndex, media.length, handlePrevious, handleNext, dragX, prefersReducedMotion]
   );
 
   const handleMouseDown = useCallback(
@@ -331,11 +373,10 @@ export function MediaViewer({
   }, [isMuted]);
 
   const handleSeek = useCallback(
-    (value: number[]) => {
-      if (!videoRef.current || value[0] === undefined) return;
-      const seekTime = value[0];
-      videoRef.current.currentTime = seekTime;
-      setCurrentTime(seekTime);
+    (value: number) => {
+      if (!videoRef.current) return;
+      videoRef.current.currentTime = value;
+      setCurrentTime(value);
       resetControlsTimeout();
     },
     [resetControlsTimeout]
@@ -360,6 +401,9 @@ export function MediaViewer({
 
       const response = await fetch(url);
       const blob = await response.blob();
+      if (typeof window === 'undefined' || typeof document === 'undefined') {
+        throw new Error('Browser APIs not available');
+      }
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -370,7 +414,7 @@ export function MediaViewer({
       window.URL.revokeObjectURL(downloadUrl);
       toast.success(t.community?.downloaded || `${isVideo ? 'Video' : 'Image'} downloaded`);
     } catch (error) {
-      logger.error('Failed to download', error instanceof Error ? error : new Error(String(error)));
+      logger.error('Failed to download', error instanceof Error ? error : new Error('Failed to download media'));
       toast.error(t.community?.downloadError || 'Failed to download');
     }
   }, [currentIndex, media, t, logger]);
@@ -412,112 +456,172 @@ export function MediaViewer({
 
   const isVideo = currentMedia.type === 'video';
 
-  const dragOpacity = useAnimatedStyle(() => {
-    if (isVideo) return { opacity: 1 };
-    const opacityValue = interpolate(
-      dragX.value,
-      [-200, 0, 200],
-      [0.5, 1, 0.5],
-      Extrapolation.CLAMP
-    );
-    return { opacity: opacityValue };
-  }) as AnimatedStyle;
+  const dragOpacity = useTransform(dragX, [-200, 0, 200], [0.5, 1, 0.5], {
+    clamp: true,
+  });
 
-  const mediaContainerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: dragX.value }],
-    };
-  }) as AnimatedStyle;
-
-  const headerOpacity = useSharedValue(showVideoControls || !isVideo ? 1 : 0);
-  const headerTranslateY = useSharedValue(0);
+  const headerOpacity = useMotionValue(showVideoControls || !isVideo ? 1 : 0);
+  const headerTranslateY = useMotionValue(0);
 
   useEffect(() => {
+    if (prefersReducedMotion) {
+      if (showVideoControls || !isVideo) {
+        headerOpacity.set(1);
+        headerTranslateY.set(0);
+      } else {
+        headerOpacity.set(0);
+        headerTranslateY.set(-20);
+      }
+      return;
+    }
+
     if (showVideoControls || !isVideo) {
-      headerOpacity.value = withTiming(1, timingConfigs.fast);
-      headerTranslateY.value = withTiming(0, timingConfigs.fast);
+      void animate(headerOpacity, 1, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(headerTranslateY, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     } else {
-      headerOpacity.value = withTiming(0, timingConfigs.fast);
-      headerTranslateY.value = withTiming(-20, timingConfigs.fast);
+      void animate(headerOpacity, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(headerTranslateY, -20, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     }
-  }, [showVideoControls, isVideo, headerOpacity, headerTranslateY]);
+  }, [showVideoControls, isVideo, headerOpacity, headerTranslateY, prefersReducedMotion]);
 
-  const headerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: headerOpacity.value,
-      transform: [{ translateY: headerTranslateY.value }],
-    };
-  }) as AnimatedStyle;
-
-  const imageScale = useSharedValue(isZoomed ? 2 : 1);
+  const imageScale = useMotionValue(isZoomed ? 2 : 1);
 
   useEffect(() => {
-    imageScale.value = withSpring(isZoomed ? 2 : 1, springConfigs.smooth);
-  }, [isZoomed, imageScale]);
+    if (prefersReducedMotion) {
+      imageScale.set(isZoomed ? 2 : 1);
+    } else {
+      void animate(imageScale, isZoomed ? 2 : 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+    }
+  }, [isZoomed, imageScale, prefersReducedMotion]);
 
-  const imageStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: imageScale.value }],
-    };
-  }) as AnimatedStyle;
-
-  const videoControlsOpacity = useSharedValue(showVideoControls ? 1 : 0);
-  const videoControlsTranslateY = useSharedValue(0);
+  const videoControlsOpacity = useMotionValue(showVideoControls ? 1 : 0);
+  const videoControlsTranslateY = useMotionValue(0);
 
   useEffect(() => {
+    if (prefersReducedMotion) {
+      if (showVideoControls) {
+        videoControlsOpacity.set(1);
+        videoControlsTranslateY.set(0);
+      } else {
+        videoControlsOpacity.set(0);
+        videoControlsTranslateY.set(20);
+      }
+      return;
+    }
+
     if (showVideoControls) {
-      videoControlsOpacity.value = withTiming(1, timingConfigs.fast);
-      videoControlsTranslateY.value = withTiming(0, timingConfigs.fast);
+      void animate(videoControlsOpacity, 1, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(videoControlsTranslateY, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     } else {
-      videoControlsOpacity.value = withTiming(0, timingConfigs.fast);
-      videoControlsTranslateY.value = withTiming(20, timingConfigs.fast);
+      void animate(videoControlsOpacity, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(videoControlsTranslateY, 20, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     }
-  }, [showVideoControls, videoControlsOpacity, videoControlsTranslateY]);
-
-  const videoControlsStyle = useAnimatedStyle(() => {
-    return {
-      opacity: videoControlsOpacity.value,
-      transform: [{ translateY: videoControlsTranslateY.value }],
-    };
-  }) as AnimatedStyle;
+  }, [showVideoControls, videoControlsOpacity, videoControlsTranslateY, prefersReducedMotion]);
 
   const playButtonHover = useHoverTap({
     hoverScale: 1.1,
     tapScale: 0.95,
   });
 
-  const navButtonLeftOpacity = useSharedValue(currentIndex > 0 && showVideoControls ? 1 : 0);
-  const navButtonLeftTranslateX = useSharedValue(-20);
+  const navButtonLeftOpacity = useMotionValue(currentIndex > 0 && showVideoControls ? 1 : 0);
+  const navButtonLeftTranslateX = useMotionValue(-20);
 
   useEffect(() => {
-    if (currentIndex > 0 && showVideoControls) {
-      navButtonLeftOpacity.value = withTiming(1, timingConfigs.fast);
-      navButtonLeftTranslateX.value = withTiming(0, timingConfigs.fast);
-    } else {
-      navButtonLeftOpacity.value = withTiming(0, timingConfigs.fast);
-      navButtonLeftTranslateX.value = withTiming(-20, timingConfigs.fast);
+    if (prefersReducedMotion) {
+      if (currentIndex > 0 && showVideoControls) {
+        navButtonLeftOpacity.set(1);
+        navButtonLeftTranslateX.set(0);
+      } else {
+        navButtonLeftOpacity.set(0);
+        navButtonLeftTranslateX.set(-20);
+      }
+      return;
     }
-  }, [currentIndex, showVideoControls, navButtonLeftOpacity, navButtonLeftTranslateX]);
 
-  const navButtonLeftStyle = useAnimatedStyle(() => {
-    return {
-      opacity: navButtonLeftOpacity.value,
-      transform: [{ translateX: navButtonLeftTranslateX.value }],
-    };
-  }) as AnimatedStyle;
+    if (currentIndex > 0 && showVideoControls) {
+      void animate(navButtonLeftOpacity, 1, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(navButtonLeftTranslateX, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+    } else {
+      void animate(navButtonLeftOpacity, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(navButtonLeftTranslateX, -20, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+    }
+  }, [currentIndex, showVideoControls, navButtonLeftOpacity, navButtonLeftTranslateX, prefersReducedMotion]);
 
-  const navButtonRightOpacity = useSharedValue(
+  const navButtonRightOpacity = useMotionValue(
     currentIndex < media.length - 1 && showVideoControls ? 1 : 0
   );
-  const navButtonRightTranslateX = useSharedValue(20);
+  const navButtonRightTranslateX = useMotionValue(20);
 
   useEffect(() => {
+    if (prefersReducedMotion) {
+      if (currentIndex < media.length - 1 && showVideoControls) {
+        navButtonRightOpacity.set(1);
+        navButtonRightTranslateX.set(0);
+      } else {
+        navButtonRightOpacity.set(0);
+        navButtonRightTranslateX.set(20);
+      }
+      return;
+    }
+
     if (currentIndex < media.length - 1 && showVideoControls) {
-      navButtonRightOpacity.value = withTiming(1, timingConfigs.fast);
-      navButtonRightTranslateX.value = withTiming(0, timingConfigs.fast);
+      void animate(navButtonRightOpacity, 1, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(navButtonRightTranslateX, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     } else {
-      navButtonRightOpacity.value = withTiming(0, timingConfigs.fast);
-      navButtonRightTranslateX.value = withTiming(20, timingConfigs.fast);
+      void animate(navButtonRightOpacity, 0, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(navButtonRightTranslateX, 20, {
+        duration: motionDurations.fast / 1000,
+        ease: [0.2, 0, 0, 1],
+      });
     }
   }, [
     currentIndex,
@@ -525,30 +629,32 @@ export function MediaViewer({
     showVideoControls,
     navButtonRightOpacity,
     navButtonRightTranslateX,
+    prefersReducedMotion,
   ]);
 
-  const navButtonRightStyle = useAnimatedStyle(() => {
-    return {
-      opacity: navButtonRightOpacity.value,
-      transform: [{ translateX: navButtonRightTranslateX.value }],
-    };
-  }) as AnimatedStyle;
-
-  const hintOpacity = useSharedValue(0);
+  const hintOpacity = useMotionValue(0);
 
   useEffect(() => {
-    if (!isVideo) {
-      hintOpacity.value = withDelay(500, withTiming(1, timingConfigs.smooth));
-    } else {
-      hintOpacity.value = 0;
+    if (prefersReducedMotion) {
+      if (!isVideo) {
+        hintOpacity.set(1);
+      } else {
+        hintOpacity.set(0);
+      }
+      return;
     }
-  }, [isVideo, hintOpacity]);
 
-  const hintStyle = useAnimatedStyle(() => {
-    return {
-      opacity: hintOpacity.value,
-    };
-  }) as AnimatedStyle;
+    if (!isVideo) {
+      setTimeout(() => {
+        void animate(hintOpacity, 1, {
+          duration: motionDurations.smooth / 1000,
+          ease: [0.2, 0, 0, 1],
+        });
+      }, 500);
+    } else {
+      hintOpacity.set(0);
+    }
+  }, [isVideo, hintOpacity, prefersReducedMotion]);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -568,8 +674,11 @@ export function MediaViewer({
             onTouchEnd={handleTouchEnd}
           >
             {(showVideoControls || !isVideo) && (
-              <AnimatedView
-                style={headerStyle}
+              <motion.div
+                style={{
+                  opacity: headerOpacity,
+                  y: headerTranslateY,
+                }}
                 className="absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/80 to-transparent"
               >
                 <div className="flex items-center justify-between">
@@ -622,13 +731,16 @@ export function MediaViewer({
                     </Button>
                   </div>
                 </div>
-              </AnimatedView>
+              </motion.div>
             )}
 
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
               <SlideTransition direction={direction} isVisible={true}>
-                <AnimatedView
-                  style={[mediaContainerStyle, dragOpacity]}
+                <motion.div
+                  style={{
+                    x: dragX,
+                    opacity: isVideo ? 1 : dragOpacity,
+                  }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
                   {isVideo ? (
@@ -643,12 +755,15 @@ export function MediaViewer({
                       />
 
                       {showVideoControls && (
-                        <AnimatedView
-                          style={videoControlsStyle}
+                        <motion.div
+                          style={{
+                            opacity: videoControlsOpacity,
+                            y: videoControlsTranslateY,
+                          }}
                           className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                          <AnimatedView
-                            style={playButtonHover.animatedStyle}
+                          <motion.div
+                            style={playButtonHover.animatedStyle as React.CSSProperties}
                             onMouseEnter={playButtonHover.handleMouseEnter}
                             onMouseLeave={playButtonHover.handleMouseLeave}
                             onClick={handleVideoClick}
@@ -659,13 +774,16 @@ export function MediaViewer({
                             ) : (
                               <Play size={40} weight="fill" />
                             )}
-                          </AnimatedView>
-                        </AnimatedView>
+                          </motion.div>
+                        </motion.div>
                       )}
 
                       {showVideoControls && duration > 0 && !isNaN(duration) && (
-                        <AnimatedView
-                          style={videoControlsStyle}
+                        <motion.div
+                          style={{
+                            opacity: videoControlsOpacity,
+                            y: videoControlsTranslateY,
+                          }}
                           className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent"
                         >
                           <div className="flex items-center gap-4">
@@ -687,11 +805,12 @@ export function MediaViewer({
                             </span>
 
                             <Slider
-                              value={[currentTime]}
+                              value={currentTime}
                               max={duration || 0}
                               step={0.1}
                               onValueChange={handleSeek}
                               className="flex-1"
+                              aria-label="Video timeline"
                             />
 
                             <span className="text-white/60 text-sm min-w-11 text-right">
@@ -711,32 +830,37 @@ export function MediaViewer({
                               )}
                             </Button>
                           </div>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                     </div>
                   ) : (
-                    <AnimatedView
-                      style={imageStyle}
+                    <motion.div
+                      style={{
+                        scale: imageScale,
+                      }}
                       onClick={handleImageClick}
                       className="max-w-full max-h-full cursor-zoom-in select-none"
                     >
                       <img
                         src={currentMedia.url}
-                        alt={`Post media ${String(currentIndex + 1 ?? '')}`}
+                        alt={`Post media ${currentIndex + 1}`}
                         className="max-w-full max-h-full object-contain select-none"
                         draggable={false}
                       />
-                    </AnimatedView>
+                    </motion.div>
                   )}
-                </AnimatedView>
+                </motion.div>
               </SlideTransition>
             </div>
 
             {media.length > 1 && (
               <>
                 {currentIndex > 0 && (
-                  <AnimatedView
-                    style={navButtonLeftStyle}
+                  <motion.div
+                    style={{
+                      opacity: navButtonLeftOpacity,
+                      x: navButtonLeftTranslateX,
+                    }}
                     className="absolute left-4 top-1/2 -translate-y-1/2 z-50"
                   >
                     <Button
@@ -747,12 +871,15 @@ export function MediaViewer({
                     >
                       <CaretLeft size={32} weight="bold" />
                     </Button>
-                  </AnimatedView>
+                  </motion.div>
                 )}
 
                 {currentIndex < media.length - 1 && (
-                  <AnimatedView
-                    style={navButtonRightStyle}
+                  <motion.div
+                    style={{
+                      opacity: navButtonRightOpacity,
+                      x: navButtonRightTranslateX,
+                    }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 z-50"
                   >
                     <Button
@@ -763,7 +890,7 @@ export function MediaViewer({
                     >
                       <CaretRight size={32} weight="bold" />
                     </Button>
-                  </AnimatedView>
+                  </motion.div>
                 )}
               </>
             )}
@@ -784,21 +911,23 @@ export function MediaViewer({
                     className={`h-2 rounded-full transition-all duration-300 ${
                       index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
                     }`}
-                    aria-label={`View ${String(media[index]?.type === 'video' ? 'video' : 'photo' ?? '')} ${String(index + 1 ?? '')}`}
+                    aria-label={`View ${media[index]?.type === 'video' ? 'video' : 'photo'} ${index + 1}`}
                   />
                 ))}
               </div>
             )}
 
             {!isVideo && (
-              <AnimatedView
-                style={hintStyle}
+              <motion.div
+                style={{
+                  opacity: hintOpacity,
+                }}
                 className="absolute bottom-20 left-1/2 -translate-x-1/2 text-white/60 text-xs bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm"
               >
                 {isZoomed
                   ? t.community?.tapToZoomOut || 'Tap to zoom out'
                   : t.community?.tapToZoom || 'Tap to zoom in'}
-              </AnimatedView>
+              </motion.div>
             )}
           </div>
         </DialogPrimitive.Content>

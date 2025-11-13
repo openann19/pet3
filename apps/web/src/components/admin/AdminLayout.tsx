@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useCallback } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -29,7 +30,7 @@ import {
   ArrowLeft,
   Headset,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useSidebarAnimation } from '@/effects/reanimated/use-sidebar-animation';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
@@ -150,7 +151,7 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <AnimatedView
+      <motion.div
         style={sidebarAnimation.widthStyle}
         className="border-r border-border bg-card flex flex-col shrink-0"
       >
@@ -160,10 +161,10 @@ export default function AdminLayout({
               <ShieldCheck className="text-white" size={20} weight="fill" />
             </div>
             {sidebarOpen && (
-              <AnimatedView style={sidebarAnimation.opacityStyle} className="min-w-0">
+              <motion.div style={sidebarAnimation.opacityStyle} className="min-w-0">
                 <h2 className="font-bold text-lg truncate">Admin Console</h2>
                 <p className="text-xs text-muted-foreground truncate">Moderation & Management</p>
-              </AnimatedView>
+              </motion.div>
             )}
           </div>
           {onExit
@@ -184,7 +185,9 @@ export default function AdminLayout({
                   size="icon"
                   onClick={() => {
                     try {
-                      window.location.href = '/';
+                      if (typeof window !== 'undefined') {
+                        window.location.href = '/';
+                      }
                     } catch (error) {
                       const err = error instanceof Error ? error : new Error(String(error));
                       logger.error('Failed to navigate to main app', err);
@@ -244,7 +247,9 @@ export default function AdminLayout({
               className={cn('w-full justify-start gap-3', !sidebarOpen && 'justify-center')}
               onClick={() => {
                 try {
-                  window.location.href = '/';
+                  if (typeof window !== 'undefined') {
+                    window.location.href = '/';
+                  }
                 } catch (error) {
                   const err = error instanceof Error ? error : new Error(String(error));
                   logger.error('Failed to navigate to main app', err);
@@ -279,7 +284,7 @@ export default function AdminLayout({
             {sidebarOpen ? '←' : '→'}
           </Button>
         </div>
-      </AnimatedView>
+      </motion.div>
 
       <main className="flex-1 overflow-auto">
         <div className="p-4 sm:p-6 lg:p-8 min-h-full">{children}</div>

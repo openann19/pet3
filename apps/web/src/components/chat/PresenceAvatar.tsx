@@ -6,12 +6,10 @@
  * Location: apps/web/src/components/chat/PresenceAvatar.tsx
  */
 
-import { useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, withRepeat } from '@petspark/motion';
+import { useEffect } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface PresenceAvatarProps {
@@ -31,22 +29,21 @@ export function PresenceAvatar({
   size = 40,
   className,
 }: PresenceAvatarProps) {
-    const _uiConfig = useUIConfig();
-    const reduced = useReducedMotion();
-  const rot = useSharedValue(0);
+  const _uiConfig = useUIConfig();
+  const reduced = useReducedMotion();
+  const rot = useMotionValue(0);
 
   const dur = getReducedMotionDuration(3600, reduced);
-  useMemo(() => {
-    rot.value = 0;
+  useEffect(() => {
+    rot.set(0);
     if (!reduced && status !== 'offline') {
-      rot.value = withRepeat(withTiming(360, { duration: dur }), -1, false);
+      void animate(rot, 360, {
+        duration: dur / 1000,
+        repeat: Infinity,
+        ease: 'linear',
+      });
     }
   }, [reduced, status, dur, rot]);
-
-  const ring = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${String(rot.value ?? '')}deg` }],
-    opacity: status === 'offline' ? 0 : 1,
-  })) as AnimatedStyle;
 
   const ringColors =
     status === 'online'
@@ -68,12 +65,13 @@ export function PresenceAvatar({
       </Avatar>
 
       {status !== 'offline' && (
-        <AnimatedView
-          style={ring}
+        <motion.div
+          style={{
+            rotate: rot,
+            opacity: status === 'offline' ? 0 : 1,
+          }}
           className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${String(ringColors ?? '')} blur-[2px] opacity-80`}
-        >
-          <div />
-        </AnimatedView>
+        />
       )}
     </div>
   );

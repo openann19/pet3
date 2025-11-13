@@ -4,7 +4,9 @@
  */
 
 import { type ReactNode } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion } from 'framer-motion';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { usePageTransition, useParallaxScroll, useBreathingAnimation } from '@/effects/reanimated';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -47,11 +49,13 @@ export function UltraEnhancedView({
     ...(enableTransition ? pageTransition.style : {}),
     ...(enableParallax ? parallax.animatedStyle : {}),
     ...(enableBreathing ? breathing.animatedStyle : {}),
-  };
+  } as AnimatedStyle;
+
+  const combinedStyleValue = useAnimatedStyleValue(combinedStyle);
 
   return (
-    <AnimatedView style={combinedStyle} className={className}>
+    <motion.div style={combinedStyleValue} className={className}>
       {children}
-    </AnimatedView>
+    </motion.div>
   );
 }

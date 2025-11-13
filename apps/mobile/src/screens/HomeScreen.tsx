@@ -5,6 +5,8 @@ import { PullableContainer } from '@mobile/components/PullableContainer'
 import { SectionHeader } from '@mobile/components/SectionHeader'
 import { useDomainSnapshots } from '@mobile/hooks/use-domain-snapshots'
 import { colors } from '@mobile/theme/colors'
+import { typography, spacing, radius } from '@mobile/theme/tokens'
+import { REFRESH_DELAY_MS } from '@mobile/constants/timing'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -13,7 +15,7 @@ export function HomeScreen(): React.JSX.Element {
 
   const handleRefresh = useCallback(async (): Promise<void> => {
     // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, REFRESH_DELAY_MS))
   }, [])
 
   return (
@@ -56,7 +58,7 @@ export function HomeScreen(): React.JSX.Element {
               Hard gates: {snapshots.matching.hardGatesPassed ? 'All clear' : 'Requires review'}
             </Text>
             <Text style={styles.bodyText}>
-              Weighted score: {Number(snapshots.matching.score.totalScore).toFixed(1)} / 100
+              Weighted score: {snapshots.matching.score.totalScore.toFixed(1)} / 100
             </Text>
           </FeatureCard>
 
@@ -72,10 +74,27 @@ export function HomeScreen(): React.JSX.Element {
   )
 }
 
+HomeScreen.displayName = 'HomeScreen'
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 20, paddingBottom: 28 },
-  bodyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
-  footer: { marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: colors.surface },
-  footerText: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
+  content: { padding: spacing.lg, paddingBottom: spacing['2xl'] },
+  bodyText: { 
+    color: colors.textSecondary, 
+    fontSize: typography.bodySm.fontSize, 
+    lineHeight: typography.bodySm.lineHeight 
+  },
+  footer: { 
+    marginTop: spacing.xl, 
+    padding: spacing.lg, 
+    borderRadius: radius.lg, 
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  footerText: { 
+    color: colors.textSecondary, 
+    fontSize: typography.caption.fontSize, 
+    lineHeight: typography.caption.lineHeight 
+  },
 })

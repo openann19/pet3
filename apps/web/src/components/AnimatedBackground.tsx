@@ -1,9 +1,10 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useMemo, type ReactElement } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useFloatingParticle } from '@/effects/reanimated/use-floating-particle';
 import { useGradientAnimation } from '@/effects/reanimated/use-gradient-animation';
+import { safeWindow } from '@/utils/ssr-safe';
 
 interface FloatingParticleProps {
   initialX: number;
@@ -32,20 +33,21 @@ function FloatingParticle({
   });
 
   return (
-    <AnimatedView
+    <motion.div
       className="absolute w-2 h-2 rounded-full bg-primary/20 blur-sm"
       style={particleAnimation.style}
     >
       <div />
-    </AnimatedView>
+    </motion.div>
   );
 }
 
 export function AnimatedBackground(): ReactElement {
   const particles = useMemo(() => {
-    if (typeof window === 'undefined') return [];
-    const width = window.innerWidth || 1920;
-    const height = window.innerHeight || 1080;
+    const win = safeWindow();
+    if (!win) return [];
+    const width = win.innerWidth || 1920;
+    const height = win.innerHeight || 1080;
     return Array.from({ length: 8 }).map((_, i) => ({
       id: i,
       initialX: Math.random() * width,
@@ -114,36 +116,36 @@ export function AnimatedBackground(): ReactElement {
         />
       ))}
 
-      <AnimatedView
+      <motion.div
         className="absolute top-0 left-1/4 w-225 h-225 bg-gradient-radial from-primary/18 via-primary/10 to-transparent rounded-full filter blur-[150px]"
         style={gradient1.style}
       >
         <div />
-      </AnimatedView>
-      <AnimatedView
+      </motion.div>
+      <motion.div
         className="absolute bottom-0 right-1/4 w-225 h-225 bg-gradient-radial from-accent/18 via-accent/10 to-transparent rounded-full filter blur-[150px]"
         style={gradient2.style}
       >
         <div />
-      </AnimatedView>
-      <AnimatedView
+      </motion.div>
+      <motion.div
         className="absolute top-1/3 right-1/3 w-200 h-200 bg-gradient-radial from-secondary/15 via-secondary/8 to-transparent rounded-full filter blur-[130px]"
         style={gradient3.style}
       >
         <div />
-      </AnimatedView>
-      <AnimatedView
+      </motion.div>
+      <motion.div
         className="absolute top-2/3 left-1/3 w-175 h-175 bg-gradient-conic from-primary/12 via-accent/12 to-secondary/12 rounded-full filter blur-[110px]"
         style={gradient4.style}
       >
         <div />
-      </AnimatedView>
-      <AnimatedView
+      </motion.div>
+      <motion.div
         className="absolute top-1/2 left-1/2 w-150 h-150 bg-gradient-radial from-lavender/12 via-lavender/6 to-transparent rounded-full filter blur-[120px]"
         style={gradient5.style}
       >
         <div />
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -8,11 +9,11 @@ import {
   withSequence,
   withTiming,
 } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, MapPin, Check, Crosshair } from '@phosphor-icons/react';
@@ -150,11 +151,11 @@ export function MapLocationPicker({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={backdropStyle}
       className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
     >
-      <AnimatedView
+      <motion.div
         style={modalAnimation.style}
         className="container max-w-6xl mx-auto p-4 h-full flex flex-col"
       >
@@ -163,11 +164,11 @@ export function MapLocationPicker({
             <h2 className="text-2xl font-bold">Pick Location on Map</h2>
             <p className="text-sm text-muted-foreground">Drag the map or use current location</p>
           </div>
-          <AnimatedView style={closeButtonAnimation.animatedStyle}>
+          <motion.div style={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>
-          </AnimatedView>
+          </motion.div>
         </div>
 
         <Card className="flex-1 relative overflow-hidden mb-4">
@@ -194,9 +195,9 @@ export function MapLocationPicker({
           </div>
 
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            <AnimatedView style={pinStyle}>
+            <motion.div style={pinStyle}>
               <MapPin size={48} className="text-primary drop-shadow-lg" weight="fill" />
-            </AnimatedView>
+            </motion.div>
           </div>
         </Card>
 
@@ -220,7 +221,7 @@ export function MapLocationPicker({
             Confirm Location
           </Button>
         </div>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }

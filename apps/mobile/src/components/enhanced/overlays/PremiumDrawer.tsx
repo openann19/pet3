@@ -14,10 +14,15 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
 import type { IconProps } from 'react-native-vector-icons/Icon'
+import { isTruthy } from '@petspark/shared'
+import { colors } from '@mobile/theme/colors'
+import { Dimens } from '@petspark/shared'
+import { elevation } from '@mobile/theme/tokens'
 
 const X = (props: Omit<IconProps, 'name'>): React.JSX.Element => <FeatherIcon name="x" {...props} />
 
@@ -152,32 +157,44 @@ export function PremiumDrawer({
       testID={testID}
     >
       <AnimatedView style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity 
+          style={StyleSheet.absoluteFill} 
+          activeOpacity={1} 
+          onPress={handleClose}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Close drawer"
+        />
         <AnimatedView
           style={[styles.content, sizeStyles[size], sideStyles[side], contentStyle, style]}
         >
-          {(title || description) && (
-            <View style={styles.header}>
-              {title && <Text style={styles.title}>{title}</Text>}
-              {description && <Text style={styles.description}>{description}</Text>}
+          <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill}>
+            <View style={[styles.glassContent, { backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}>
+              {(title || description) && (
+                <View style={styles.header}>
+                  {title && <Text style={styles.title}>{title}</Text>}
+                  {description && <Text style={styles.description}>{description}</Text>}
+                </View>
+              )}
+
+              <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+                {children}
+              </ScrollView>
+
+              {footer && <View style={styles.footer}>{footer}</View>}
+
+              {showCloseButton && (
+                <TouchableOpacity
+                  onPress={handleClose}
+                  style={styles.closeButton}
+                  accessibilityLabel="Close drawer"
+                  accessibilityRole="button"
+                >
+                  <X size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
             </View>
-          )}
-
-          <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
-            {children}
-          </ScrollView>
-
-          {footer && <View style={styles.footer}>{footer}</View>}
-
-          {showCloseButton && (
-            <TouchableOpacity
-              onPress={handleClose}
-              style={styles.closeButton}
-              accessibilityLabel="Close drawer"
-            >
-              <X size={16} color="#6b7280" />
-            </TouchableOpacity>
-          )}
+          </BlurView>
         </AnimatedView>
       </AnimatedView>
     </Modal>
@@ -191,45 +208,52 @@ const styles = StyleSheet.create({
   },
   content: {
     position: 'absolute',
-    backgroundColor: 'var(--color-bg-overlay)',
-    borderRadius: 16,
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    borderRadius: Dimens.radius.xl,
+    ...elevation.modal,
+    overflow: 'hidden',
+  },
+  glassContent: {
+    flex: 1,
+    borderRadius: Dimens.radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   header: {
-    padding: 24,
-    paddingBottom: 16,
+    padding: Dimens.spacing.xl,
+    paddingBottom: Dimens.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
+    color: colors.textPrimary,
+    marginBottom: Dimens.spacing.sm,
   },
   description: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
   },
   body: {
     flex: 1,
-    padding: 24,
+    padding: Dimens.spacing.xl,
   },
   footer: {
-    padding: 24,
-    paddingTop: 16,
+    padding: Dimens.spacing.xl,
+    paddingTop: Dimens.spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: colors.border,
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 8,
-    borderRadius: 8,
+    top: Dimens.spacing.lg,
+    right: Dimens.spacing.lg,
+    padding: Dimens.spacing.sm,
+    borderRadius: Dimens.radius.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

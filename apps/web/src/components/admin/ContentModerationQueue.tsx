@@ -1,4 +1,5 @@
 import { communityAPI } from '@/api/community-api';
+import { motion } from 'framer-motion';
 import { liveStreamingAPI } from '@/api/live-streaming-api';
 import { lostFoundAPI } from '@/api/lost-found-api';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,7 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -405,10 +406,10 @@ export function ContentModerationQueue() {
     if (!presence.shouldRender) return null
     
     return (
-      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+      <motion.div style={presence.animatedStyle} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
-      </AnimatedView>
+      </motion.div>
     )
   }
 
@@ -421,7 +422,7 @@ export function ContentModerationQueue() {
     })
     
     return (
-      <AnimatedView style={entry.animatedStyle}>
+      <motion.div style={entry.animatedStyle}>
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { setSelectedItem(item); }}
@@ -440,7 +441,7 @@ export function ContentModerationQueue() {
             </div>
           </div>
         </Card>
-      </AnimatedView>
+      </motion.div>
     )
   }
 
@@ -507,13 +508,13 @@ export function ContentModerationQueue() {
                   <p className="text-muted-foreground">Loading...</p>
                 </div>
               ) : filteredItems.length === 0 ? (
-                <AnimatedView className="text-center py-12">
+                <motion.div className="text-center py-12">
                   <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No items in this queue</p>
-                </AnimatedView>
+                </motion.div>
               ) : (
                 filteredItems.map((item) => (
-                  <AnimatedView key={item.id} layout>
+                  <motion.div key={item.id} layout>
                     <Card
                       className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setSelectedItem(item)}
@@ -535,7 +536,7 @@ export function ContentModerationQueue() {
                         </div>
                       </div>
                     </Card>
-                  </AnimatedView>
+                  </motion.div>
                 ))
               )}
             </div>

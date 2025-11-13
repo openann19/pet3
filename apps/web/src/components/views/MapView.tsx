@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, Presence, MotionView } from '@petspark/motion';
+import type { ChangeEvent, MouseEvent } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
   MagnifyingGlass,
@@ -30,59 +31,20 @@ import { useStorage } from '@/hooks/use-storage';
 import { toast } from 'sonner';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { logger } from '@/lib/logger';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations, staggerContainerVariants, staggerItemVariants, getVariantsWithReducedMotion } from '@/effects/framer-motion/variants';
+import { getTypographyClasses, getSpacingClassesFromConfig, getColorClasses, focusRing } from '@/lib/design-token-utils';
+import { cn } from '@/lib/utils';
 
 type MapViewMode = 'discover' | 'places' | 'playdate' | 'lost-pet' | 'matches';
 
-// Animated marker component
-function AnimatedMarker({
-  place,
-  index,
-  category,
-  onClick,
-}: {
-  place: Place;
-  index: number;
-  category: { id: string; name: string; icon: string; color: string } | undefined;
-  onClick: () => void;
-}) {
-  const markerEntry = useEntryAnimation({
-    initialScale: 0,
-    initialOpacity: 0,
-    delay: index * 50,
-    duration: 300,
-  });
 
-  return (
-    <AnimatedView
-      className="absolute"
-      style={[
-        markerEntry.animatedStyle,
-        {
-          left: `${20 + (index % 5) * 16}%`,
-          top: `${20 + Math.floor(index / 5) * 25}%`,
-        },
-      ]}
-    >
-      <button
-        onClick={onClick}
-        className="relative group cursor-pointer transform transition-transform hover:scale-110 active:scale-95"
-      >
-        <div
-          className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
-          style={{ backgroundColor: category?.color || '#ec4899' }}
-        >
-          {category?.icon || '📍'}
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-      </button>
-    </AnimatedView>
-  );
-}
-
-export default function MapView() {
+function MapViewContent() {
   const { t } = useApp();
   const { mapSettings, PLACE_CATEGORIES } = useMapConfig();
+  const prefersReducedMotion = useReducedMotion();
 
   const [_mode, _setMode] = useState<MapViewMode>('discover');
   const [userLocation, setUserLocation] = useState<Location | null>(null);
@@ -111,7 +73,7 @@ export default function MapView() {
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    requestLocation();
+    void requestLocation();
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -123,12 +85,12 @@ export default function MapView() {
     if (preciseSharingEnabled && preciseSharingUntil) {
       const now = Date.now();
       if (now > preciseSharingUntil) {
-        setPreciseSharingEnabled(false);
-        setPreciseSharingUntil(null);
-        toast.info(t.map?.precisionExpired || 'Precise location sharing ended');
+        void setPreciseSharingEnabled(false);
+        void setPreciseSharingUntil(null);
+        toast.info(t.map?.precisionExpired ?? 'Precise location sharing ended');
       }
     }
-  }, [preciseSharingEnabled, preciseSharingUntil]);
+  }, [preciseSharingEnabled, preciseSharingUntil, setPreciseSharingEnabled, setPreciseSharingUntil]);
 
   useEffect(() => {
     if (isTruthy(userLocation)) {
@@ -160,16 +122,16 @@ export default function MapView() {
   const handleEnablePreciseSharing = () => {
     haptics.trigger('medium');
     const until = Date.now() + 60 * 60 * 1000;
-    setPreciseSharingEnabled(true);
-    setPreciseSharingUntil(until);
-    toast.success(t.map?.precisionEnabled || 'Precise location enabled for 60 minutes');
+    void setPreciseSharingEnabled(true);
+    void setPreciseSharingUntil(until);
+    toast.success(t.map?.precisionEnabled ?? 'Precise location enabled for 60 minutes');
   };
 
   const handleDisablePreciseSharing = () => {
     haptics.trigger('light');
-    setPreciseSharingEnabled(false);
-    setPreciseSharingUntil(null);
-    toast.info(t.map?.precisionDisabled || 'Precise location disabled');
+    void setPreciseSharingEnabled(false);
+    void setPreciseSharingUntil(null);
+    toast.info(t.map?.precisionDisabled ?? 'Precise location disabled');
   };
 
   const generateDemoPlaces = (center: Location) => {
@@ -190,15 +152,15 @@ export default function MapView() {
       };
 
       places.push({
-        id: `place-${String(i ?? '')}`,
-        name: `${String(category.name ?? '')} ${String(i + 1 ?? '')}`,
-        description: `Great ${String(category.name.toLowerCase() ?? '')} in your area`,
-        category: category.id,
+        id: `place-${String(i)}`,
+        name: `${category?.name ?? ''} ${String(i + 1)}`,
+        description: `Great ${category?.name?.toLowerCase() ?? ''} in your area`,
+        category: category?.id ?? '',
         location,
-        address: `${String(Math.floor(Math.random() * 999) ?? '')} Main St, City`,
-        phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000 ?? '')}`,
+        address: `${String(Math.floor(Math.random() * 999))} Main St, City`,
+        phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000)}`,
         hours: '9:00 AM - 6:00 PM',
-        photos: [`https://images.unsplash.com/photo-${String(1560807700000 + i * 1000000 ?? '')}?w=400&q=80`],
+        photos: [`https://images.unsplash.com/photo-${String(1560807700000 + i * 1000000)}?w=400&q=80`],
         verified: Math.random() > 0.3,
         petFriendly: true,
         rating: 3.5 + Math.random() * 1.5,
@@ -210,7 +172,7 @@ export default function MapView() {
       });
     }
 
-    setNearbyPlaces(places.sort((a, b) => (a.distance || 0) - (b.distance || 0)));
+    setNearbyPlaces(places.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0)));
   };
 
   const handleCategoryFilter = (categoryId: string) => {
@@ -220,32 +182,41 @@ export default function MapView() {
 
   const handleSavePlace = (placeId: string) => {
     haptics.trigger('medium');
-    setSavedPlaces((current) => {
-      const currentPlaces = current || [];
+    void setSavedPlaces((current) => {
+      const currentPlaces = current ?? [];
       if (currentPlaces.includes(placeId)) {
-        toast.info(t.map?.placeRemoved || 'Place removed from saved');
+        toast.info(t.map?.placeRemoved ?? 'Place removed from saved');
         return currentPlaces.filter((id) => id !== placeId);
       } else {
-        toast.success(t.map?.placeSaved || 'Place saved');
+        toast.success(t.map?.placeSaved ?? 'Place saved');
         return [...currentPlaces, placeId];
       }
     });
   };
 
-  const filteredPlaces = useMemo(() => {
-    let filtered = nearbyPlaces;
-
-    if (selectedCategory) {
-      filtered = filtered.filter((place) => place.category === selectedCategory);
+  const filteredPlaces = useMemo((): Place[] => {
+    if (!Array.isArray(nearbyPlaces)) {
+      return [];
     }
 
-    if (searchQuery) {
+    let filtered: Place[] = nearbyPlaces;
+
+    if (typeof selectedCategory === 'string' && selectedCategory.length > 0) {
+      filtered = filtered.filter((place: Place): boolean => {
+        const placeCategory = typeof place.category === 'string' ? place.category : '';
+        return placeCategory === selectedCategory;
+      });
+    }
+
+    if (typeof searchQuery === 'string' && searchQuery.length > 0) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (place) =>
-          place.name.toLowerCase().includes(query) ||
-          place.description?.toLowerCase().includes(query) ||
-          place.category.toLowerCase().includes(query)
+        (place: Place): boolean => {
+          const placeName = typeof place.name === 'string' ? place.name.toLowerCase() : '';
+          const placeDescription = typeof place.description === 'string' ? place.description.toLowerCase() : '';
+          const placeCategory = typeof place.category === 'string' ? place.category.toLowerCase() : '';
+          return placeName.includes(query) || placeDescription.includes(query) || placeCategory.includes(query);
+        }
       );
     }
 
@@ -254,133 +225,126 @@ export default function MapView() {
 
   const displayLocation = preciseSharingEnabled && userLocation ? userLocation : coarseLocation;
 
-  // Animation hooks
-  const searchBarEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
-  const privacyBannerEntry = useEntryAnimation({ initialY: -20, delay: 100, duration: 300 });
-  const preciseBannerEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
-  const statsFooterEntry = useEntryAnimation({ initialY: 20, delay: 200 });
-  const listSidebarPresence = useAnimatePresence({ isVisible: showList });
-  const detailSheetPresence = useAnimatePresence({ isVisible: !!selectedMarker && selectedMarker.type === 'place' });
-
-  // Sidebar slide animation
-  const sidebarX = useSharedValue(100);
-  const sidebarStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: `${sidebarX.value}%` }],
-  }));
-
-  // Detail sheet slide animation
-  const detailSheetY = useSharedValue(100);
-  const detailSheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: `${detailSheetY.value}%` }],
-  }));
-
-  useEffect(() => {
-    if (showList) {
-      sidebarX.value = withSpring(0, { damping: 30, stiffness: 300 });
-    } else {
-      sidebarX.value = withSpring(100, { damping: 30, stiffness: 300 });
-    }
-  }, [showList, sidebarX]);
-
-  useEffect(() => {
-    if (selectedMarker && selectedMarker.type === 'place') {
-      detailSheetY.value = withSpring(0, { damping: 30, stiffness: 300 });
-    } else {
-      detailSheetY.value = withSpring(100, { damping: 30, stiffness: 300 });
-    }
-  }, [selectedMarker, detailSheetY]);
-
   return (
     <PageTransitionWrapper key="map-view" direction="up">
-      <div className="relative h-[calc(100vh-12rem)] max-h-200 bg-background rounded-2xl overflow-hidden border border-border shadow-xl">
-        {/* Map Container */}
-        <div
-          ref={mapRef}
-          className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30"
-        >
-          {/* Placeholder Map Visual */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-4 p-8">
-              <MapPin size={64} className="mx-auto text-primary/30" weight="duotone" />
-              <div className="space-y-2">
-                <p className="text-lg font-semibold text-foreground/70">
-                  {t.map?.interactiveMap || 'Interactive Map'}
-                </p>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  {t.map?.mapDescription ||
-                    'Discover pet-friendly places, plan playdates, and find matches near you with our privacy-first location features.'}
-                </p>
-                {displayLocation && (
-                  <Badge variant="secondary" className="mt-2">
-                    {preciseSharingEnabled ? '📍 Precise' : '📌 Approximate'} •{' '}
-                    {displayLocation.lat.toFixed(4)}, {displayLocation.lng.toFixed(4)}
-                  </Badge>
-                )}
+      <main aria-label="Map view" className={cn('relative h-[calc(100vh-12rem)] max-h-200 bg-background rounded-2xl overflow-hidden border border-border shadow-xl', getSpacingClassesFromConfig({ padding: 'lg' }))}>
+        {/* Map Container Section */}
+        <section aria-label="Interactive map" className="relative h-full">
+          <div
+            ref={mapRef}
+            className="absolute inset-0 bg-linear-to-br from-muted/50 via-background to-muted/30"
+            aria-label="Map visualization area"
+          >
+            {/* Placeholder Map Visual */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={cn('text-center', getSpacingClassesFromConfig({ spaceY: 'lg', padding: '2xl' }))}>
+                <MapPin size={64} className={cn('mx-auto', getColorClasses('primary', 'text'), 'opacity-30')} weight="duotone" aria-hidden="true" />
+                <div className={getSpacingClassesFromConfig({ spaceY: 'sm' })}>
+                  <h1 className={cn(getTypographyClasses('h3'), getColorClasses('foreground', 'text'), 'opacity-70')}>
+                    {t.map?.interactiveMap ?? 'Interactive Map'}
+                  </h1>
+                  <p className={cn(getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'), 'max-w-md')}>
+                    {t.map?.mapDescription ??
+                      'Discover pet-friendly places, plan playdates, and find matches near you with our privacy-first location features.'}
+                  </p>
+                  {displayLocation && typeof displayLocation.lat === 'number' && typeof displayLocation.lng === 'number' && (
+                    <Badge variant="secondary" className="mt-2" aria-label={`Location: ${preciseSharingEnabled ? 'Precise' : 'Approximate'} coordinates`}>
+                      {preciseSharingEnabled ? '📍 Precise' : '📌 Approximate'} •{' '}
+                      {displayLocation.lat.toFixed(4)}, {displayLocation.lng.toFixed(4)}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Markers Visualization */}
-          {displayLocation &&
-            filteredPlaces.slice(0, 15).map((place, idx) => {
-              const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
-              return (
-                <MotionView
-                  key={place.id}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: idx * 0.05, duration: 0.3 }}
-                  className="absolute"
-                  style={{
-                    left: `${20 + (idx % 5) * 16}%`,
-                    top: `${20 + Math.floor(idx / 5) * 25}%`,
-                  }}
-                >
-                  <button
-                    onClick={() => {
-                      haptics.trigger('light');
-                      setSelectedMarker({
-                        id: place.id,
-                        type: 'place',
-                        location: place.location,
-                        data: place,
-                      });
-                      setShowList(false);
+            {/* Markers Visualization */}
+            {displayLocation &&
+              Array.isArray(filteredPlaces) &&
+              filteredPlaces.slice(0, 15).map((place, idx) => {
+                const placeId = typeof place?.id === 'string' ? place.id : String(place?.id ?? idx);
+                if (!place?.id) return null;
+                const category = Array.isArray(PLACE_CATEGORIES)
+                  ? PLACE_CATEGORIES.find((c) => c && typeof c === 'object' && c !== null && c.id === place.category)
+                  : undefined;
+                const placeName = typeof place.name === 'string' ? place.name : 'Place';
+                return (
+                  <motion.div
+                    key={placeId}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={
+                      prefersReducedMotion
+                        ? { duration: 0 }
+                        : {
+                            delay: idx * 0.05,
+                            duration: 0.3,
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                          }
+                    }
+                    className="absolute"
+                    style={{
+                      left: `${20 + (idx % 5) * 16}%`,
+                      top: `${20 + Math.floor(idx / 5) * 25}%`,
                     }}
-                    className="relative group cursor-pointer transform transition-transform hover:scale-110 active:scale-95"
                   >
-                    <div
-                      className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
-                      style={{ backgroundColor: category?.color || '#ec4899' }}
+                    <motion.button
+                      onClick={() => {
+                        haptics.trigger('light');
+                        setSelectedMarker({
+                          id: placeId,
+                          type: 'place',
+                          location: typeof place.location === 'object' && place.location !== null ? place.location : { lat: 0, lng: 0 },
+                          data: place,
+                        });
+                        setShowList(false);
+                      }}
+                      className={cn('relative group cursor-pointer', focusRing)}
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                      whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                      aria-label={`View details for ${placeName}`}
                     >
-                      {category?.icon || '📍'}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  </button>
-                </MotionView>
-              );
-            })}
-        </div>
+                      <div
+                        className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
+                        style={{ backgroundColor: typeof category?.color === 'string' ? category.color : '#ec4899' }}
+                        aria-hidden="true"
+                      >
+                        {typeof category?.icon === 'string' ? category.icon : '📍'}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" aria-hidden="true"></div>
+                    </motion.button>
+                  </motion.div>
+                );
+              })}
+          </div>
+        </section>
 
-        {/* Top Controls */}
-        <div className="absolute top-4 left-4 right-4 z-10 space-y-3">
+        {/* Top Controls Section */}
+        <section aria-label="Map controls" className="absolute top-4 left-4 right-4 z-10 space-y-3">
           {/* Search Bar */}
-          <MotionView
+          <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
             className="backdrop-blur-xl bg-background/80 rounded-2xl shadow-2xl border border-border/50 p-3"
           >
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
+                <label htmlFor="map-search" className="sr-only">
+                  Search places on map
+                </label>
                 <MagnifyingGlass
                   size={20}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                  className={cn('absolute left-3 top-1/2 transform -translate-y-1/2', getColorClasses('mutedForeground', 'text'))}
+                  aria-hidden="true"
                 />
                 <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t.map?.searchPlaceholder || 'Search places...'}
+                  id="map-search"
+                  value={typeof searchQuery === 'string' ? searchQuery : ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                  placeholder={t.map?.searchPlaceholder ?? 'Search places...'}
                   aria-label="Search places on map"
                   className="pl-10 h-11 bg-background/50 border-border"
                 />
@@ -394,56 +358,74 @@ export default function MapView() {
                 }}
                 className="h-11 w-11 rounded-xl hover:bg-primary/10"
                 aria-label={showList ? 'Hide places list' : 'Show places list'}
+                aria-expanded={showList}
+                aria-controls="places-list-sidebar"
               >
-                {showList ? <X size={20} /> : <List size={20} />}
+                {showList ? <X size={20} aria-hidden="true" /> : <List size={20} aria-hidden="true" />}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={requestLocation}
+                onClick={() => {
+                  void requestLocation();
+                }}
                 disabled={isLocating}
                 className="h-11 w-11 rounded-xl hover:bg-primary/10"
                 aria-label={isLocating ? 'Locating your position' : 'Use current location'}
+                aria-busy={isLocating}
               >
-                <Crosshair size={20} className={isLocating ? 'animate-spin' : ''} />
+                <Crosshair size={20} className={isLocating ? 'animate-spin' : ''} aria-hidden="true" />
               </Button>
             </div>
 
             {/* Category Pills */}
-            <div className="flex gap-2 overflow-x-auto mt-3 pb-1 scrollbar-hide">
-              {PLACE_CATEGORIES.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryFilter(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                      : 'bg-background/50 text-foreground/70 hover:bg-muted'
-                  }`}
-                >
-                  <span>{category.icon}</span>
-                  <span>{category.name}</span>
-                </button>
-              ))}
-            </div>
-          </MotionView>
+            <ul className="flex gap-2 overflow-x-auto mt-3 pb-1 scrollbar-hide" role="list">
+              {Array.isArray(PLACE_CATEGORIES) &&
+                PLACE_CATEGORIES.map((category) => {
+                  if (!category?.id) return null;
+                  return (
+                    <li key={category.id}>
+                      <button
+                        onClick={() => handleCategoryFilter(category.id)}
+                        className={cn(
+                          'flex items-center whitespace-nowrap transition-all motion-reduce:transition-none',
+                          getSpacingClassesFromConfig({ gap: 'sm', paddingX: 'lg', paddingY: 'sm' }),
+                          getTypographyClasses('bodySmall'),
+                          focusRing,
+                          selectedCategory === category.id
+                            ? cn(getColorClasses('primary', 'bg'), getColorClasses('primaryForeground', 'text'), 'shadow-md scale-105')
+                            : cn('bg-background/50 opacity-70 hover:bg-muted', getColorClasses('foreground', 'text'))
+                        )}
+                        aria-label={`Filter by ${category.name}`}
+                        aria-pressed={selectedCategory === category.id}
+                      >
+                        <span aria-hidden="true">{category.icon}</span>
+                        <span>{category.name}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
+          </motion.div>
 
           {/* Privacy Banner */}
           {locationPermission === 'granted' && !preciseSharingEnabled && (
-            <MotionView
+            <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.3, delay: prefersReducedMotion ? 0 : 0.1 }}
               className="backdrop-blur-xl bg-primary/10 rounded-xl border border-primary/20 p-3"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-start gap-3">
-                <Warning size={20} className="text-primary shrink-0 mt-0.5" weight="fill" />
+                <Warning size={20} className="text-primary shrink-0 mt-0.5" weight="fill" aria-hidden="true" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {t.map?.approximateLocation || 'Using approximate location'}
+                  <p className={cn(getTypographyClasses('bodySmall'), 'font-medium', getColorClasses('foreground', 'text'))}>
+                    {t.map?.approximateLocation ?? 'Using approximate location'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t.map?.enablePrecisePrompt ||
+                  <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'), getSpacingClassesFromConfig({ marginY: 'xs' }))}>
+                    {t.map?.enablePrecisePrompt ??
                       'Enable precise location for live meet-ups and exact navigation'}
                   </p>
                 </div>
@@ -451,27 +433,31 @@ export default function MapView() {
                   size="sm"
                   onClick={handleEnablePreciseSharing}
                   className="shrink-0 h-8 text-xs"
+                  aria-label={t.map?.enable ?? 'Enable precise location'}
                 >
-                  {t.map?.enable || 'Enable'}
+                  {t.map?.enable ?? 'Enable'}
                 </Button>
               </div>
-            </MotionView>
+            </motion.div>
           )}
 
-          {preciseSharingEnabled && preciseSharingUntil && (
-            <MotionView
+          {preciseSharingEnabled && typeof preciseSharingUntil === 'number' && preciseSharingUntil > 0 && (
+            <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
               className="backdrop-blur-xl bg-green-500/10 rounded-xl border border-green-500/20 p-3"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-center gap-3">
-                <CheckCircle size={20} className="text-green-500 shrink-0" weight="fill" />
+                <CheckCircle size={20} className="text-green-500 shrink-0" weight="fill" aria-hidden="true" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {t.map?.preciseEnabled || 'Precise location active'}
+                  <p className={cn(getTypographyClasses('bodySmall'), 'font-medium', getColorClasses('foreground', 'text'))}>
+                    {t.map?.preciseEnabled ?? 'Precise location active'}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.map?.preciseExpires ||
+                  <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'))}>
+                    {t.map?.preciseExpires ??
                       `Expires in ${Math.ceil((preciseSharingUntil - Date.now()) / 60000)} minutes`}
                   </p>
                 </div>
@@ -480,139 +466,203 @@ export default function MapView() {
                   variant="ghost"
                   onClick={handleDisablePreciseSharing}
                   className="shrink-0 h-8 text-xs"
+                  aria-label={t.map?.disable ?? 'Disable precise location'}
                 >
-                  {t.map?.disable || 'Disable'}
+                  {t.map?.disable ?? 'Disable'}
                 </Button>
               </div>
-            </MotionView>
+            </motion.div>
           )}
-        </div>
+        </section>
 
         {/* Places List Sidebar */}
-        <Presence>
+        <AnimatePresence>
           {showList && (
-            <MotionView
+            <motion.aside
+              id="places-list-sidebar"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { type: 'spring', damping: 30, stiffness: 300 }
+              }
               className="absolute right-0 top-0 bottom-0 w-full sm:w-96 bg-background/95 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto"
+              role="complementary"
+              aria-label="Places list"
             >
-              <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">
-                    {t.map?.nearbyPlaces || 'Nearby Places'} ({filteredPlaces.length})
-                  </h3>
+              <div className={cn('p-4', getSpacingClassesFromConfig({ spaceY: 'md' }))}>
+                <div className={cn('flex items-center justify-between', getSpacingClassesFromConfig({ marginY: 'lg' }))}>
+                  <h2 className={cn(getTypographyClasses('h3'), 'font-semibold')}>
+                    {t.map?.nearbyPlaces ?? 'Nearby Places'} ({Array.isArray(filteredPlaces) ? filteredPlaces.length : 0})
+                  </h2>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowList(false)}
                     aria-label="Close places list"
                   >
-                    <X size={20} />
+                    <X size={20} aria-hidden="true" />
                   </Button>
                 </div>
 
-                {filteredPlaces.map((place) => {
-                  const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
-                  const isSaved = (savedPlaces || []).includes(place.id);
+                {Array.isArray(filteredPlaces) && filteredPlaces.length > 0 ? (
+                  <motion.ul
+                    className={getSpacingClassesFromConfig({ spaceY: 'md' })}
+                    role="list"
+                    aria-label="List of nearby places"
+                    variants={getVariantsWithReducedMotion(staggerContainerVariants, prefersReducedMotion)}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {filteredPlaces.map((place, index) => {
+                      const placeId = typeof place?.id === 'string' ? place.id : String(place?.id ?? '');
+                      if (!placeId) return null;
+                      const category = Array.isArray(PLACE_CATEGORIES)
+                        ? PLACE_CATEGORIES.find((c) => c && typeof c === 'object' && c !== null && c.id === place.category)
+                        : undefined;
+                      const isSaved = Array.isArray(savedPlaces) && savedPlaces.includes(placeId);
+                      const placeName = typeof place.name === 'string' ? place.name : 'Place';
 
-                  return (
-                    <Card
-                      key={place.id}
-                      className="p-4 hover:shadow-lg transition-all cursor-pointer"
-                      onClick={() => {
-                        haptics.trigger('light');
-                        setSelectedMarker({
-                          id: place.id,
-                          type: 'place',
-                          location: place.location,
-                          data: place,
-                        });
-                        setShowList(false);
-                      }}
-                    >
-                      <div className="flex gap-3">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
-                          style={{ backgroundColor: `${category?.color}20` }}
+                      return (
+                        <motion.li
+                          key={placeId}
+                          variants={getVariantsWithReducedMotion(staggerItemVariants, prefersReducedMotion)}
+                          transition={{
+                            delay: prefersReducedMotion ? 0 : index * 0.05,
+                            duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+                          }}
                         >
-                          {category?.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-semibold text-sm truncate">{place.name}</h4>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 shrink-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSavePlace(place.id);
-                              }}
-                              aria-label={isSaved ? 'Remove from saved places' : 'Save place'}
+                          <Card
+                            clickable
+                            className={cn('p-4 hover:shadow-lg transition-all motion-reduce:transition-none', focusRing)}
+                            onClick={() => {
+                              haptics.trigger('light');
+                              setSelectedMarker({
+                                id: placeId,
+                                type: 'place',
+                                location: typeof place.location === 'object' && place.location !== null ? place.location : { lat: 0, lng: 0 },
+                                data: place,
+                              });
+                              setShowList(false);
+                            }}
+                            aria-label={`View details for ${placeName}`}
+                          >
+                      <div className="flex gap-3">
+                            <div
+                              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                              style={{ backgroundColor: typeof category?.color === 'string' ? `${category.color}20` : '#ec489920' }}
+                              aria-hidden="true"
                             >
-                              <Heart
-                                size={16}
-                                weight={isSaved ? 'fill' : 'regular'}
-                                className={isSaved ? 'text-red-500' : ''}
-                              />
-                            </Button>
+                              {typeof category?.icon === 'string' ? category.icon : '📍'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <h3 className={cn(getTypographyClasses('bodySmall'), 'font-semibold truncate')}>{placeName}</h3>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 shrink-0"
+                                  onClick={(e: MouseEvent) => {
+                                    e.stopPropagation();
+                                    handleSavePlace(placeId);
+                                  }}
+                                  aria-label={isSaved ? 'Remove from saved places' : 'Save place'}
+                                  aria-pressed={isSaved}
+                                >
+                                  <Heart
+                                    size={16}
+                                    weight={isSaved ? 'fill' : 'regular'}
+                                    className={isSaved ? 'text-red-500' : ''}
+                                    aria-hidden="true"
+                                  />
+                                </Button>
+                              </div>
+                              {typeof place.description === 'string' && place.description.length > 0 && (
+                                <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'), 'line-clamp-2', getSpacingClassesFromConfig({ marginY: 'xs' }))}>
+                                  {place.description}
+                                </p>
+                              )}
+                              <div className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'md', marginY: 'sm' }))}>
+                                <Badge variant="secondary" className={getTypographyClasses('caption')} aria-label={`Distance: ${formatDistance(typeof place.distance === 'number' ? place.distance : 0)}`}>
+                                  {formatDistance(typeof place.distance === 'number' ? place.distance : 0)}
+                                </Badge>
+                                {Boolean(place.verified) && (
+                                  <Badge variant="outline" className={getTypographyClasses('caption')} aria-label="Verified place">
+                                    ✓ Verified
+                                  </Badge>
+                                )}
+                                <span className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'))} aria-label={`Rating: ${typeof place.rating === 'number' ? place.rating.toFixed(1) : '0'} stars, ${typeof place.reviewCount === 'number' ? place.reviewCount : 0} reviews`}>
+                                  ⭐ {typeof place.rating === 'number' ? place.rating.toFixed(1) : '0.0'} ({typeof place.reviewCount === 'number' ? place.reviewCount : 0})
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                            {place.description}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {formatDistance(place.distance || 0)}
-                            </Badge>
-                            {place.verified && (
-                              <Badge variant="outline" className="text-xs">
-                                ✓ Verified
-                              </Badge>
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              ⭐ {place.rating.toFixed(1)} ({place.reviewCount})
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
+                        </Card>
+                      </motion.li>
+                    );
+                  })}
+                  </motion.ul>
+                ) : (
+                  <div className={cn('text-center', getSpacingClassesFromConfig({ paddingY: '2xl' }))} role="status" aria-live="polite">
+                    <p className={cn(getTypographyClasses('body'), getColorClasses('mutedForeground', 'text'))}>
+                      {typeof searchQuery === 'string' && searchQuery.length > 0
+                        ? 'No places found matching your search'
+                        : 'No places found in this area'}
+                    </p>
+                  </div>
+                )}
               </div>
-            </MotionView>
+            </motion.aside>
           )}
-        </Presence>
+        </AnimatePresence>
 
         {/* Selected Place Detail Sheet */}
-        <Presence>
-          {selectedMarker?.type === 'place' && (
-            <MotionView
+        <AnimatePresence>
+          {selectedMarker?.type === 'place' && selectedMarker.data && (
+            <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { type: 'spring', damping: 30, stiffness: 300 }
+              }
               className="absolute bottom-0 left-0 right-0 max-h-[60%] bg-background rounded-t-3xl shadow-2xl border-t border-border overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Place details"
             >
               {(() => {
                 const place = selectedMarker.data as Place;
-                const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
-                const isSaved = (savedPlaces || []).includes(place.id);
+                const placeId = typeof place?.id === 'string' ? place.id : String(place?.id ?? '');
+                if (!placeId) return null;
+                const category = Array.isArray(PLACE_CATEGORIES)
+                  ? PLACE_CATEGORIES.find((c) => c && typeof c === 'object' && c !== null && c.id === place.category)
+                  : undefined;
+                const isSaved = Array.isArray(savedPlaces) && savedPlaces.includes(placeId);
+                const placeName = typeof place.name === 'string' ? place.name : 'Place';
+                const placeAddress = typeof place.address === 'string' ? place.address : '';
+                const placeDescription = typeof place.description === 'string' ? place.description : '';
 
                 return (
-                  <div className="p-6 space-y-4">
+                  <div className={cn('p-6', getSpacingClassesFromConfig({ spaceY: 'lg' }))}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
                         <div
                           className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
-                          style={{ backgroundColor: `${category?.color}20` }}
+                          style={{ backgroundColor: typeof category?.color === 'string' ? `${category.color}20` : '#ec489920' }}
+                          aria-hidden="true"
                         >
-                          {category?.icon}
+                          {typeof category?.icon === 'string' ? category.icon : '📍'}
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold">{place.name}</h3>
-                          <p className="text-sm text-muted-foreground">{place.address}</p>
+                          <h2 className={cn(getTypographyClasses('h3'), 'font-bold')}>{placeName}</h2>
+                          {placeAddress.length > 0 && (
+                            <p className={cn(getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'))}>{placeAddress}</p>
+                          )}
                         </div>
                       </div>
                       <Button
@@ -621,98 +671,128 @@ export default function MapView() {
                         onClick={() => setSelectedMarker(null)}
                         aria-label="Close place details"
                       >
-                        <X size={20} />
+                        <X size={20} aria-hidden="true" />
                       </Button>
                     </div>
 
-                    {place.description && <p className="text-foreground/80">{place.description}</p>}
+                    {placeDescription.length > 0 && (
+                      <p className={cn(getTypographyClasses('body'), getColorClasses('foreground', 'text'), 'opacity-80')}>{placeDescription}</p>
+                    )}
 
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="secondary">📏 {formatDistance(place.distance || 0)}</Badge>
-                      <Badge variant="secondary">
-                        ⭐ {place.rating.toFixed(1)} ({place.reviewCount})
+                    <div className={cn('flex gap-2 flex-wrap', getSpacingClassesFromConfig({ marginY: 'md' }))}>
+                      <Badge variant="secondary" aria-label={`Distance: ${formatDistance(typeof place.distance === 'number' ? place.distance : 0)}`}>
+                        📏 {formatDistance(typeof place.distance === 'number' ? place.distance : 0)}
                       </Badge>
-                      {place.verified && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge variant="secondary" aria-label={`Rating: ${typeof place.rating === 'number' ? place.rating.toFixed(1) : '0'} stars, ${typeof place.reviewCount === 'number' ? place.reviewCount : 0} reviews`}>
+                        ⭐ {typeof place.rating === 'number' ? place.rating.toFixed(1) : '0.0'} ({typeof place.reviewCount === 'number' ? place.reviewCount : 0})
+                      </Badge>
+                      {Boolean(place.verified) && (
+                        <Badge variant="outline" className="text-green-600 border-green-600" aria-label="Verified place">
                           ✓ Verified
                         </Badge>
                       )}
-                      {place.isOpen && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
+                      {Boolean(place.isOpen) && (
+                        <Badge variant="outline" className="text-green-600 border-green-600" aria-label="Currently open">
                           🕐 Open Now
                         </Badge>
                       )}
                     </div>
 
-                    {place.amenities.length > 0 && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2">Amenities</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {place.amenities.map((amenity) => (
-                            <Badge key={amenity} variant="outline">
-                              {amenity}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                    {Array.isArray(place.amenities) && place.amenities.length > 0 && (
+                      <section aria-label="Place amenities">
+                        <h3 className={cn(getTypographyClasses('bodySmall'), 'font-semibold', getSpacingClassesFromConfig({ marginY: 'sm' }))}>Amenities</h3>
+                        <ul className={cn('flex gap-2 flex-wrap', getSpacingClassesFromConfig({ marginY: 'sm' }))} role="list">
+                          {place.amenities.map((amenity, idx) => {
+                            const amenityString = typeof amenity === 'string' ? amenity : String(amenity ?? idx);
+                            return (
+                              <li key={amenityString || idx}>
+                                <Badge variant="outline">{amenityString}</Badge>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </section>
                     )}
 
-                    <div className="flex gap-2 pt-2">
+                    <div className={cn('flex gap-2', getSpacingClassesFromConfig({ paddingY: 'md' }))}>
                       <Button
                         className="flex-1"
                         onClick={() => {
                           haptics.trigger('medium');
-                          handleSavePlace(place.id);
+                          handleSavePlace(placeId);
                         }}
                         variant={isSaved ? 'secondary' : 'outline'}
+                        aria-label={isSaved ? 'Remove from saved places' : 'Save place'}
+                        aria-pressed={isSaved}
                       >
-                        <Heart size={18} weight={isSaved ? 'fill' : 'regular'} className="mr-2" />
-                        {isSaved ? t.map?.saved || 'Saved' : t.map?.save || 'Save'}
+                        <Heart size={18} weight={isSaved ? 'fill' : 'regular'} className="mr-2" aria-hidden="true" />
+                        {isSaved ? t.map?.saved ?? 'Saved' : t.map?.save ?? 'Save'}
                       </Button>
                       <Button
                         className="flex-1"
                         onClick={() => {
                           haptics.trigger('medium');
-                          const url = `https://www.google.com/maps/dir/?api=1&destination=${place.location.lat},${place.location.lng}`;
-                          window.open(url, '_blank');
+                          const placeLocation = typeof place.location === 'object' && place.location !== null ? place.location : { lat: 0, lng: 0 };
+                          if (typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
+                            const url = `https://www.google.com/maps/dir/?api=1&destination=${placeLocation.lat},${placeLocation.lng}`;
+                            if (typeof window !== 'undefined') {
+                              window.open(url, '_blank', 'noopener,noreferrer');
+                            }
+                          }
                         }}
+                        aria-label={`Navigate to ${placeName}`}
                       >
-                        <NavigationArrow size={18} className="mr-2" />
-                        {t.map?.navigate || 'Navigate'}
+                        <NavigationArrow size={18} className="mr-2" aria-hidden="true" />
+                        {t.map?.navigate ?? 'Navigate'}
                       </Button>
                     </div>
                   </div>
                 );
               })()}
-            </MotionView>
+            </motion.div>
           )}
-        </Presence>
+        </AnimatePresence>
 
         {/* Stats Footer */}
-        <MotionView
+        <motion.footer
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: prefersReducedMotion ? 0 : 0.2, duration: prefersReducedMotion ? 0 : 0.3 }}
           className="absolute bottom-4 left-4 right-4 z-10"
+          aria-label="Map statistics"
         >
           <div className="backdrop-blur-xl bg-background/80 rounded-2xl shadow-xl border border-border p-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-primary">{filteredPlaces.length}</p>
-                <p className="text-xs text-muted-foreground">{t.map?.placesNearby || 'Places'}</p>
+                <p className={cn(getTypographyClasses('h2'), 'font-bold', getColorClasses('primary', 'text'))} aria-label={`${Array.isArray(filteredPlaces) ? filteredPlaces.length : 0} places nearby`}>
+                  {Array.isArray(filteredPlaces) ? filteredPlaces.length : 0}
+                </p>
+                <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'))}>{t.map?.placesNearby ?? 'Places'}</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-primary">{(savedPlaces || []).length}</p>
-                <p className="text-xs text-muted-foreground">{t.map?.saved || 'Saved'}</p>
+                <p className={cn(getTypographyClasses('h2'), 'font-bold', getColorClasses('primary', 'text'))} aria-label={`${Array.isArray(savedPlaces) ? savedPlaces.length : 0} saved places`}>
+                  {Array.isArray(savedPlaces) ? savedPlaces.length : 0}
+                </p>
+                <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'))}>{t.map?.saved ?? 'Saved'}</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-primary">{radiusKm}</p>
-                <p className="text-xs text-muted-foreground">{t.map?.radiusKm || 'km radius'}</p>
+                <p className={cn(getTypographyClasses('h2'), 'font-bold', getColorClasses('primary', 'text'))} aria-label={`${typeof radiusKm === 'number' ? radiusKm : 0} kilometer radius`}>
+                  {typeof radiusKm === 'number' ? radiusKm : 0}
+                </p>
+                <p className={cn(getTypographyClasses('caption'), getColorClasses('mutedForeground', 'text'))}>{t.map?.radiusKm ?? 'km radius'}</p>
               </div>
             </div>
           </div>
-        </MotionView>
-      </div>
+        </motion.footer>
+      </main>
     </PageTransitionWrapper>
+  );
+}
+
+export default function MapView() {
+  return (
+    <ScreenErrorBoundary screenName="Map" enableNavigation={true} enableReporting={false}>
+      <MapViewContent />
+    </ScreenErrorBoundary>
   );
 }

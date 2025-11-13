@@ -1,16 +1,10 @@
 'use client';
-
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface DeletedGhostBubbleProps {
   isIncoming?: boolean;
@@ -24,29 +18,39 @@ export function DeletedGhostBubble({
   delay = 0,
 }: DeletedGhostBubbleProps) {
   const _uiConfig = useUIConfig();
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.95);
+  const reducedMotion = useReducedMotion();
+  const opacity = useMotionValue(0);
+  const scale = useMotionValue(0.95);
 
   useEffect(() => {
+    if (reducedMotion) {
+      opacity.set(1);
+      scale.set(1);
+      return;
+    }
+    
     const timer = setTimeout(() => {
-      opacity.value = withTiming(1, timingConfigs.smooth);
-      scale.value = withSpring(1, springConfigs.smooth);
+      void animate(opacity, 1, {
+        duration: motionDurations.smooth,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(scale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [delay, opacity, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }],
-      alignSelf: isIncoming ? ('flex-start' as const) : ('flex-end' as const),
-    };
-  });
+  }, [delay, opacity, scale, reducedMotion]);
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      style={{
+        opacity,
+        scale,
+        alignSelf: isIncoming ? ('flex-start' as const) : ('flex-end' as const),
+      }}
       className={cn(
         'relative rounded-2xl p-3 max-w-[85%]',
         'bg-muted/30 border border-border/50',
@@ -58,6 +62,9 @@ export function DeletedGhostBubble({
       <p className={cn('text-sm font-medium italic text-center', 'text-muted-foreground/70')}>
         This message was deleted
       </p>
-    </AnimatedView>
+    </motion.div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedDeletedGhostBubble = memo(DeletedGhostBubble);

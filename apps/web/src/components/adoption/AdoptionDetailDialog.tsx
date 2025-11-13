@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion } from 'framer-motion';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -76,18 +77,18 @@ export function AdoptionDetailDialog({
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
           <div className="relative h-80 bg-muted">
             {photoPresence.shouldRender && (
-              <AnimatedView key={currentPhotoIndex} style={photoPresence.animatedStyle}>
+              <motion.div key={currentPhotoIndex} style={photoPresence.animatedStyle}>
                 <img
                   src={photos[currentPhotoIndex]}
                   alt={`${profile.petName} - Photo ${currentPhotoIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
-              </AnimatedView>
+              </motion.div>
             )}
 
             {photos.length > 1 && (
               <>
-                <AnimatedView
+                <motion.div
                   style={prevButtonHover.animatedStyle}
                   onMouseEnter={prevButtonHover.handleMouseEnter}
                   onMouseLeave={prevButtonHover.handleMouseLeave}
@@ -102,8 +103,8 @@ export function AdoptionDetailDialog({
                   >
                     <CaretLeft size={20} weight="bold" />
                   </button>
-                </AnimatedView>
-                <AnimatedView
+                </motion.div>
+                <motion.div
                   style={nextButtonHover.animatedStyle}
                   onMouseEnter={nextButtonHover.handleMouseEnter}
                   onMouseLeave={nextButtonHover.handleMouseLeave}
@@ -118,7 +119,7 @@ export function AdoptionDetailDialog({
                   >
                     <CaretRight size={20} weight="bold" />
                   </button>
-                </AnimatedView>
+                </motion.div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                   {photos.map((_, index) => (
                     <button

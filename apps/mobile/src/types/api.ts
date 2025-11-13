@@ -62,6 +62,8 @@ export interface PetApiResponse {
   intents: string[]
   location: PetLocation
   media: PetMedia[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 /**

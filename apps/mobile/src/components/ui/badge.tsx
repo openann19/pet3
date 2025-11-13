@@ -3,6 +3,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native'
 import type { ComponentProps } from 'react'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
 
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
 
@@ -18,38 +20,38 @@ export interface BadgeProps extends ComponentProps<typeof View> {
 const badgeVariants: Record<BadgeVariant, { container: ViewStyle; text: TextStyle }> = {
   default: {
     container: {
-      backgroundColor: 'var(--color-accent-secondary-9)',
+      backgroundColor: colors.accent,
       borderColor: 'transparent',
     },
     text: {
-      color: 'var(--color-bg-overlay)',
+      color: colors.textPrimary,
     },
   },
   secondary: {
     container: {
-      backgroundColor: 'rgba(107, 114, 128, 0.1)',
+      backgroundColor: colors.surface,
       borderColor: 'transparent',
     },
     text: {
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
   },
   destructive: {
     container: {
-      backgroundColor: 'var(--color-error-9)',
+      backgroundColor: colors.danger,
       borderColor: 'transparent',
     },
     text: {
-      color: 'var(--color-bg-overlay)',
+      color: colors.card,
     },
   },
   outline: {
     container: {
       backgroundColor: 'transparent',
-      borderColor: 'rgba(0, 0, 0, 0.2)',
+      borderColor: colors.border,
     },
     text: {
-      color: 'var(--color-fg)',
+      color: colors.textPrimary,
     },
   },
 }
@@ -74,15 +76,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  borderRadius: Dimens.radius.sm,
+  borderWidth: 1,
+  paddingHorizontal: Dimens.spacing.sm,
+  paddingVertical: Dimens.spacing.xs,
     alignSelf: 'flex-start',
   },
   text: {
-    fontSize: 12,
-    fontWeight: '500',
-    lineHeight: 16,
+  fontSize: Typography.scale.caption.fontSize,
+  fontWeight: Typography.scale.h3.fontWeight,
+  lineHeight: Typography.scale.caption.lineHeight,
   },
 })

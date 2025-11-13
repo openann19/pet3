@@ -1,13 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
-import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import { Presence } from '@petspark/motion';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
-import { useUIConfig } from "@/hooks/use-ui-config";
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
@@ -32,7 +29,7 @@ export function EnhancedCarousel({
   loop = true,
   onSlideChange,
 }: EnhancedCarouselProps) {
-  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
   const autoPlayRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -81,89 +78,73 @@ export function EnhancedCarousel({
     }
   }, [autoPlay, autoPlayInterval, goToNext]);
 
-  useEffect(() => {
-    if (isTruthy(autoPlay)) {
-      autoPlayRef.current = setInterval(() => {
-        goToNext();
-      }, autoPlayInterval);
+  const translateX = useMotionValue(0);
+  const opacity = useMotionValue(1);
+  const dragX = useMotionValue(0);
 
-      return () => {
-        if (autoPlayRef.current) {
-          clearInterval(autoPlayRef.current);
-        }
-      };
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      translateX.set(0);
+      opacity.set(1);
+      dragX.set(0);
+      return;
     }
-    return undefined;
-  }, [autoPlay, autoPlayInterval, goToNext]);
 
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(1);
-  const dragX = useSharedValue(0);
+    void animate(translateX, 0, {
+      ...springConfigs.smooth,
+      duration: motionDurations.smooth,
+    });
+    void animate(opacity, 1, {
+      duration: motionDurations.fast,
+    });
+    dragX.set(0);
+  }, [currentIndex, direction, translateX, opacity, dragX, prefersReducedMotion]);
 
-  useEffect(() => {
-    const translateXTransition = withSpring(0, springConfigs.smooth);
-    animate(translateX, translateXTransition.target, translateXTransition.transition);
-    const opacityTransition = withTiming(1, timingConfigs.fast);
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-    dragX.value = 0;
-  }, [currentIndex, direction, translateX, opacity, dragX]);
 
-  const handleDragStart = useCallback(() => {
-    dragX.value = 0;
-  }, [dragX]);
-
-  const handleDrag = useCallback((_e: React.MouseEvent | React.TouchEvent) => {
-    // Note: Custom drag handling removed for motion facade compatibility
-    // Drag functionality should be implemented using MotionView if needed
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (_e: React.MouseEvent | React.TouchEvent) => {
-      const swipeThreshold = 50;
-      const currentDrag = dragX.value;
-
-      if (Math.abs(currentDrag) > swipeThreshold) {
-        if (currentDrag > 0) {
-          goToPrev();
-        } else {
-          goToNext();
-        }
-      }
-      dragX.value = 0;
-    },
-    [dragX, goToPrev, goToNext]
-  );
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.get() + dragX.get() }],
-      opacity: opacity.get(),
-    };
-  });
-
-  const styleValue = useAnimatedStyleValue(animatedStyle);
+  const x = useTransform(translateX, (tx) => tx + dragX.get());
 
   if (itemCount === 0) {
     return null;
   }
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl', className)}>
-      <div className="relative aspect-4/3 bg-muted">
-        <div
+    <div 
+      className={cn('relative overflow-hidden rounded-xl', className)}
+      role="region"
+      aria-label="Image carousel"
+      aria-roledescription="carousel"
+    >
+      <div className="relative aspect-4/3 bg-muted" aria-live="polite" aria-atomic="true">
+        <motion.div
           key={currentIndex}
-          style={styleValue}
-          onMouseDown={handleDragStart}
-          onMouseMove={handleDrag}
-          onMouseUp={handleDragEnd}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDrag}
-          onTouchEnd={handleDragEnd}
+          style={{ x, opacity }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDrag={(_, info) => {
+            dragX.set(info.offset.x);
+          }}
+          onDragEnd={(_, info) => {
+            const swipeThreshold = 50;
+            if (Math.abs(info.offset.x) > swipeThreshold) {
+              if (info.offset.x > 0) {
+                goToPrev();
+              } else {
+                goToNext();
+              }
+            }
+            dragX.set(0);
+          }}
           onClick={resetAutoPlay}
           className="absolute inset-0 cursor-grab active:cursor-grabbing"
+          transition={prefersReducedMotion ? { duration: 0 } : springConfigs.smooth}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`Slide ${currentIndex + 1} of ${itemCount}`}
+          id={`carousel-slide-${currentIndex}`}
         >
           {items[currentIndex]}
-        </div>
+        </motion.div>
       </div>
 
       {showControls && itemCount > 1 && (
@@ -205,7 +186,11 @@ export function EnhancedCarousel({
       )}
 
       {showIndicators && itemCount > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        <div 
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2"
+          role="tablist"
+          aria-label="Slide indicators"
+        >
           {items.map((_, index) => (
             <button
               key={index}
@@ -215,11 +200,15 @@ export function EnhancedCarousel({
               }}
               className={cn(
                 'h-2 rounded-full transition-all duration-300',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                 index === currentIndex
                   ? 'w-8 bg-primary shadow-lg shadow-primary/50'
                   : 'w-2 bg-background/60 hover:bg-background/80 backdrop-blur-sm'
               )}
-              aria-label={`Go to slide ${String(index + 1 ?? '')}`}
+              role="tab"
+              aria-selected={index === currentIndex}
+              aria-label={`Go to slide ${String(index + 1)}`}
+              aria-controls={`carousel-slide-${index}`}
             />
           ))}
         </div>

@@ -362,28 +362,35 @@ export default function PetDetailDialog({
                   </View>
                 </View>
 
-                {pet.trustProfile && (
-                  <View style={styles.ownerRating}>
-                    <View style={styles.ratingStars}>
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                          key={i}
-                          size={14}
-                          weight={i < Math.floor(pet.trustProfile!.overallRating || 0) ? 'fill' : 'regular'}
-                          color={i < Math.floor(pet.trustProfile!.overallRating || 0) ? '#fbbf24' : '#d1d5db'}
-                        />
-                      ))}
-                    </View>
-                    <Text style={styles.ownerRatingText}>
-                      {(pet.trustProfile.overallRating || 0).toFixed(1)} ({pet.trustProfile.totalReviews || 0} reviews)
-                    </Text>
-                    {pet.trustProfile.responseRate && pet.trustProfile.responseRate > 0 && (
-                      <Text style={styles.responseRate}>
-                        {pet.trustProfile.responseRate}% response rate
+                {pet.trustProfile && (() => {
+                  const trustProfile = pet.trustProfile;
+                  const overallRating = trustProfile?.overallRating ?? 0;
+                  const totalReviews = trustProfile?.totalReviews ?? 0;
+                  const responseRate = trustProfile?.responseRate;
+                  
+                  return (
+                    <View style={styles.ownerRating}>
+                      <View style={styles.ratingStars}>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            size={14}
+                            weight={i < Math.floor(overallRating) ? 'fill' : 'regular'}
+                            color={i < Math.floor(overallRating) ? '#fbbf24' : '#d1d5db'}
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.ownerRatingText}>
+                        {overallRating.toFixed(1)} ({totalReviews} reviews)
                       </Text>
-                    )}
-                  </View>
-                )}
+                      {responseRate !== undefined && responseRate > 0 && (
+                        <Text style={styles.responseRate}>
+                          {responseRate}% response rate
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })()}
               </CardContent>
             </Card>
           </View>

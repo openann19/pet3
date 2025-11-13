@@ -1,22 +1,44 @@
 import { Button } from '@/components/ui/button';
-import { createLogger } from '@/lib/logger';
-import { Warning } from '@phosphor-icons/react';
+import { Card } from '@/components/ui/card';
+import { ArrowClockwise, ArrowLeft, Warning, XCircle, WifiSlash, Bug } from '@phosphor-icons/react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
-
-const logger = createLogger('ErrorBoundary');
+import { isTruthy } from '@petspark/shared';
+import { getTypographyClasses, getSpacingClassesMultiple, getRadiusClasses, getColorClasses, getMotionClasses, focusRing } from '@/lib/design-token-utils';
+import { cn } from '@/lib/utils';
+import { 
+  type ErrorCategory, 
+  createStandardError, 
+  logError, 
+  getUserFriendlyMessage 
+} from '@/lib/error-handling';
+import { safeWindow } from '@/utils/ssr-safe';
+import { getShadow } from '@/lib/design-tokens';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   onReset?: () => void;
+  /**
+   * Screen/section name for context-aware error messages
+   */
+  context?: string;
+  /**
+   * Enable navigation recovery (go back)
+   */
+  enableNavigation?: boolean;
+  /**
+   * Enable error reporting
+   */
+  enableReporting?: boolean;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorCategory: ErrorCategory;
+  errorId: string;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -25,21 +47,31 @@ export class ErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       error: null,
+      errorCategory: 'unknown',
+      errorId: '',
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    const standardError = createStandardError(error);
     return {
       hasError: true,
       error,
+      errorCategory: standardError.category,
+      errorId: standardError.errorId,
     };
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log error to monitoring service
-    logger.error('ErrorBoundary caught error', error, {
+    const standardError = logError(error, this.props.context, {
       componentStack: errorInfo.componentStack,
       errorBoundary: true,
+    });
+
+    // Update state with standardized error
+    this.setState({
+      errorCategory: standardError.category,
+      errorId: standardError.errorId,
     });
 
     // Call custom error handler if provided
@@ -50,10 +82,70 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({
       hasError: false,
       error: null,
+      errorCategory: 'unknown',
+      errorId: '',
     });
 
     // Call custom reset handler if provided
     this.props.onReset?.();
+  };
+
+  handleReload = (): void => {
+    const win = safeWindow();
+    if (win) {
+      win.location.reload();
+    }
+  };
+
+  handleGoBack = (): void => {
+    const win = safeWindow();
+    if (win && win.history.length > 1) {
+      win.history.back();
+    }
+  };
+
+  handleReportError = (): void => {
+    // In a real app, this would send error to error tracking service
+    if (this.state.error) {
+      logError(this.state.error, this.props.context, {
+        userReported: true,
+        errorId: this.state.errorId,
+      });
+    }
+    // Show feedback to user (could use toast notification)
+  };
+
+  getErrorIcon = (): ReactNode => {
+    const iconSize = 48;
+    const iconClasses = getColorClasses('destructive', 'text');
+
+    switch (this.state.errorCategory) {
+      case 'network':
+        return <WifiSlash size={iconSize} weight="bold" className={iconClasses} />;
+      case 'render':
+        return <XCircle size={iconSize} weight="bold" className={iconClasses} />;
+      case 'state':
+        return <Bug size={iconSize} weight="bold" className={iconClasses} />;
+      default:
+        return <Warning size={iconSize} weight="bold" className={iconClasses} />;
+    }
+  };
+
+  getErrorMessage = (): { title: string; description: string } => {
+    if (!this.state.error) {
+      return {
+        title: 'Unknown Error',
+        description: 'An unexpected error occurred.',
+      };
+    }
+
+    const standardError = createStandardError(this.state.error, this.props.context);
+    const userMessage = getUserFriendlyMessage(standardError, this.props.context);
+    
+    return {
+      title: userMessage.title,
+      description: userMessage.description,
+    };
   };
 
   override render(): ReactNode {
@@ -63,43 +155,154 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      // Default error UI
+      const errorMessage = this.getErrorMessage();
+      const headingClasses = getTypographyClasses('h1');
+      const bodyClasses = getTypographyClasses('body');
+      const captionClasses = getTypographyClasses('caption');
+      const cardRadius = getRadiusClasses('xl');
+      const cardPadding = getSpacingClassesMultiple('xl', ['padding']);
+      const spacingY = getSpacingClassesMultiple('lg', ['spaceY']);
+      const spacingX = getSpacingClassesMultiple('md', ['gap']);
+      const motionClasses = getMotionClasses('normal', 'standard');
+      const errorBg = getColorClasses('destructive', 'bg');
+      const mutedBg = getColorClasses('muted', 'bg');
+      const mutedText = getColorClasses('mutedForeground', 'text');
+
+      // Default error UI with design tokens
       return (
-        <div className="flex min-h-screen items-center justify-center bg-background p-6">
-          <div className="max-w-md text-center space-y-6">
+        <div
+          className={cn(
+            'flex min-h-screen items-center justify-center',
+            getSpacingClassesMultiple('xl', ['padding']),
+            getColorClasses('background', 'bg'),
+            motionClasses
+          )}
+          role="alert"
+          aria-live="assertive"
+        >
+          <Card
+            className={cn(
+              'max-w-md w-full text-center',
+              cardRadius,
+              cardPadding,
+              spacingY,
+              motionClasses
+            )}
+            style={{ boxShadow: getShadow('raised') }}
+          >
+            {/* Error Icon */}
             <div className="flex justify-center">
-              <div className="rounded-full bg-destructive/10 p-6">
-                <Warning size={48} weight="bold" className="text-destructive" />
+              <div
+                className={cn(
+                  'rounded-full',
+                  getRadiusClasses('full'),
+                  getSpacingClassesMultiple('xl', ['padding']),
+                  errorBg + '/10',
+                  'flex items-center justify-center',
+                  motionClasses
+                )}
+              >
+                {this.getErrorIcon()}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">Oops! Something went wrong</h1>
-              <p className="text-muted-foreground">
-                We encountered an unexpected error. Please try refreshing the page.
+            {/* Error Message */}
+            <div className={spacingY}>
+              <h1 className={cn(headingClasses, getColorClasses('foreground', 'text'))}>
+                {errorMessage.title}
+              </h1>
+              <p className={cn(bodyClasses, mutedText)}>
+                {errorMessage.description}
               </p>
             </div>
 
+            {/* Error Details (Dev Only) */}
             {this.state.error && import.meta.env.DEV && (
               <details className="text-left">
-                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                <summary
+                  className={cn(
+                    'cursor-pointer',
+                    captionClasses,
+                    mutedText,
+                    'hover:' + getColorClasses('foreground', 'text'),
+                    motionClasses
+                  )}
+                >
                   Error details
                 </summary>
-                <pre className="mt-2 overflow-auto rounded-md bg-muted p-4 text-xs">
+                <pre
+                  className={cn(
+                    'mt-2 overflow-auto',
+                    getRadiusClasses('md'),
+                    mutedBg,
+                    getSpacingClassesMultiple('md', ['padding']),
+                    captionClasses,
+                    'font-mono',
+                    getColorClasses('destructive', 'text'),
+                    motionClasses
+                  )}
+                >
                   {this.state.error.toString()}
+                  {this.state.error.stack && `\n\n${this.state.error.stack}`}
                 </pre>
+                {this.state.errorId && (
+                  <p className={cn('mt-2', captionClasses, mutedText)}>
+                    Error ID: {this.state.errorId}
+                  </p>
+                )}
               </details>
             )}
 
-            <div className="flex gap-3 justify-center">
-              <Button onClick={this.handleReset} variant="default">
+            {/* Recovery Actions */}
+            <div className={cn('flex flex-wrap justify-center', spacingX)}>
+              <Button
+                onClick={this.handleReset}
+                variant="default"
+                className={cn(focusRing, motionClasses)}
+                aria-label="Try again"
+              >
+                <ArrowClockwise size={20} weight="bold" className="mr-2" />
                 Try Again
               </Button>
-              <Button onClick={() => window.location.reload()} variant="outline">
+
+              <Button
+                onClick={this.handleReload}
+                variant="outline"
+                className={cn(focusRing, motionClasses)}
+                aria-label="Refresh page"
+              >
                 Refresh Page
               </Button>
+
+              {this.props.enableNavigation && (
+                <Button
+                  onClick={this.handleGoBack}
+                  variant="ghost"
+                  className={cn(focusRing, motionClasses)}
+                  aria-label="Go back"
+                >
+                  <ArrowLeft size={20} weight="bold" className="mr-2" />
+                  Go Back
+                </Button>
+              )}
+
+              {this.props.enableReporting && (
+                <Button
+                  onClick={this.handleReportError}
+                  variant="ghost"
+                  className={cn(focusRing, motionClasses)}
+                  aria-label="Report error"
+                >
+                  Report Error
+                </Button>
+              )}
             </div>
-          </div>
+
+            {/* Additional Help Text */}
+            <p className={cn(captionClasses, mutedText, 'mt-4')}>
+              If this problem persists, please clear your browser cache and try again.
+            </p>
+          </Card>
         </div>
       );
     }

@@ -1,4 +1,5 @@
 /**
+import { motion } from 'framer-motion';
  * Link Preview — Web
  * - Skeleton shimmer → content crossfade
  * - Reduced motion instant crossfade (≤120ms)
@@ -7,11 +8,10 @@
  * Location: apps/web/src/components/chat/LinkPreview.tsx
  */
 
-import { useMemo } from 'react';
-import { useSharedValue, withTiming, useAnimatedStyle } from '@petspark/motion';
-import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useMemo, useEffect, memo } from 'react';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { safeHref } from '@/lib/url-safety';
 import { SmartImage } from '@/components/media/SmartImage';
 import { useUIConfig } from "@/hooks/use-ui-config";
@@ -33,20 +33,23 @@ export function LinkPreview({
   isLoading = false,
   className,
 }: LinkPreviewProps) {
-    const _uiConfig = useUIConfig();
-    const reduced = useReducedMotion();
+  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const safeUrl = useMemo(() => safeHref(url), [url]);
-  const showContent = !isLoading && (!!title || !!image) && safeUrl !== null;
+  const showContent = !isLoading && (title != null || image != null) && safeUrl !== null;
 
-  const s = useSharedValue(showContent ? 1 : 0);
-  const dur = getReducedMotionDuration(360, reduced);
+  const s = useMotionValue(showContent ? 1 : 0);
+  const dur = prefersReducedMotion ? motionDurations.fast : motionDurations.smooth;
 
-  useMemo(() => {
-    s.value = withTiming(showContent ? 1 : 0, { duration: dur });
+  useEffect(() => {
+    void animate(s, showContent ? 1 : 0, {
+      duration: dur,
+      ease: [0.2, 0, 0, 1],
+    });
   }, [showContent, dur, s]);
 
-  const skeletonStyle = useAnimatedStyle(() => ({ opacity: 1 - s.value })) as AnimatedStyle;
-  const contentStyle = useAnimatedStyle(() => ({ opacity: s.value })) as AnimatedStyle;
+  const skeletonOpacity = useTransform(s, (value) => 1 - value);
+  const contentOpacity = useTransform(s, (value) => value);
 
   if (!safeUrl) return null;
 
@@ -57,7 +60,10 @@ export function LinkPreview({
       aria-live="polite"
     >
       {/* Skeleton */}
-      <AnimatedView style={skeletonStyle} className="absolute inset-0">
+      <motion.div
+        style={{ opacity: skeletonOpacity }}
+        className="absolute inset-0"
+      >
         <div className="flex gap-3 p-3">
           {image && (
             <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -68,16 +74,20 @@ export function LinkPreview({
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
           </div>
         </div>
-      </AnimatedView>
+      </motion.div>
 
       {/* Content */}
       {showContent && (
-        <AnimatedView style={contentStyle} className="relative">
+        <motion.div
+          style={{ opacity: contentOpacity }}
+          className="relative"
+        >
           <a
             href={safeUrl}
             target="_blank"
             rel="noopener noreferrer nofollow ugc"
-            className="flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
+            className="flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label={title ? `Open link: ${title}` : `Open link from ${new URL(url).hostname}`}
           >
             {image && (
               <SmartImage
@@ -98,8 +108,11 @@ export function LinkPreview({
               <p className="text-xs text-muted-foreground mt-1 truncate">{new URL(url).hostname}</p>
             </div>
           </a>
-        </AnimatedView>
+        </motion.div>
       )}
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedLinkPreview = memo(LinkPreview);

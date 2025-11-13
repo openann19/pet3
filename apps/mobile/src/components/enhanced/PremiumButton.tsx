@@ -11,6 +11,12 @@ import {
 import Animated from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
+import { elevation } from '@mobile/theme/tokens';
+
+const { spacing, radius, component } = Dimens;
+const { scale: typography } = Typography;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
@@ -49,26 +55,26 @@ export function PremiumButton({
   }, [disabled, loading, onPress])
 
   const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: 'var(--color-accent-secondary-9)' },
-    secondary: { backgroundColor: '#64748b' },
-    accent: { backgroundColor: '#8b5cf6' },
+    primary: { backgroundColor: colors.primary },
+    secondary: { backgroundColor: colors.textSecondary },
+    accent: { backgroundColor: colors.accent },
     ghost: { backgroundColor: 'transparent' },
-    gradient: { backgroundColor: 'var(--color-accent-secondary-9)' }, // Simplified for mobile
+    gradient: { backgroundColor: colors.accent }, // Simplified for mobile - use LinearGradient for true gradient
   }
 
   const sizeStyles: Record<
     string,
     { paddingHorizontal: number; paddingVertical: number; minHeight: number }
   > = {
-    sm: { paddingHorizontal: 12, paddingVertical: 6, minHeight: 44 },
-    md: { paddingHorizontal: 16, paddingVertical: 8, minHeight: 44 },
-    lg: { paddingHorizontal: 24, paddingVertical: 12, minHeight: 44 },
+    sm: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, minHeight: component.touchTargetMin },
+    md: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, minHeight: component.touchTargetMin },
+    lg: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md, minHeight: component.touchTargetMin + 8 },
   }
 
   const textSizeStyles: Record<string, TextStyle> = {
-    sm: { fontSize: 14 },
-    md: { fontSize: 16 },
-    lg: { fontSize: 18 },
+    sm: { fontSize: typography.bodySmall.fontSize, lineHeight: typography.bodySmall.lineHeight },
+    md: { fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight },
+    lg: { fontSize: typography.h3.fontSize, lineHeight: typography.h3.lineHeight },
   }
 
   return (
@@ -77,6 +83,9 @@ export function PremiumButton({
       onPressIn={pressBounce.onPressIn}
       onPressOut={pressBounce.onPressOut}
       disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading }}
+      accessibilityLabel={typeof children === 'string' ? children : 'Button'}
       style={[
         styles.button,
         variantStyles[variant],
@@ -88,7 +97,7 @@ export function PremiumButton({
       testID={testID}
     >
       {loading ? (
-        <ActivityIndicator color="var(--color-bg-overlay)" size="small" />
+        <ActivityIndicator color={colors.card} size="small" />
       ) : (
         <View style={styles.content}>
           {icon && iconPosition === 'left' && <View style={styles.icon}>{icon}</View>}
@@ -106,26 +115,22 @@ export function PremiumButton({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'var(--color-fg)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...elevation.raised,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   text: {
-    color: 'var(--color-bg-overlay)',
-    fontWeight: '600',
+    color: colors.card,
+    fontWeight: typography.h3.fontWeight,
   },
   ghostText: {
-    color: '#64748b',
+    color: colors.textSecondary,
   },
   icon: {
     // Icon container

@@ -9,13 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useFilters } from '@/hooks/use-filters';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { useSharedValue, useAnimatedStyle, withTiming, animate } from '@petspark/motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { motion } from 'framer-motion';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { getMinTouchTargetClasses } from '@/lib/design-token-utils';
 
 interface FilterOption {
   id: string;
@@ -245,7 +245,8 @@ function FilterOptionButton({
       initial="rest"
       whileTap={prefersReducedMotion ? undefined : "tap"}
       className={cn(
-        'flex items-center rounded-full border-2 min-h-[44px]',
+        'flex items-center rounded-full border-2',
+        getMinTouchTargetClasses(),
         prefersReducedMotion ? '' : 'transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
         getTypographyClasses('caption'),
@@ -270,34 +271,17 @@ interface ToggleSwitchProps {
 }
 
 function ToggleSwitch({ label, checked, onChange }: ToggleSwitchProps) {
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const translateX = useSharedValue(checked ? 20 : 0);
-
+  const reducedMotion = useReducedMotion();
   const toggleAnimation = useBounceOnTap({ scale: 0.95, hapticFeedback: false });
 
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      translateX.value = checked ? 20 : 0;
-      return;
-    }
-    const translateXTransition = withTiming(checked ? 20 : 0, { duration: 200 });
-    animate(translateX, translateXTransition.target, translateXTransition.transition);
-  }, [checked, translateX, prefersReducedMotion]);
-
   const handleClick = useCallback(() => {
-    if (!prefersReducedMotion) {
+    if (!reducedMotion) {
       toggleAnimation.handlePress();
     }
     onChange();
-  }, [onChange, toggleAnimation, prefersReducedMotion]);
+  }, [onChange, toggleAnimation, reducedMotion]);
 
-  const thumbStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.get() }],
-    };
-  });
-
-  const ButtonComponent = prefersReducedMotion ? 'button' : motion.button;
+  const ButtonComponent = reducedMotion ? 'button' : motion.button;
 
   return (
     <ButtonComponent
@@ -309,7 +293,8 @@ function ToggleSwitch({ label, checked, onChange }: ToggleSwitchProps) {
       initial="rest"
       whileTap={prefersReducedMotion ? undefined : "tap"}
       className={cn(
-        'flex items-center justify-between w-full rounded-lg border-2 border-(--border) min-h-[44px]',
+        'flex items-center justify-between w-full rounded-lg border-2 border-(--border)',
+        getMinTouchTargetClasses(),
         prefersReducedMotion ? '' : 'transition-all duration-200 hover:border-(--primary)/50',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
         getTypographyClasses('caption'),
@@ -320,12 +305,16 @@ function ToggleSwitch({ label, checked, onChange }: ToggleSwitchProps) {
       <div
         className={cn(
           'w-11 h-6 rounded-full',
-          prefersReducedMotion ? '' : 'transition-colors duration-200',
+          reducedMotion ? '' : 'transition-colors duration-200',
           checked ? 'bg-(--primary)' : 'bg-(--surface)'
         )}
       >
-        <AnimatedView
-          style={thumbStyle}
+        <motion.div
+          animate={{ x: checked ? 20 : 0 }}
+          transition={reducedMotion ? { duration: 0 } : {
+            duration: motionDurations.normal / 1000,
+            ease: 'easeOut',
+          }}
           className="w-5 h-5 mt-0.5 ml-0.5 rounded-full bg-(--background) shadow-md"
           aria-hidden="true"
         />

@@ -1,9 +1,13 @@
 import { cn } from '@/lib/utils';
-import { MotionView } from '@petspark/motion';
-import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import React from 'react';
 import type { ReactNode } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { colorWithOpacity } from '@/hooks/useDesignTokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { cardVariants } from '@/effects/framer-motion/variants';
+import { getSpacing, getRadius, getShadow, getColor } from '@/lib/design-tokens';
+import { createAccessibleButtonProps } from '@/utils/a11y-helpers';
+import { useTheme } from '@/hooks/useTheme';
 
 export type CardVariant =
   | 'glass'
@@ -23,26 +27,46 @@ interface AdvancedCardProps {
   enableGlow?: boolean;
   glowColor?: string;
   className?: string;
+  onClick?: () => void;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
+  'aria-describedby'?: string;
 }
 
-const sizeClasses: Record<CardSize, string> = {
-  sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
-  xl: 'p-10',
+const getSizeSpacing = (size: CardSize): string => {
+  switch (size) {
+    case 'sm':
+      return getSpacing('4');
+    case 'md':
+      return getSpacing('6');
+    case 'lg':
+      return getSpacing('8');
+    case 'xl':
+      return getSpacing('10');
+    default:
+      return getSpacing('6');
+  }
 };
 
-const variantClasses: Record<CardVariant, string> = {
-  glass: 'bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl',
-  gradient:
-    'bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 backdrop-blur-sm border border-white/10',
-  neon: 'bg-background border-2 border-accent shadow-[0_0_20px_rgba(245,158,11,0.3)]',
-  holographic:
-    'bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 backdrop-blur-md border border-white/30 relative overflow-hidden',
-  premium:
-    'bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl border border-white/40 shadow-2xl',
-  minimal: 'bg-card border border-border',
-  floating: 'bg-card border border-border shadow-xl',
+const getVariantClasses = (variant: CardVariant): string => {
+  switch (variant) {
+    case 'glass':
+      return `backdrop-blur-xl ${getShadow('overlay')}`;
+    case 'gradient':
+      return `bg-gradient-to-br backdrop-blur-sm`;
+    case 'neon':
+      return `bg-background border-2 ${getShadow('glow.accent')}`;
+    case 'holographic':
+      return `bg-gradient-to-br backdrop-blur-md relative overflow-hidden`;
+    case 'premium':
+      return `bg-gradient-to-br backdrop-blur-xl ${getShadow('overlay')}`;
+    case 'minimal':
+      return `bg-card border`;
+    case 'floating':
+      return `bg-card border ${getShadow('raised')}`;
+    default:
+      return `bg-card border`;
+  }
 };
 
 export default function AdvancedCard({
@@ -51,65 +75,118 @@ export default function AdvancedCard({
   children,
   enableHover = true,
   enableGlow = false,
-  glowColor = 'rgba(245, 158, 11, 0.5)',
+  glowColor: _glowColor,
   className,
+  onClick,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
   ...props
 }: AdvancedCardProps) {
-  const opacity = useSharedValue(0);
-  const y = useSharedValue(20);
-  const hoverScale = useSharedValue(1);
-  const hoverY = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const { theme } = useTheme();
+  const themeMode: 'light' | 'dark' = theme;
 
-  // Entry animation
-  React.useEffect(() => {
-    opacity.value = withTiming(1, { duration: 400 });
-    y.value = withTiming(0, { duration: 400 });
-  }, []);
+  // Get glow shadow from design tokens
+  const glowShadow = enableGlow 
+    ? `${getShadow('glow.accent')}, ${getShadow('raised')}`
+    : undefined;
 
-  // Hover animation
-  const handleMouseEnter = React.useCallback(() => {
-    if (isTruthy(enableHover)) {
-      hoverScale.value = withTiming(1.02, { duration: 200 });
-      hoverY.value = withTiming(-4, { duration: 200 });
+  // Get variant-specific styles with design tokens
+  const variantStyles = React.useMemo(() => {
+    const whiteColor = getColor('background', themeMode);
+    const primaryColor = getColor('primary', themeMode);
+    const accentColor = getColor('accent', themeMode);
+    const secondaryColor = getColor('secondary', themeMode);
+    const borderColor = getColor('border', themeMode);
+    
+    switch (variant) {
+      case 'glass':
+        return {
+          backgroundColor: colorWithOpacity(whiteColor, 0.1),
+          borderColor: colorWithOpacity(whiteColor, 0.2),
+        };
+      case 'gradient':
+        return {
+          background: `linear-gradient(to bottom right, ${colorWithOpacity(primaryColor, 0.1)}, ${colorWithOpacity(accentColor, 0.05)}, ${colorWithOpacity(secondaryColor, 0.1)})`,
+          borderColor: colorWithOpacity(whiteColor, 0.1),
+        };
+      case 'neon':
+        return {
+          borderColor: accentColor,
+        };
+      case 'holographic':
+        return {
+          background: `linear-gradient(to bottom right, ${colorWithOpacity(primaryColor, 0.2)}, ${colorWithOpacity(accentColor, 0.2)}, ${colorWithOpacity(secondaryColor, 0.2)})`,
+          borderColor: colorWithOpacity(whiteColor, 0.3),
+        };
+      case 'premium':
+        return {
+          background: `linear-gradient(to bottom right, ${colorWithOpacity(whiteColor, 0.9)}, ${colorWithOpacity(whiteColor, 0.7)})`,
+          borderColor: colorWithOpacity(whiteColor, 0.4),
+        };
+      case 'minimal':
+      case 'floating':
+      default:
+        return {
+          borderColor: borderColor,
+        };
     }
-  }, [enableHover]);
+  }, [variant, themeMode]);
 
-  const handleMouseLeave = React.useCallback(() => {
-    if (isTruthy(enableHover)) {
-      hoverScale.value = withTiming(1, { duration: 200 });
-      hoverY.value = withTiming(0, { duration: 200 });
-    }
-  }, [enableHover]);
+  // Motion props
+  const motionProps: Partial<HTMLMotionProps<'div'>> = reducedMotion
+    ? {
+        initial: { opacity: 1 },
+        animate: { opacity: 1 },
+      }
+    : {
+        variants: cardVariants,
+        initial: 'hidden',
+        animate: 'visible',
+        whileHover: enableHover ? 'hover' : undefined,
+        whileTap: enableHover ? 'tap' : undefined,
+      };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: y.value + hoverY.value }, { scale: hoverScale.value }],
-  }));
+  // Accessibility props if clickable
+  const accessibleProps = onClick
+    ? createAccessibleButtonProps({
+        label: ariaLabel,
+        labelledBy: ariaLabelledBy,
+        describedBy: ariaDescribedBy,
+        onClick,
+        role: 'button',
+      })
+    : {};
+
+  const paddingStyle = {
+    padding: getSizeSpacing(size),
+  };
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <motion.div
+      {...motionProps}
+      {...accessibleProps}
       className={cn(
         'rounded-2xl transition-all duration-300',
-        variantClasses[variant],
-        sizeClasses[size],
+        getVariantClasses(variant),
         className
       )}
-      {...(enableGlow
-        ? {
-            style: {
-              boxShadow: `0 0 40px ${glowColor}, 0 20px 25px -5px rgba(0, 0, 0, 0.1)`,
-            },
-          }
-        : {})}
+      style={{
+        ...paddingStyle,
+        ...variantStyles,
+        ...(glowShadow ? { boxShadow: glowShadow } : {}),
+        borderRadius: getRadius('xl'),
+      }}
       {...props}
     >
       {variant === 'holographic' && (
-        <div className="absolute inset-0 opacity-30 pointer-events-none" />
+        <div 
+          className="absolute inset-0 opacity-30 pointer-events-none" 
+          aria-hidden="true"
+        />
       )}
       {children}
-    </MotionView>
+    </motion.div>
   );
 }

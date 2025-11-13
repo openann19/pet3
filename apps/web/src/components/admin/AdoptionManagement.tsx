@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useMemo, useCallback } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -26,7 +27,7 @@ import {
   CheckCircle,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useStaggeredItem } from '@/effects/reanimated';
 import { adoptionApi } from '@/api/adoption-api';
 import { createLogger } from '@/lib/logger';
@@ -57,7 +58,7 @@ function AdoptionProfileCard({
   const animation = useStaggeredItem({ index, staggerDelay: 50 });
 
   return (
-    <AnimatedView
+    <motion.div
       style={animation.itemStyle}
       className="relative"
       role="article"
@@ -101,7 +102,7 @@ function AdoptionProfileCard({
         isFavorited={false}
         onSelect={() => { }}
       />
-    </AnimatedView>
+    </motion.div>
   );
 }
 

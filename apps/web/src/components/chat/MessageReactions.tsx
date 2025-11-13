@@ -5,13 +5,13 @@ import { Plus } from '@phosphor-icons/react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { MessageReaction } from '@/lib/chat-types';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { getTypographyClasses } from '@/lib/typography';
+import { cn } from '@/lib/utils';
 
 export interface MessageReactionsProps {
   reactions: MessageReaction[];
@@ -132,14 +132,21 @@ function ReactionButton({
   reactions,
   onClick,
 }: ReactionButtonProps): React.JSX.Element {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const hoverScale = useSharedValue(1);
+  const scale = useMotionValue(0);
+  const opacity = useMotionValue(0);
+  const hoverScale = useMotionValue(1);
 
   useEffect(() => {
     // Entrance animation
-    scale.value = withSpring(1, springConfigs.bouncy);
-    opacity.value = withTiming(1, timingConfigs.fast);
+    void animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.bouncy.damping,
+      stiffness: springConfigs.bouncy.stiffness,
+    });
+    void animate(opacity, 1, {
+      duration: motionDurations.fast,
+      ease: [0.2, 0, 0, 1],
+    });
   }, [scale, opacity]);
 
   const bounce = useBounceOnTap({
@@ -148,19 +155,26 @@ function ReactionButton({
     scale: 0.95,
   });
 
-  const buttonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value * hoverScale.value * bounce.scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+  // Combined scale
+  const combinedScale = useTransform(
+    [scale, hoverScale, bounce.scale],
+    ([s, h, b]: number[]) => (s ?? 0) * (h ?? 1) * (b ?? 1)
+  );
 
   const handleMouseEnter = useCallback(() => {
-    hoverScale.value = withSpring(1.1, springConfigs.smooth);
+    void animate(hoverScale, 1.1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   const handleMouseLeave = useCallback(() => {
-    hoverScale.value = withSpring(1, springConfigs.smooth);
+    void animate(hoverScale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   return (
@@ -175,10 +189,16 @@ function ReactionButton({
             userReacted ? 'bg-primary/20 ring-1 ring-primary' : 'bg-white/10 hover:bg-white/20'
           }`}
         >
-          <AnimatedView style={buttonStyle} className="flex items-center gap-1">
+          <motion.div
+            style={{
+              scale: combinedScale,
+              opacity,
+            }}
+            className="flex items-center gap-1"
+          >
             <span className="text-sm">{emoji}</span>
-            <span className="text-[10px] font-semibold">{count}</span>
-          </AnimatedView>
+            <span className={cn(getTypographyClasses('caption'), 'font-semibold')}>{count}</span>
+          </motion.div>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-48 glass-strong p-2">
@@ -187,7 +207,7 @@ function ReactionButton({
             <div key={`${reaction.userId ?? idx}-${String(idx ?? '')}`} className="flex items-center gap-2">
               <Avatar className="w-6 h-6">
                 <AvatarImage src={reaction.userAvatar} alt={reaction.userName ?? 'User'} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className={getTypographyClasses('caption')}>
                   {reaction.userName?.[0] ?? '?'}
                 </AvatarFallback>
               </Avatar>
@@ -214,9 +234,9 @@ function AddReactionButton({
   availableReactions,
   onSelectReaction,
 }: AddReactionButtonProps): React.JSX.Element {
-  const hoverScale = useSharedValue(1);
-  const pickerScale = useSharedValue(0.9);
-  const pickerOpacity = useSharedValue(0);
+  const hoverScale = useMotionValue(1);
+  const pickerScale = useMotionValue(0.9);
+  const pickerOpacity = useMotionValue(0);
 
   const bounce = useBounceOnTap({
     onPress: () => { onTogglePicker(!showPicker); },
@@ -224,35 +244,49 @@ function AddReactionButton({
     scale: 0.95,
   });
 
-  const buttonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
-    };
-  }) as AnimatedStyle;
-
-  const pickerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: pickerScale.value }],
-      opacity: pickerOpacity.value,
-    };
-  }) as AnimatedStyle;
+  // Combined button scale
+  const combinedButtonScale = useTransform(
+    [hoverScale, bounce.scale],
+    ([h, b]: number[]) => (h ?? 1) * (b ?? 1)
+  );
 
   useEffect(() => {
     if (showPicker) {
-      pickerScale.value = withSpring(1, springConfigs.bouncy);
-      pickerOpacity.value = withTiming(1, timingConfigs.fast);
+      void animate(pickerScale, 1, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping,
+        stiffness: springConfigs.bouncy.stiffness,
+      });
+      void animate(pickerOpacity, 1, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
     } else {
-      pickerScale.value = withTiming(0.9, timingConfigs.fast);
-      pickerOpacity.value = withTiming(0, timingConfigs.fast);
+      void animate(pickerScale, 0.9, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(pickerOpacity, 0, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
     }
   }, [showPicker, pickerScale, pickerOpacity]);
 
   const handleMouseEnter = useCallback(() => {
-    hoverScale.value = withSpring(1.1, springConfigs.smooth);
+    void animate(hoverScale, 1.1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   const handleMouseLeave = useCallback(() => {
-    hoverScale.value = withSpring(1, springConfigs.smooth);
+    void animate(hoverScale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   const handleEmojiClick = useCallback(
@@ -273,19 +307,24 @@ function AddReactionButton({
           onMouseLeave={handleMouseLeave}
           className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
         >
-          <AnimatedView style={buttonStyle}>
+          <motion.div style={{ scale: combinedButtonScale }}>
             <Plus size={12} weight="bold" />
-          </AnimatedView>
+          </motion.div>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 glass-strong p-3">
-        <AnimatedView style={pickerStyle}>
+        <motion.div
+          style={{
+            scale: pickerScale,
+            opacity: pickerOpacity,
+          }}
+        >
           <div className="grid grid-cols-6 gap-2">
             {availableReactions.map((emoji) => (
               <EmojiButton key={emoji} emoji={emoji} onClick={() => handleEmojiClick(emoji)} />
             ))}
           </div>
-        </AnimatedView>
+        </motion.div>
       </PopoverContent>
     </Popover>
   );
@@ -297,7 +336,7 @@ interface EmojiButtonProps {
 }
 
 function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
-  const hoverScale = useSharedValue(1);
+  const hoverScale = useMotionValue(1);
 
   const bounce = useBounceOnTap({
     onPress: onClick,
@@ -305,29 +344,39 @@ function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
     scale: 0.9,
   });
 
-  const buttonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
-    };
-  }) as AnimatedStyle;
+  // Combined scale
+  const combinedScale = useTransform(
+    [hoverScale, bounce.scale],
+    ([h, b]: number[]) => (h ?? 1) * (b ?? 1)
+  );
 
   const handleMouseEnter = useCallback(() => {
-    hoverScale.value = withSpring(1.2, springConfigs.smooth);
+    void animate(hoverScale, 1.2, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   const handleMouseLeave = useCallback(() => {
-    hoverScale.value = withSpring(1, springConfigs.smooth);
+    void animate(hoverScale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [hoverScale]);
 
   return (
-    <AnimatedView
-      style={buttonStyle}
+    <motion.div
+      style={{
+        scale: combinedScale,
+      }}
       onClick={bounce.handlePress}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="text-2xl p-1 rounded-lg hover:bg-white/20 transition-colors cursor-pointer flex items-center justify-center"
     >
       {emoji}
-    </AnimatedView>
+    </motion.div>
   );
 }

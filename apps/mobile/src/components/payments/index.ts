@@ -1,3 +1,5 @@
+export { PaymentButton } from './PaymentButton';
+export type { PaymentButtonProps } from './PaymentButton';
 export { PricingModal } from './PricingModal'
 export type { PricingModalProps } from './PricingModal'
 

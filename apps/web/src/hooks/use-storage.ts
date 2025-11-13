@@ -8,6 +8,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { storage } from '@/lib/storage';
 import { createLogger } from '@/lib/logger';
+import { validateStorageData, type StorageKey } from '@/lib/storage-schemas';
+import { validateWithSchema } from '@/lib/runtime-safety';
+import type { z } from 'zod';
 
 const logger = createLogger('useStorage');
 
@@ -51,7 +54,16 @@ export function useStorage<T>(
         const stored = await storage.get<T>(key);
 
         if (!cancelled) {
-          setValueState(stored !== undefined ? stored : defaultValueRef.current);
+          // Validate stored data if schema exists for this key
+          let validatedValue: T;
+          if (stored !== undefined) {
+            const validated = validateStorageData(key as StorageKey, stored);
+            validatedValue = (validated !== undefined ? validated : defaultValueRef.current) as T;
+          } else {
+            validatedValue = defaultValueRef.current;
+          }
+          
+          setValueState(validatedValue);
           setIsLoading(false);
           isInitializedRef.current = true;
         }

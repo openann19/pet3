@@ -1,20 +1,20 @@
 /**
+import { motion } from 'framer-motion';
  * Notification Group Item Component
  *
  * Displays a group of similar notifications
  */
 
-import { useState, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
+import { useState, useEffect, memo } from 'react';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Archive } from '@phosphor-icons/react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { formatDistanceToNow } from 'date-fns';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';
 import type { NotificationGroup, PremiumNotification, NotificationPreferences } from '../types';
 import type { GetIconFunction, GetPriorityStylesFunction } from './NotificationItem';
@@ -44,47 +44,55 @@ export function NotificationGroupItem({
   const latestNotification = group.notifications[0];
   if (!latestNotification) return null;
 
-  const itemOpacity = useSharedValue(0);
-  const itemTranslateY = useSharedValue(20);
-  const groupHover = useHoverTap({
-    hoverScale: 1.005,
-    tapScale: 1,
+  const reducedMotion = useReducedMotion();
+  const itemOpacity = useMotionValue(0);
+  const itemTranslateY = useMotionValue(20);
+  const groupHover = useHoverLift({
+    scale: reducedMotion ? 1 : 1.005,
+    translateY: 0,
   });
-  const iconHover = useHoverTap({
-    hoverScale: 1.05,
-    tapScale: 1,
+  const iconHover = useHoverLift({
+    scale: reducedMotion ? 1 : 1.05,
+    translateY: 0,
   });
 
   useEffect(() => {
-    itemOpacity.value = withTiming(1, timingConfigs.smooth);
-    itemTranslateY.value = withSpring(0, springConfigs.smooth);
+    void animate(itemOpacity, 1, {
+      duration: motionDurations.smooth,
+      ease: [0.2, 0, 0, 1],
+    });
+    void animate(itemTranslateY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [itemOpacity, itemTranslateY]);
 
-  const itemStyle = useAnimatedStyle(() => ({
-    opacity: itemOpacity.value,
-    transform: [{ translateY: itemTranslateY.value }, { scale: groupHover.scale.value }],
-  })) as AnimatedStyle;
+  const combinedScale = useTransform(
+    [groupHover.scale],
+    ([h]: number[]) => h ?? 1
+  );
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconHover.scale.value }],
-  })) as AnimatedStyle;
-
-  const unreadDotScale = useSharedValue(group.read ? 0 : 1);
+  const unreadDotScale = useMotionValue(group.read ? 0 : 1);
 
   useEffect(() => {
-    unreadDotScale.value = withSpring(group.read ? 0 : 1, springConfigs.bouncy);
+    void animate(unreadDotScale, group.read ? 0 : 1, {
+      type: 'spring',
+      damping: springConfigs.bouncy.damping,
+      stiffness: springConfigs.bouncy.stiffness,
+    });
   }, [group.read, unreadDotScale]);
-
-  const unreadDotStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: unreadDotScale.value }],
-  })) as AnimatedStyle;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <AnimatedView
-        style={itemStyle}
-        onMouseEnter={groupHover.handleMouseEnter}
-        onMouseLeave={groupHover.handleMouseLeave}
+      <motion.div
+        style={{
+          opacity: itemOpacity,
+          y: itemTranslateY,
+          scale: combinedScale,
+        }}
+        onMouseEnter={groupHover.handleEnter}
+        onMouseLeave={groupHover.handleLeave}
         className={cn(
           'relative rounded-xl overflow-hidden transition-all bg-card border border-border/50',
           !group.read && 'ring-2 ring-primary/20'
@@ -92,10 +100,10 @@ export function NotificationGroupItem({
       >
         <div className="p-4">
           <div className="flex items-start gap-3">
-            <AnimatedView
-              style={iconStyle}
-              onMouseEnter={iconHover.handleMouseEnter}
-              onMouseLeave={iconHover.handleMouseLeave}
+            <motion.div
+              style={{ scale: iconHover.scale }}
+              onMouseEnter={iconHover.handleEnter}
+              onMouseLeave={iconHover.handleLeave}
               className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 relative"
             >
               {getIcon(group.type as PremiumNotification['type'], latestNotification.priority)}
@@ -107,7 +115,7 @@ export function NotificationGroupItem({
                   {group.notifications.length}
                 </Badge>
               )}
-            </AnimatedView>
+            </motion.div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
@@ -119,12 +127,12 @@ export function NotificationGroupItem({
                 </div>
 
                 {!group.read && (
-                  <AnimatedView
-                    style={unreadDotStyle}
+                  <motion.div
+                    style={{ scale: unreadDotScale }}
                     className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
                   >
                     {null}
-                  </AnimatedView>
+                  </motion.div>
                 )}
               </div>
 
@@ -178,7 +186,10 @@ export function NotificationGroupItem({
             </div>
           </CollapsibleContent>
         )}
-      </AnimatedView>
+      </motion.div>
     </Collapsible>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedNotificationGroupItem = memo(NotificationGroupItem);

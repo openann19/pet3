@@ -1,12 +1,10 @@
 'use client';
+import { motion, useMotionValue, animate } from 'framer-motion';
 
 import { useEffect, useRef } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { useFeatureFlags } from '@/config/feature-flags';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { X } from '@phosphor-icons/react';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -31,15 +29,14 @@ export interface MessagePeekProps {
  * Manages focus: traps focus when open, returns to trigger on close
  */
 export function MessagePeek({ message, visible, onClose, position, triggerRef }: MessagePeekProps) {
-  const _uiConfig = useUIConfig();
-  const reducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const { enableMessagePeek } = useFeatureFlags();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const scale = useSharedValue(0.9);
-  const opacity = useSharedValue(0);
-  const backdropOpacity = useSharedValue(0);
+  const scale = useMotionValue(0.9);
+  const opacity = useMotionValue(0);
+  const backdropOpacity = useMotionValue(0);
 
   useEffect(() => {
     if (!enableMessagePeek) {
@@ -48,21 +45,50 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
 
     if (visible) {
       // Store the previously focused element
-      previouslyFocusedRef.current = document.activeElement as HTMLElement;
+      if (typeof document !== 'undefined') {
+        previouslyFocusedRef.current = document.activeElement as HTMLElement;
+      }
 
-      const duration = reducedMotion ? 120 : 180;
-      scale.value = withSpring(1, springConfigs.smooth);
-      opacity.value = withTiming(1, { duration });
-      backdropOpacity.value = withTiming(0.25, { duration });
+      const duration = prefersReducedMotion ? 0.12 : 0.18; // Convert to seconds for Framer Motion
+      
+      // Animate scale with spring
+      void animate(scale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      
+      // Animate opacity with timing
+      void animate(opacity, 1, {
+        duration,
+        ease: [0.2, 0, 0, 1],
+      });
+      
+      // Animate backdrop opacity with timing
+      void animate(backdropOpacity, 0.25, {
+        duration,
+        ease: [0.2, 0, 0, 1],
+      });
 
       // Focus the close button after animation starts
       setTimeout(() => {
         closeButtonRef.current?.focus();
-      }, duration);
+      }, duration * 1000);
     } else {
-      scale.value = withTiming(0.9, timingConfigs.fast);
-      opacity.value = withTiming(0, timingConfigs.fast);
-      backdropOpacity.value = withTiming(0, timingConfigs.fast);
+      const fastDuration = motionDurations.fast / 1000; // Convert to seconds
+      
+      void animate(scale, 0.9, {
+        duration: fastDuration,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(opacity, 0, {
+        duration: fastDuration,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(backdropOpacity, 0, {
+        duration: fastDuration,
+        ease: [0.2, 0, 0, 1],
+      });
 
       // Return focus to trigger element
       if (previouslyFocusedRef.current) {
@@ -71,7 +97,7 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
         triggerRef.current.focus();
       }
     }
-  }, [visible, reducedMotion, enableMessagePeek, scale, opacity, backdropOpacity, triggerRef]);
+  }, [visible, prefersReducedMotion, enableMessagePeek, scale, opacity, backdropOpacity, triggerRef]);
 
   useEffect(() => {
     if (!visible || !enableMessagePeek) {
@@ -120,23 +146,19 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
       }
     };
 
+    if (typeof window === 'undefined') return;
+
     window.addEventListener('keydown', handleEscape);
     window.addEventListener('keydown', handleTab);
 
     return () => {
+      if (typeof window === 'undefined') return;
       window.removeEventListener('keydown', handleEscape);
       window.removeEventListener('keydown', handleTab);
     };
   }, [visible, onClose, enableMessagePeek]);
 
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  })) as AnimatedStyle;
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  })) as AnimatedStyle;
+  // Styles are now handled directly via motion.div style props
 
   if (!enableMessagePeek || !visible) {
     return null;
@@ -148,14 +170,18 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
 
   return (
     <>
-      <AnimatedView
-        style={backdropStyle}
+      <motion.div
+        style={{ opacity: backdropOpacity }}
         className="fixed inset-0 bg-black z-40"
         onClick={onClose}
         aria-hidden="true"
       />
-      <AnimatedView
-        style={{ ...cardPosition, ...cardStyle }}
+      <motion.div
+        style={{ 
+          ...cardPosition, 
+          scale,
+          opacity,
+        }}
         className="fixed z-50 bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-[90vw]"
         role="dialog"
         aria-modal="true"
@@ -176,10 +202,11 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            aria-label="Close preview"
+            className="p-1 rounded-full hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Close message preview"
+            aria-keyshortcuts="Escape"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
         <div
@@ -188,7 +215,7 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
         >
           {message.content}
         </div>
-      </AnimatedView>
+      </motion.div>
     </>
   );
 }

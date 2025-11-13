@@ -1,11 +1,11 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import { useEffect, useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { useCallback } from 'react';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
+import { getSpacingClassesFromConfig, accessibilityClasses } from '@/lib/typography';
 import {
   Sheet,
   SheetContent,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sheet';
 import { X } from 'lucide-react';
 import { useUIConfig } from "@/hooks/use-ui-config";
-import { isTruthy } from '@petspark/shared';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 export interface PremiumDrawerProps {
   open?: boolean;
@@ -52,45 +52,45 @@ export function PremiumDrawer({
   closeOnOverlayClick = true,
   className,
 }: PremiumDrawerProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const translateX = useSharedValue(side === 'right' ? 100 : side === 'left' ? -100 : 0);
-  const translateY = useSharedValue(side === 'top' ? -100 : side === 'bottom' ? 100 : 0);
-  const opacity = useSharedValue(0);
+  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  useEffect(() => {
-    if (isTruthy(open)) {
-      if (side === 'right' || side === 'left') {
-        const xTransition = withSpring(0, springConfigs.smooth);
-        animate(translateX, xTransition.target, xTransition.transition);
-      } else {
-        const yTransition = withSpring(0, springConfigs.smooth);
-        animate(translateY, yTransition.target, yTransition.transition);
-      }
-      const opacityTransition = withTiming(1, { duration: 200 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-    } else {
-      if (side === 'right') {
-        const xTransition = withSpring(100, springConfigs.smooth);
-        animate(translateX, xTransition.target, xTransition.transition);
-      } else if (side === 'left') {
-        const xTransition = withSpring(-100, springConfigs.smooth);
-        animate(translateX, xTransition.target, xTransition.transition);
-      } else if (side === 'top') {
-        const yTransition = withSpring(-100, springConfigs.smooth);
-        animate(translateY, yTransition.target, yTransition.transition);
-      } else {
-        const yTransition = withSpring(100, springConfigs.smooth);
-        animate(translateY, yTransition.target, yTransition.transition);
-      }
-      const opacityTransition = withTiming(0, { duration: 150 });
-      animate(opacity, opacityTransition.target, opacityTransition.transition);
-    }
-  }, [open, side, translateX, translateY, opacity]);
+  const getDrawerVariants = () => {
+    const isHorizontal = side === 'right' || side === 'left';
+    const translateValue = side === 'right' ? 100 : side === 'left' ? -100 : side === 'top' ? -100 : 100;
 
-  const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.get() }, { translateY: translateY.get() }],
-    opacity: opacity.get(),
-  }));
+    return {
+      hidden: {
+        opacity: 0,
+        x: isHorizontal ? translateValue : 0,
+        y: isHorizontal ? 0 : translateValue,
+      },
+      visible: {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        transition: prefersReducedMotion
+          ? { duration: 0 }
+          : {
+              ...springConfigs.smooth,
+              duration: motionDurations.smooth,
+            },
+      },
+      exit: {
+        opacity: 0,
+        x: isHorizontal ? translateValue : 0,
+        y: isHorizontal ? 0 : translateValue,
+        transition: prefersReducedMotion
+          ? { duration: 0 }
+          : {
+              duration: motionDurations.normal,
+              ease: [0.4, 0, 1, 1],
+            },
+      },
+    };
+  };
+
+  const drawerVariants = getDrawerVariants();
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -105,28 +105,42 @@ export function PremiumDrawer({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side={side} className={cn(SIZE_CLASSES[size], className)}>
-        <AnimatedView style={contentStyle} className="contents">
-          {(title || description) && (
+        <motion.div
+          variants={drawerVariants}
+          initial="hidden"
+          animate={open ? 'visible' : 'hidden'}
+          exit="exit"
+          className="contents"
+        >
+          {(title ?? description) && (
             <SheetHeader>
               {title && <SheetTitle>{title}</SheetTitle>}
               {description && <SheetDescription>{description}</SheetDescription>}
             </SheetHeader>
           )}
 
-          <div className="flex-1 overflow-y-auto py-4">{children}</div>
+          <div className={cn('flex-1 overflow-y-auto', getSpacingClassesFromConfig({ paddingY: 'lg' }))}>
+            {children}
+          </div>
 
           {footer && <SheetFooter>{footer}</SheetFooter>}
 
           {showCloseButton && (
             <button
               onClick={() => { handleOpenChange(false); }}
-              className="absolute top-4 right-4 rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
+              className={cn(
+                'absolute rounded-md opacity-70 hover:opacity-100 transition-opacity',
+                'top-4 right-4 p-2',
+                accessibilityClasses.focusVisible,
+                accessibilityClasses.minTouch
+              )}
               aria-label="Close drawer"
+              type="button"
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
           )}
-        </AnimatedView>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

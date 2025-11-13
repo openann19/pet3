@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useMotionValue, animate, MotionView } from '@petspark/motion';
-import { useTransform } from 'framer-motion';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X, CheckCircle, AlertTriangle, Info, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -96,8 +95,7 @@ export function PremiumToast({
   }, [duration, isPaused, showProgress, progressWidth, handleDismiss]);
 
   return (
-    <MotionView
-      style={{}}
+    <motion.div
       onMouseEnter={() => { setIsPaused(true); }}
       onMouseLeave={() => { setIsPaused(false); }}
       className={cn(
@@ -111,13 +109,11 @@ export function PremiumToast({
       aria-describedby={description ? descriptionId : undefined}
     >
       {showProgress && (
-        <MotionView
+        <motion.div
           style={{ width: progressWidthPercent }}
           className="absolute top-0 left-0 h-1 bg-current opacity-30 rounded-t-xl"
           aria-hidden="true"
-        >
-          <div />
-        </MotionView>
+        />
       )}
 
       <Icon 
@@ -130,7 +126,7 @@ export function PremiumToast({
         <div 
           id={titleId}
           className={cn(
-            getTypographyClasses('subtitle'),
+            getTypographyClasses('h3'),
             getSpacingClassesFromConfig({ marginY: 'xs' })
           )}
         >
@@ -176,6 +172,6 @@ export function PremiumToast({
       >
         <X size={16} aria-hidden="true" />
       </button>
-    </MotionView>
+    </motion.div>
   );
 }

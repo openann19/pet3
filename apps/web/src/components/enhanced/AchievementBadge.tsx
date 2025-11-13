@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { useSharedValue, withSpring, useAnimatedStyle, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import React, { memo } from 'react';
+import { motion } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 export interface AchievementBadgeProps {
   size?: number;
@@ -15,30 +16,41 @@ export function AchievementBadge({
   color = 'var(--primary)',
   className = '',
 }: AchievementBadgeProps) {
-    const _uiConfig = useUIConfig();
-    const scale = useSharedValue(0);
+  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  useEffect(() => {
-    const scaleTransition = withSpring(1, { stiffness: 300, damping: 20 });
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-  }, [scale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }],
-  }));
+  const badgeVariants = {
+    hidden: {
+      scale: 0,
+      opacity: 0,
+    },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: prefersReducedMotion
+        ? { duration: 0 }
+        : {
+            ...springConfigs.bouncy,
+            duration: motionDurations.smooth,
+          },
+    },
+  };
 
   return (
-    <AnimatedView
-      style={[
-        animatedStyle,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-        },
-      ]}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={badgeVariants}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+      }}
       className={cn('bg-primary rounded-full', className)}
     />
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedAchievementBadge = memo(AchievementBadge);

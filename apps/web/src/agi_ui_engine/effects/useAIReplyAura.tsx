@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useEffect } from 'react';
 import {
@@ -9,7 +10,7 @@ import {
   withSequence,
   Easing,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
 export interface UseAIReplyAuraReturn {
@@ -26,7 +27,7 @@ export interface UseAIReplyAuraReturn {
  * @example
  * ```tsx
  * const { animatedStyle } = useAIReplyAura()
- * return <AnimatedView style={animatedStyle}>{content}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{content}</motion.div>
  * ```
  */
 export function useAIReplyAura(): UseAIReplyAuraReturn {

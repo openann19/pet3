@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withTiming, Easing } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
 export interface UseGlassBackgroundOptions {
@@ -23,7 +24,7 @@ export interface UseGlassBackgroundReturn {
  * @example
  * ```tsx
  * const { animatedStyle } = useGlassBackground({ intensity: 0.8 })
- * return <AnimatedView style={animatedStyle}>{content}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{content}</motion.div>
  * ```
  */
 export function useGlassBackground(

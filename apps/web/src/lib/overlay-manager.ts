@@ -23,6 +23,7 @@ export function useOverlayManager(config: OverlayConfig) {
   const overlayRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     triggerElementRef.current = document.activeElement as HTMLElement;
   }, []);
 
@@ -60,6 +61,8 @@ export function useOverlayManager(config: OverlayConfig) {
   );
 
   useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keydown', handleFocusTrap);
 
@@ -70,6 +73,7 @@ export function useOverlayManager(config: OverlayConfig) {
     }
 
     return () => {
+      if (typeof document === 'undefined') return;
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handleFocusTrap);
 
@@ -99,8 +103,12 @@ export function useOverlayManager(config: OverlayConfig) {
   }, [onDismiss]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     window.addEventListener('popstate', handleBackButton);
-    return () => window.removeEventListener('popstate', handleBackButton);
+    return () => {
+      if (typeof window === 'undefined') return;
+      window.removeEventListener('popstate', handleBackButton);
+    };
   }, [handleBackButton]);
 
   return {

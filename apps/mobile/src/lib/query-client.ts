@@ -56,6 +56,7 @@ export const queryKeys = {
   pets: {
     list: ['pets', 'list'] as const,
     detail: (id: string) => ['pets', 'detail', id] as const,
+    feed: (limit?: number) => (limit ? ['pets', 'feed', limit] : ['pets', 'feed'] as const),
   },
   matches: {
     list: ['matches', 'list'] as const,

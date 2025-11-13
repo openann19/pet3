@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useEffect } from 'react';
 import {
@@ -9,7 +10,7 @@ import {
   withSequence,
   Easing,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
 export interface UseBubbleGlowOptions {
@@ -31,7 +32,7 @@ export interface UseBubbleGlowReturn {
  * @example
  * ```tsx
  * const { animatedStyle } = useBubbleGlow({ color: '#FF6B6B', intensity: 0.8 })
- * return <AnimatedView style={animatedStyle}>{bubble}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{bubble}</motion.div>
  * ```
  */
 export function useBubbleGlow(options: UseBubbleGlowOptions = {}): UseBubbleGlowReturn {

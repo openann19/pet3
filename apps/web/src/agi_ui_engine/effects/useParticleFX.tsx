@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useSharedValue, withTiming, useAnimatedStyle, Easing } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
 export interface Particle {

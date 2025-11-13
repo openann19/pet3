@@ -1,15 +1,14 @@
 'use client';
+import { motion, useMotionValue, animate } from 'framer-motion';
 
 import React, { useCallback, useRef, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
-import { getTypographyClasses } from '@/lib/typography';
+import { getTypographyClasses, getSpacingClassesFromConfig, accessibilityClasses } from '@/lib/typography';
 
 export interface PremiumTab {
   value: string;
@@ -45,8 +44,8 @@ export function PremiumTabs({
   const _uiConfig = useUIConfig();
   const prefersReducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
-  const indicatorPosition = useSharedValue(0);
-  const indicatorWidth = useSharedValue(0);
+  const indicatorPosition = useMotionValue(0);
+  const indicatorWidth = useMotionValue(0);
   const activeTab = value ?? defaultValue ?? tabs[0]?.value;
 
   const updateIndicator = useCallback(() => {
@@ -65,13 +64,17 @@ export function PremiumTabs({
       const newWidth = buttonRect.width;
 
       if (prefersReducedMotion) {
-        indicatorPosition.value = newPosition;
-        indicatorWidth.value = newWidth;
+        indicatorPosition.set(newPosition);
+        indicatorWidth.set(newWidth);
       } else {
-        const positionTransition = withSpring(newPosition, springConfigs.smooth);
-        animate(indicatorPosition, positionTransition.target, positionTransition.transition);
-        const widthTransition = withSpring(newWidth, springConfigs.smooth);
-        animate(indicatorWidth, widthTransition.target, widthTransition.transition);
+        void animate(indicatorPosition, newPosition, {
+          ...springConfigs.smooth,
+          duration: motionDurations.smooth,
+        });
+        void animate(indicatorWidth, newWidth, {
+          ...springConfigs.smooth,
+          duration: motionDurations.smooth,
+        });
       }
     }
   }, [tabs, activeTab, indicatorPosition, indicatorWidth, prefersReducedMotion]);
@@ -85,11 +88,6 @@ export function PremiumTabs({
     return () => resizeObserver.disconnect();
   }, [updateIndicator]);
 
-  const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: indicatorPosition.get() }],
-    width: indicatorWidth.get(),
-  }));
-
   const handleValueChange = useCallback(
     (newValue: string) => {
       onValueChange?.(newValue);
@@ -101,14 +99,26 @@ export function PremiumTabs({
 
   const variants = {
     default: 'bg-muted',
-    pills: 'bg-transparent gap-2',
+    pills: cn('bg-transparent', getSpacingClassesFromConfig({ gap: 'sm' })),
     underline: 'bg-transparent border-b border-border',
   };
 
   const sizes = {
-    sm: cn('h-8 px-3', getTypographyClasses('caption')),
-    md: cn('h-10 px-4', getTypographyClasses('body')),
-    lg: cn('h-12 px-5', getTypographyClasses('subtitle')),
+    sm: cn(
+      'h-8',
+      getSpacingClassesFromConfig({ paddingX: 'md' }),
+      getTypographyClasses('caption')
+    ),
+    md: cn(
+      'h-10',
+      getSpacingClassesFromConfig({ paddingX: 'lg' }),
+      getTypographyClasses('body')
+    ),
+    lg: cn(
+      'h-12',
+      getSpacingClassesFromConfig({ paddingX: 'xl' }),
+      getTypographyClasses('h3')
+    ),
   };
 
   return (
@@ -125,17 +135,22 @@ export function PremiumTabs({
             'inline-flex items-center',
             scrollable && 'overflow-x-auto',
             variants[variant],
-            variant === 'default' && 'rounded-lg p-1',
-            variant === 'underline' && 'p-0'
+            variant === 'default' && cn('rounded-lg', getSpacingClassesFromConfig({ padding: 'xs' })),
+            variant === 'underline' && getSpacingClassesFromConfig({ padding: 'xs' })
           )}
         >
           {variant === 'underline' && (
-            <AnimatedView
-              style={indicatorStyle}
-              className="absolute bottom-0 h-0.5 bg-primary transition-all"
-            >
-              <div />
-            </AnimatedView>
+            <motion.div
+              style={{
+                x: indicatorPosition,
+                width: indicatorWidth,
+              }}
+              transition={prefersReducedMotion ? { duration: 0 } : {
+                ...springConfigs.smooth,
+                duration: motionDurations.smooth,
+              }}
+              className="absolute bottom-0 h-0.5 bg-primary"
+            />
           )}
           {tabs.map((tab) => {
             const isActive = tab.value === activeTab;
@@ -146,9 +161,10 @@ export function PremiumTabs({
                 disabled={tab.disabled}
                 data-tab-trigger
                 className={cn(
-                  'relative z-10 flex items-center gap-2 font-medium',
+                  'relative z-10 flex items-center font-medium',
+                  getSpacingClassesFromConfig({ gap: 'sm' }),
                   prefersReducedMotion ? '' : 'transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
+                  accessibilityClasses.focusVisible,
                   'disabled:pointer-events-none disabled:opacity-50',
                   sizes[size],
                   variant === 'default' &&
@@ -160,7 +176,8 @@ export function PremiumTabs({
                     ),
                   variant === 'pills' &&
                     cn(
-                      'rounded-full px-4',
+                      'rounded-full',
+                      getSpacingClassesFromConfig({ paddingX: 'lg' }),
                       isActive
                         ? 'bg-(--primary) text-(--primary-foreground)'
                         : 'bg-(--surface) text-(--text-muted) hover:bg-(--surface)/80'
@@ -173,17 +190,22 @@ export function PremiumTabs({
                         : 'text-(--text-muted) hover:text-(--text-primary) hover:border-(--text-muted)/50'
                     )
                 )}
+                aria-label={tab.label}
+                aria-selected={isActive}
               >
-                {tab.icon && <span>{tab.icon}</span>}
+                {tab.icon && <span aria-hidden="true">{tab.icon}</span>}
                 {tab.label}
                 {tab.badge !== undefined && (
                   <span
                     className={cn(
-                      'ml-1 px-1.5 py-0.5 text-xs font-bold rounded-full',
+                      'font-bold rounded-full',
+                      getSpacingClassesFromConfig({ marginX: 'xs', paddingX: 'xs', paddingY: 'xs' }),
+                      getTypographyClasses('caption'),
                       isActive
                         ? 'bg-primary-foreground/20 text-primary-foreground'
                         : 'bg-muted-foreground/20 text-muted-foreground'
                     )}
+                    aria-label={`${tab.badge} ${tab.label}`}
                   >
                     {tab.badge}
                   </span>

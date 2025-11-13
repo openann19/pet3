@@ -1,18 +1,18 @@
 /**
+import { motion } from 'framer-motion';
  * Notification Item Component
  *
  * Individual notification item with animations
  */
 
 import { memo, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Check, Trash, Archive } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';
 import type { PremiumNotification, NotificationPreferences } from '../types';
 
@@ -39,38 +39,50 @@ function NotificationItemComponent({
   onDelete,
   getIcon,
 }: NotificationItemProps): JSX.Element {
-  const itemOpacity = useSharedValue(0);
-  const itemTranslateY = useSharedValue(20);
-  const hover = useHoverTap({
-    hoverScale: 1.005,
-    tapScale: 1,
+  const reducedMotion = useReducedMotion();
+  const itemOpacity = useMotionValue(0);
+  const itemTranslateY = useMotionValue(20);
+  const hover = useHoverLift({
+    scale: reducedMotion ? 1 : 1.005,
+    translateY: 0,
   });
 
   useEffect(() => {
-    itemOpacity.value = withTiming(1, timingConfigs.smooth);
-    itemTranslateY.value = withSpring(0, springConfigs.smooth);
+    void animate(itemOpacity, 1, {
+      duration: motionDurations.smooth,
+      ease: [0.2, 0, 0, 1],
+    });
+    void animate(itemTranslateY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [itemOpacity, itemTranslateY]);
 
-  const itemStyle = useAnimatedStyle(() => ({
-    opacity: itemOpacity.value,
-    transform: [{ translateY: itemTranslateY.value }, { scale: hover.scale.value }],
-  })) as AnimatedStyle;
+  const combinedScale = useTransform(
+    [hover.scale],
+    ([h]: number[]) => h ?? 1
+  );
 
-  const unreadDotScale = useSharedValue(notification.read ? 0 : 1);
+  const unreadDotScale = useMotionValue(notification.read ? 0 : 1);
 
   useEffect(() => {
-    unreadDotScale.value = withSpring(notification.read ? 0 : 1, springConfigs.bouncy);
+    void animate(unreadDotScale, notification.read ? 0 : 1, {
+      type: 'spring',
+      damping: springConfigs.bouncy.damping,
+      stiffness: springConfigs.bouncy.stiffness,
+    });
   }, [notification.read, unreadDotScale]);
 
-  const unreadDotStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: unreadDotScale.value }],
-  })) as AnimatedStyle;
-
   return (
-    <AnimatedView
-      style={itemStyle}
-      onMouseEnter={hover.handleMouseEnter}
-      onMouseLeave={hover.handleMouseLeave}
+    <motion.div
+      style={{
+        opacity: itemOpacity,
+        y: itemTranslateY,
+        scale: combinedScale,
+      }}
+      onMouseEnter={hover.handleEnter}
+      onMouseLeave={hover.handleLeave}
       className={cn(
         'relative rounded-xl overflow-hidden transition-all bg-card border border-border/50 p-4',
         !notification.read && 'ring-2 ring-primary/20'
@@ -80,12 +92,12 @@ function NotificationItemComponent({
         <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 relative">
           {getIcon(notification.type, notification.priority)}
           {!notification.read && (
-            <AnimatedView
-              style={unreadDotStyle}
+            <motion.div
+              style={{ scale: unreadDotScale }}
               className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary"
             >
               {null}
-            </AnimatedView>
+            </motion.div>
           )}
         </div>
 
@@ -99,12 +111,12 @@ function NotificationItemComponent({
             </div>
 
             {!notification.read && (
-              <AnimatedView
-                style={unreadDotStyle}
+              <motion.div
+                style={{ scale: unreadDotScale }}
                 className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
               >
                 {null}
-              </AnimatedView>
+              </motion.div>
             )}
           </div>
 
@@ -146,7 +158,7 @@ function NotificationItemComponent({
           </div>
         </div>
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }
 

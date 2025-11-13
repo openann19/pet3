@@ -1,11 +1,8 @@
-import { MotionView } from '@petspark/motion';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
+'use client';
+
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
+import { motionDurations } from '@/effects/framer-motion/variants';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import React from 'react';
 import type { ReactNode } from 'react';
 import { createLogger } from '@/lib/logger';
@@ -19,43 +16,51 @@ interface EnhancedCardProps {
 }
 
 export function EnhancedCard({ children, className = '', delay = 0 }: EnhancedCardProps) {
-  const opacity = useSharedValue(0);
-  const y = useSharedValue(20);
-  const hoverY = useSharedValue(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const opacity = useMotionValue(0);
+  const y = useMotionValue(20);
+  const hoverY = useMotionValue(0);
+  const translateY = useTransform([y, hoverY], ([yVal, hoverVal]: number[]) => (yVal ?? 0) + (hoverVal ?? 0));
 
   React.useEffect(() => {
+    if (prefersReducedMotion) {
+      opacity.set(1);
+      y.set(0);
+      return;
+    }
     const timeoutId = setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 500 });
-      y.value = withTiming(0, { duration: 500 });
+      void animate(opacity, 1, { duration: motionDurations.smooth });
+      void animate(y, 0, { duration: motionDurations.smooth });
     }, delay);
-
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [delay, opacity, y]);
+  }, [delay, opacity, y, prefersReducedMotion]);
 
   const handleMouseEnter = React.useCallback(() => {
-    hoverY.value = withTiming(-4, { duration: 200 });
-  }, []);
+    if (!prefersReducedMotion) {
+      void animate(hoverY, -4, { duration: motionDurations.fast });
+    }
+  }, [hoverY, prefersReducedMotion]);
 
   const handleMouseLeave = React.useCallback(() => {
-    hoverY.value = withTiming(0, { duration: 200 });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: y.value + hoverY.value }],
-  }));
+    if (!prefersReducedMotion) {
+      void animate(hoverY, 0, { duration: motionDurations.fast });
+    }
+  }, [hoverY, prefersReducedMotion]);
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      style={{
+        opacity,
+        y: translateY,
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={className}
     >
       {children}
-    </MotionView>
+    </motion.div>
   );
 }
 
@@ -72,28 +77,37 @@ export function FloatingActionButton({
   label,
   className = '',
 }: FloatingActionButtonProps) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0);
-  const hoverScale = useSharedValue(1);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const opacity = useMotionValue(0);
+  const scale = useMotionValue(0);
+  const hoverScale = useMotionValue(1);
 
   React.useEffect(() => {
-    opacity.value = withTiming(1, { duration: 200 });
+    if (prefersReducedMotion) {
+      opacity.set(1);
+      scale.set(1);
+      return;
+    }
+    void animate(opacity, 1, { duration: motionDurations.fast });
     const timeoutId = setTimeout(() => {
-      scale.value = withTiming(1, { duration: 300 });
+      void animate(scale, 1, { duration: motionDurations.smooth });
     }, 200);
-
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [opacity, scale]);
+  }, [opacity, scale, prefersReducedMotion]);
 
   const handleMouseEnter = React.useCallback(() => {
-    hoverScale.value = withTiming(1.05, { duration: 200 });
-  }, []);
+    if (!prefersReducedMotion) {
+      void animate(hoverScale, 1.05, { duration: motionDurations.fast });
+    }
+  }, [hoverScale, prefersReducedMotion]);
 
   const handleMouseLeave = React.useCallback(() => {
-    hoverScale.value = withTiming(1, { duration: 200 });
-  }, []);
+    if (!prefersReducedMotion) {
+      void animate(hoverScale, 1, { duration: motionDurations.fast });
+    }
+  }, [hoverScale, prefersReducedMotion]);
 
   const handleClick = React.useCallback(() => {
     try {
@@ -104,14 +118,12 @@ export function FloatingActionButton({
     }
   }, [onClick]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value * hoverScale.value }],
-  }));
-
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      style={{
+        opacity,
+        transform: `scale(${scale.get() * hoverScale.get()})`,
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -119,7 +131,7 @@ export function FloatingActionButton({
     >
       <span className="text-xl">{icon}</span>
       {label && <span className="font-semibold text-sm">{label}</span>}
-    </MotionView>
+    </motion.div>
   );
 }
 
@@ -135,55 +147,41 @@ export function PulseIndicator({ color = 'bg-primary', size = 'md' }: PulseIndic
     lg: 'w-4 h-4',
   };
 
-  const scale1 = useSharedValue(1);
-  const opacity1 = useSharedValue(1);
-  const scale2 = useSharedValue(1);
-  const opacity2 = useSharedValue(0.5);
+  const scale1 = useMotionValue(1);
+  const opacity1 = useMotionValue(1);
+  const scale2 = useMotionValue(1);
+  const opacity2 = useMotionValue(0.5);
 
   React.useEffect(() => {
     // Pulse animation for first circle
-    scale1.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-    opacity1.value = withRepeat(
-      withSequence(withTiming(0.8, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-
-    // Pulse animation for second circle
-    scale2.value = withRepeat(
-      withSequence(withTiming(1.8, { duration: 2000 }), withTiming(1, { duration: 2000 })),
-      -1,
-      true
-    );
-    opacity2.value = withRepeat(
-      withSequence(withTiming(0, { duration: 2000 }), withTiming(0.5, { duration: 2000 })),
-      -1,
-      true
-    );
-  }, []);
-
-  const animatedStyle1 = useAnimatedStyle(() => ({
-    transform: [{ scale: scale1.value }],
-    opacity: opacity1.value,
-  }));
-
-  const animatedStyle2 = useAnimatedStyle(() => ({
-    transform: [{ scale: scale2.value }],
-    opacity: opacity2.value,
-  }));
+    const animatePulse1 = () => {
+      animate(scale1, 1.2, { duration: 1, repeat: Infinity, repeatType: 'reverse' });
+      animate(opacity1, 0.8, { duration: 1, repeat: Infinity, repeatType: 'reverse' });
+    };
+    const animatePulse2 = () => {
+      animate(scale2, 1.8, { duration: 2, repeat: Infinity, repeatType: 'reverse' });
+      animate(opacity2, 0, { duration: 2, repeat: Infinity, repeatType: 'reverse' });
+    };
+    animatePulse1();
+    animatePulse2();
+  }, [scale1, opacity1, scale2, opacity2]);
 
   return (
     <div className="relative inline-flex">
-      <AnimatedView
-        style={animatedStyle1}
+      <motion.div
+        style={{
+          transform: `scale(${scale1.get()})`,
+          opacity: opacity1,
+        }}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <AnimatedView
-        style={animatedStyle2}
+      <motion.div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transform: `scale(${scale2.get()})`,
+          opacity: opacity2,
+        }}
         className={`absolute inset-0 ${String(color ?? '')} rounded-full opacity-30`}
       />
     </div>
@@ -220,29 +218,32 @@ interface ShimmerProps {
 }
 
 export function Shimmer({ children, className = '' }: ShimmerProps) {
-  const translateX = useSharedValue(-100);
+  const translateX = useMotionValue(-100);
 
   React.useEffect(() => {
-    translateX.value = withRepeat(
-      withSequence(
-        withTiming(200, { duration: 2000 }),
-        withTiming(-100, { duration: 0 }),
-        withTiming(200, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+    const loop = () => {
+      animate(translateX, 200, {
+        duration: 2,
+        onComplete: () => {
+          translateX.set(-100);
+          loop();
+        },
+      });
+    };
+    loop();
+    return () => {
+      translateX.stop();
+    };
+  }, [translateX]);
 
   return (
     <div className={`relative overflow-hidden ${String(className ?? '')}`}>
       {children}
-      <AnimatedView
-        style={[animatedStyle, { pointerEvents: 'none' }]}
+      <motion.div
+        style={{
+          transform: `translateX(${translateX.get()}px)`,
+          pointerEvents: 'none',
+        }}
         className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
       />
     </div>
@@ -264,29 +265,23 @@ export function CounterBadge({ count, max = 99, variant = 'primary' }: CounterBa
     accent: 'bg-accent text-accent-foreground',
   };
 
-  const scale = useSharedValue(count === 0 ? 1 : 0);
+  const scale = useMotionValue(count === 0 ? 1 : 0);
 
   React.useEffect(() => {
-    if (count > 0) {
-      scale.value = withTiming(1, { duration: 200 });
-    } else {
-      scale.value = withTiming(0, { duration: 200 });
-    }
-  }, [count]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+    animate(scale, count > 0 ? 1 : 0, { duration: 0.2 });
+  }, [count, scale]);
 
   if (count === 0) return null;
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <motion.div
+      style={{
+        transform: `scale(${scale.get()})`,
+      }}
       className={`absolute -top-1 -right-1 h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ${variantClasses[variant]}`}
     >
       {displayCount}
-    </MotionView>
+    </motion.div>
   );
 }
 
@@ -296,32 +291,44 @@ interface LoadingDotsProps {
 }
 
 function useDotAnimation(delay: number) {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0.5);
+  const translateY = useMotionValue(0);
+  const opacity = useMotionValue(0.5);
 
   React.useEffect(() => {
     const timeoutId = setTimeout(() => {
-      translateY.value = withRepeat(
-        withSequence(withTiming(-8, { duration: 300 }), withTiming(0, { duration: 300 })),
-        -1,
-        true
-      );
-      opacity.value = withRepeat(
-        withSequence(withTiming(1, { duration: 300 }), withTiming(0.5, { duration: 300 })),
-        -1,
-        true
-      );
+      const loop = () => {
+        animate(translateY, -8, {
+          duration: 0.3,
+          onComplete: () => {
+            animate(translateY, 0, {
+              duration: 0.3,
+              onComplete: loop,
+            });
+          },
+        });
+        animate(opacity, 1, {
+          duration: 0.3,
+          onComplete: () => {
+            animate(opacity, 0.5, {
+              duration: 0.3,
+              onComplete: loop,
+            });
+          },
+        });
+      };
+      loop();
     }, delay);
-
     return () => {
       clearTimeout(timeoutId);
+      translateY.stop();
+      opacity.stop();
     };
-  }, [delay, translateY]);
+  }, [delay, translateY, opacity]);
 
-  return useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
+  return {
+    transform: `translateY(${translateY.get()}px)`,
+    opacity,
+  };
 }
 
 export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsProps) {
@@ -337,15 +344,15 @@ export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsPr
 
   return (
     <div className="flex items-center justify-center gap-1.5">
-      <AnimatedView
+      <motion.div
         style={dot1Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <AnimatedView
+      <motion.div
         style={dot2Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <AnimatedView
+      <motion.div
         style={dot3Style}
         className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
@@ -364,24 +371,23 @@ export function GlowingBorder({
   className = '',
   glowColor = 'primary',
 }: GlowingBorderProps) {
-  const opacity = useSharedValue(0);
+  const opacity = useMotionValue(0);
 
   const handleMouseEnter = React.useCallback(() => {
-    opacity.value = withTiming(0.5, { duration: 300 });
-  }, []);
+    animate(opacity, 0.5, { duration: 0.3 });
+  }, [opacity]);
 
   const handleMouseLeave = React.useCallback(() => {
-    opacity.value = withTiming(0, { duration: 300 });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+    animate(opacity, 0, { duration: 0.3 });
+  }, [opacity]);
 
   return (
     <div className={`relative ${String(className ?? '')}`}>
-      <AnimatedView
-        style={[animatedStyle, { filter: 'blur(4px)' }]}
+      <motion.div
+        style={{
+          opacity,
+          filter: 'blur(4px)',
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`absolute -inset-[1px] bg-linear-to-r from-${String(glowColor ?? '')} via-accent to-${String(glowColor ?? '')} rounded-inherit`}

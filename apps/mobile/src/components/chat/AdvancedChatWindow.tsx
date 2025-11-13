@@ -60,7 +60,7 @@ export default function AdvancedChatWindow({
   const scrollRef = useRef<ScrollView>(null)
 
   useEffect(() => {
-    if (isTruthy(scrollRef.current)) {
+    if (scrollRef.current !== null && scrollRef.current !== undefined) {
       scrollRef.current.scrollToEnd({ animated: true })
     }
   }, [messages])
@@ -91,7 +91,7 @@ export default function AdvancedChatWindow({
     >
       <View style={styles.header}>
         {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
             <Text style={styles.backText}>{'<'} Back</Text>
           </TouchableOpacity>
         )}
@@ -131,7 +131,7 @@ export default function AdvancedChatWindow({
           placeholder="Type a message..."
           editable={true}
         />
-        <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSendMessage(inputValue)} style={styles.sendButton}>
+        <TouchableOpacity onPress={() => handleSendMessage(inputValue)} style={styles.sendButton}>
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>

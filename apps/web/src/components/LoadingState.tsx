@@ -1,392 +1,361 @@
 import { useEffect } from 'react';
 import { PawPrint, Heart } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  animate,
-} from '@petspark/motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export default function LoadingState() {
+  const reducedMotion = useReducedMotion();
+  
   // Main container scale animation
-  const mainScale = useSharedValue(1);
+  const mainScale = useMotionValue(1);
 
   // Outer glow ring animations
-  const outerScale = useSharedValue(1);
-  const outerOpacity = useSharedValue(0.4);
-  const outerRotate = useSharedValue(0);
+  const outerScale = useMotionValue(1);
+  const outerOpacity = useMotionValue(0.4);
+  const outerRotate = useMotionValue(0);
 
   // Middle glow ring animations
-  const middleScale = useSharedValue(1);
-  const middleOpacity = useSharedValue(0.3);
-  const middleRotate = useSharedValue(360);
+  const middleScale = useMotionValue(1);
+  const middleOpacity = useMotionValue(0.3);
+  const middleRotate = useMotionValue(360);
 
   // Center icon rotation
-  const centerRotate = useSharedValue(0);
-  const iconRotate = useSharedValue(0);
+  const centerRotate = useMotionValue(0);
+  const iconRotate = useMotionValue(0);
 
   // Floating hearts animations
-  const heart1Y = useSharedValue(-20);
-  const heart1Opacity = useSharedValue(0);
-  const heart1Scale = useSharedValue(0.5);
+  const heart1Y = useMotionValue(-20);
+  const heart1Opacity = useMotionValue(0);
+  const heart1Scale = useMotionValue(0.5);
 
-  const heart2Y = useSharedValue(-20);
-  const heart2Opacity = useSharedValue(0);
-  const heart2Scale = useSharedValue(0.5);
+  const heart2Y = useMotionValue(-20);
+  const heart2Opacity = useMotionValue(0);
+  const heart2Scale = useMotionValue(0.5);
 
-  const heart3Y = useSharedValue(-20);
-  const heart3Opacity = useSharedValue(0);
-  const heart3Scale = useSharedValue(0.5);
+  const heart3Y = useMotionValue(-20);
+  const heart3Opacity = useMotionValue(0);
+  const heart3Scale = useMotionValue(0.5);
 
   // Text container animations
-  const textOpacity = useSharedValue(0);
-  const textY = useSharedValue(10);
+  const textOpacity = useMotionValue(0);
+  const textY = useMotionValue(10);
 
   // Dots animations
-  const dot1Scale = useSharedValue(1);
-  const dot1Opacity = useSharedValue(0.4);
-  const dot2Scale = useSharedValue(1);
-  const dot2Opacity = useSharedValue(0.4);
-  const dot3Scale = useSharedValue(1);
-  const dot3Opacity = useSharedValue(0.4);
-  const dot4Scale = useSharedValue(1);
-  const dot4Opacity = useSharedValue(0.4);
+  const dot1Scale = useMotionValue(1);
+  const dot1Opacity = useMotionValue(0.4);
+  const dot2Scale = useMotionValue(1);
+  const dot2Opacity = useMotionValue(0.4);
+  const dot3Scale = useMotionValue(1);
+  const dot3Opacity = useMotionValue(0.4);
+  const dot4Scale = useMotionValue(1);
+  const dot4Opacity = useMotionValue(0.4);
 
-  const dotsOpacity = useSharedValue(0);
+  const dotsOpacity = useMotionValue(0);
 
   useEffect(() => {
+    if (reducedMotion) return;
+    
     // Main container scale
-    const mainSequence = withSequence(
-      withTiming(1.05, { duration: 1250 }),
-      withTiming(1, { duration: 1250 })
-    );
-    const mainRepeat = withRepeat(mainSequence, -1, false);
-    animate(mainScale, mainRepeat.target, mainRepeat.transition);
+    void animate(mainScale, [1, 1.05, 1], {
+      duration: 2.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
 
     // Outer glow ring
-    const outerScaleSequence = withSequence(
-      withTiming(1.8, { duration: 1500 }),
-      withTiming(1, { duration: 1500 })
-    );
-    const outerScaleRepeat = withRepeat(outerScaleSequence, -1, false);
-    animate(outerScale, outerScaleRepeat.target, outerScaleRepeat.transition);
+    void animate(outerScale, [1, 1.8, 1], {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const outerOpacitySequence = withSequence(
-      withTiming(0, { duration: 1500 }),
-      withTiming(0.4, { duration: 1500 })
-    );
-    const outerOpacityRepeat = withRepeat(outerOpacitySequence, -1, false);
-    animate(outerOpacity, outerOpacityRepeat.target, outerOpacityRepeat.transition);
+    void animate(outerOpacity, [0.4, 0, 0.4], {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const outerRotateRepeat = withRepeat(withTiming(360, { duration: 3000 }), -1, false);
-    animate(outerRotate, outerRotateRepeat.target, outerRotateRepeat.transition);
+    void animate(outerRotate, [0, 360], {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'linear',
+    });
 
     // Middle glow ring
-    const middleScaleSequence = withSequence(
-      withTiming(1.4, { duration: 1250 }),
-      withTiming(1, { duration: 1250 })
-    );
-    const middleScaleRepeat = withRepeat(middleScaleSequence, -1, false);
-    animate(middleScale, middleScaleRepeat.target, middleScaleRepeat.transition);
+    void animate(middleScale, [1, 1.4, 1], {
+      duration: 2.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const middleOpacitySequence = withSequence(
-      withTiming(0, { duration: 1250 }),
-      withTiming(0.3, { duration: 1250 })
-    );
-    const middleOpacityRepeat = withRepeat(middleOpacitySequence, -1, false);
-    animate(middleOpacity, middleOpacityRepeat.target, middleOpacityRepeat.transition);
+    void animate(middleOpacity, [0.3, 0, 0.3], {
+      duration: 2.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const middleRotateRepeat = withRepeat(withTiming(0, { duration: 2500 }), -1, false);
-    animate(middleRotate, middleRotateRepeat.target, middleRotateRepeat.transition);
+    void animate(middleRotate, [360, 0], {
+      duration: 2.5,
+      repeat: Infinity,
+      ease: 'linear',
+    });
 
     // Center icon rotation
-    const centerRotateRepeat = withRepeat(withTiming(360, { duration: 4000 }), -1, false);
-    animate(centerRotate, centerRotateRepeat.target, centerRotateRepeat.transition);
-    const iconRotateRepeat = withRepeat(withTiming(-360, { duration: 4000 }), -1, false);
-    animate(iconRotate, iconRotateRepeat.target, iconRotateRepeat.transition);
+    void animate(centerRotate, [0, 360], {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'linear',
+    });
+    void animate(iconRotate, [0, -360], {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'linear',
+    });
 
     // Floating hearts
-    const heart1YSequence = withSequence(
-      withTiming(-40, { duration: 1000 }),
-      withTiming(-20, { duration: 1000 })
-    );
-    const heart1YRepeat = withRepeat(heart1YSequence, -1, false);
-    animate(heart1Y, heart1YRepeat.target, heart1YRepeat.transition);
+    void animate(heart1Y, [-20, -40, -20], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const heart1OpacitySequence = withSequence(
-      withTiming(1, { duration: 1000 }),
-      withTiming(0, { duration: 1000 })
-    );
-    const heart1OpacityRepeat = withRepeat(heart1OpacitySequence, -1, false);
-    animate(heart1Opacity, heart1OpacityRepeat.target, heart1OpacityRepeat.transition);
+    void animate(heart1Opacity, [0, 1, 0], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const heart1ScaleSequence = withSequence(
-      withTiming(1, { duration: 1000 }),
-      withTiming(0.5, { duration: 1000 })
-    );
-    const heart1ScaleRepeat = withRepeat(heart1ScaleSequence, -1, false);
-    animate(heart1Scale, heart1ScaleRepeat.target, heart1ScaleRepeat.transition);
+    void animate(heart1Scale, [0.5, 1, 0.5], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
 
     setTimeout(() => {
-      const heart2YSequence = withSequence(
-        withTiming(-40, { duration: 1000 }),
-        withTiming(-20, { duration: 1000 })
-      );
-      const heart2YRepeat = withRepeat(heart2YSequence, -1, false);
-      animate(heart2Y, heart2YRepeat.target, heart2YRepeat.transition);
+      void animate(heart2Y, [-20, -40, -20], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const heart2OpacitySequence = withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0, { duration: 1000 })
-      );
-      const heart2OpacityRepeat = withRepeat(heart2OpacitySequence, -1, false);
-      animate(heart2Opacity, heart2OpacityRepeat.target, heart2OpacityRepeat.transition);
+      void animate(heart2Opacity, [0, 1, 0], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const heart2ScaleSequence = withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.5, { duration: 1000 })
-      );
-      const heart2ScaleRepeat = withRepeat(heart2ScaleSequence, -1, false);
-      animate(heart2Scale, heart2ScaleRepeat.target, heart2ScaleRepeat.transition);
+      void animate(heart2Scale, [0.5, 1, 0.5], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     }, 400);
 
     setTimeout(() => {
-      const heart3YSequence = withSequence(
-        withTiming(-40, { duration: 1000 }),
-        withTiming(-20, { duration: 1000 })
-      );
-      const heart3YRepeat = withRepeat(heart3YSequence, -1, false);
-      animate(heart3Y, heart3YRepeat.target, heart3YRepeat.transition);
+      void animate(heart3Y, [-20, -40, -20], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const heart3OpacitySequence = withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0, { duration: 1000 })
-      );
-      const heart3OpacityRepeat = withRepeat(heart3OpacitySequence, -1, false);
-      animate(heart3Opacity, heart3OpacityRepeat.target, heart3OpacityRepeat.transition);
+      void animate(heart3Opacity, [0, 1, 0], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const heart3ScaleSequence = withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.5, { duration: 1000 })
-      );
-      const heart3ScaleRepeat = withRepeat(heart3ScaleSequence, -1, false);
-      animate(heart3Scale, heart3ScaleRepeat.target, heart3ScaleRepeat.transition);
+      void animate(heart3Scale, [0.5, 1, 0.5], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     }, 800);
 
     // Text container
     setTimeout(() => {
-      const textOpacityTransition = withTiming(1, { duration: 500 });
-      animate(textOpacity, textOpacityTransition.target, textOpacityTransition.transition);
-      const textYTransition = withTiming(0, { duration: 500 });
-      animate(textY, textYTransition.target, textYTransition.transition);
+      void animate(textOpacity, 1, { duration: 0.5, ease: [0.2, 0, 0, 1] });
+      void animate(textY, 0, { duration: 0.5, ease: [0.2, 0, 0, 1] });
     }, 300);
 
     // Dots container
     setTimeout(() => {
-      const dotsOpacityTransition = withTiming(1, { duration: 500 });
-      animate(dotsOpacity, dotsOpacityTransition.target, dotsOpacityTransition.transition);
+      void animate(dotsOpacity, 1, { duration: 0.5, ease: [0.2, 0, 0, 1] });
     }, 500);
 
     // Individual dots
-    const dot1ScaleSequence = withSequence(
-      withTiming(1.3, { duration: 600 }),
-      withTiming(1, { duration: 600 })
-    );
-    const dot1ScaleRepeat = withRepeat(dot1ScaleSequence, -1, false);
-    animate(dot1Scale, dot1ScaleRepeat.target, dot1ScaleRepeat.transition);
+    void animate(dot1Scale, [1, 1.3, 1], {
+      duration: 1.2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
     
-    const dot1OpacitySequence = withSequence(
-      withTiming(1, { duration: 600 }),
-      withTiming(0.4, { duration: 600 })
-    );
-    const dot1OpacityRepeat = withRepeat(dot1OpacitySequence, -1, false);
-    animate(dot1Opacity, dot1OpacityRepeat.target, dot1OpacityRepeat.transition);
+    void animate(dot1Opacity, [0.4, 1, 0.4], {
+      duration: 1.2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
 
     setTimeout(() => {
-      const dot2ScaleSequence = withSequence(
-        withTiming(1.3, { duration: 600 }),
-        withTiming(1, { duration: 600 })
-      );
-      const dot2ScaleRepeat = withRepeat(dot2ScaleSequence, -1, false);
-      animate(dot2Scale, dot2ScaleRepeat.target, dot2ScaleRepeat.transition);
+      void animate(dot2Scale, [1, 1.3, 1], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const dot2OpacitySequence = withSequence(
-        withTiming(1, { duration: 600 }),
-        withTiming(0.4, { duration: 600 })
-      );
-      const dot2OpacityRepeat = withRepeat(dot2OpacitySequence, -1, false);
-      animate(dot2Opacity, dot2OpacityRepeat.target, dot2OpacityRepeat.transition);
+      void animate(dot2Opacity, [0.4, 1, 0.4], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     }, 180);
 
     setTimeout(() => {
-      const dot3ScaleSequence = withSequence(
-        withTiming(1.3, { duration: 600 }),
-        withTiming(1, { duration: 600 })
-      );
-      const dot3ScaleRepeat = withRepeat(dot3ScaleSequence, -1, false);
-      animate(dot3Scale, dot3ScaleRepeat.target, dot3ScaleRepeat.transition);
+      void animate(dot3Scale, [1, 1.3, 1], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const dot3OpacitySequence = withSequence(
-        withTiming(1, { duration: 600 }),
-        withTiming(0.4, { duration: 600 })
-      );
-      const dot3OpacityRepeat = withRepeat(dot3OpacitySequence, -1, false);
-      animate(dot3Opacity, dot3OpacityRepeat.target, dot3OpacityRepeat.transition);
+      void animate(dot3Opacity, [0.4, 1, 0.4], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     }, 360);
 
     setTimeout(() => {
-      const dot4ScaleSequence = withSequence(
-        withTiming(1.3, { duration: 600 }),
-        withTiming(1, { duration: 600 })
-      );
-      const dot4ScaleRepeat = withRepeat(dot4ScaleSequence, -1, false);
-      animate(dot4Scale, dot4ScaleRepeat.target, dot4ScaleRepeat.transition);
+      void animate(dot4Scale, [1, 1.3, 1], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
       
-      const dot4OpacitySequence = withSequence(
-        withTiming(1, { duration: 600 }),
-        withTiming(0.4, { duration: 600 })
-      );
-      const dot4OpacityRepeat = withRepeat(dot4OpacitySequence, -1, false);
-      animate(dot4Opacity, dot4OpacityRepeat.target, dot4OpacityRepeat.transition);
+      void animate(dot4Opacity, [0.4, 1, 0.4], {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     }, 540);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount - animations are managed by reanimated
-
-  // Animated styles
-  const mainStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: mainScale.get() }],
-  }));
-
-  const outerStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: outerScale.get() }, { rotate: `${outerRotate.get()}deg` }],
-    opacity: outerOpacity.get(),
-  }));
-
-  const middleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: middleScale.get() }, { rotate: `${middleRotate.get()}deg` }],
-    opacity: middleOpacity.get(),
-  }));
-
-  const centerStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${centerRotate.get()}deg` }],
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${iconRotate.get()}deg` }],
-  }));
-
-  const heart1Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: heart1Y.get() }, { scale: heart1Scale.get() }],
-    opacity: heart1Opacity.get(),
-  }));
-
-  const heart2Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: heart2Y.get() }, { scale: heart2Scale.get() }],
-    opacity: heart2Opacity.get(),
-  }));
-
-  const heart3Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: heart3Y.get() }, { scale: heart3Scale.get() }],
-    opacity: heart3Opacity.get(),
-  }));
-
-  const textStyle = useAnimatedStyle(() => ({
-    opacity: textOpacity.get(),
-    transform: [{ translateY: textY.get() }],
-  }));
-
-  const dotsStyle = useAnimatedStyle(() => ({
-    opacity: dotsOpacity.get(),
-  }));
-
-  const dot1Style = useAnimatedStyle(() => ({
-    transform: [{ scale: dot1Scale.get() }],
-    opacity: dot1Opacity.get(),
-  }));
-
-  const dot2Style = useAnimatedStyle(() => ({
-    transform: [{ scale: dot2Scale.get() }],
-    opacity: dot2Opacity.get(),
-  }));
-
-  const dot3Style = useAnimatedStyle(() => ({
-    transform: [{ scale: dot3Scale.get() }],
-    opacity: dot3Opacity.get(),
-  }));
-
-  const dot4Style = useAnimatedStyle(() => ({
-    transform: [{ scale: dot4Scale.get() }],
-    opacity: dot4Opacity.get(),
-  }));
+  }, [reducedMotion, mainScale, outerScale, outerOpacity, outerRotate, middleScale, middleOpacity, middleRotate, centerRotate, iconRotate, heart1Y, heart1Opacity, heart1Scale, heart2Y, heart2Opacity, heart2Scale, heart3Y, heart3Opacity, heart3Scale, textOpacity, textY, dotsOpacity, dot1Scale, dot1Opacity, dot2Scale, dot2Opacity, dot3Scale, dot3Opacity, dot4Scale, dot4Opacity]); // Only run once on mount - animations are managed by framer-motion
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 px-4">
-      <AnimatedView style={mainStyle} className="relative w-28 h-28">
+      <motion.div
+        style={{ scale: mainScale }}
+        className="relative w-28 h-28"
+      >
         {/* Outer glow ring */}
-        <AnimatedView
-          style={outerStyle}
+        <motion.div
+          style={{
+            scale: outerScale,
+            rotate: outerRotate,
+            opacity: outerOpacity,
+          }}
           className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30"
         />
 
         {/* Middle glow ring */}
-        <AnimatedView
-          style={middleStyle}
+        <motion.div
+          style={{
+            scale: middleScale,
+            rotate: middleRotate,
+            opacity: middleOpacity,
+          }}
           className="absolute inset-2 rounded-full bg-gradient-to-tr from-accent/30 to-primary/30"
         />
 
         {/* Center icon container */}
-        <AnimatedView
-          style={centerStyle}
+        <motion.div
+          style={{ rotate: centerRotate }}
           className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm flex items-center justify-center border border-primary/20"
         >
-          <AnimatedView style={iconStyle}>
+          <motion.div style={{ rotate: iconRotate }}>
             <PawPrint size={40} weight="fill" className="text-primary drop-shadow-lg" />
-          </AnimatedView>
-        </AnimatedView>
+          </motion.div>
+        </motion.div>
 
         {/* Floating hearts */}
-        <AnimatedView style={[heart1Style, { left: '30%', top: '50%' }]} className="absolute">
+        <motion.div
+          style={{
+            y: heart1Y,
+            scale: heart1Scale,
+            opacity: heart1Opacity,
+            left: '30%',
+            top: '50%',
+          }}
+          className="absolute"
+        >
           <Heart size={16} weight="fill" className="text-accent" />
-        </AnimatedView>
-        <AnimatedView style={[heart2Style, { left: '50%', top: '50%' }]} className="absolute">
+        </motion.div>
+        <motion.div
+          style={{
+            y: heart2Y,
+            scale: heart2Scale,
+            opacity: heart2Opacity,
+            left: '50%',
+            top: '50%',
+          }}
+          className="absolute"
+        >
           <Heart size={16} weight="fill" className="text-accent" />
-        </AnimatedView>
-        <AnimatedView style={[heart3Style, { left: '70%', top: '50%' }]} className="absolute">
+        </motion.div>
+        <motion.div
+          style={{
+            y: heart3Y,
+            scale: heart3Scale,
+            opacity: heart3Opacity,
+            left: '70%',
+            top: '50%',
+          }}
+          className="absolute"
+        >
           <Heart size={16} weight="fill" className="text-accent" />
-        </AnimatedView>
-      </AnimatedView>
+        </motion.div>
+      </motion.div>
 
-      <AnimatedView
-        style={textStyle}
+      <motion.div
+        style={{
+          opacity: textOpacity,
+          y: textY,
+        }}
         className="flex flex-col items-center gap-3 max-w-sm text-center"
       >
         <div className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
           Loading your experience...
         </div>
         <p className="text-sm text-muted-foreground">Preparing amazing connections</p>
-      </AnimatedView>
+      </motion.div>
 
-      <AnimatedView style={dotsStyle} className="flex gap-2.5">
-        <AnimatedView
-          style={dot1Style}
+      <motion.div style={{ opacity: dotsOpacity }} className="flex gap-2.5">
+        <motion.div
+          style={{
+            scale: dot1Scale,
+            opacity: dot1Opacity,
+          }}
           className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-accent"
         />
-        <AnimatedView
-          style={dot2Style}
+        <motion.div
+          style={{
+            scale: dot2Scale,
+            opacity: dot2Opacity,
+          }}
           className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-accent"
         />
-        <AnimatedView
-          style={dot3Style}
+        <motion.div
+          style={{
+            scale: dot3Scale,
+            opacity: dot3Opacity,
+          }}
           className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-accent"
         />
-        <AnimatedView
-          style={dot4Style}
+        <motion.div
+          style={{
+            scale: dot4Scale,
+            opacity: dot4Opacity,
+          }}
           className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-accent"
         />
-      </AnimatedView>
+      </motion.div>
     </div>
   );
 }

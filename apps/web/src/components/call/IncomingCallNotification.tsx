@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useCallback, useMemo } from 'react';
 import { Phone, PhoneDisconnect, VideoCamera } from '@phosphor-icons/react';
@@ -7,7 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { Call } from '@/lib/call-types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useModalAnimation, useGlowPulse, useBounceOnTap } from '@/effects/reanimated';
 import {
   useSharedValue,
@@ -17,7 +18,7 @@ import {
   withTiming,
 } from '@petspark/motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 const logger = createLogger('IncomingCallNotification');
 
@@ -104,7 +105,7 @@ export default function IncomingCallNotification({
   }, [call.type]);
 
   return (
-    <AnimatedView
+    <motion.div
       style={modalAnimation.style}
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
       role="alertdialog"
@@ -112,19 +113,19 @@ export default function IncomingCallNotification({
       aria-describedby="incoming-call-description"
       aria-modal="true"
     >
-      <AnimatedView
+      <motion.div
         style={glowPulse.animatedStyle}
         className="glass-strong backdrop-blur-2xl rounded-3xl p-6 border border-white/30 shadow-2xl"
       >
         <div className="flex items-center gap-4 mb-6">
-          <AnimatedView style={avatarAnimatedStyle}>
+          <motion.div style={avatarAnimatedStyle}>
             <Avatar className="w-16 h-16 ring-4 ring-primary/30">
               <AvatarImage src={callerAvatar} alt={callerName} />
               <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-2xl font-bold">
                 {callerName[0] ?? '?'}
               </AvatarFallback>
             </Avatar>
-          </AnimatedView>
+          </motion.div>
 
           <div className="flex-1">
             <h3 id="incoming-call-title" className="font-bold text-lg text-foreground">
@@ -143,7 +144,7 @@ export default function IncomingCallNotification({
         </div>
 
         <div className="flex gap-3" role="group" aria-label="Call actions">
-          <AnimatedView style={declineBounce.animatedStyle} className="flex-1">
+          <motion.div style={declineBounce.animatedStyle} className="flex-1">
             <Button
               onClick={declineBounce.handlePress}
               variant="outline"
@@ -153,9 +154,9 @@ export default function IncomingCallNotification({
               <PhoneDisconnect size={20} weight="fill" className="mr-2" aria-hidden="true" />
               Decline
             </Button>
-          </AnimatedView>
+          </motion.div>
 
-          <AnimatedView style={acceptBounce.animatedStyle} className="flex-1">
+          <motion.div style={acceptBounce.animatedStyle} className="flex-1">
             <Button
               onClick={acceptBounce.handlePress}
               className="w-full h-12 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"
@@ -164,9 +165,9 @@ export default function IncomingCallNotification({
               <Phone size={20} weight="fill" className="mr-2" aria-hidden="true" />
               Accept
             </Button>
-          </AnimatedView>
+          </motion.div>
         </div>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }

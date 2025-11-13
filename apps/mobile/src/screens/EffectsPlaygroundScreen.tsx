@@ -9,79 +9,32 @@
 
 import { FeatureCard } from '@mobile/components/FeatureCard'
 import { SectionHeader } from '@mobile/components/SectionHeader'
-import { useSendWarp } from '@mobile/effects/chat/bubbles/use-send-warp'
-import { useSwipeReplyElastic } from '@mobile/effects/chat/gestures/use-swipe-reply-elastic'
-import { useGlassMorphZoom } from '@mobile/effects/chat/media/use-glass-morph-zoom'
+import { EffectCard } from '@mobile/components/effects/EffectCard'
+import { useEffectsPlayground } from '@mobile/hooks/effects/useEffectsPlayground'
 import { AdditiveBloom } from '@mobile/effects/chat/shaders/additive-bloom'
 import { ChromaticAberrationFX } from '@mobile/effects/chat/shaders/chromatic-aberration'
 import { RibbonFX } from '@mobile/effects/chat/shaders/ribbon-fx'
 import { colors } from '@mobile/theme/colors'
-import React, { useCallback, useState } from 'react'
+import { typography, spacing, radius, component } from '@mobile/theme/tokens'
+import React from 'react'
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native'
-import { withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const CANVAS_WIDTH = 300
-const CANVAS_HEIGHT = 200
-
 export function EffectsPlaygroundScreen(): React.ReactElement {
-  const [reducedMotion, setReducedMotion] = useState(false)
-
-  // Send Warp
-  const sendWarp = useSendWarp({
-    enabled: true,
-    onComplete: () => {
-      // Reset for replay
-    },
-  })
-
-  // Media Zoom
-  const mediaZoom = useGlassMorphZoom({
-    enabled: true,
-    blurRadius: 12,
-  })
-
-  // Swipe Reply
-  const swipeReply = useSwipeReplyElastic({
-    enabled: true,
-    onThresholdCross: () => {
-      // Demo threshold cross
-    },
-    onReply: () => {
-      // Demo reply
-    },
-  })
-
-  const handleSendWarp = useCallback(() => {
-    sendWarp.bloomCenterX.value = CANVAS_WIDTH / 2
-    sendWarp.bloomCenterY.value = CANVAS_HEIGHT / 2
-    sendWarp.trigger()
-  }, [sendWarp])
-
-  const handleMediaZoom = useCallback(() => {
-    mediaZoom.aberrationCenter.value = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 }
-    mediaZoom.open()
-  }, [mediaZoom])
-
-  const handleMediaClose = useCallback(() => {
-    mediaZoom.close()
-  }, [mediaZoom])
-
-  const handleReset = useCallback(() => {
-    sendWarp.translateX.value = 0
-    sendWarp.opacity.value = 1
-    sendWarp.glowOpacity.value = 0
-    sendWarp.bloomIntensity.value = 0
-
-    mediaZoom.scale.value = 1
-    mediaZoom.opacity.value = 0
-    mediaZoom.aberrationRadius.value = 0
-    mediaZoom.aberrationIntensity.value = 0
-
-    swipeReply.translateX.value = 0
-    swipeReply.ribbonProgress.value = 0
-    swipeReply.ribbonAlpha.value = 0
-  }, [sendWarp, mediaZoom, swipeReply])
+  const {
+    reducedMotion,
+    setReducedMotion,
+    sendWarp,
+    mediaZoom,
+    swipeReply,
+    handleSendWarp,
+    handleMediaZoom,
+    handleMediaClose,
+    handleReset,
+    handleAnimateRibbon,
+    canvasWidth,
+    canvasHeight,
+  } = useEffectsPlayground()
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -105,82 +58,98 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
         </FeatureCard>
 
         {/* Send Warp Section */}
-        <FeatureCard title="Send Warp" subtitle="AdditiveBloom glow trail">
-          <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
-              <AdditiveBloom
-                width={CANVAS_WIDTH}
-                height={CANVAS_HEIGHT}
-                centerX={sendWarp.bloomCenterX}
-                centerY={sendWarp.bloomCenterY}
-                radius={sendWarp.bloomRadius}
-                intensity={sendWarp.bloomIntensity}
-                color={[0.3, 0.75, 1]}
-              />
-            </View>
-            <TouchableOpacity style={styles.button} onPress={handleSendWarp} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-              <Text style={styles.buttonText}>Trigger Send</Text>
-            </TouchableOpacity>
+        <EffectCard title="Send Warp" subtitle="AdditiveBloom glow trail">
+          <View style={styles.canvasWrapper}>
+            <AdditiveBloom
+              width={canvasWidth}
+              height={canvasHeight}
+              centerX={sendWarp.bloomCenterX}
+              centerY={sendWarp.bloomCenterY}
+              radius={sendWarp.bloomRadius}
+              intensity={sendWarp.bloomIntensity}
+              color={[0.3, 0.75, 1]}
+            />
           </View>
-        </FeatureCard>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleSendWarp}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Trigger send warp effect"
+          >
+            <Text style={styles.buttonText}>Trigger Send</Text>
+          </TouchableOpacity>
+        </EffectCard>
 
         {/* Media Zoom Section */}
-        <FeatureCard title="Media Zoom" subtitle="ChromaticAberrationFX on open">
-          <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
-              <ChromaticAberrationFX
-                uri="https://via.placeholder.com/300x200"
-                width={CANVAS_WIDTH}
-                height={CANVAS_HEIGHT}
-                center={mediaZoom.aberrationCenter}
-                radius={mediaZoom.aberrationRadius}
-                intensity={mediaZoom.aberrationIntensity}
-                borderRadius={12}
-              />
-            </View>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.button} onPress={handleMediaZoom} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-                <Text style={styles.buttonText}>Open</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleMediaClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
+        <EffectCard title="Media Zoom" subtitle="ChromaticAberrationFX on open">
+          <View style={styles.canvasWrapper}>
+            <ChromaticAberrationFX
+              uri="https://via.placeholder.com/300x200"
+              width={canvasWidth}
+              height={canvasHeight}
+              center={mediaZoom.aberrationCenter}
+              radius={mediaZoom.aberrationRadius}
+              intensity={mediaZoom.aberrationIntensity}
+              borderRadius={radius.lg}
+            />
           </View>
-        </FeatureCard>
-
-        {/* Reply Ribbon Section */}
-        <FeatureCard title="Reply Ribbon" subtitle="RibbonFX for swipe-to-reply">
-          <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
-              <RibbonFX
-                width={CANVAS_WIDTH}
-                height={CANVAS_HEIGHT}
-                p0={swipeReply.ribbonP0}
-                p1={swipeReply.ribbonP1}
-                thickness={swipeReply.ribbonThickness}
-                glow={swipeReply.ribbonGlow}
-                progress={swipeReply.ribbonProgress}
-                color={[0.2, 0.8, 1.0]}
-                alpha={swipeReply.ribbonAlpha}
-              />
-            </View>
+          <View style={styles.buttonRow}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => {
-                swipeReply.ribbonP0.value = { x: 50, y: 100 }
-                swipeReply.ribbonP1.value = { x: 250, y: 100 }
-                swipeReply.ribbonProgress.value = withTiming(1, { duration: 180 })
-                swipeReply.ribbonAlpha.value = withTiming(1, { duration: 180 })
-              }}
+              onPress={handleMediaZoom}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Open media zoom"
             >
-              <Text style={styles.buttonText}>Animate Ribbon</Text>
+              <Text style={styles.buttonText}>Open</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleMediaClose}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Close media zoom"
+            >
+              <Text style={styles.buttonText}>Close</Text>
             </TouchableOpacity>
           </View>
-        </FeatureCard>
+        </EffectCard>
+
+        {/* Reply Ribbon Section */}
+        <EffectCard title="Reply Ribbon" subtitle="RibbonFX for swipe-to-reply">
+          <View style={styles.canvasWrapper}>
+            <RibbonFX
+              width={canvasWidth}
+              height={canvasHeight}
+              p0={swipeReply.ribbonP0}
+              p1={swipeReply.ribbonP1}
+              thickness={swipeReply.ribbonThickness}
+              glow={swipeReply.ribbonGlow}
+              progress={swipeReply.ribbonProgress}
+              color={[0.2, 0.8, 1.0]}
+              alpha={swipeReply.ribbonAlpha}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleAnimateRibbon}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Animate ribbon effect"
+          >
+            <Text style={styles.buttonText}>Animate Ribbon</Text>
+          </TouchableOpacity>
+        </EffectCard>
 
         {/* Reset Button */}
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={handleReset}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Reset all effects"
+        >
           <Text style={styles.resetButtonText}>Reset All</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -188,66 +157,73 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
   )
 }
 
+EffectsPlaygroundScreen.displayName = 'EffectsPlaygroundScreen'
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: spacing.lg,
+    paddingBottom: spacing['2xl'],
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   settingLabel: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  canvasContainer: {
-    marginTop: 12,
+    fontSize: typography.body.fontSize,
+    fontWeight: typography.h3.fontWeight,
   },
   canvasWrapper: {
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
+    width: 300,
+    height: 200,
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: spacing.md,
     alignSelf: 'center',
   },
   button: {
     backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.md,
+    minHeight: component.touchTargetMin,
+    minWidth: component.touchTargetMin,
+    justifyContent: 'center',
+    alignItems: 'center',
     alignSelf: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
     justifyContent: 'center',
   },
   buttonText: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.body.fontSize,
+    fontWeight: typography.body.fontWeight,
   },
   resetButton: {
     backgroundColor: colors.danger,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    marginTop: 24,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing['2xl'],
+    borderRadius: radius.md,
+    marginTop: spacing.xl,
+    minHeight: component.touchTargetMin,
+    minWidth: component.touchTargetMin,
+    justifyContent: 'center',
+    alignItems: 'center',
     alignSelf: 'center',
   },
   resetButtonText: {
     color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: typography.h3.fontSize,
+    fontWeight: typography.h3.fontWeight,
   },
 })

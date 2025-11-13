@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useCallback } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
 
@@ -28,13 +29,13 @@ export interface Use3DTiltEffectReturn {
  * ```tsx
  * const { animatedStyle, handleMouseMove, handleMouseLeave } = use3DTiltEffect()
  * return (
- *   <AnimatedView
+ *   <motion.div
  *     style={animatedStyle}
  *     onMouseMove={handleMouseMove}
  *     onMouseLeave={handleMouseLeave}
  *   >
  *     {content}
- *   </AnimatedView>
+ *   </motion.div>
  * )
  * ```
  */

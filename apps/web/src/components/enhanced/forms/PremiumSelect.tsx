@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useId } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import {

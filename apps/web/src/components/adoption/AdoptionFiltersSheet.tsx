@@ -17,7 +17,7 @@ import type {
   AdoptionListingStatus,
 } from '@/lib/adoption-marketplace-types';
 import { X } from '@phosphor-icons/react';
-import { FocusRing } from '@/core/tokens';
+import { FocusRing } from '@petspark/shared/tokens';
 import { useAdoptionFilters } from '@/hooks/use-adoption-filters';
 
 interface AdoptionFiltersSheetProps {

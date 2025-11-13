@@ -1,4 +1,5 @@
 import { PetRatings } from '@/components/PetRatings';
+import { motion } from 'framer-motion';
 import { TrustBadges } from '@/components/TrustBadges';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -26,12 +27,12 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { useEffect } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 interface PetDetailDialogProps {
   pet: Pet | null;
@@ -122,11 +123,11 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
           {pet.bio ? `Details for ${pet.name}. ${pet.bio}` : `Details for ${pet.name}`}
         </DialogDescription>
         {open && dialogPresence.shouldRender ? (
-          <AnimatedView
+          <motion.div
             style={[dialogStyle, dialogPresence.animatedStyle]}
             className="relative bg-card rounded-3xl overflow-hidden shadow-2xl"
           >
-            <AnimatedView
+            <motion.div
               style={[closeButtonHover.animatedStyle, closeButtonTap.animatedStyle]}
               onClick={() => {
                 try {
@@ -146,22 +147,22 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
               aria-label="Close dialog"
             >
               <X size={20} className="text-white drop-shadow-lg" weight="bold" />
-            </AnimatedView>
+            </motion.div>
 
             <div className="relative h-100 bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
-              <AnimatedView key={currentIndex} style={photoStyle} className="w-full h-full">
+              <motion.div key={currentIndex} style={photoStyle} className="w-full h-full">
                 <img
                   src={currentPhoto}
                   alt={`${pet.name} photo ${currentIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
-              </AnimatedView>
+              </motion.div>
 
-              <AnimatedView className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
+              <motion.div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
 
               {hasMultiplePhotos && (
                 <>
-                  <AnimatedView
+                  <motion.div
                     onClick={() => {
                       try {
                         prevPhoto();
@@ -173,8 +174,8 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                     className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-opacity z-30"
                   >
                     <CaretLeft size={24} weight="bold" className="text-white drop-shadow-lg" />
-                  </AnimatedView>
-                  <AnimatedView
+                  </motion.div>
+                  <motion.div
                     onClick={() => {
                       try {
                         nextPhoto();
@@ -186,10 +187,10 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                     className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-opacity z-30"
                   >
                     <CaretRight size={24} weight="bold" className="text-white drop-shadow-lg" />
-                  </AnimatedView>
-                  <AnimatedView className="absolute top-20 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                  </motion.div>
+                  <motion.div className="absolute top-20 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                     {photos.map((_, idx) => (
-                      <AnimatedView
+                      <motion.div
                         key={idx}
                         onClick={() => {
                           try {
@@ -207,17 +208,17 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                           }`}
                       />
                     ))}
-                  </AnimatedView>
+                  </motion.div>
                 </>
               )}
 
-              <AnimatedView className="absolute bottom-6 left-6 text-white z-20">
+              <motion.div className="absolute bottom-6 left-6 text-white z-20">
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-4xl sm:text-5xl font-bold drop-shadow-2xl" aria-hidden="true">{pet.name}</h2>
                   {pet.verified && (
-                    <AnimatedView>
+                    <motion.div>
                       <ShieldCheck size={32} weight="fill" className="text-accent drop-shadow-lg" />
-                    </AnimatedView>
+                    </motion.div>
                   )}
                 </div>
                 <div className="flex items-center gap-4 text-white/90">
@@ -237,37 +238,37 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                   {pet?.breed && <span className="text-lg">{pet.breed}</span>}
                 </div>
                 {hasMultiplePhotos && (
-                  <AnimatedView className="text-sm text-white/70 mt-2">
+                  <motion.div className="text-sm text-white/70 mt-2">
                     Photo {currentIndex + 1} of {totalPhotos}
-                  </AnimatedView>
+                  </motion.div>
                 )}
-              </AnimatedView>
+              </motion.div>
             </div>
 
             <div className="max-h-[calc(90vh-400px)] overflow-y-auto">
               <div className="p-6 sm:p-8 space-y-6">
                 {pet.trustProfile && (
-                  <AnimatedView>
+                  <motion.div>
                     <PetRatings
                       trustProfile={pet.trustProfile}
                       {...(pet.ratings !== undefined ? { ratings: pet.ratings } : {})}
                     />
-                  </AnimatedView>
+                  </motion.div>
                 )}
 
                 {pet.bio && (
-                  <AnimatedView className="space-y-2">
+                  <motion.div className="space-y-2">
                     <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <ChatCircle size={16} weight="fill" className="text-primary" />
                       About {pet.name}
                     </h3>
                     <p className="text-foreground leading-relaxed">{pet.bio}</p>
-                  </AnimatedView>
+                  </motion.div>
                 )}
 
                 <Separator />
 
-                <AnimatedView className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <PawPrint size={16} weight="fill" className="text-primary" />
@@ -275,16 +276,16 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                     </h3>
                     <div className="space-y-3">
                       {pet.age != null && (
-                        <AnimatedView className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                        <motion.div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
                             <Calendar size={18} weight="fill" className="text-accent" />
                             Age
                           </span>
                           <span className="font-semibold">{pet.age} years old</span>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                       {pet.gender && (
-                        <AnimatedView className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                        <motion.div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
                             {pet.gender === 'male' ? (
                               <GenderMale size={18} weight="fill" className="text-accent" />
@@ -294,25 +295,25 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                             Gender
                           </span>
                           <span className="font-semibold capitalize">{pet.gender}</span>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                       {pet.size && (
-                        <AnimatedView className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                        <motion.div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
                             <Ruler size={18} weight="fill" className="text-accent" />
                             Size
                           </span>
                           <span className="font-semibold">{sizeMap[pet.size] || pet.size}</span>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                       {pet.location && (
-                        <AnimatedView className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                        <motion.div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
                             <MapPin size={18} weight="fill" className="text-accent" />
                             Location
                           </span>
                           <span className="font-semibold">{pet.location}</span>
-                        </AnimatedView>
+                        </motion.div>
                       )}
                     </div>
                   </div>
@@ -322,7 +323,7 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                       <Heart size={16} weight="fill" className="text-primary" />
                       Owner
                     </h3>
-                    <AnimatedView className="p-4 rounded-xl bg-linear-to-br from-primary/5 to-accent/5 border border-border">
+                    <motion.div className="p-4 rounded-xl bg-linear-to-br from-primary/5 to-accent/5 border border-border">
                       <div className="flex items-center gap-3 mb-4">
                         <Avatar className="w-14 h-14 ring-2 ring-primary/20">
                           <AvatarImage src={pet?.ownerAvatar} />
@@ -366,73 +367,73 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                             )}
                         </div>
                       )}
-                    </AnimatedView>
+                    </motion.div>
                   </div>
-                </AnimatedView>
+                </motion.div>
 
                 {Array.isArray(pet.personality) && pet.personality.length > 0 && (
                   <>
                     <Separator />
-                    <AnimatedView className="space-y-3">
+                    <motion.div className="space-y-3">
                       <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Personality Traits
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {pet.personality.map((trait, idx) => (
-                          <AnimatedView key={idx}>
+                          <motion.div key={idx}>
                             <Badge
                               variant="secondary"
                               className="px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
                             >
                               {trait}
                             </Badge>
-                          </AnimatedView>
+                          </motion.div>
                         ))}
                       </div>
-                    </AnimatedView>
+                    </motion.div>
                   </>
                 )}
 
                 {Array.isArray(pet.interests) && pet.interests.length > 0 && (
                   <>
                     <Separator />
-                    <AnimatedView className="space-y-3">
+                    <motion.div className="space-y-3">
                       <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Interests & Activities
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {pet.interests.map((interest, idx) => (
-                          <AnimatedView key={idx}>
+                          <motion.div key={idx}>
                             <Badge
                               variant="outline"
                               className="px-3 py-1.5 text-sm font-medium border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-colors"
                             >
                               {interest}
                             </Badge>
-                          </AnimatedView>
+                          </motion.div>
                         ))}
                       </div>
-                    </AnimatedView>
+                    </motion.div>
                   </>
                 )}
 
                 {Array.isArray(pet.lookingFor) && pet.lookingFor.length > 0 && (
                   <>
                     <Separator />
-                    <AnimatedView className="space-y-3">
+                    <motion.div className="space-y-3">
                       <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Looking For
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {pet.lookingFor.map((item, idx) => (
-                          <AnimatedView key={idx}>
+                          <motion.div key={idx}>
                             <Badge className="px-3 py-1.5 text-sm font-medium bg-linear-to-r from-primary to-accent text-white hover:shadow-lg transition-all">
                               {item}
                             </Badge>
-                          </AnimatedView>
+                          </motion.div>
                         ))}
                       </div>
-                    </AnimatedView>
+                    </motion.div>
                   </>
                 )}
 
@@ -441,18 +442,18 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                   pet.trustProfile.badges.length > 0 && (
                     <>
                       <Separator />
-                      <AnimatedView className="space-y-4">
+                      <motion.div className="space-y-4">
                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                           <ShieldCheck size={16} weight="fill" className="text-primary" />
                           Trust & Verification
                         </h3>
                         <TrustBadges badges={pet.trustProfile.badges} showLabels />
-                      </AnimatedView>
+                      </motion.div>
                     </>
                   )}
               </div>
             </div>
-          </AnimatedView>
+          </motion.div>
         ) : null}
       </DialogContent>
   )}

@@ -5,15 +5,19 @@ import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useRippleEffect } from '@/effects/reanimated/use-ripple-effect';
 import { useMagneticHover } from '@/effects/reanimated/use-magnetic-hover';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
-import { Dimens } from '@/core/tokens/dimens';
+import { Dimens } from '@petspark/shared';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { useTargetSize } from '@/hooks/use-target-size';
 import { getAriaButtonAttributes } from '@/lib/accessibility';
+import { getColor } from '@/lib/design-tokens';
+import { useTheme } from '@/hooks/useTheme';
+import { colorWithOpacity } from '@/hooks/useDesignTokens';
+import { useMemo } from 'react';
 
 const logger = createLogger('IconButton');
 
@@ -27,21 +31,22 @@ export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
   'aria-label': string;
 }
 
+// Use design tokens for sizes - use Dimens.spacing for consistent sizing
 const SIZE_CONFIG = {
   sm: {
-    size: 32,
-    iconSize: 16,
-    padding: 8,
+    size: Dimens.spacing['8xl'], // 32px
+    iconSize: Dimens.spacing['4xl'], // 16px
+    padding: Dimens.spacing.xl, // 8px
   },
   md: {
-    size: 44,
-    iconSize: 20,
-    padding: 12,
+    size: Dimens.component.touchTargetMin, // 44px (minimum touch target)
+    iconSize: Dimens.spacing['5xl'], // 20px
+    padding: Dimens.spacing.lg, // 12px
   },
   lg: {
-    size: 56,
-    iconSize: 24,
-    padding: 16,
+    size: Dimens.spacing['7xl'], // 56px
+    iconSize: Dimens.spacing['6xl'], // 24px
+    padding: Dimens.spacing['4xl'], // 16px
   },
 } as const;
 
@@ -59,6 +64,8 @@ export function IconButton({
   ...props
 }: IconButtonProps): React.JSX.Element {
   const _uiConfig = useUIConfig();
+  const { theme } = useTheme();
+  const themeMode: 'light' | 'dark' = theme;
   // Target size validation - ensures 44x44px minimum touch target (already enforced by SIZE_CONFIG)
   const { ensure: ensureTargetSize } = useTargetSize({ enabled: !disabled, autoFix: true });
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -78,20 +85,36 @@ export function IconButton({
     enabled: enableMagnetic && !disabled,
   });
 
+  // Get ripple color from design tokens
+  const rippleColor = useMemo(() => {
+    if (variant === 'primary') {
+      const primaryColor = getColor('primary', themeMode);
+      return colorWithOpacity(primaryColor, 0.5);
+    }
+    const foregroundColor = getColor('foreground', themeMode);
+    return colorWithOpacity(foregroundColor, 0.1);
+  }, [variant, themeMode]);
+
   const ripple = useRippleEffect({
     duration: 600,
-    color: variant === 'primary' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)',
+    color: rippleColor,
     opacity: 0.5,
   });
+
+  // Get glow color from design tokens
+  const glowColor = useMemo(() => {
+    const primaryColor = getColor('primary', themeMode);
+    return colorWithOpacity(primaryColor, 0.6);
+  }, [themeMode]);
 
   const glowVariants: Variants = {
     off: {
       opacity: 0,
-      boxShadow: `0 0 ${Dimens.glowSpread * 2}px rgba(59, 130, 246, 0)`,
+      boxShadow: `0 0 ${Dimens.glowSpread * 2}px ${colorWithOpacity(glowColor, 0)}`,
     },
     on: {
       opacity: 1,
-      boxShadow: `0 0 ${Dimens.glowSpread * 2}px rgba(59, 130, 246, 0.6)`,
+      boxShadow: `0 0 ${Dimens.glowSpread * 2}px ${glowColor}`,
       transition: {
         type: 'spring',
         damping: springConfigs.smooth.damping,
@@ -136,11 +159,11 @@ export function IconButton({
 
         haptics.impact('light');
 
-        animate(activeScale, 0.9, {
+        void animate(activeScale, 0.9, {
           duration: 0.1,
           ease: 'easeOut',
         }).then(() => {
-          animate(activeScale, 1, {
+          void animate(activeScale, 1, {
             duration: 0.2,
             ease: 'easeIn',
           });
@@ -188,13 +211,7 @@ export function IconButton({
       onMouseMove={magnetic.handleMouseMove}
       className="inline-block relative"
     >
-      <motion.div
-        style={magnetic.variants ? undefined : { x: magnetic.translateX, y: magnetic.translateY }}
-        variants={magnetic.variants}
-        initial="rest"
-        animate="rest"
-        whileHover="hover"
-      >
+      <motion.div style={magnetic.animatedStyle as React.CSSProperties}>
         <motion.div
           variants={hoverLift.variants}
           initial="rest"
@@ -202,9 +219,7 @@ export function IconButton({
           whileHover="hover"
           style={{ scale: hoverLift.scale, y: hoverLift.translateY }}
         >
-          <motion.div
-            style={{ scale: activeScale }}
-          >
+          <motion.div style={{ scale: activeScale }}>
             <button
               ref={buttonRef}
               onClick={handleClick}
@@ -260,8 +275,8 @@ export function IconButton({
                       width: config.size,
                       height: config.size,
                       backgroundColor: ripple.color,
-                      ...ripple.animatedStyle,
-                    }}
+                      ...(ripple.animatedStyle as React.CSSProperties),
+                    } as React.CSSProperties}
                   />
                 ))}
             </button>

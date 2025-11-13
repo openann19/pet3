@@ -2,14 +2,21 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
+    "moduleResolution": "bundler",
     "lib": [
       "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
+    "jsx": "react-jsx",
     "types": [
-      "vite/client"
+      "vite/client",
+      "react",
+      "react-dom"
     ],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "typeRoots": [
       "../../node_modules/@types",
@@ -31,11 +38,23 @@
       "@petspark/shared": [
         "../../packages/shared/src/index.ts"
       ],
+      "@petspark/shared/*": [
+        "../../packages/shared/src/*"
+      ],
       "@petspark/spec-core": [
         "../../packages/spec-core/src/index.ts"
+      ],
+      "@petspark/motion": [
+        "../../packages/motion/src/index.ts"
+      ],
+      "@petspark/motion/*": [
+        "../../packages/motion/src/*"
       ]
     },
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "customConditions": []
   },
   "include": [
     "src",

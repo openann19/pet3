@@ -106,7 +106,7 @@ export function Stepper({
                 )}
               </View>
               <View style={styles.verticalStepLabel}>
-                <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleStepPress(index)} disabled={isUpcoming}>
+                <Pressable onPress={() => handleStepPress(index)} disabled={isUpcoming}>
                   <Text
                     style={[
                       styles.stepLabel,

@@ -506,6 +506,65 @@ src/
 └── store/              # Zustand stores
 ```
 
+### Design Token Usage Patterns
+
+**Location**: `apps/web/src/lib/design-token-utils.ts`, `apps/mobile/src/theme/tokens.ts`
+
+#### Web Design Tokens
+
+The web application uses a centralized design token system that maps to Tailwind CSS classes:
+
+```typescript
+// Use design token utilities instead of hardcoded values
+import { getTypographyClasses, getSpacingClassesFromConfig, getColorClasses, getRadiusClasses } from '@/lib/design-token-utils';
+
+// Typography
+<h1 className={getTypographyClasses('h1')}>Title</h1>
+
+// Spacing
+<div className={getSpacingClassesFromConfig({ padding: 'lg', marginY: 'xl' })}>
+  Content
+</div>
+
+// Colors
+<span className={getColorClasses('primary', 'text')}>Text</span>
+
+// Radius
+<button className={getRadiusClasses('lg')}>Button</button>
+```
+
+**Rules:**
+- Never use hardcoded spacing values (e.g., `p-6`, `m-4`) - use `getSpacingClasses*` utilities
+- Never use hardcoded colors (e.g., `#ff0000`) - use `getColorClasses` with semantic color names
+- Never use hardcoded typography sizes - use `getTypographyClasses` with semantic scale names
+- All spacing must use the global spacing scale: `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, etc.
+
+#### Mobile Design Tokens
+
+The mobile application uses theme tokens from `apps/mobile/src/theme/tokens.ts`:
+
+```typescript
+import { tokens } from '@/theme/tokens';
+
+// Use theme tokens in styles
+const styles = StyleSheet.create({
+  container: {
+    padding: tokens.spacing.lg,
+    backgroundColor: tokens.colors.background,
+    borderRadius: tokens.radii.lg,
+  },
+  text: {
+    fontSize: tokens.typography.fontSize.body,
+    color: tokens.colors.text.primary,
+  },
+});
+```
+
+**Rules:**
+- Always import tokens from the centralized theme file
+- Never use magic numbers for spacing, colors, or typography
+- Use semantic color names (e.g., `primary`, `accent`, `danger`) instead of hex values
+
 ### State Management Patterns
 
 #### Global State (Zustand)
@@ -565,6 +624,150 @@ Used for:
 - UI toggles (modals, drawers)
 - Temporary filters
 - Scroll positions
+
+### Navigation Type Safety Patterns
+
+**Location**: `apps/mobile/src/navigation/types.ts`, `apps/mobile/src/hooks/use-validated-route-params.ts`
+
+#### Mobile Navigation (React Navigation)
+
+All navigation must use typed route parameters:
+
+```typescript
+// Define route params in navigation/types.ts
+export type RootTabParamList = {
+  Feed: undefined
+  Chat: { chatId?: string; matchId?: string } | undefined
+  Matches: { matchId?: string } | undefined
+  Profile: { petId?: string; userId?: string } | undefined
+}
+
+// Use typed navigation in screens
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { RootTabParamList } from '@/navigation/types'
+
+type Props = NativeStackScreenProps<RootTabParamList, 'Chat'>
+
+function ChatScreen({ route, navigation }: Props) {
+  // route.params is fully typed
+  const chatId = route.params?.chatId
+  // navigation is typed
+  navigation.navigate('Matches', { matchId: '123' })
+}
+```
+
+#### Runtime Validation
+
+Use `useValidatedRouteParams` hook for runtime safety:
+
+```typescript
+import { useValidatedRouteParams } from '@/hooks/use-validated-route-params'
+
+function ChatScreen() {
+  // Validates params at runtime using Zod schemas
+  const params = useValidatedRouteParams('Chat')
+  // params is guaranteed to match RootTabParamList['Chat']
+  const chatId = params?.chatId
+}
+```
+
+**Rules:**
+- Never use `route.params` directly without validation
+- Always define route params in the central `RootTabParamList` type
+- Use `useValidatedRouteParams` for runtime validation
+- Never use `as any` to bypass type checking
+
+#### Web Navigation (Next.js)
+
+For web, use typed route helpers:
+
+```typescript
+// Define route config
+type RouteConfig = {
+  '/pets/[id]': { id: string }
+  '/chat/[chatId]': { chatId: string; matchId?: string }
+}
+
+// Use typed navigation
+import { useRouter } from 'next/navigation'
+
+const router = useRouter()
+router.push('/pets/123') // Type-safe
+```
+
+### Accessibility Guidelines
+
+**WCAG 2.1 AA Compliance Required**
+
+#### Semantic HTML
+
+- Every page must have exactly one `<main>` element with an accessible name
+- Use semantic HTML elements (`<button>`, `<nav>`, `<section>`, etc.)
+- All interactive elements must be keyboard-accessible
+- Use proper heading hierarchy (h1 → h2 → h3, no skipping levels)
+
+#### ARIA Labels
+
+```typescript
+// Good: Semantic HTML with ARIA
+<main aria-label="Discover pets">
+  <section aria-label="Pet cards">
+    <button aria-label="Like pet">❤️</button>
+  </section>
+</main>
+
+// Bad: Div with onClick
+<div onClick={handleClick}>Click me</div>
+```
+
+#### Keyboard Navigation
+
+- All interactive elements must be focusable
+- Provide visible focus indicators (`:focus-visible`)
+- Support Enter and Space keys for buttons
+- Logical tab order (visual hierarchy)
+
+#### Focus Management
+
+```typescript
+// On route change, move focus to main heading
+useEffect(() => {
+  const heading = document.querySelector('main h1')
+  if (heading) {
+    (heading as HTMLElement).focus()
+  }
+}, [pathname])
+
+// On modal open, trap focus
+// On modal close, restore focus to trigger
+```
+
+#### Screen Reader Support
+
+- All images must have `alt` attributes (empty for decorative: `alt=""`)
+- Use `aria-live` regions for dynamic content updates
+- Provide `aria-label` for icon-only buttons
+- Use `aria-hidden="true"` for decorative elements
+
+#### Motion & Reduced Motion
+
+```typescript
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+
+const prefersReducedMotion = useReducedMotion()
+
+<motion.div
+  animate={prefersReducedMotion ? {} : { scale: 1.1 }}
+  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }}
+>
+  Content
+</motion.div>
+```
+
+**Rules:**
+- Always respect `prefers-reduced-motion`
+- Disable or minimize animations when reduced motion is preferred
+- No infinite looping animations that can't be disabled
 
 ### API Communication Patterns
 

@@ -1,8 +1,10 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useCallback } from 'react';
 import { useRippleEffect } from '@/effects/reanimated/use-ripple-effect';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { cn } from '@/lib/utils';
 import type { ReactNode, HTMLAttributes } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
@@ -28,6 +30,8 @@ export function RippleEffect({
     const _uiConfig = useUIConfig();
     const ripple = useRippleEffect({ color, opacity, duration });
 
+  const rippleStyleValue = useAnimatedStyleValue(ripple.animatedStyle as AnimatedStyle);
+
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!disabled) {
@@ -42,10 +46,10 @@ export function RippleEffect({
     <div onClick={handleClick} className={cn('relative overflow-hidden', className)} {...props}>
       {children}
       {ripple.ripples.map((rippleState) => (
-        <AnimatedView
+        <motion.div
           key={rippleState.id}
           style={{
-            ...ripple.animatedStyle,
+            ...rippleStyleValue,
             position: 'absolute',
             left: rippleState.x,
             top: rippleState.y,

@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { Presence } from '@petspark/motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { MagnifyingGlass, X, Clock, TrendUp, Sparkle } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -136,6 +138,13 @@ export function SmartSearch<T extends Record<string, unknown>>({
   };
 
   const showDropdown = Boolean(isFocused && (query.trim() || showHistory || showTrending));
+  const presence = useAnimatePresence({
+    isVisible: showDropdown,
+    enterTransition: 'fade',
+    exitTransition: 'fade',
+  });
+
+  const presenceStyleValue = useAnimatedStyleValue(presence.animatedStyle as AnimatedStyle);
 
   return (
     <div className={cn('relative', className)}>
@@ -168,10 +177,11 @@ export function SmartSearch<T extends Record<string, unknown>>({
         )}
       </div>
 
-      {presence.shouldRender && (
-        <AnimatedView
-          style={presence.animatedStyle}
-        >
+      <AnimatePresence>
+        {presence.shouldRender && (
+          <motion.div
+            style={presenceStyleValue}
+          >
           <Card className="absolute top-full mt-2 w-full max-h-100 overflow-y-auto shadow-xl border z-50 p-2">
             {query.trim() ? (
               <>
@@ -257,8 +267,9 @@ export function SmartSearch<T extends Record<string, unknown>>({
               </>
             )}
           </Card>
-        </AnimatedView>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

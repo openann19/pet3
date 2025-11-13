@@ -1,6 +1,7 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import TypingIndicatorComponent from '../TypingIndicator';
 import { MessageItem } from './MessageItem';
@@ -69,10 +70,10 @@ function DateGroup({ date, delay }: DateGroupProps): JSX.Element {
   const anim = useEntryAnimation({ initialScale: 0.8, delay });
 
   return (
-    <AnimatedView style={anim.animatedStyle} className="flex justify-center">
+    <motion.div style={anim.animatedStyle} className="flex justify-center">
       <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
         {date}
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }

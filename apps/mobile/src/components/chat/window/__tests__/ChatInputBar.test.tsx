@@ -13,8 +13,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
-import { ChatInputBar } from '../ChatInputBar.native'
-import type { ChatInputBarProps } from '../ChatInputBar.native'
+import { ChatInputBar } from '../ChatInputBar'
+import type { ChatInputBarProps } from '../ChatInputBar'
 
 // Mock dependencies
 vi.mock('@/effects/reanimated/use-bounce-on-tap', () => ({

@@ -4,6 +4,8 @@ import React, { useEffect } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
+import { colors } from '@mobile/theme/colors'
+import { radius, spacing } from '@mobile/theme/tokens'
 import type { ComponentProps } from 'react'
 
 export interface ProgressProps extends ComponentProps<typeof View> {
@@ -44,14 +46,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   track: {
-    height: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderRadius: 4,
+    height: spacing.sm, // Use spacing token instead of magic number
+    backgroundColor: colors.border,
+    borderRadius: radius.sm,
     overflow: 'hidden',
   },
   indicator: {
     height: '100%',
-    backgroundColor: 'var(--color-accent-secondary-9)',
-    borderRadius: 4,
+    backgroundColor: colors.accent,
+    borderRadius: radius.sm,
   },
 })

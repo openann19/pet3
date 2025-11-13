@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { CloudArrowUp, CloudSlash, CloudCheck, Warning } from '@phosphor-icons/react';
 import { subscribeToSyncStatus, type SyncStatus } from '@/lib/offline-sync';
 import { Button } from '@/components/ui/button';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { logger } from '@/lib/logger';
 
@@ -22,31 +15,24 @@ export function SyncStatusIndicator() {
   });
   const [isOpen, setIsOpen] = useState(false);
 
-  const iconScale = useSharedValue(1);
-  const iconRotate = useSharedValue(0);
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconScale.value }, { rotate: `${iconRotate.value}deg` }],
-  })) as import('@/effects/reanimated/animated-view').AnimatedStyle;
+  const iconScale = useMotionValue(1);
+  const iconRotate = useMotionValue(0);
 
   useEffect(() => {
     if (syncStatus.isSyncing) {
-      iconScale.value = withRepeat(
-        withSequence(withTiming(1.1, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-        -1,
-        true
-      );
-      iconRotate.value = withRepeat(
-        withSequence(
-          withTiming(10, { duration: 1000 }),
-          withTiming(-10, { duration: 1000 }),
-          withTiming(0, { duration: 1000 })
-        ),
-        -1,
-        false
-      );
+      void animate(iconScale, [1, 1.1, 1], {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+      void animate(iconRotate, [0, 10, -10, 0], {
+        duration: 3,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
     } else {
-      iconScale.value = 1;
-      iconRotate.value = 0;
+      iconScale.set(1);
+      iconRotate.set(0);
     }
   }, [syncStatus.isSyncing, iconScale, iconRotate]);
 
@@ -108,7 +94,14 @@ export function SyncStatusIndicator() {
           size="sm"
           className="h-9 px-3 gap-2 hover:bg-primary/10 active:bg-primary/20 transition-colors"
         >
-          <AnimatedView style={iconStyle}>{getIcon()}</AnimatedView>
+          <motion.div
+            style={{
+              scale: iconScale,
+              rotate: iconRotate,
+            }}
+          >
+            {getIcon()}
+          </motion.div>
           <span className="text-xs font-medium">{getLabel()}</span>
         </Button>
       </PopoverTrigger>

@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useMemo } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
 
@@ -79,7 +80,7 @@ const SENTIMENT_PATTERNS = {
  * @example
  * ```tsx
  * const { mood, animatedStyle } = useSentimentMoodEngine({ text: messageText })
- * return <AnimatedView style={[animatedStyle, { backgroundColor: mood.color }]}>{content}</AnimatedView>
+ * return <motion.div style={[animatedStyle, { backgroundColor: mood.color }]}>{content}</motion.div>
  * ```
  */
 export function useSentimentMoodEngine(

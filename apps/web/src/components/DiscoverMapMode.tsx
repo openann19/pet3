@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { MapPin, X, Heart, Info } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ import { calculateCompatibility } from '@/lib/matching';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import MapLibreMap from '@/components/maps/MapLibreMap';
 import type { MapMarker } from '@/lib/maps/useMapLibreMap';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 
 interface DiscoverMapModeProps {
@@ -174,7 +175,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
       />
 
       {selectedPetPresence.shouldRender && selectedPet && (
-        <AnimatedView
+        <motion.div
           style={selectedPetPresence.animatedStyle}
           className="absolute bottom-0 left-0 right-0 max-h-[70%] bg-background rounded-t-3xl shadow-2xl border-t border-border overflow-y-auto"
         >
@@ -264,7 +265,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
               </Button>
             </div>
           </div>
-        </AnimatedView>
+        </motion.div>
       )}
 
       {selectedPet && (

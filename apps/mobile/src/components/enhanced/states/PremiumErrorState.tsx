@@ -4,8 +4,19 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import { PremiumButton } from '../PremiumButton'
+import { colors } from '@mobile/theme/colors'
+import { Typography, Dimens } from '@petspark/shared';
+import { motionTokens } from '@petspark/motion';
+
+const motion = {
+  durations: motionTokens.durations,
+  spring: motionTokens.spring,
+};
 import FeatherIcon from 'react-native-vector-icons/Feather'
 import type { IconProps } from 'react-native-vector-icons/Icon'
+
+const { spacing, radius } = Dimens;
+const { scale: typography } = Typography;
 
 const AlertCircle = (props: Omit<IconProps, 'name'>): React.JSX.Element => (
   <FeatherIcon name="alert-circle" {...props} />
@@ -45,7 +56,13 @@ export function PremiumErrorState({
   const reducedMotion = useReducedMotionSV()
 
   useEffect(() => {
-    const springConfig = reducedMotion.value ? { duration: 200 } : { stiffness: 400, damping: 30 }
+    const springConfig = reducedMotion.value 
+      ? { duration: motion.durations.fast } 
+      : { 
+          stiffness: motion.spring.smooth.stiffness, 
+          damping: motion.spring.smooth.damping,
+          mass: motion.spring.smooth.mass,
+        }
     scale.value = withSpring(1, springConfig)
     opacity.value = withSpring(1, springConfig)
   }, [scale, opacity, reducedMotion])
@@ -57,26 +74,35 @@ export function PremiumErrorState({
 
   const handleRetry = useCallback((): void => {
     if (!reducedMotion.value) {
-      shake.value = withSpring(10, { stiffness: 400, damping: 20 })
+      const shakeConfig = {
+        stiffness: motion.spring.snappy.stiffness,
+        damping: motion.spring.snappy.damping,
+        mass: motion.spring.snappy.mass,
+      }
+      shake.value = withSpring(10, shakeConfig)
       setTimeout(() => {
-        shake.value = withSpring(-10, { stiffness: 400, damping: 20 })
+        shake.value = withSpring(-10, shakeConfig)
         setTimeout(() => {
-          shake.value = withSpring(0, { stiffness: 400, damping: 30 })
-        }, 100)
-      }, 100)
+          shake.value = withSpring(0, {
+            stiffness: motion.spring.smooth.stiffness,
+            damping: motion.spring.smooth.damping,
+            mass: motion.spring.smooth.mass,
+          })
+        }, motion.durations.fast)
+      }, motion.durations.fast)
     }
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     onRetry?.()
   }, [onRetry, shake, reducedMotion])
 
-  const errorMessage = typeof error === 'string' ? error : error?.message || message
+  const errorMessage = typeof error === 'string' ? error : error?.message ?? message
   const errorDetails = typeof error === 'object' && error?.stack ? error.stack : undefined
 
   const variants = {
-    default: { paddingVertical: 48, paddingHorizontal: 16 },
-    minimal: { paddingVertical: 32, paddingHorizontal: 16 },
-    detailed: { paddingVertical: 48, paddingHorizontal: 16 },
+    default: { paddingVertical: spacing['4xl'], paddingHorizontal: spacing.lg },
+    minimal: { paddingVertical: spacing['2xl'], paddingHorizontal: spacing.lg },
+    detailed: { paddingVertical: spacing['4xl'], paddingHorizontal: spacing.lg },
   }
 
   return (
@@ -85,7 +111,7 @@ export function PremiumErrorState({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <AlertCircle size={48} color="var(--color-error-9)" />
+        <AlertCircle size={48} color={colors.danger} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {errorMessage && <Text style={styles.message}>{errorMessage}</Text>}
@@ -101,7 +127,7 @@ export function PremiumErrorState({
             onPress={handleRetry}
             variant="primary"
             size="md"
-            icon={<ArrowClockwise size={16} color="var(--color-bg-overlay)" />}
+            icon={<ArrowClockwise size={16} color={colors.card} />}
           >
             {retryLabel}
           </PremiumButton>
@@ -117,43 +143,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconContainer: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: typography.h3.fontSize,
+    fontWeight: typography.h3.fontWeight,
+    lineHeight: typography.h3.lineHeight,
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   message: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: typography.bodySmall.fontSize,
+    lineHeight: typography.bodySmall.lineHeight,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
     maxWidth: 300,
   },
   detailsContainer: {
     maxHeight: 200,
     width: '100%',
     maxWidth: 300,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 24,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.xl,
   },
   detailsTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: typography.caption.fontSize,
+    fontWeight: typography.h3.fontWeight,
+    lineHeight: typography.caption.lineHeight,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   details: {
-    fontSize: 10,
-    color: '#6b7280',
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight,
+    color: colors.textSecondary,
     fontFamily: 'monospace',
   },
   actionContainer: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 })

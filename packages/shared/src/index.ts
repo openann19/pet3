@@ -14,8 +14,11 @@ export * from './guards'
 export * from './chat'
 export * from './gdpr'
 
-// Re-export motion facade (relative import for now)
-export * from '../../motion/src/index'
+// Re-export design tokens - single source of truth for typography, dimens, etc.
+export * from './tokens'
+
+// Note: Motion tokens should be imported directly from @petspark/motion
+// We don't re-export them here to avoid TypeScript rootDir issues
 
 // Re-export core API types
 export type { ApiClientConfig, ApiResponse, ApiError } from './api/types'

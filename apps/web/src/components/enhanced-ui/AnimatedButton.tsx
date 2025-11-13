@@ -1,20 +1,16 @@
 'use client';
 
-import {
-  useSharedValue,
-  withSpring,
-  withRepeat,
-  withTiming,
-  Easing,
-} from '@petspark/motion';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { useEffect, useState, useCallback, useRef } from 'react';
-import type { ReactNode, CSSProperties } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { useTargetSize } from '@/hooks/use-target-size';
+import { springConfigs } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const logger = createLogger('AnimatedButton');
 
@@ -32,19 +28,6 @@ interface AnimatedButtonProps {
   ariaLabel?: string;
 }
 
-function useSharedValueStyle(sharedValue: ReturnType<typeof useSharedValue<number>>): number {
-  const [value, setValue] = useState(sharedValue.value);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setValue(sharedValue.value);
-    }, 16);
-    return () => clearInterval(interval);
-  }, [sharedValue]);
-
-  return value;
-}
-
 export function AnimatedButton({
   children,
   onClick,
@@ -58,22 +41,24 @@ export function AnimatedButton({
   type = 'button',
   ariaLabel,
 }: AnimatedButtonProps) {
+  const reducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement | null>(null);
   // Target size validation - ensures 44x44px minimum touch target
   const { ensure: ensureTargetSize } = useTargetSize({ enabled: !disabled, autoFix: true });
-  const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
-  const shimmerX = useSharedValue(-200);
-  const glowProgress = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
-  const pulseOpacity = useSharedValue(1);
+  
+  const scale = useMotionValue(1);
+  const translateY = useMotionValue(0);
+  const shimmerX = useMotionValue(-200);
+  const glowProgress = useMotionValue(0);
+  const pulseScale = useMotionValue(1);
+  const pulseOpacity = useMotionValue(1);
 
-  const currentScale = useSharedValueStyle(scale);
-  const currentTranslateY = useSharedValueStyle(translateY);
-  const currentShimmerX = useSharedValueStyle(shimmerX);
-  const currentGlowProgress = useSharedValueStyle(glowProgress);
-  const currentPulseScale = useSharedValueStyle(pulseScale);
-  const currentPulseOpacity = useSharedValueStyle(pulseOpacity);
+  // Combined scale for pulse and press
+  const combinedScale = useTransform(
+    [scale, pulseScale],
+    ([s, p]: number[]) => (s ?? 1) * (p ?? 1)
+  );
+
 
   const handlePress = useCallback(() => {
     if (disabled) return;
@@ -81,112 +66,100 @@ export function AnimatedButton({
     try {
       haptics.impact('light');
 
-      scale.value = withSpring(
-        0.95,
-        {
+      if (!reducedMotion) {
+        void animate(scale, 0.95, {
+          type: 'spring',
           damping: 15,
           stiffness: 400,
-        },
-        () => {
-          scale.value = withSpring(1, {
+        }).then(() => {
+          void animate(scale, 1, {
+            type: 'spring',
             damping: 15,
             stiffness: 400,
           });
-        }
-      );
+        });
+      }
 
       onClick?.();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('AnimatedButton onClick error', err);
     }
-  }, [disabled, onClick, scale]);
+  }, [disabled, onClick, scale, reducedMotion]);
 
   const handleEnter = useCallback(() => {
-    if (disabled) return;
-    scale.value = withSpring(1.05, { damping: 25, stiffness: 400 });
-    translateY.value = withSpring(-2, { damping: 25, stiffness: 400 });
-  }, [disabled, scale, translateY]);
+    if (disabled || reducedMotion) return;
+    void animate(scale, 1.05, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    void animate(translateY, -2, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [disabled, reducedMotion, scale, translateY]);
 
   const handleLeave = useCallback(() => {
-    if (disabled) return;
-    scale.value = withSpring(1, { damping: 25, stiffness: 400 });
-    translateY.value = withSpring(0, { damping: 25, stiffness: 400 });
-  }, [disabled, scale, translateY]);
+    if (disabled || reducedMotion) return;
+    void animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    void animate(translateY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [disabled, reducedMotion, scale, translateY]);
 
   useEffect(() => {
-    if (shimmer && !disabled) {
-      shimmerX.value = withRepeat(
-        withTiming(200, {
-          duration: 2000,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      );
+    if (shimmer && !disabled && !reducedMotion) {
+      void animate(shimmerX, 200, {
+        duration: 2,
+        ease: 'linear',
+        repeat: Infinity,
+        repeatType: 'loop',
+      });
     } else {
-      shimmerX.value = -200;
+      shimmerX.set(-200);
     }
-  }, [shimmer, disabled, shimmerX]);
+  }, [shimmer, disabled, reducedMotion, shimmerX]);
 
   useEffect(() => {
-    if (glow && !disabled) {
-      glowProgress.value = withRepeat(
-        withTiming(1, {
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        -1,
-        true
-      );
+    if (glow && !disabled && !reducedMotion) {
+      void animate(glowProgress, 1, {
+        duration: 2,
+        ease: [0.4, 0, 0.6, 1],
+        repeat: Infinity,
+        repeatType: 'reverse',
+      });
     } else {
-      glowProgress.value = 0;
+      glowProgress.set(0);
     }
-  }, [glow, disabled, glowProgress]);
+  }, [glow, disabled, reducedMotion, glowProgress]);
 
   useEffect(() => {
-    if (pulse && !disabled) {
-      pulseScale.value = withRepeat(
-        withTiming(1.05, {
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        -1,
-        true
-      );
-      pulseOpacity.value = withRepeat(
-        withTiming(0.7, {
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        -1,
-        true
-      );
+    if (pulse && !disabled && !reducedMotion) {
+      void animate(pulseScale, 1.05, {
+        duration: 1.5,
+        ease: [0.4, 0, 0.6, 1],
+        repeat: Infinity,
+        repeatType: 'reverse',
+      });
+      void animate(pulseOpacity, 0.7, {
+        duration: 1.5,
+        ease: [0.4, 0, 0.6, 1],
+        repeat: Infinity,
+        repeatType: 'reverse',
+      });
     } else {
-      pulseScale.value = 1;
-      pulseOpacity.value = 1;
+      pulseScale.set(1);
+      pulseOpacity.set(1);
     }
-  }, [pulse, disabled, pulseScale, pulseOpacity]);
-
-  const containerStyle: CSSProperties = {
-    transform: `scale(${currentScale * currentPulseScale}) translateY(${currentTranslateY}px)`,
-    opacity: currentPulseOpacity,
-  };
-
-  const glowShadowOpacity = glow ? 0.3 + currentGlowProgress * 0.3 : 0;
-  const glowStyle: CSSProperties = glow
-    ? {
-      boxShadow: `0 0 20px rgba(var(--primary), ${glowShadowOpacity})`,
-    }
-    : {};
-
-  const shimmerStyle: CSSProperties =
-    shimmer && !disabled
-      ? {
-        transform: `translateX(${currentShimmerX}%)`,
-        opacity: 0.3,
-      }
-      : {};
+  }, [pulse, disabled, reducedMotion, pulseScale, pulseOpacity]);
 
   // Ensure focus appearance and target size meet WCAG 2.2 AAA requirements
   useEffect(() => {
@@ -200,13 +173,17 @@ export function AnimatedButton({
   }, [disabled, ensureTargetSize]);
 
   return (
-    <div
+    <motion.div
       ref={containerRef}
       className="inline-block"
       role="presentation"
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      style={containerStyle}
+      style={{
+        scale: combinedScale,
+        y: translateY,
+        opacity: pulseOpacity,
+      }}
     >
       <Button
         variant={variant}
@@ -220,24 +197,40 @@ export function AnimatedButton({
           glow && 'shadow-lg shadow-primary/30',
           className
         )}
-        style={glowStyle}
       >
+        {glow && (
+          <motion.div
+            className="pointer-events-none absolute inset-0 rounded-md"
+            style={{
+              opacity: useTransform(glowProgress, [0, 1], [0.3, 0.6]),
+              boxShadow: '0 0 20px rgba(var(--primary), 0.5)',
+            }}
+          />
+        )}
         {shimmer && !disabled && (
-          <div
+          <motion.div
             className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
             style={{
-              ...shimmerStyle,
-              backgroundSize: '200% 100%',
-              zIndex: 1,
-              maskImage:
-                'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-              WebkitMaskImage:
-                'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+              x: shimmerX,
+              opacity: 0.3,
             }}
+            animate={
+              shimmer && !disabled && !reducedMotion
+                ? {
+                    x: ['-200%', '200%'],
+                    transition: {
+                      duration: 2,
+                      ease: 'linear',
+                      repeat: Infinity,
+                      repeatType: 'loop',
+                    },
+                  }
+                : {}
+            }
           />
         )}
         <span className="relative z-10">{children}</span>
       </Button>
-    </div>
+    </motion.div>
   );
 }

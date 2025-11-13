@@ -13,11 +13,10 @@ import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 
 const logger = createLogger('UltraButton');
 
-export interface UltraButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface UltraButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'variant' | 'size' | 'aria-pressed' | 'aria-expanded'> {
   children: ReactNode;
   enableMagnetic?: boolean;
   enableElastic?: boolean;
@@ -26,6 +25,8 @@ export interface UltraButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
   glowColor?: string;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  'aria-pressed'?: boolean | 'mixed';
+  'aria-expanded'?: boolean;
 }
 
 function usePressBounce(scaleOnPress = 0.96, enabled = true) {
@@ -73,20 +74,20 @@ export function UltraButton({
   children,
   enableMagnetic = true,
   enableElastic = true,
-  enableRipple = true,
+  enableRipple: _enableRipple = true,
   enableGlow = false,
   glowColor = 'rgba(99, 102, 241, 0.5)',
   variant = 'default',
   size = 'default',
   className,
   onClick,
+  disabled,
   ...props
 }: UltraButtonProps) {
   const _uiConfig = useUIConfig();
   const prefersReducedMotion = usePrefersReducedMotion();
   const magnetic = useMagneticEffect({
-    strength: 0.4,
-    maxDistance: 40,
+    strength: 20,
     enabled: enableMagnetic && !prefersReducedMotion,
   });
 
@@ -98,8 +99,8 @@ export function UltraButton({
   });
 
   const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (props.disabled) return;
+    (e: React.MouseEvent<HTMLButtonElement>): void => {
+      if (disabled) return;
 
       try {
         onClick?.(e);
@@ -108,7 +109,7 @@ export function UltraButton({
         logger.error('UltraButton onClick error', err);
       }
     },
-    [onClick, props.disabled]
+    [onClick, disabled]
   );
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -149,6 +150,7 @@ export function UltraButton({
             size={size}
             className={cn('relative overflow-hidden', className)}
             onClick={handleClick}
+            disabled={disabled}
             {...props}
           >
             {enableGlow && (

@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { useSharedValue, withTiming, useAnimatedStyle, animate } from '@petspark/motion';
-import { MotionView } from '@petspark/motion';
-import { useHoverLift } from '@petspark/motion';
+'use client';
+
+import { motion } from 'framer-motion';
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { useUIConfig } from "@/hooks/use-ui-config";
 import { getSpacingClassesFromConfig } from '@/lib/typography';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface PremiumCardProps {
   variant?: 'default' | 'glass' | 'elevated' | 'gradient';
@@ -25,27 +26,38 @@ export function PremiumCard({
   style: _style,
   ...props
 }: PremiumCardProps) {
-    const _uiConfig = useUIConfig();
-    const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
-  const hoverLift = useHoverLift(8);
+  const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    const opacityTransition = withTiming(1, { duration: 220 });
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-    const translateYTransition = withTiming(0, { duration: 220 });
-    animate(translateY, translateYTransition.target, translateYTransition.transition);
-  }, [opacity, translateY]);
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 1,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: reducedMotion
+        ? { duration: 0.1 }
+        : {
+            duration: motionDurations.smooth,
+            ease: [0.2, 0, 0, 1],
+          },
+    },
+    hover: hover && !reducedMotion
+      ? {
+          scale: 1.02,
+          y: -8,
+          transition: springConfigs.smooth,
+        }
+      : {
+          scale: 1,
+          y: 0,
+        },
+  };
 
-  const entryStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ translateY: translateY.get() }],
-  }));
-
-  const combinedStyle =
-    hover && hoverLift.animatedStyle ? [entryStyle, hoverLift.animatedStyle] : entryStyle;
-
-  const variants = {
+  const styleVariants = {
     default: 'bg-card border border-border',
     glass: 'glass-card',
     elevated: 'bg-card border border-border premium-shadow-lg',
@@ -53,14 +65,15 @@ export function PremiumCard({
   };
 
   return (
-    <MotionView
-      animatedStyle={combinedStyle}
-      onMouseEnter={hover ? hoverLift.onMouseEnter : undefined}
-      onMouseLeave={hover ? hoverLift.onMouseLeave : undefined}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      whileHover={hover ? 'hover' : undefined}
+      variants={cardVariants}
       className={cn(
         'rounded-xl transition-all duration-300',
         getSpacingClassesFromConfig({ padding: 'xl' }),
-        variants[variant],
+        styleVariants[variant],
         hover && 'cursor-pointer hover-lift-premium',
         glow && 'animate-glow-ring',
         className
@@ -68,6 +81,6 @@ export function PremiumCard({
       {...props}
     >
       {children}
-    </MotionView>
+    </motion.div>
   );
 }

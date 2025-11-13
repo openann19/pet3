@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useFeatureFlags } from '@/config/feature-flags';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
 
 export interface SmartImageProps {
@@ -38,13 +36,13 @@ export function SmartImage({
 }: SmartImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showSharp, setShowSharp] = useState(false);
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedMotion();
   const { enableSmartImage } = useFeatureFlags();
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const shimmerOpacity = useSharedValue(0.6);
-  const imageOpacity = useSharedValue(0);
-  const parallaxOffset = useSharedValue(0);
+  const shimmerOpacity = useMotionValue(0.6);
+  const imageOpacity = useMotionValue(0);
+  const parallaxOffset = useMotionValue(0);
 
   useEffect(() => {
     if (!enableSmartImage) {
@@ -53,16 +51,28 @@ export function SmartImage({
 
     if (reducedMotion) {
       // Instant swap for reduced motion
-      imageOpacity.value = 1;
+      imageOpacity.set(1);
+      parallaxOffset.set(0);
       return;
     }
 
     // Shimmer animation
-    shimmerOpacity.value = withTiming(0.6, { duration: 600 });
+    void animate(shimmerOpacity, 0.6, {
+      duration: 0.6,
+      ease: [0.2, 0, 0, 1],
+    });
 
     if (isLoaded && showSharp) {
-      imageOpacity.value = withSpring(1, springConfigs.smooth);
-      parallaxOffset.value = withSpring(0, springConfigs.smooth);
+      void animate(imageOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+      void animate(parallaxOffset, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
   }, [
     isLoaded,
@@ -84,15 +94,6 @@ export function SmartImage({
       reducedMotion ? 0 : 30
     );
   };
-
-  const shimmerStyle = useAnimatedStyle(() => ({
-    opacity: shimmerOpacity.value,
-  })) as AnimatedStyle;
-
-  const imageStyle = useAnimatedStyle(() => ({
-    opacity: imageOpacity.value,
-    transform: [{ translateY: parallaxOffset.value }],
-  })) as AnimatedStyle;
 
   if (!enableSmartImage) {
     return (
@@ -121,17 +122,17 @@ export function SmartImage({
 
       {/* Shimmer effect */}
       {!isLoaded && (
-        <AnimatedView
-          style={shimmerStyle}
+        <motion.div
+          style={{ opacity: shimmerOpacity }}
           className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent animate-shimmer"
           aria-hidden="true"
         >
           <div />
-        </AnimatedView>
+        </motion.div>
       )}
 
       {/* Sharp image */}
-      <img
+      <motion.img
         ref={imgRef}
         src={src}
         alt={alt}
@@ -140,7 +141,10 @@ export function SmartImage({
           showSharp ? 'opacity-100' : 'opacity-0',
           onClick ? 'cursor-pointer' : ''
         )}
-        style={imageStyle as React.CSSProperties}
+        style={{
+          opacity: imageOpacity,
+          y: parallaxOffset,
+        }}
         width={width}
         height={height}
         onLoad={handleLoad}

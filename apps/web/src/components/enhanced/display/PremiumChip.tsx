@@ -1,13 +1,13 @@
 'use client';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import React, { useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import React, { useCallback, useState } from 'react';
+import { motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface PremiumChipProps {
   label: string;
@@ -32,28 +32,34 @@ export function PremiumChip({
   className,
   'aria-label': ariaLabel,
 }: PremiumChipProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }],
-    opacity: opacity.get(),
-  }));
+  const _uiConfig = useUIConfig();
+  const reducedMotion = useReducedMotion();
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const handleClose = useCallback(() => {
-    if (disabled || !onClose) return;
+    if (disabled || !onClose || isRemoving) return;
 
-    const scaleTransition = withSpring(0.8, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-    const opacityTransition = withTiming(0, { duration: 200 });
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
+    setIsRemoving(true);
     haptics.impact('light');
 
     setTimeout(() => {
       onClose();
-    }, 200);
-  }, [disabled, onClose, scale, opacity]);
+    }, reducedMotion ? 0 : 200);
+  }, [disabled, onClose, isRemoving, reducedMotion]);
+
+  const chipVariants = {
+    initial: { scale: 1, opacity: 1 },
+    exit: {
+      scale: 0.8,
+      opacity: 0,
+      transition: reducedMotion
+        ? { duration: 0 }
+        : {
+            duration: motionDurations.normal,
+            ease: [0.4, 0, 1, 1],
+          },
+    },
+  };
 
   const handleClick = useCallback(() => {
     if (disabled) return;
@@ -82,23 +88,31 @@ export function PremiumChip({
   };
 
   return (
-    <AnimatedView style={animatedStyle}>
-      <div
-        onClick={handleClick}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border font-medium transition-all duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          'disabled:cursor-not-allowed disabled:opacity-50',
-          variants[variant],
-          sizes[size],
-          selected && 'shadow-md',
-          className
-        )}
-        role={onClose ? 'button' : undefined}
-        aria-label={ariaLabel}
-        aria-selected={selected}
-        aria-disabled={disabled}
-      >
+    <AnimatePresence mode="wait">
+      {!isRemoving && (
+        <motion.div
+          variants={chipVariants}
+          initial="initial"
+          exit="exit"
+          layout
+        >
+          <div
+            onClick={handleClick}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full border font-medium transition-all duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              variants[variant],
+              sizes[size],
+              selected && 'shadow-md',
+              className
+            )}
+            role={onClose ? 'button' : undefined}
+            aria-label={ariaLabel}
+            aria-selected={selected}
+            aria-disabled={disabled}
+            tabIndex={disabled ? -1 : 0}
+          >
         {icon && <span className="shrink-0">{icon}</span>}
         <span>{label}</span>
         {onClose && (
@@ -114,8 +128,10 @@ export function PremiumChip({
           >
             <X size={size === 'sm' ? 12 : size === 'md' ? 14 : 16} />
           </button>
-        )}
-      </div>
-    </AnimatedView>
+          )}
+        </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

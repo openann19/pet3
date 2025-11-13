@@ -119,7 +119,7 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
     void (async () => {
       try {
         const supported = await Linking.canOpenURL(attachment.url)
-        if (isTruthy(supported)) {
+        if (supported) {
           await Linking.openURL(attachment.url)
         }
       } catch {
@@ -212,7 +212,7 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
     void (async () => {
       try {
         const supported = await Linking.canOpenURL(attachment.url)
-        if (isTruthy(supported)) {
+        if (supported) {
           await Linking.openURL(attachment.url)
         }
       } catch {

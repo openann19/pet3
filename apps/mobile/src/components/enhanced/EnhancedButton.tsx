@@ -32,7 +32,7 @@ import { useReducedMotionSV } from '@petspark/motion'
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
-export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress' className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> {
+export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress'> {
   title?: string
   children?: React.ReactNode
   onPress?: () => void | Promise<void>
@@ -105,24 +105,24 @@ export function EnhancedButton({
     if (disabled || loading) return
 
     try {
-      if (isTruthy(hapticFeedback)) {
+      if (hapticFeedback) {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
       }
 
       pressBounce.onPressIn()
 
-      if (isTruthy(onPress)) {
+      if (onPress) {
         const result = onPress()
 
-        if (isPromise(result)) {
+        if (result instanceof Promise) {
           await result
 
-          if (isTruthy(successAnimation)) {
+          if (successAnimation) {
             successScale.value = withSequence(
               withSpring(1.1, springConfigs.bouncy),
               withSpring(1, springConfigs.smooth)
             )
-            if (isTruthy(hapticFeedback)) {
+            if (hapticFeedback) {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
             }
           }
@@ -136,7 +136,7 @@ export function EnhancedButton({
         withTiming(5, { duration: 50 }),
         withTiming(0, { duration: 50 })
       )
-      if (isTruthy(hapticFeedback)) {
+      if (hapticFeedback) {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
       }
     } finally {

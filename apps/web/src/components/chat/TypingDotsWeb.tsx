@@ -1,18 +1,9 @@
 'use client';
-
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { useEffect } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  withDelay,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface TypingDotsWebProps {
   dotSize?: number;
@@ -61,45 +52,39 @@ function TypingDot({
   animationDuration: number;
   delay: number;
 }) {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.5);
+  const reducedMotion = useReducedMotion();
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(0.5);
 
   useEffect(() => {
-    scale.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1.4, { duration: animationDuration / 3 }),
-          withTiming(1, { duration: animationDuration / 3 })
-        ),
-        -1,
-        true
-      )
-    );
-    opacity.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: animationDuration / 3 }),
-          withTiming(0.5, { duration: animationDuration / 3 })
-        ),
-        -1,
-        true
-      )
-    );
-  }, [delay, animationDuration, scale, opacity]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-    width: dotSize,
-    height: dotSize,
-    backgroundColor: dotColor,
-  })) as AnimatedStyle;
+    if (reducedMotion) return;
+    
+    const duration = animationDuration / 1000 / 3; // Convert to seconds and divide by 3
+    
+    setTimeout(() => {
+      void animate(scale, [1, 1.4, 1], {
+        duration: duration * 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+      void animate(opacity, [0.5, 1, 0.5], {
+        duration: duration * 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+    }, delay);
+  }, [delay, animationDuration, scale, opacity, reducedMotion]);
 
   return (
-    <AnimatedView style={animatedStyle} className="rounded-full">
-      <div />
-    </AnimatedView>
+    <motion.div
+      style={{
+        scale,
+        opacity,
+        width: dotSize,
+        height: dotSize,
+        backgroundColor: dotColor,
+      }}
+      className="rounded-full"
+    />
   );
 }

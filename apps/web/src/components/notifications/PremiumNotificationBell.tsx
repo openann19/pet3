@@ -1,25 +1,17 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStorage } from '@/hooks/use-storage';
 import { Button } from '@/components/ui/button';
 import { Bell, BellRinging } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import { PremiumNotificationCenter, type PremiumNotification } from './PremiumNotificationCenter';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { PremiumNotificationCenter } from './PremiumNotificationCenter';
+import type { PremiumNotification } from './types';
 
 const logger = createLogger('PremiumNotificationBell');
 
@@ -80,7 +72,7 @@ export function PremiumNotificationBell(): JSX.Element {
         };
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
+      const err = error instanceof Error ? error : new Error('Failed to check for new notifications');
       logger.error('Failed to check for new notifications', err);
     }
     return undefined;
@@ -90,11 +82,11 @@ export function PremiumNotificationBell(): JSX.Element {
     try {
       haptics.medium();
       setIsOpen(true);
-      setLastCheckTime(Date.now());
+      void setLastCheckTime(Date.now());
       setHasNewNotification(false);
       logger.info('Notification bell clicked', { unreadCount, urgentCount });
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
+      const err = error instanceof Error ? error : new Error('Failed to handle notification bell click');
       logger.error('Failed to handle notification bell click', err);
     }
   }, [setLastCheckTime, unreadCount, urgentCount]);
@@ -150,45 +142,33 @@ interface BellIconProps {
 }
 
 function BellIcon({ hasNewNotification, unreadCount, hasUrgent }: BellIconProps): JSX.Element {
-  const rotation = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
+  const rotation = useMotionValue(0);
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(1);
 
   useEffect(() => {
-    if (hasNewNotification && unreadCount > 0) {
-      rotation.value = withSequence(
-        withTiming(-20, { duration: 100 }),
-        withTiming(20, { duration: 100 }),
-        withTiming(-20, { duration: 100 }),
-        withTiming(20, { duration: 100 }),
-        withTiming(-15, { duration: 80 }),
-        withTiming(15, { duration: 80 }),
-        withTiming(-10, { duration: 60 }),
-        withTiming(10, { duration: 60 }),
-        withTiming(0, { duration: 100 })
-      );
-      scale.value = withSequence(
-        withTiming(1.15, { duration: 100 }),
-        withTiming(1, { duration: 100 }),
-        withTiming(1.15, { duration: 100 }),
-        withTiming(1, { duration: 100 }),
-        withTiming(1.1, { duration: 80 }),
-        withTiming(1, { duration: 80 }),
-        withTiming(1.05, { duration: 60 }),
-        withTiming(1, { duration: 60 })
-      );
-    } else {
-      rotation.value = withTiming(0, { duration: 200 });
-      scale.value = withTiming(1, { duration: 200 });
+    if (reducedMotion) {
+      rotation.set(0);
+      scale.set(1);
+      return;
     }
-  }, [hasNewNotification, unreadCount, rotation, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (hasNewNotification && unreadCount > 0) {
+      // Shake sequence
+      void animate(rotation, [-20, 20, -20, 20, -15, 15, -10, 10, 0], {
+        duration: 0.68,
+        ease: 'easeInOut',
+      });
+      void animate(scale, [1.15, 1, 1.15, 1, 1.1, 1, 1.05, 1], {
+        duration: 0.68,
+        ease: 'easeInOut',
+      });
+    } else {
+      void animate(rotation, 0, { duration: 0.2 });
+      void animate(scale, 1, { duration: 0.2 });
+    }
+  }, [hasNewNotification, unreadCount, rotation, scale, reducedMotion]);
 
   const iconClassName = useMemo<string>(() => {
     if (hasUrgent) return 'text-destructive';
@@ -196,23 +176,25 @@ function BellIcon({ hasNewNotification, unreadCount, hasUrgent }: BellIconProps)
     return 'text-foreground/80';
   }, [hasUrgent, unreadCount]);
 
+  const rotate = useTransform(rotation, (r) => `${r}deg`);
+
   if (hasNewNotification && unreadCount > 0) {
     return (
-      <AnimatedView style={animatedStyle}>
+      <motion.div style={{ rotate, scale, opacity }}>
         <BellRinging size={20} weight="fill" className={iconClassName} aria-hidden="true" />
-      </AnimatedView>
+      </motion.div>
     );
   }
 
   return (
-    <AnimatedView style={animatedStyle}>
+    <motion.div style={{ rotate, scale, opacity }}>
       <Bell
         size={20}
         weight={unreadCount > 0 ? 'fill' : 'regular'}
         className={iconClassName}
         aria-hidden="true"
       />
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -222,43 +204,40 @@ interface BadgeAnimationProps {
 }
 
 function BadgeAnimation({ unreadCount, hasUrgent }: BadgeAnimationProps): JSX.Element {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
+  const scale = useMotionValue(0);
+  const opacity = useMotionValue(0);
+  const pulseScale = useMotionValue(1);
 
   useEffect(() => {
-    scale.value = withTiming(1, { duration: 300 });
-    opacity.value = withTiming(1, { duration: 300 });
-  }, [scale, opacity]);
-
-  useEffect(() => {
-    if (isTruthy(hasUrgent)) {
-      pulseScale.value = withRepeat(
-        withSequence(withTiming(1.2, { duration: 500 }), withTiming(1, { duration: 500 })),
-        -1,
-        true
-      );
-    } else {
-      pulseScale.value = withTiming(1, { duration: 200 });
+    if (reducedMotion) {
+      scale.set(1);
+      opacity.set(1);
+      return;
     }
-  }, [hasUrgent, pulseScale]);
+    void animate(scale, 1, { duration: 0.3 });
+    void animate(opacity, 1, { duration: 0.3 });
+  }, [scale, opacity, reducedMotion]);
 
-  const badgeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
-
-  const pulseStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: pulseScale.value }],
-    };
-  }) as AnimatedStyle;
+  useEffect(() => {
+    if (reducedMotion) {
+      pulseScale.set(1);
+      return;
+    }
+    if (hasUrgent) {
+      void animate(pulseScale, [1.2, 1], {
+        duration: 1,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+    } else {
+      void animate(pulseScale, 1, { duration: 0.2 });
+    }
+  }, [hasUrgent, pulseScale, reducedMotion]);
 
   return (
-    <AnimatedView style={badgeStyle} className="absolute -top-1 -right-1">
-      <AnimatedView style={pulseStyle}>
+    <motion.div style={{ scale, opacity }} className="absolute -top-1 -right-1">
+      <motion.div style={{ scale: pulseScale }}>
         <Badge
           variant={hasUrgent ? 'destructive' : 'default'}
           className="h-5 min-w-5 px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
@@ -266,8 +245,8 @@ function BadgeAnimation({ unreadCount, hasUrgent }: BadgeAnimationProps): JSX.El
         >
           {unreadCount > 99 ? '99+' : unreadCount}
         </Badge>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -276,38 +255,32 @@ interface RippleEffectProps {
 }
 
 function RippleEffect({ hasUrgent }: RippleEffectProps): JSX.Element {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.6);
+  const reducedMotion = useReducedMotion();
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(0.6);
 
   useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.4, { duration: hasUrgent ? 1500 : 2000 }),
-        withTiming(1, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: hasUrgent ? 1500 : 2000 }),
-        withTiming(0.6, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-  }, [hasUrgent, scale, opacity]);
-
-  const rippleStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (reducedMotion) {
+      scale.set(1);
+      opacity.set(0);
+      return;
+    }
+    const duration = hasUrgent ? 1.5 : 2;
+    void animate(scale, [1.4, 1], {
+      duration,
+      repeat: Infinity,
+      ease: 'easeOut',
+    });
+    void animate(opacity, [0, 0.6], {
+      duration,
+      repeat: Infinity,
+      ease: 'easeOut',
+    });
+  }, [hasUrgent, scale, opacity, reducedMotion]);
 
   return (
-    <AnimatedView
-      style={rippleStyle}
+    <motion.div
+      style={{ scale, opacity }}
       className={cn(
         'absolute inset-0 rounded-full border-2 pointer-events-none',
         hasUrgent ? 'border-destructive' : 'border-primary'
@@ -315,42 +288,45 @@ function RippleEffect({ hasUrgent }: RippleEffectProps): JSX.Element {
       aria-hidden="true"
     >
       <span className="sr-only">Ripple effect</span>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
 function UrgentGlow(): JSX.Element {
-  const shadowRadius = useSharedValue(0);
-  const shadowOpacity = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const shadowRadius = useMotionValue(0);
+  const shadowOpacity = useMotionValue(0);
 
   useEffect(() => {
-    shadowRadius.value = withRepeat(
-      withSequence(withTiming(8, { duration: 750 }), withTiming(0, { duration: 750 })),
-      -1,
-      true
-    );
-    shadowOpacity.value = withRepeat(
-      withSequence(withTiming(0.3, { duration: 750 }), withTiming(0, { duration: 750 })),
-      -1,
-      true
-    );
-  }, [shadowRadius, shadowOpacity]);
+    if (reducedMotion) {
+      shadowRadius.set(0);
+      shadowOpacity.set(0);
+      return;
+    }
+    void animate(shadowRadius, [8, 0], {
+      duration: 1.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+    void animate(shadowOpacity, [0.3, 0], {
+      duration: 1.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+  }, [shadowRadius, shadowOpacity, reducedMotion]);
 
-  const glowStyle = useAnimatedStyle(() => {
-    const radius = interpolate(shadowRadius.value, [0, 8], [0, 8], Extrapolation.CLAMP);
-    const opacity = interpolate(shadowOpacity.value, [0, 0.3], [0, 0.3], Extrapolation.CLAMP);
-    return {
-      boxShadow: `0 0 ${radius}px rgba(239, 68, 68, ${opacity})`,
-    };
-  }) as AnimatedStyle;
+  const boxShadow = useTransform(
+    [shadowRadius, shadowOpacity],
+    ([radius, opacity]: number[]) => `0 0 ${radius}px rgba(239, 68, 68, ${opacity})`
+  );
 
   return (
-    <AnimatedView
-      style={glowStyle}
+    <motion.div
+      style={{ boxShadow }}
       className="absolute inset-0 rounded-full pointer-events-none"
       aria-hidden="true"
     >
       <span className="sr-only">Urgent glow effect</span>
-    </AnimatedView>
+    </motion.div>
   );
 }

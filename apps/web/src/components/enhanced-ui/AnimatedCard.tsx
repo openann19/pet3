@@ -1,10 +1,13 @@
 'use client';
 
-import { useSharedValue, withSpring, withTiming, Easing } from '@petspark/motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useEffect, useState, useCallback } from 'react';
-import type { ReactNode, CSSProperties } from 'react';
+import { useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { isTruthy } from '@petspark/shared';
 
 interface AnimatedCardProps {
   children: ReactNode;
@@ -18,19 +21,6 @@ interface AnimatedCardProps {
   ariaLabel?: string;
 }
 
-function useSharedValueStyle(sharedValue: ReturnType<typeof useSharedValue<number>>): number {
-  const [value, setValue] = useState(sharedValue.value);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setValue(sharedValue.value);
-    }, 16);
-    return () => clearInterval(interval);
-  }, [sharedValue]);
-
-  return value;
-}
-
 export function AnimatedCard({
   children,
   className,
@@ -42,61 +32,90 @@ export function AnimatedCard({
   role = 'group',
   ariaLabel,
 }: AnimatedCardProps) {
+  const reducedMotion = useReducedMotion();
   const isClickable = typeof onClick === 'function';
 
-  const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0);
-
-  const currentScale = useSharedValueStyle(scale);
-  const currentTranslateY = useSharedValueStyle(translateY);
-  const currentOpacity = useSharedValueStyle(opacity);
+  const scale = useMotionValue(1);
+  const translateY = useMotionValue(20);
+  const opacity = useMotionValue(0);
 
   useEffect(() => {
+    if (reducedMotion) {
+      opacity.set(1);
+      translateY.set(0);
+      return;
+    }
+
     if (delay > 0) {
       const timer = setTimeout(() => {
-        opacity.value = withTiming(1, {
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
+        void animate(opacity, 1, {
+          duration: motionDurations.smooth,
+          ease: [0.2, 0, 0, 1],
         });
-        translateY.value = withTiming(0, {
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
+        void animate(translateY, 0, {
+          duration: motionDurations.smooth,
+          ease: [0.2, 0, 0, 1],
         });
       }, delay);
       return () => clearTimeout(timer);
     }
-    opacity.value = withTiming(1, {
-      duration: 400,
-      easing: Easing.inOut(Easing.ease),
+    
+    void animate(opacity, 1, {
+      duration: motionDurations.smooth,
+      ease: [0.2, 0, 0, 1],
     });
-    translateY.value = withTiming(0, {
-      duration: 400,
-      easing: Easing.inOut(Easing.ease),
+    void animate(translateY, 0, {
+      duration: motionDurations.smooth,
+      ease: [0.2, 0, 0, 1],
     });
-    return undefined;
-  }, [delay, opacity, translateY]);
+  }, [delay, opacity, translateY, reducedMotion]);
 
   const handleEnter = useCallback(() => {
-    if (!hover || !isClickable) return;
-    scale.value = withSpring(1.02, { damping: 25, stiffness: 400 });
-    translateY.value = withSpring(-8, { damping: 25, stiffness: 400 });
-  }, [hover, isClickable, scale, translateY]);
+    if (!hover || !isClickable || reducedMotion) return;
+    void animate(scale, 1.02, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    void animate(translateY, -8, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [hover, isClickable, reducedMotion, scale, translateY]);
 
   const handleLeave = useCallback(() => {
-    if (!hover || !isClickable) return;
-    scale.value = withSpring(1, { damping: 25, stiffness: 400 });
-    translateY.value = withSpring(0, { damping: 25, stiffness: 400 });
-  }, [hover, isClickable, scale, translateY]);
+    if (!hover || !isClickable || reducedMotion) return;
+    void animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    void animate(translateY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [hover, isClickable, reducedMotion, scale, translateY]);
 
   const handleClick = useCallback(() => {
     if (isTruthy(isClickable)) {
-      scale.value = withSpring(0.98, { damping: 15, stiffness: 400 }, () => {
-        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-      });
+      if (!reducedMotion) {
+        void animate(scale, 0.98, {
+          type: 'spring',
+          damping: 15,
+          stiffness: 400,
+        }).then(() => {
+          void animate(scale, 1, {
+            type: 'spring',
+            damping: 15,
+            stiffness: 400,
+          });
+        });
+      }
       onClick?.();
     }
-  }, [isClickable, onClick, scale]);
+  }, [isClickable, onClick, scale, reducedMotion]);
 
   const variantClasses = {
     default: 'bg-card border border-border',
@@ -105,26 +124,27 @@ export function AnimatedCard({
     glow: 'bg-card border border-border animate-glow-ring shadow-lg shadow-primary/10',
   };
 
-  const containerStyle: CSSProperties = {
-    transform: `scale(${currentScale}) translateY(${currentTranslateY}px)`,
-    opacity: currentOpacity,
-  };
-
   return (
-    <div
+    <motion.div
       className={cn(
         'transition-transform duration-300',
         isClickable &&
           'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-xl',
         className
       )}
-      style={containerStyle}
+      style={{
+        scale,
+        y: translateY,
+        opacity,
+      }}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
       onClick={handleClick}
       tabIndex={isClickable ? tabIndex : undefined}
       role={isClickable ? role : undefined}
       aria-label={ariaLabel}
+      whileHover={reducedMotion || !hover || !isClickable ? undefined : { scale: 1.02, y: -8 }}
+      whileTap={reducedMotion || !isClickable ? undefined : { scale: 0.98 }}
     >
       <Card
         className={cn(
@@ -134,6 +154,6 @@ export function AnimatedCard({
       >
         {children}
       </Card>
-    </div>
+    </motion.div>
   );
 }

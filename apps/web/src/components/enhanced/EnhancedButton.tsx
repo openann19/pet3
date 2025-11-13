@@ -1,24 +1,16 @@
 'use client';
 
 import type { ComponentProps, MouseEvent } from 'react';
-import { forwardRef, useRef, useCallback } from 'react';
+import { forwardRef, useCallback, useEffect, memo } from 'react';
 import type { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import type { VariantProps } from 'class-variance-authority';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
-import { MotionView } from '@petspark/motion';
-import { usePressBounce, haptic } from '@petspark/motion';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withSpring,
-  animate,
-} from '@petspark/motion';
-import { useEffect } from 'react';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { haptics } from '@/lib/haptics';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const logger = createLogger('EnhancedButton');
 
@@ -34,7 +26,7 @@ export interface EnhancedButtonProps
 export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>(
   (
     {
-      ripple = true,
+      ripple: _ripple = true,
       hapticFeedback = true,
       successAnimation = false,
       onClick,
@@ -42,12 +34,12 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
       children,
       ...props
     },
-    ref
+    _ref
   ) => {
-    const buttonRef = useRef<HTMLButtonElement>(null);
-    const bounceAnimation = usePressBounce(0.95);
-    const successScale = useSharedValue(1);
-    const errorShake = useSharedValue(0);
+    const reducedMotion = useReducedMotion();
+    const bounceScale = useMotionValue(1);
+    const successScale = useMotionValue(1);
+    const errorShake = useMotionValue(0);
 
     const isPromise = useCallback((value: unknown): value is Promise<unknown> => {
       return (
@@ -58,87 +50,108 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
       );
     }, []);
 
-    const successAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ scale: successScale.get() }],
-      };
-    });
-
-    const errorAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ translateX: errorShake.get() }],
-      };
-    });
-
     useEffect(() => {
-      // Reset success scale when component mounts
-      animate(successScale, 1, { type: 'tween', duration: 0 });
-    }, [successScale]);
+      // Reset scales when component mounts
+      successScale.set(1);
+      errorShake.set(0);
+      bounceScale.set(1);
+    }, [successScale, errorShake, bounceScale]);
 
     const handleClick = useCallback(
-      async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
+      (e: MouseEvent<HTMLButtonElement>): void => {
         try {
           if (hapticFeedback) {
-            haptic.light();
+            haptics.impact('light');
           }
 
-          bounceAnimation.onPressIn();
+          // Press animation
+          if (!reducedMotion) {
+            void animate(bounceScale, 0.95, {
+              ...springConfigs.snappy,
+              duration: motionDurations.fast,
+            });
+          }
 
           if (onClick) {
             const result = onClick(e);
 
             if (isPromise(result)) {
-              await result;
-
-              if (successAnimation) {
-                const sequence = withSequence(
-                  withSpring(1.1, springConfigs.bouncy),
-                  withSpring(1, springConfigs.smooth)
-                );
-                animate(successScale, sequence.target, sequence.transition);
-                if (hapticFeedback) {
-                  haptic.medium();
-                }
-                logger.info('Button action succeeded', { successAnimation: true });
-              }
+              result
+                .then(() => {
+                  if (successAnimation) {
+                    if (!reducedMotion) {
+                      void animate(successScale, 1.1, {
+                        ...springConfigs.bouncy,
+                        duration: motionDurations.normal,
+                      }).then(() => {
+                        void animate(successScale, 1, {
+                          ...springConfigs.smooth,
+                          duration: motionDurations.smooth,
+                        });
+                      });
+                    }
+                    if (hapticFeedback) {
+                      haptics.impact('medium');
+                    }
+                    logger.info('Button action succeeded', { successAnimation: true });
+                  }
+                })
+                .catch((error: unknown) => {
+                  const err = error instanceof Error ? error : new Error(String(error));
+                  logger.error('Button promise rejected', err);
+                });
             }
           }
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
-          const shakeSequence = withSequence(
-            withTiming(-5, { duration: 50 }),
-            withTiming(5, { duration: 50 }),
-            withTiming(-5, { duration: 50 }),
-            withTiming(5, { duration: 50 }),
-            withTiming(0, { duration: 50 })
-          );
-          animate(errorShake, shakeSequence.target, shakeSequence.transition);
+          if (!reducedMotion) {
+            // Shake animation sequence
+            animate(errorShake, -5, { duration: 0.05 })
+              .then(() => void animate(errorShake, 5, { duration: 0.05 }))
+              .then(() => void animate(errorShake, -5, { duration: 0.05 }))
+              .then(() => void animate(errorShake, 5, { duration: 0.05 }))
+              .then(() => void animate(errorShake, 0, { duration: 0.05 }))
+              .catch(() => {
+                // Ignore animation errors
+              });
+          }
           if (hapticFeedback) {
-            haptic.heavy();
+            haptics.impact('heavy');
           }
           logger.error('Button action failed', err);
         } finally {
-          bounceAnimation.onPressOut();
+          // Release animation
+          if (!reducedMotion) {
+            void animate(bounceScale, 1, {
+              ...springConfigs.smooth,
+              duration: motionDurations.normal,
+            });
+          }
         }
       },
       [
         hapticFeedback,
         successAnimation,
         onClick,
-        bounceAnimation,
+        bounceScale,
         successScale,
         errorShake,
         isPromise,
+        reducedMotion,
       ]
     );
 
     return (
-      <MotionView animatedStyle={successAnimatedStyle} className="relative">
-        <MotionView animatedStyle={errorAnimatedStyle} className="relative">
-          <MotionView animatedStyle={bounceAnimation.animatedStyle} className="relative">
+      <motion.div
+        style={{ scale: successScale, x: errorShake }}
+        className="relative"
+      >
+        <motion.div
+          style={{ scale: bounceScale }}
+          className="relative"
+        >
             <div className="relative overflow-hidden">
               <Button
-                ref={ref || buttonRef}
                 onClick={handleClick}
                 className={cn(
                   'relative overflow-hidden transition-all duration-300',
@@ -146,16 +159,18 @@ export const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>
                   'active:translate-y-0 active:shadow-md',
                   className
                 )}
-                {...props}
+                {...(props as Omit<typeof props, 'aria-pressed' | 'aria-expanded'>)}
               >
                 {children}
               </Button>
             </div>
-          </MotionView>
-        </MotionView>
-      </MotionView>
+        </motion.div>
+      </motion.div>
     );
   }
 );
 
 EnhancedButton.displayName = 'EnhancedButton';
+
+// Memoize to prevent unnecessary re-renders when props haven't changed
+export const MemoizedEnhancedButton = memo(EnhancedButton);

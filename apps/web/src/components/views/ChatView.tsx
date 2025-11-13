@@ -1,13 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
 import ChatRoomsList from '@/components/ChatRoomsList';
 import ChatWindow from '@/components/ChatWindowNew';
 import { ChatErrorBoundary } from '@/components/chat/window/ChatErrorBoundary';
@@ -19,10 +12,6 @@ import type { ChatRoom } from '@/lib/chat-types';
 import { createChatRoom } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
 import type { Match, Pet } from '@/lib/types';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { usePageTransition } from '@/effects/reanimated/use-page-transition';
-import { timingConfigs } from '@/effects/reanimated/transitions';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
 import { safeArrayAccess } from '@/lib/runtime-safety';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
@@ -42,39 +31,6 @@ export default function ChatView() {
 
   const userPet = safeArrayAccess(userPets, 0);
 
-  const headerAnimation = usePageTransition({
-    isVisible: !isLoading,
-    direction: 'down',
-    duration: 300,
-  });
-
-  const emptyStateAnimation = usePageTransition({
-    isVisible: !userPet,
-    direction: 'up',
-    duration: 300,
-  });
-
-  const roomsListAnimation = usePageTransition({
-    isVisible: !isMobile || !selectedRoom,
-    direction: 'fade',
-    duration: 250,
-  });
-
-  const chatWindowAnimation = usePageTransition({
-    isVisible: Boolean(selectedRoom && (!isMobile || selectedRoom)),
-    direction: 'fade',
-    duration: 250,
-  });
-
-  const emptyChatAnimation = usePageTransition({
-    isVisible: !selectedRoom && !isMobile,
-    direction: 'fade',
-    duration: 300,
-  });
-
-  const emptyChatIconScale = useSharedValue(1);
-  const emptyChatIconRotation = useSharedValue(0);
-
   useEffect(() => {
     if (userPets !== undefined && chatRooms !== undefined) {
       setIsLoading(false);
@@ -82,7 +38,9 @@ export default function ChatView() {
   }, [userPets, chatRooms]);
 
   useEffect(() => {
-    if (!userPet || !Array.isArray(matches)) return;
+    if (!userPet || !Array.isArray(matches)) {
+      return;
+    }
 
     const activeMatches = matches.filter((m) => m.status === 'active');
     const existingRoomIds = new Set(
@@ -113,13 +71,15 @@ export default function ChatView() {
     });
 
     if (newRooms.length > 0) {
-      setChatRooms((current) => (Array.isArray(current) ? [...current, ...newRooms] : newRooms));
+      void setChatRooms((current) => (Array.isArray(current) ? [...current, ...newRooms] : newRooms));
     }
   }, [matches, userPet, allPets, chatRooms, setChatRooms]);
 
   useEffect(() => {
     const updateRoomsWithLastMessages = async () => {
-      if (!Array.isArray(chatRooms)) return;
+      if (!Array.isArray(chatRooms)) {
+        return;
+      }
 
       const updatedRooms = await Promise.all(
         chatRooms.map(async (room) => {
@@ -147,7 +107,7 @@ export default function ChatView() {
         })
       );
 
-      setChatRooms(() => {
+      void setChatRooms(() => {
         const sorted = updatedRooms.sort((a, b) => {
           const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
           const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
@@ -160,28 +120,6 @@ export default function ChatView() {
     void updateRoomsWithLastMessages();
   }, [selectedRoom, chatRooms, userPet, setChatRooms]);
 
-  useEffect(() => {
-    if (!selectedRoom && !isMobile) {
-      emptyChatIconScale.value = withRepeat(
-        withSequence(withTiming(1.1, timingConfigs.smooth), withTiming(1, timingConfigs.smooth)),
-        -1,
-        true
-      );
-      emptyChatIconRotation.value = withRepeat(
-        withSequence(
-          withTiming(5, { duration: 500 }),
-          withTiming(-5, { duration: 500 }),
-          withTiming(0, { duration: 500 })
-        ),
-        -1,
-        false
-      );
-    } else {
-      emptyChatIconScale.value = 1;
-      emptyChatIconRotation.value = 0;
-    }
-  }, [selectedRoom, isMobile, emptyChatIconScale, emptyChatIconRotation]);
-
   const handleSelectRoom = useCallback((room: ChatRoom) => {
     setSelectedRoom(room);
   }, []);
@@ -190,15 +128,6 @@ export default function ChatView() {
     setSelectedRoom(null);
   }, []);
 
-  const emptyChatIconStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: emptyChatIconScale.value },
-        { rotate: `${emptyChatIconRotation.value}deg` },
-      ],
-    };
-  }) as AnimatedStyle;
-
   if (isLoading) {
     return null;
   }
@@ -206,13 +135,10 @@ export default function ChatView() {
   if (!userPet) {
     return (
       <main aria-label="Chat view" className={cn('flex flex-col items-center justify-center min-h-[60vh] text-center', getSpacingClassesFromConfig({ paddingX: 'lg' }))}>
-        <AnimatedView
-          style={emptyStateAnimation.style}
-          className={cn('glass-strong rounded-3xl max-w-md', getSpacingClassesFromConfig({ padding: '2xl' }))}
-        >
-          <h2 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.createProfile}</h2>
+        <div className={cn('glass-strong rounded-3xl max-w-md', getSpacingClassesFromConfig({ padding: '2xl' }))}>
+          <h1 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.createProfile}</h1>
           <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>{t.chat.createProfileDesc}</p>
-        </AnimatedView>
+        </div>
       </main>
     );
   }
@@ -223,34 +149,28 @@ export default function ChatView() {
   return (
     <PageTransitionWrapper key="chat-view" direction="up">
       <main aria-label="Chat view" className="h-[calc(100vh-8rem)]">
-        <AnimatedView style={headerAnimation.style} className={getSpacingClassesFromConfig({ marginY: 'xl' })}>
-          <h2 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.title}</h2>
+        <header className={getSpacingClassesFromConfig({ marginY: 'xl' })}>
+          <h1 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.title}</h1>
           <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>
             {(chatRooms || []).length}{' '}
             {(chatRooms || []).length === 1 ? t.chat.subtitle : t.chat.subtitlePlural}
           </p>
-        </AnimatedView>
+        </header>
 
         <div className={cn('grid grid-cols-1 md:grid-cols-12 h-[calc(100%-5rem)]', getSpacingClassesFromConfig({ gap: 'xl' }))}>
           {showRoomsList && (
-            <AnimatedView
-              style={roomsListAnimation.style}
-              className="md:col-span-4 glass-strong rounded-3xl p-4 shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden"
-            >
+            <section aria-label="Chat rooms" className="md:col-span-4 glass-strong rounded-3xl p-4 shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden">
               <ChatRoomsList
                 rooms={chatRooms || []}
                 onSelectRoom={handleSelectRoom}
                 {...(selectedRoom?.id && { selectedRoomId: selectedRoom.id })}
               />
-            </AnimatedView>
+            </section>
           )}
 
           {showChatWindow && selectedRoom && (
-            <AnimatedView
-              style={chatWindowAnimation.style}
-              className={`${isMobile ? 'col-span-1' : 'md:col-span-8'
-                } glass-strong rounded-3xl shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden flex flex-col`}
-            >
+            <section aria-label="Chat window" className={`${isMobile ? 'col-span-1' : 'md:col-span-8'
+                } glass-strong rounded-3xl shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden flex flex-col`}>
               <ChatErrorBoundary>
                 <ChatWindow
                   room={selectedRoom}
@@ -260,24 +180,24 @@ export default function ChatView() {
                   {...(isMobile && { onBack: handleBack })}
                 />
               </ChatErrorBoundary>
-            </AnimatedView>
+            </section>
           )}
 
           {!selectedRoom && !isMobile && (
-            <AnimatedView
-              style={emptyChatAnimation.style}
+            <section
+              aria-label="Empty chat state"
               className="md:col-span-8 glass-effect rounded-3xl flex items-center justify-center border border-white/20"
               role="status"
               aria-live="polite"
             >
               <div className={cn('text-center', getSpacingClassesFromConfig({ paddingX: 'lg' }))}>
-                <AnimatedView style={emptyChatIconStyle} className={cn('text-6xl', getSpacingClassesFromConfig({ marginY: 'lg' }))} aria-hidden="true">
+                <div className={cn('text-6xl', getSpacingClassesFromConfig({ marginY: 'lg' }))} aria-hidden="true">
                   💬
-                </AnimatedView>
-                <h3 className={cn(getTypographyClasses('h3'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.selectConversation}</h3>
+                </div>
+                <h2 className={cn(getTypographyClasses('h3'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.selectConversation}</h2>
                 <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>{t.chat.selectConversationDesc}</p>
               </div>
-            </AnimatedView>
+            </section>
           )}
         </div>
       </main>

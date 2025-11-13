@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useStorage } from '@/hooks/use-storage';
 import { useBounceOnTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
@@ -28,7 +29,7 @@ import {
 } from '@/lib/sticker-library';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 interface StickerPickerProps {
@@ -116,7 +117,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
   }, [containerOpacity, containerY, onClose]);
 
   return (
-    <AnimatedView
+    <motion.div
       style={containerStyle}
       className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] bg-card/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-105 sm:rounded-2xl sm:border sm:max-h-150"
     >
@@ -215,7 +216,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
         )}
 
         <ScrollArea className="flex-1 px-4">
-          <AnimatedView style={contentStyle}>
+          <motion.div style={contentStyle}>
             {displayedStickers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="text-6xl mb-4 opacity-50">🔍</div>
@@ -238,10 +239,10 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                 ))}
               </div>
             )}
-          </AnimatedView>
+          </motion.div>
         </ScrollArea>
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -297,7 +298,7 @@ function StickerButton({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={buttonStyle}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
@@ -312,6 +313,6 @@ function StickerButton({
       {sticker.premium && (
         <Crown size={12} weight="fill" className="absolute top-0.5 right-0.5 text-accent" />
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }

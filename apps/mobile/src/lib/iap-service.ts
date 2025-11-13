@@ -102,18 +102,49 @@ export interface ReceiptVerificationRequest {
   userId: string
 }
 
+// Types for react-native-iap library
+interface IAPProduct {
+  productId: string
+  title: string
+  description: string
+  price: string
+  currency: string
+  localizedPrice: string
+}
+
+interface IAPPurchase {
+  productId: string
+  transactionId: string
+  transactionReceipt: string
+  purchaseToken?: string
+}
+
+interface IAPError {
+  code: string
+  message: string
+}
+
+type PurchaseUpdateListener = (purchase: IAPPurchase) => void
+type PurchaseErrorListener = (error: IAPError) => void
+
+interface IAPModule {
+  initConnection?: () => Promise<void>
+  purchaseUpdatedListener: (listener: PurchaseUpdateListener) => { remove: () => void }
+  purchaseErrorListener: (listener: PurchaseErrorListener) => { remove: () => void }
+  getProducts: (productIds: string[]) => Promise<IAPProduct[]>
+  getSubscriptions: (productIds: string[]) => Promise<IAPProduct[]>
+  requestPurchase: (productId: string) => Promise<IAPPurchase>
+  finishTransaction: (purchase: IAPPurchase) => Promise<void>
+  getAvailablePurchases: () => Promise<IAPPurchase[]>
+}
+
 class IAPService {
   private isInitialized = false
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private purchaseUpdateListener: any = null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private purchaseErrorListener: any = null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private availableProducts: any[] = []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private availableSubscriptions: any[] = []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private iap: any = null
+  private purchaseUpdateListener: { remove: () => void } | null = null
+  private purchaseErrorListener: { remove: () => void } | null = null
+  private availableProducts: IAPProduct[] = []
+  private availableSubscriptions: IAPProduct[] = []
+  private iap: IAPModule | null = null
 
   /**
    * Initialize IAP service and connect to store
@@ -513,14 +544,10 @@ class IAPService {
     }
 
     // Listen for purchase updates
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     this.purchaseUpdateListener = this.iap.purchaseUpdatedListener(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (purchase: any) => {
+      (purchase: IAPPurchase) => {
         logger.info('Purchase updated', {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           productId: purchase.productId,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           transactionId: purchase.transactionId
         })
 
@@ -531,15 +558,11 @@ class IAPService {
     )
 
     // Listen for purchase errors
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     this.purchaseErrorListener = this.iap.purchaseErrorListener(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error: any) => {
-        const err = error instanceof Error ? error : new Error(String(error.message ?? 'Unknown error'))
+      (error: IAPError) => {
+        const err = new Error(error.message ?? 'Unknown error')
         logger.error('Purchase error', err, {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           code: error.code,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           message: error.message
         })
       }

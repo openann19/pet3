@@ -1,21 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import { Button } from '@/components/ui/button';
 import { Bell, BellRinging } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import { haptics } from '@/lib/haptics';
 import { NotificationCenter, type AppNotification } from './NotificationCenter';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations } from '@/effects/framer-motion/variants';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,54 +65,62 @@ interface BellIconViewProps {
 }
 
 function BellIconView({ hasNewNotification, unreadCount }: BellIconViewProps) {
-  const rotate = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
+  const rotate = useMotionValue(0);
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(1);
 
   useEffect(() => {
-    if (hasNewNotification && unreadCount > 0) {
-      rotate.value = withSequence(
-        withTiming(-15, { duration: 150 }),
-        withTiming(15, { duration: 150 }),
-        withTiming(-15, { duration: 150 }),
-        withTiming(15, { duration: 150 }),
-        withTiming(0, { duration: 150 })
-      );
-      scale.value = withSequence(
-        withTiming(1.1, { duration: 150 }),
-        withTiming(1, { duration: 150 }),
-        withTiming(1.1, { duration: 150 }),
-        withTiming(1, { duration: 150 })
-      );
-    } else {
-      opacity.value = withTiming(1, { duration: 200 });
-      scale.value = withTiming(1, { duration: 200 });
+    if (reducedMotion) {
+      rotate.set(0);
+      scale.set(1);
+      opacity.set(1);
+      return;
     }
-  }, [hasNewNotification, unreadCount, rotate, scale, opacity]);
 
-  const iconStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotate.value}deg` }, { scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (hasNewNotification && unreadCount > 0) {
+      void animate(rotate, [-15, 15, -15, 15, 0], {
+        duration: 0.75,
+        ease: 'easeInOut',
+      });
+      void animate(scale, [1.1, 1, 1.1, 1], {
+        duration: 0.6,
+        ease: 'easeInOut',
+      });
+    } else {
+      void animate(opacity, 1, { duration: 0.2 });
+      void animate(scale, 1, { duration: 0.2 });
+    }
+  }, [hasNewNotification, unreadCount, rotate, scale, opacity, reducedMotion]);
 
   if (hasNewNotification && unreadCount > 0) {
     return (
-      <AnimatedView style={iconStyle}>
+      <motion.div
+        style={{
+          rotate,
+          scale,
+          opacity,
+        }}
+      >
         <BellRinging size={20} weight="fill" className="text-primary" />
-      </AnimatedView>
+      </motion.div>
     );
   }
 
   return (
-    <AnimatedView style={iconStyle}>
+    <motion.div
+      style={{
+        rotate,
+        scale,
+        opacity,
+      }}
+    >
       <Bell
         size={20}
         weight={unreadCount > 0 ? 'fill' : 'regular'}
         className={unreadCount > 0 ? 'text-primary' : 'text-foreground/80'}
       />
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -127,60 +129,67 @@ interface BadgeViewProps {
 }
 
 function BadgeView({ unreadCount }: BadgeViewProps) {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const scale = useMotionValue(0);
+  const opacity = useMotionValue(0);
 
   useEffect(() => {
-    scale.value = withTiming(1, { duration: 300 });
-    opacity.value = withTiming(1, { duration: 300 });
-  }, [scale, opacity]);
-
-  const badgeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (reducedMotion) {
+      scale.set(1);
+      opacity.set(1);
+      return;
+    }
+    void animate(scale, 1, { duration: 0.3 });
+    void animate(opacity, 1, { duration: 0.3 });
+  }, [scale, opacity, reducedMotion]);
 
   return (
-    <AnimatedView style={badgeStyle} className="absolute -top-1 -right-1">
+    <motion.div
+      style={{
+        scale,
+        opacity,
+      }}
+      className="absolute -top-1 -right-1"
+    >
       <Badge
         variant="destructive"
         className="h-5 min-w-5 px-1 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"
       >
         {unreadCount > 99 ? '99+' : unreadCount}
       </Badge>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
 function PulseRingView() {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.5);
+  const reducedMotion = useReducedMotion();
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(0.5);
 
   useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(withTiming(1.3, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      false
-    );
-    opacity.value = withRepeat(
-      withSequence(withTiming(0, { duration: 1000 }), withTiming(0.5, { duration: 1000 })),
-      -1,
-      false
-    );
-  }, [scale, opacity]);
-
-  const ringStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+    if (reducedMotion) {
+      scale.set(1);
+      opacity.set(0);
+      return;
+    }
+    void animate(scale, [1.3, 1], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+    void animate(opacity, [0, 0.5], {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+  }, [scale, opacity, reducedMotion]);
 
   return (
-    <AnimatedView
-      style={ringStyle}
+    <motion.div
+      style={{
+        scale,
+        opacity,
+      }}
       className="absolute inset-0 rounded-full border-2 border-primary pointer-events-none"
     />
   );

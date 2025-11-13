@@ -1,15 +1,13 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import React, { useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
-import type { AnimatedStyle } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useUIConfig } from "@/hooks/use-ui-config";
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { getSpacing } from '@/lib/design-tokens';
+import { springConfigs } from '@/effects/framer-motion/variants';
 
 export type AvatarStatus = 'online' | 'offline' | 'away' | 'busy';
 
@@ -52,36 +50,7 @@ export function PremiumAvatar({
   className,
   'aria-label': ariaLabel,
 }: PremiumAvatarProps): React.JSX.Element {
-  const _uiConfig = useUIConfig();
   const prefersReducedMotion = usePrefersReducedMotion();
-  const scale = useSharedValue(1);
-  const glowOpacity = useSharedValue(0);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }],
-  }));
-
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.get(),
-  }));
-
-  const handleMouseEnter = useCallback(() => {
-    if (prefersReducedMotion) return;
-    const scaleTransition = withSpring(1.05, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-    if (variant === 'glow') {
-      const glowTransition = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, glowTransition.target, glowTransition.transition);
-    }
-  }, [scale, glowOpacity, variant, prefersReducedMotion]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (prefersReducedMotion) return;
-    const scaleTransition = withSpring(1, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-    const glowTransition = withSpring(0, springConfigs.smooth);
-    animate(glowOpacity, glowTransition.target, glowTransition.transition);
-  }, [scale, glowOpacity, prefersReducedMotion]);
 
   const handleClick = useCallback(() => {
     if (onClick) {
@@ -91,28 +60,48 @@ export function PremiumAvatar({
   }, [onClick]);
 
   const handleLongPress = useCallback(() => {
-    if (variant === 'glow') {
-      const glowTransition1 = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, glowTransition1.target, glowTransition1.transition);
-      setTimeout(() => {
-        const glowTransition2 = withSpring(0, springConfigs.smooth);
-        animate(glowOpacity, glowTransition2.target, glowTransition2.transition);
-      }, 500);
-    }
     haptics.impact('medium');
-  }, [variant, glowOpacity]);
+  }, []);
 
   const config = SIZE_CONFIG[size];
 
+  const avatarVariants = {
+    rest: {
+      scale: 1,
+    },
+    hover: {
+      scale: prefersReducedMotion ? 1 : 1.05,
+      transition: prefersReducedMotion ? { duration: 0 } : springConfigs.smooth,
+    },
+    tap: {
+      scale: 0.98,
+      transition: { duration: 0.1 },
+    },
+  };
+
+  const glowVariants = {
+    rest: {
+      opacity: 0,
+    },
+    hover: {
+      opacity: prefersReducedMotion ? 0 : 1,
+      transition: prefersReducedMotion ? { duration: 0 } : springConfigs.smooth,
+    },
+  };
+
   return (
-    <div
+    <motion.div
       className={cn('relative inline-block', className)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       onContextMenu={handleLongPress}
       role={onClick ? 'button' : 'img'}
       aria-label={ariaLabel ?? alt}
+      tabIndex={onClick ? 0 : undefined}
+      whileHover="hover"
+      whileTap="tap"
+      initial="rest"
+      animate="rest"
+      variants={avatarVariants}
     >
       {variant === 'ring' && (
         <div
@@ -123,13 +112,17 @@ export function PremiumAvatar({
             top: -config.ring,
             left: -config.ring,
           }}
+          aria-hidden="true"
         />
       )}
 
       {variant === 'glow' && (
-        <AnimatedView
+        <motion.div
+          variants={glowVariants}
+          initial="rest"
+          animate="rest"
+          whileHover="hover"
           style={{
-            ...(glowStyle as AnimatedStyle),
             position: 'absolute',
             width: config.size + 8,
             height: config.size + 8,
@@ -137,32 +130,29 @@ export function PremiumAvatar({
             left: -4,
             borderRadius: '50%',
           }}
-          className="bg-(--primary)/30 blur-md"
-        >
-          <div />
-        </AnimatedView>
+          className="bg-(--primary)/30 blur-md pointer-events-none"
+          aria-hidden="true"
+        />
       )}
 
-      <AnimatedView style={animatedStyle}>
-        <Avatar
-          className={cn(
-            'relative overflow-hidden shadow-lg',
-            onClick && cn(
-              'cursor-pointer',
-              prefersReducedMotion ? '' : 'transition-shadow duration-200 hover:shadow-xl'
-            )
-          )}
-          style={{
-            width: config.size,
-            height: config.size,
-          }}
-        >
-          <AvatarImage src={src} alt={alt} />
-          <AvatarFallback className="bg-(--surface) text-(--text-muted) font-semibold">
-            {fallback ?? '?'}
-          </AvatarFallback>
-        </Avatar>
-      </AnimatedView>
+      <Avatar
+        className={cn(
+          'relative overflow-hidden shadow-lg',
+          onClick && cn(
+            'cursor-pointer',
+            prefersReducedMotion ? '' : 'transition-shadow duration-200 hover:shadow-xl'
+          )
+        )}
+        style={{
+          width: config.size,
+          height: config.size,
+        }}
+      >
+        <AvatarImage src={src} alt={alt} />
+        <AvatarFallback className="bg-(--surface) text-(--text-muted) font-semibold">
+          {fallback ?? '?'}
+        </AvatarFallback>
+      </Avatar>
 
       {status && (
         <div
@@ -173,17 +163,20 @@ export function PremiumAvatar({
           style={{
             width: config.status,
             height: config.status,
-            minWidth: '8px',
-            minHeight: '8px',
+            minWidth: getSpacing('2'),
+            minHeight: getSpacing('2'),
           }}
         />
       )}
 
       {badge !== undefined && (
-        <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] min-h-[20px] px-1 bg-(--danger) text-(--primary-foreground) text-xs font-bold rounded-full border-2 border-(--background) shadow-lg">
+        <div 
+          className="absolute -top-1 -right-1 flex items-center justify-center px-1 bg-(--danger) text-(--primary-foreground) text-xs font-bold rounded-full border-2 border-(--background) shadow-lg"
+          style={{ minWidth: getSpacing('5'), minHeight: getSpacing('5') }}
+        >
           {typeof badge === 'number' && badge > 99 ? '99+' : badge}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

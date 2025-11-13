@@ -1,18 +1,12 @@
 'use client';
-
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from '@petspark/motion';
-import { useCallback, useEffect, useState } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useCallback, useEffect, useState, memo } from 'react';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { ArrowUUpLeft } from '@phosphor-icons/react';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface UndoDeleteChipProps {
   onUndo: () => void;
@@ -21,11 +15,12 @@ export interface UndoDeleteChipProps {
 }
 
 export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDeleteChipProps) {
-    const _uiConfig = useUIConfig();
-    const [isVisible, setIsVisible] = useState(true);
-  const translateX = useSharedValue(-100);
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
+  const _uiConfig = useUIConfig();
+  const reducedMotion = useReducedMotion();
+  const [isVisible, setIsVisible] = useState(true);
+  const translateX = useMotionValue(-100);
+  const opacity = useMotionValue(0);
+  const scale = useMotionValue(0.8);
 
   const handleUndo = useCallback(() => {
     haptics.selection();
@@ -34,16 +29,49 @@ export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDelet
   }, [onUndo]);
 
   useEffect(() => {
-    if (isVisible) {
-      translateX.value = withSpring(0, springConfigs.bouncy);
-      opacity.value = withTiming(1, timingConfigs.fast);
-      scale.value = withSpring(1, springConfigs.bouncy);
-    } else {
-      translateX.value = withTiming(-100, timingConfigs.fast);
-      opacity.value = withTiming(0, timingConfigs.fast);
-      scale.value = withTiming(0.8, timingConfigs.fast);
+    if (reducedMotion) {
+      if (isVisible) {
+        translateX.set(0);
+        opacity.set(1);
+        scale.set(1);
+      } else {
+        translateX.set(-100);
+        opacity.set(0);
+        scale.set(0.8);
+      }
+      return;
     }
-  }, [isVisible, translateX, opacity, scale]);
+    
+    if (isVisible) {
+      void animate(translateX, 0, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping,
+        stiffness: springConfigs.bouncy.stiffness,
+      });
+      void animate(opacity, 1, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(scale, 1, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping,
+        stiffness: springConfigs.bouncy.stiffness,
+      });
+    } else {
+      void animate(translateX, -100, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(opacity, 0, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+      void animate(scale, 0.8, {
+        duration: motionDurations.fast,
+        ease: [0.2, 0, 0, 1],
+      });
+    }
+  }, [isVisible, translateX, opacity, scale, reducedMotion]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,20 +81,17 @@ export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDelet
     return () => clearTimeout(timer);
   }, [duration]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }, { scale: scale.value }],
-      opacity: opacity.value,
-    };
-  });
-
   if (!isVisible) {
     return null;
   }
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      style={{
+        x: translateX,
+        scale,
+        opacity,
+      }}
       className={cn(
         'fixed bottom-20 left-1/2 -translate-x-1/2 z-50',
         'bg-card border border-border rounded-full shadow-lg',
@@ -86,6 +111,9 @@ export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDelet
         <ArrowUUpLeft size={16} className="text-foreground" />
         <span className="text-foreground">Undo delete</span>
       </button>
-    </AnimatedView>
+    </motion.div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MemoizedUndoDeleteChip = memo(UndoDeleteChip);

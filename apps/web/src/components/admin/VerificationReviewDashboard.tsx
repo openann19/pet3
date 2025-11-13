@@ -1,4 +1,5 @@
 import { verificationApi } from '@/api/verification-api';
+import { motion } from 'framer-motion';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ import {
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 
 const logger = createLogger('VerificationReviewDashboard');
@@ -304,15 +305,15 @@ export function VerificationReviewDashboard(): JSX.Element {
         <TabsContent value={selectedTab} className="mt-6">
           <ScrollArea className="h-125 sm:h-150 pr-2 sm:pr-4">
             {loadingPresence.shouldRender && initialLoading && (
-              <AnimatedView style={loadingPresence.animatedStyle}>
+              <motion.div style={loadingPresence.animatedStyle}>
                 <div className="text-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
                   <p className="mt-4 text-muted-foreground">Loading verification requests...</p>
                 </div>
-              </AnimatedView>
+              </motion.div>
             )}
             {emptyPresence.shouldRender && !initialLoading && filteredRequests.length === 0 && (
-              <AnimatedView style={emptyPresence.animatedStyle} className="text-center py-16">
+              <motion.div style={emptyPresence.animatedStyle} className="text-center py-16">
                 <ShieldCheck size={64} className="mx-auto text-muted-foreground mb-4 opacity-50" />
                 <p className="text-muted-foreground text-lg font-medium">
                   No requests in this category
@@ -320,7 +321,7 @@ export function VerificationReviewDashboard(): JSX.Element {
                 <p className="text-sm text-muted-foreground mt-2">
                   Check back later for new submissions
                 </p>
-              </AnimatedView>
+              </motion.div>
             )}
             {!initialLoading && filteredRequests.length > 0 && (
               <div className="space-y-4">
@@ -523,6 +524,7 @@ export function VerificationReviewDashboard(): JSX.Element {
                           onClick={() => {
                             haptics.impact('light');
                             if (doc.fileData) {
+                              if (typeof document === 'undefined') return;
                               const link = document.createElement('a');
                               link.href = doc.fileData;
                               link.download = doc.fileName;

@@ -59,7 +59,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </MemoryRouter>
+      </TestWrapper>
     );
 
     expect(document.querySelector('[data-testid="protected-content"]')).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </MemoryRouter>
+      </TestWrapper>
     );
 
     expect(mockNavigate).toHaveBeenCalledWith(
@@ -101,7 +101,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </MemoryRouter>
+      </TestWrapper>
     );
 
     expect(getByTestId('spinner-lg')).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute adminOnly>
           <div>Admin Content</div>
         </ProtectedRoute>
-      </MemoryRouter>
+      </TestWrapper>
     );
 
     expect(mockNavigate).toHaveBeenCalledWith('/unauthorized', { replace: true });
@@ -137,7 +137,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute adminOnly>
           <div>Admin Content</div>
         </ProtectedRoute>
-      </MemoryRouter>
+      </TestWrapper>
     );
 
     expect(document.querySelector('[data-testid="protected-content"]')).toBeInTheDocument();

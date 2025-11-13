@@ -1,13 +1,14 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +57,7 @@ function VaccinationItem({ vaccination, index }: VaccinationItemProps): JSX.Elem
   });
 
   return (
-    <AnimatedView
+    <motion.div
       style={staggeredAnimation.itemStyle}
       className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
     >
@@ -75,7 +76,7 @@ function VaccinationItem({ vaccination, index }: VaccinationItemProps): JSX.Elem
           </Badge>
         )}
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -91,7 +92,7 @@ function HealthRecordItem({ record, index }: HealthRecordItemProps): JSX.Element
   });
 
   return (
-    <AnimatedView
+    <motion.div
       style={staggeredAnimation.itemStyle}
       className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
     >
@@ -109,7 +110,7 @@ function HealthRecordItem({ record, index }: HealthRecordItemProps): JSX.Element
           <span className="font-medium">Diagnosis:</span> {record.diagnosis}
         </p>
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -129,7 +130,7 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
   const daysUntil = differenceInDays(new Date(reminder.dueDate), new Date());
 
   return (
-    <AnimatedView
+    <motion.div
       style={staggeredAnimation.itemStyle}
       className={`flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow ${
         String(reminder.completed ? 'opacity-50' : '' ?? '')
@@ -170,7 +171,7 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
           Complete
         </Button>
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -432,11 +433,11 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={backdropStyle}
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
     >
-      <AnimatedView style={modalAnimation.style} className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+      <motion.div style={modalAnimation.style} className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -447,11 +448,11 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
               <p className="text-sm text-muted-foreground">{pet.name}'s health records</p>
             </div>
           </div>
-          <AnimatedView style={closeButtonAnimation.animatedStyle}>
+          <motion.div style={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>
-          </AnimatedView>
+          </motion.div>
         </div>
 
         {healthSummary && (
@@ -629,8 +630,8 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
             </Card>
           </TabsContent>
         </Tabs>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   );
 }
 

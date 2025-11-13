@@ -1,8 +1,9 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSharedValue, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { timingConfigs } from '@/effects/reanimated/transitions';
@@ -58,16 +59,16 @@ function FeatureBadge({ feature, index, onRemove }: FeatureBadgeProps): JSX.Elem
   });
 
   return (
-    <AnimatedView style={staggeredAnimation.itemStyle}>
+    <motion.div style={staggeredAnimation.itemStyle}>
       <Badge variant="secondary" className="gap-1">
         {feature}
-        <AnimatedView style={removeButtonAnimation.animatedStyle}>
+        <motion.div style={removeButtonAnimation.animatedStyle}>
           <button onClick={removeButtonAnimation.handlePress} type="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
             <X size={12} />
           </button>
-        </AnimatedView>
+        </motion.div>
       </Badge>
-    </AnimatedView>
+    </motion.div>
   );
 }
 
@@ -338,7 +339,7 @@ export function CreateLostAlertDialog({
                     }}
                     placeholder="e.g., White spot on chest"
                   />
-                  <AnimatedView style={addFeatureButtonAnimation.animatedStyle}>
+                  <motion.div style={addFeatureButtonAnimation.animatedStyle}>
                     <Button
                       type="button"
                       onClick={addFeatureButtonAnimation.handlePress}
@@ -346,7 +347,7 @@ export function CreateLostAlertDialog({
                     >
                       <Plus size={16} />
                     </Button>
-                  </AnimatedView>
+                  </motion.div>
                 </div>
                 {distinctiveFeatures.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -400,7 +401,7 @@ export function CreateLostAlertDialog({
 
               <div className="space-y-2">
                 <Label>Location on Map</Label>
-                <AnimatedView style={mapPickerButtonAnimation.animatedStyle}>
+                <motion.div style={mapPickerButtonAnimation.animatedStyle}>
                   <Button
                     type="button"
                     variant="outline"
@@ -410,7 +411,7 @@ export function CreateLostAlertDialog({
                     <MapPin size={16} className="mr-2" />
                     {selectedLocation ? 'Update Location' : 'Pick Location on Map'}
                   </Button>
-                </AnimatedView>
+                </motion.div>
                 {selectedLocation && (
                   <p className="text-xs text-muted-foreground">
                     Location set: {selectedLocation.lat.toFixed(4)},{' '}
@@ -508,14 +509,14 @@ export function CreateLostAlertDialog({
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <AnimatedView style={submitButtonAnimation.animatedStyle}>
+            <motion.div style={submitButtonAnimation.animatedStyle}>
               <Button
                 onClick={submitButtonAnimation.handlePress}
                 disabled={isSubmitting || !isFormValid}
               >
                 {isSubmitting ? 'Creating Alert...' : 'Create Alert'}
               </Button>
-            </AnimatedView>
+            </motion.div>
           </div>
         </DialogContent>
       </Dialog>

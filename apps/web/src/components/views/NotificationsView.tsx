@@ -21,10 +21,16 @@ import {
   UserPlus,
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
-import { MotionView } from '@petspark/motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { motionDurations, staggerContainerVariants, staggerItemVariants, getVariantsWithReducedMotion } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
 import { useCallback, useEffect, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import { toast } from 'sonner';
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary';
+import { getTypographyClasses, getSpacingClassesFromConfig, getColorClasses } from '@/lib/design-token-utils';
+import { cn } from '@/lib/utils';
 
 const logger = createLogger('NotificationsView');
 
@@ -58,33 +64,38 @@ function getNotificationMessage(notification: CommunityNotification): string {
       return `${String(notification.actorName ?? '')} started following you`
     case 'mention':
       return `${String(notification.actorName ?? '')} mentioned you`
-    case 'moderation':
-      return notification.content ?? 'Your content was reviewed'
-    default:
-      return notification.content ?? 'New notification'
+      case 'moderation':
+        return notification.content ?? 'Your content was reviewed';
+      default:
+        return notification.content ?? 'New notification';
   }
 }
 
 function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
-  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+  const prefersReducedMotion = useReducedMotion();
 
   return (
-    <AnimatedView
-      style={entry.animatedStyle}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+        ease: 'easeOut',
+      }}
       className="flex flex-col items-center justify-center py-16 text-center"
     >
       <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
-        <Bell size={48} className="text-muted-foreground" />
+        <Bell size={48} className="text-muted-foreground" aria-hidden="true" />
       </div>
-      <h2 className="text-xl font-semibold mb-2">
+      <h2 className={cn(getTypographyClasses('h3'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>
         {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
       </h2>
-      <p className="text-sm text-muted-foreground max-w-sm">
+      <p className={cn(getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'), 'max-w-sm')}>
         {filter === 'unread' 
           ? 'You\'re all caught up!'
           : 'When you get notifications, they\'ll appear here'}
       </p>
-    </AnimatedView>
+    </motion.div>
   )
 }
 
@@ -97,47 +108,44 @@ function _NotificationItemView({
   index: number
   onNotificationClick: (notification: CommunityNotification) => void
 }) {
-  const opacity = useSharedValue(0)
-  const translateX = useSharedValue(-20)
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      opacity.value = withSpring(1, springConfigs.smooth)
-      translateX.value = withSpring(0, springConfigs.smooth)
-    }, index * 30)
-
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [index, opacity, translateX])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateX: `${String(translateX.value)}px` }]
-  })) as AnimatedStyle
-
+  const prefersReducedMotion = useReducedMotion();
   const Icon = getNotificationIcon(notification.type)
   const message = getNotificationMessage(notification)
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{
+        delay: prefersReducedMotion ? 0 : index * 0.03,
+        duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+        ease: 'easeOut',
+      }}
       onClick={() => {
-        onNotificationClick(notification)
+        onNotificationClick(notification);
       }}
       className={`
-        flex gap-3 p-3 rounded-lg cursor-pointer transition-colors
-        ${String(notification.read 
+        flex gap-3 p-3 rounded-lg cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+        ${notification.read 
           ? 'hover:bg-muted/50' 
-          : 'bg-primary/5 hover:bg-primary/10 border border-primary/20')
+          : 'bg-primary/5 hover:bg-primary/10 border border-primary/20'
         }
       `}
+      role="button"
+      tabIndex={0}
+      aria-label={`Notification: ${message}`}
+      onKeyDown={(e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onNotificationClick(notification);
+        }
+      }}
     >
       <Avatar
-        {...(notification.actorAvatar && { src: notification.actorAvatar })}
+        {...(notification.actorAvatar ? { src: notification.actorAvatar } : {})}
         className="w-12 h-12"
       >
-        <Icon size={20} />
+        <Icon size={20} aria-hidden="true" />
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
@@ -150,11 +158,11 @@ function _NotificationItemView({
             </p>
           </div>
           {!notification.read && (
-            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
+            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" aria-label="Unread notification" />
           )}
         </div>
       </div>
-    </AnimatedView>
+    </motion.div>
   )
 }
 
@@ -164,15 +172,19 @@ interface NotificationsViewProps {
   onUserClick?: (userId: string) => void;
 }
 
-export default function NotificationsView({
+function NotificationsViewContent({
   onBack,
   onPostClick,
   onUserClick,
 }: NotificationsViewProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [notifications, setNotifications] = useState<CommunityNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  
+  // Defensive data handling
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
@@ -208,13 +220,16 @@ export default function NotificationsView({
   const handleMarkAllAsRead = async () => {
     haptics.impact('medium');
     try {
-      const unreadIds = filteredNotifications.filter((n) => !n.read).map((n) => n.id);
-      await Promise.all(unreadIds.map((id) => communityService.markNotificationRead(id)));
-      setNotifications(notifications.map((n) => ({ ...n, read: true })));
-      toast.success('All notifications marked as read');
+      const unreadIds = safeNotifications.filter((n) => !n.read).map((n) => n.id);
+      if (unreadIds.length > 0) {
+        await Promise.all(unreadIds.map((id) => communityService.markNotificationRead(id)));
+        setNotifications(safeNotifications.map((n) => ({ ...n, read: true })));
+        toast.success('All notifications marked as read');
+      }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Failed to mark all as read', err);
+      toast.error('Failed to mark all notifications as read');
     }
   };
 
@@ -238,54 +253,25 @@ export default function NotificationsView({
     }
   };
 
-  const getNotificationIcon = (type: CommunityNotification['type']) => {
-    switch (type) {
-      case 'like':
-        return Heart;
-      case 'comment':
-      case 'reply':
-        return ChatCircle;
-      case 'follow':
-        return UserPlus;
-      case 'mention':
-        return At;
-      case 'moderation':
-        return CheckCircle;
-      default:
-        return Bell;
-    }
-  };
 
-  const getNotificationMessage = (notification: CommunityNotification): string => {
-    switch (notification.type) {
-      case 'like':
-        return `${notification.actorName} liked your post`;
-      case 'comment':
-        return `${notification.actorName} commented on your post`;
-      case 'reply':
-        return `${notification.actorName} replied to your comment`;
-      case 'follow':
-        return `${notification.actorName} started following you`;
-      case 'mention':
-        return `${notification.actorName} mentioned you`;
-      case 'moderation':
-        return notification.content || 'Your content was reviewed';
-      default:
-        return notification.content || 'New notification';
-    }
-  };
-
-  const filteredNotifications = notifications
+  const filteredNotifications = safeNotifications
     .filter((n) => filter === 'all' || !n.read)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = safeNotifications.filter((n) => !n.read).length;
 
   return (
     <PageTransitionWrapper key="notifications-view" direction="up">
-      <div className="flex flex-col h-full bg-background">
+      <main aria-label="Notifications" className="flex flex-col h-full bg-background">
         {/* Header */}
-        <header role="banner" className="flex items-center gap-4 p-4 border-b bg-card">
+        <header className={cn(
+          'flex items-center border-b bg-card',
+          getSpacingClassesFromConfig({ gap: 'lg', padding: 'lg' })
+        )}>
           {onBack && (
             <Button
               variant="ghost"
@@ -294,24 +280,35 @@ export default function NotificationsView({
               className="rounded-full"
               aria-label="Go back to previous page"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={20} aria-hidden="true" />
             </Button>
           )}
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
+          <div className={cn('flex items-center flex-1', getSpacingClassesFromConfig({ gap: 'md' }))}>
+            <div
+              className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center"
+              aria-hidden="true"
+            >
               <Bell size={24} className="text-white" weight="fill" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold">Notifications</h1>
+              <h1 className={cn(getTypographyClasses('h1'))}>Notifications</h1>
               {unreadCount > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className={cn(getTypographyClasses('bodySmall'), getColorClasses('mutedForeground', 'text'))}>
                   {unreadCount} {unreadCount === 1 ? 'unread' : 'unread'}
                 </p>
               )}
             </div>
             {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
-                <Check size={14} className="mr-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void handleMarkAllAsRead();
+                }}
+                className={getTypographyClasses('caption')}
+                aria-label="Mark all notifications as read"
+              >
+                <Check size={14} className={getSpacingClassesFromConfig({ marginX: 'xs' })} aria-hidden="true" />
                 Mark all read
               </Button>
             )}
@@ -335,11 +332,13 @@ export default function NotificationsView({
         </Tabs>
 
         {/* Content */}
-        <main role="main" aria-label="Notifications content">
-          <ScrollArea className="flex-1">
-            <div className="p-4 space-y-2">
+        <section aria-label="Notifications list" className="flex-1">
+          <ScrollArea className="h-full">
+            <div className={cn(
+              getSpacingClassesFromConfig({ padding: 'lg', spaceY: 'sm' })
+            )}>
               {loading ? (
-                <div className="space-y-4">
+                <div className="space-y-4" role="status" aria-live="polite" aria-label="Loading notifications">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="flex gap-3">
                       <Skeleton className="w-12 h-12 rounded-full" />
@@ -351,92 +350,60 @@ export default function NotificationsView({
                   ))}
                 </div>
               ) : filteredNotifications.length === 0 ? (
-                <MotionView
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center py-16 text-center"
-                >
-                  <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Bell size={48} className="text-muted-foreground" />
-                  </div>
-                  <h2 className="text-xl font-semibold mb-2">
-                    {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
-                  </h2>
-                  <p className="text-sm text-muted-foreground max-w-sm">
-                    {filter === 'unread'
-                      ? "You're all caught up!"
-                      : "When you get notifications, they'll appear here"}
-                  </p>
-                </MotionView>
+                <_EmptyStateView filter={filter} />
               ) : (
-                filteredNotifications.map((notification, index) => {
-                  const Icon = getNotificationIcon(notification.type);
-                  const message = getNotificationMessage(notification);
-
-                  return (
-                    <MotionView
-                      key={notification.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      onClick={() => handleNotificationClick(notification)}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`${notification.read ? 'Read' : 'Unread'} notification: ${message}`}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleNotificationClick(notification);
-                        }
-                      }}
-                      className={`
-                    flex gap-3 p-3 rounded-lg cursor-pointer transition-colors
-                    ${notification.read
-                          ? 'hover:bg-muted/50'
-                          : 'bg-primary/5 hover:bg-primary/10 border border-primary/20'
-                        }
-                  `}
-                    >
-                      <Avatar
-                        {...(notification.actorAvatar && { src: notification.actorAvatar })}
-                        className="w-12 h-12"
+                <motion.ul
+                  className="space-y-2"
+                  role="list"
+                  aria-label="Notifications list"
+                  variants={getVariantsWithReducedMotion(staggerContainerVariants, prefersReducedMotion)}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {filteredNotifications.map((notification, index) => (
+                      <motion.li
+                        key={notification.id}
+                        variants={getVariantsWithReducedMotion(staggerItemVariants, prefersReducedMotion)}
+                        layout
+                        transition={{
+                          delay: prefersReducedMotion ? 0 : index * 0.03,
+                          duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+                        }}
                       >
-                        <Icon size={20} />
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium line-clamp-2">{message}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatDistanceToNow(new Date(notification.createdAt), {
-                                addSuffix: true,
-                              })}
-                            </p>
-                          </div>
-                          {!notification.read && (
-                            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
-                          )}
-                        </div>
-                      </div>
-                    </MotionView>
-                  );
-                })
+                        <_NotificationItemView
+                          notification={notification}
+                          index={index}
+                          onNotificationClick={handleNotificationClick}
+                        />
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </motion.ul>
               )}
             </div>
           </ScrollArea>
-        </main>
+        </section>
 
         {/* Post Detail Dialog */}
         {selectedPostId && (
           <PostDetailView
-            open={!!selectedPostId}
+            open={Boolean(selectedPostId)}
             onOpenChange={(open) => {
               if (!open) setSelectedPostId(null);
             }}
             postId={selectedPostId}
           />
         )}
-      </div>
+      </main>
     </PageTransitionWrapper>
+  );
+}
+
+export default function NotificationsView(props: NotificationsViewProps) {
+  return (
+    <ScreenErrorBoundary screenName="Notifications" enableNavigation={true} enableReporting={false}>
+      <NotificationsViewContent {...props} />
+    </ScreenErrorBoundary>
   );
 }

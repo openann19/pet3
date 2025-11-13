@@ -16,6 +16,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
+import { colors } from '@mobile/theme/colors';
+import { Dimens } from '@petspark/shared/tokens';
 
 export interface PresenceAuroraRingProps {
     src?: string;
@@ -41,7 +43,7 @@ function getStatusColors(status: 'online' | 'away' | 'busy' | 'offline'): {
             return {
                 start: '#34d399', // emerald-400
                 middle: '#22d3ee', // cyan-400
-                end: 'var(--color-accent-secondary-9)', // blue-500
+                end: colors.accent, // accent color
             };
         case 'away':
             return {
@@ -51,7 +53,7 @@ function getStatusColors(status: 'online' | 'away' | 'busy' | 'offline'): {
             };
         case 'busy':
             return {
-                start: 'var(--color-error-9)', // rose-500
+                start: colors.danger, // danger color
                 middle: '#d946ef', // fuchsia-500
                 end: '#6366f1', // indigo-500
             };
@@ -188,7 +190,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     avatar: {
-        backgroundColor: '#e5e7eb',
+        backgroundColor: colors.border,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',

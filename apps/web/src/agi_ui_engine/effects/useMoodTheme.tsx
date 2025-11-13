@@ -1,6 +1,7 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { useMemo } from 'react';
@@ -24,7 +25,7 @@ export interface UseMoodThemeReturn {
  * @example
  * ```tsx
  * const { animatedStyle, gradientColors } = useMoodTheme({ text: messageText })
- * return <AnimatedView style={animatedStyle}>{content}</AnimatedView>
+ * return <motion.div style={animatedStyle}>{content}</motion.div>
  * ```
  */
 export function useMoodTheme(options: UseMoodThemeOptions): UseMoodThemeReturn {

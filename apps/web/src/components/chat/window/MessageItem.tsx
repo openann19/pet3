@@ -1,6 +1,7 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { useSendWarp } from '@/effects/chat/bubbles/use-send-warp';
@@ -20,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { useEffect, useRef, useMemo } from 'react';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 export interface MessageItemProps {
   message: ChatMessage;
@@ -94,7 +95,7 @@ export function MessageItem({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <motion.div
       style={combined}
       className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
     >
@@ -117,7 +118,7 @@ export function MessageItem({
           glowIntensity={isCurrentUser ? sendWarp.bloomIntensity.value : 0}
           className="relative"
         >
-          <AnimatedView
+          <motion.div
             style={hover.animatedStyle}
             onMouseEnter={hover.handleMouseEnter}
             onMouseLeave={hover.handleMouseLeave}
@@ -209,7 +210,7 @@ export function MessageItem({
                 <TranslateIcon size={14} />
               </Button>
             )}
-          </AnimatedView>
+          </motion.div>
         </WebBubbleWrapper>
 
         <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-2">
@@ -221,6 +222,6 @@ export function MessageItem({
           )}
         </span>
       </div>
-    </AnimatedView>
+    </motion.div>
   );
 }

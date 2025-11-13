@@ -11,6 +11,15 @@ declare global {
   const navigator: Navigator | undefined
 }
 
+// NodeJS types for setTimeout, setInterval, etc.
+declare namespace NodeJS {
+  interface Timeout {
+    ref(): Timeout
+    unref(): Timeout
+    hasRef(): boolean
+  }
+}
+
 // MediaQueryList types (web-only, but may be polyfilled)
 interface MediaQueryList extends EventTarget {
   readonly matches: boolean

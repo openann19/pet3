@@ -1,4 +1,5 @@
 'use client'
+import { motion } from 'framer-motion';
 
 import React, { useEffect } from 'react'
 import {
@@ -8,7 +9,7 @@ import {
   useSharedValue,
   withTiming,
 } from '@petspark/motion'
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view'
+import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value'
 import { cn } from '@/lib/utils'
 import { useReducedMotion } from '../core/reduced-motion'
 
@@ -61,17 +62,17 @@ export function WebDeliveryTicks({ state, className }: WebDeliveryTicksProps): R
   }) as AnimatedStyle
 
   return (
-    <AnimatedView
+    <motion.div
       style={containerStyle}
       className={cn('inline-flex items-center gap-1 text-xs font-medium', className)}
     >
-      <AnimatedView style={firstTickStyle} className="inline-flex">
+      <motion.div style={firstTickStyle} className="inline-flex">
         <span>✓</span>
-      </AnimatedView>
-      <AnimatedView style={secondTickStyle} className="inline-flex">
+      </motion.div>
+      <motion.div style={secondTickStyle} className="inline-flex">
         <span>✓</span>
-      </AnimatedView>
-    </AnimatedView>
+      </motion.div>
+    </motion.div>
   )
 }
 

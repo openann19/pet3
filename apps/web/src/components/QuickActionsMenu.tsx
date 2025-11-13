@@ -1,6 +1,9 @@
+'use client';
+
 import { useState } from 'react';
-import { MotionView, Presence } from '@petspark/motion';
-import { useSharedValue, useAnimatedStyle, withTiming, withSpring } from '@petspark/motion';
+import { motion, useMotionValue, animate, useTransform, AnimatePresence } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import React from 'react';
 import {
   Plus,
@@ -28,42 +31,61 @@ interface QuickActionItemProps {
 }
 
 function QuickActionItem({ icon, label, onClick, color, index }: QuickActionItemProps) {
-  const itemOpacity = useSharedValue(0);
-  const itemX = useSharedValue(50);
-  const itemScale = useSharedValue(0.8);
-  const hoverScale = useSharedValue(1);
-  const hoverX = useSharedValue(0);
+  const prefersReducedMotion = useReducedMotion();
+  const itemOpacity = useMotionValue(0);
+  const itemX = useMotionValue(50);
+  const itemScale = useMotionValue(0.8);
+  const hoverScale = useMotionValue(1);
+  const hoverX = useMotionValue(0);
+
+  const translateX = useTransform([itemX, hoverX], ([x, hx]) => x + hx);
+  const scale = useTransform([itemScale, hoverScale], ([s, hs]) => s * hs);
 
   React.useEffect(() => {
+    if (prefersReducedMotion) {
+      itemOpacity.set(1);
+      itemX.set(0);
+      itemScale.set(1);
+      return;
+    }
+
     const delay = index * 50;
     const timeoutId = setTimeout(() => {
-      itemOpacity.value = withSpring(1, { stiffness: 500, damping: 30 });
-      itemX.value = withSpring(0, { stiffness: 500, damping: 30 });
-      itemScale.value = withSpring(1, { stiffness: 500, damping: 30 });
+      void animate(itemOpacity, 1, {
+        type: 'spring',
+        stiffness: 500,
+        damping: 30,
+      });
+      void animate(itemX, 0, {
+        type: 'spring',
+        stiffness: 500,
+        damping: 30,
+      });
+      void animate(itemScale, 1, {
+        type: 'spring',
+        stiffness: 500,
+        damping: 30,
+      });
     }, delay);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [index, itemOpacity, itemX, itemScale]);
+  }, [index, itemOpacity, itemX, itemScale, prefersReducedMotion]);
 
   const handleMouseEnter = React.useCallback(() => {
-    hoverScale.value = withTiming(1.1, { duration: 200 });
-    hoverX.value = withTiming(-5, { duration: 200 });
-  }, [hoverScale, hoverX]);
+    if (!prefersReducedMotion) {
+      void animate(hoverScale, 1.1, { duration: motionDurations.fast });
+      void animate(hoverX, -5, { duration: motionDurations.fast });
+    }
+  }, [hoverScale, hoverX, prefersReducedMotion]);
 
   const handleMouseLeave = React.useCallback(() => {
-    hoverScale.value = withTiming(1, { duration: 200 });
-    hoverX.value = withTiming(0, { duration: 200 });
-  }, [hoverScale, hoverX]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: itemOpacity.value,
-    transform: [
-      { translateX: itemX.value + hoverX.value },
-      { scale: itemScale.value * hoverScale.value },
-    ],
-  }));
+    if (!prefersReducedMotion) {
+      void animate(hoverScale, 1, { duration: motionDurations.fast });
+      void animate(hoverX, 0, { duration: motionDurations.fast });
+    }
+  }, [hoverScale, hoverX, prefersReducedMotion]);
 
   const handleClick = React.useCallback(() => {
     try {
@@ -76,8 +98,12 @@ function QuickActionItem({ icon, label, onClick, color, index }: QuickActionItem
   }, [onClick]);
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <motion.button
+      style={{
+        opacity: itemOpacity,
+        x: translateX,
+        scale,
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -89,7 +115,7 @@ function QuickActionItem({ icon, label, onClick, color, index }: QuickActionItem
         {icon}
       </div>
       <span className="font-medium text-sm pr-2">{label}</span>
-    </MotionView>
+    </motion.button>
   );
 }
 
@@ -249,68 +275,75 @@ export default function QuickActionsMenu({
     ]
   );
 
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <div className="fixed bottom-24 right-6 z-40">
-      <Presence visible={isOpen}>
-        <MotionView
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          className="flex flex-col gap-3 mb-4"
-        >
-          {actions.map((action, index) => (
-            <QuickActionItem
-              key={action.label}
-              icon={action.icon}
-              label={action.label}
-              onClick={action.onClick}
-              color={action.color}
-              index={index}
-            />
-          ))}
-        </MotionView>
-      </Presence>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={prefersReducedMotion ? { duration: 0.1 } : { type: 'spring', stiffness: 500, damping: 30 }}
+            className="flex flex-col gap-3 mb-4"
+          >
+            {actions.map((action, index) => (
+              <QuickActionItem
+                key={action.label}
+                icon={action.icon}
+                label={action.label}
+                onClick={action.onClick}
+                color={action.color}
+                index={index}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <MotionView
+      <motion.button
         onClick={handleToggle}
-        className={`w-14 h-14 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl hover:shadow-primary/50 transition-all ${isOpen ? 'rotate-45' : ''
-          }`}
-        style={{ transition: 'transform 0.3s ease' }}
+        className={`w-14 h-14 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl hover:shadow-primary/50 transition-all ${isOpen ? 'rotate-45' : ''}`}
+        animate={{ rotate: isOpen ? 45 : 0 }}
+        transition={{ duration: prefersReducedMotion ? 0.1 : 0.3, ease: 'easeInOut' }}
       >
-        <Presence visible={!isOpen}>
-          <MotionView
-            key="open"
-            initial={{ opacity: 0, rotate: 90 }}
-            animate={{ opacity: 1, rotate: 0 }}
-            exit={{ opacity: 0, rotate: -90 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Plus size={24} weight="bold" />
-          </MotionView>
-        </Presence>
-        <Presence visible={isOpen}>
-          <MotionView
-            key="close"
-            initial={{ opacity: 0, rotate: -90 }}
-            animate={{ opacity: 1, rotate: 0 }}
-            exit={{ opacity: 0, rotate: 90 }}
-            transition={{ duration: 0.2 }}
-          >
-            <X size={24} weight="bold" />
-          </MotionView>
-        </Presence>
-      </MotionView>
+        <AnimatePresence mode="wait">
+          {!isOpen ? (
+            <motion.div
+              key="open"
+              initial={{ opacity: 0, rotate: 90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: -90 }}
+              transition={{ duration: prefersReducedMotion ? 0.1 : 0.2 }}
+            >
+              <Plus size={24} weight="bold" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="close"
+              initial={{ opacity: 0, rotate: -90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 90 }}
+              transition={{ duration: prefersReducedMotion ? 0.1 : 0.2 }}
+            >
+              <X size={24} weight="bold" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
 
-      <Presence visible={isOpen}>
-        <MotionView
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={handleToggle}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
-        />
-      </Presence>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleToggle}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

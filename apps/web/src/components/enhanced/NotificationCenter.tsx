@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { useStorage } from '@/hooks/use-storage';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
-import { MotionView } from '@petspark/motion';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Bell, X, Check, CheckCircle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface Notification {
   id: string;
@@ -25,7 +26,6 @@ export interface Notification {
 }
 
 export function NotificationCenter() {
-  const _uiConfig = useUIConfig();
   const [notifications, setNotifications] = useStorage<Notification[]>('notifications', []);
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
@@ -45,21 +45,21 @@ export function NotificationCenter() {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications((current) =>
+    void setNotifications((current) =>
       (current || []).map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications((current) => (current || []).map((n) => ({ ...n, read: true })));
+    void setNotifications((current) => (current || []).map((n) => ({ ...n, read: true })));
   };
 
   const deleteNotification = (id: string) => {
-    setNotifications((current) => (current || []).filter((n) => n.id !== id));
+    void setNotifications((current) => (current || []).filter((n) => n.id !== id));
   };
 
   const clearAll = () => {
-    setNotifications([]);
+    void setNotifications([]);
   };
 
   return (
@@ -185,11 +185,32 @@ function NotificationItem({
   onDelete: (id: string) => void;
   index: number;
 }) {
-  const staggered = useStaggeredItem({ index, staggerDelay: 30 });
+  const reducedMotion = useReducedMotion();
+  const staggerDelay = reducedMotion ? 0 : index * 0.03;
+
+  const itemVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reducedMotion
+        ? { duration: 0.1 }
+        : {
+            duration: 0.3,
+            delay: staggerDelay,
+            ease: [0.16, 1, 0.3, 1],
+          },
+    },
+  };
 
   return (
-    <MotionView
-      animatedStyle={staggered.itemStyle}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={itemVariants}
       className={cn(
         'group relative p-4 hover:bg-muted/50 transition-colors',
         !notification.read && 'bg-primary/5'
@@ -249,7 +270,7 @@ function NotificationItem({
           <X size={14} />
         </Button>
       </div>
-    </MotionView>
+    </motion.div>
   );
 }
 

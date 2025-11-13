@@ -47,27 +47,20 @@ import {
   SquaresFour,
   X,
 } from '@phosphor-icons/react';
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-  withDelay,
-} from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
 import { toast } from 'sonner';
-import { safeArrayAccess, exists, isNonEmptyArray } from '@/lib/runtime-safety';
+import { safeArrayAccess } from '@/lib/runtime-safety';
+import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary';
+import { getTypographyClasses, getSpacingClassesFromConfig, getColorClasses, getRadiusClasses, focusRing } from '@/lib/design-token-utils';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { cn } from '@/lib/utils';
 
 const logger = createLogger('DiscoverView');
 
-export default function DiscoverView() {
+function DiscoverViewContent() {
   const { t } = useApp();
   const [userPets] = useStorage<Pet[]>('user-pets', []);
   const [swipeHistory, setSwipeHistory] = useStorage<SwipeAction[]>('swipe-history', []);
@@ -113,10 +106,24 @@ export default function DiscoverView() {
     availableModes: ['cards', 'map'],
   });
 
+  // Use ref to store latest handleSwipe to avoid circular dependency
+  const handleSwipeRef = useRef<((action: 'like' | 'pass') => Promise<void>) | null>(null);
+
+  const swipeHook = useSwipe({
+    onSwipe: useCallback((dir: 'left' | 'right') => {
+      const action = dir === 'right' ? 'like' : 'pass';
+      if (handleSwipeRef.current) {
+        void handleSwipeRef.current(action);
+      }
+    }, []),
+  });
+
   const {
-    animatedStyle: swipeAnimatedStyle,
-    likeOpacityStyle,
-    passOpacityStyle,
+    x: swipeX,
+    rotate: swipeRotate,
+    opacity: swipeOpacity,
+    likeOpacity: swipeLikeOpacity,
+    passOpacity: swipePassOpacity,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -124,11 +131,22 @@ export default function DiscoverView() {
     handleTouchMove,
     handleTouchEnd,
     reset: resetSwipe,
-  } = useSwipe({
-    onSwipe: (dir) => {
-      handleSwipe(dir === 'right' ? 'like' : 'pass');
-    },
-  });
+  } = swipeHook;
+
+  // Transform motion values for use in style props - properly typed for Framer Motion
+  const cardStyle = useMemo(() => ({
+    x: swipeX,
+    rotate: swipeRotate,
+    opacity: swipeOpacity,
+  }), [swipeX, swipeRotate, swipeOpacity]);
+
+  const likeOverlayStyle = useMemo(() => ({
+    opacity: swipeLikeOpacity,
+  }), [swipeLikeOpacity]);
+
+  const passOverlayStyle = useMemo(() => ({
+    opacity: swipePassOpacity,
+  }), [swipePassOpacity]);
 
   const selectedPetDialog = useDialog({
     initialOpen: false,
@@ -178,13 +196,13 @@ export default function DiscoverView() {
         );
       }
     };
-    loadAdoptablePets();
+    void loadAdoptablePets();
   }, []);
   const swipedPetIds = new Set(
     Array.isArray(swipeHistory) ? swipeHistory.map((s) => s.targetPetId) : []
   );
 
-  const prefs: DiscoveryPreferences = preferences || {
+  const prefs: DiscoveryPreferences = preferences ?? {
     minAge: 0,
     maxAge: 15,
     sizes: ['small', 'medium', 'large', 'extra-large'],
@@ -224,7 +242,7 @@ export default function DiscoverView() {
       interests: prefs.interests,
       lookingFor: prefs.lookingFor,
       minCompatibility: prefs.minCompatibility,
-      maxDistance: prefs.maxDistance,
+      maxDistance: prefs.maxDistance ?? 50,
     },
     showAdoptableOnly,
     swipedPetIds,
@@ -232,17 +250,32 @@ export default function DiscoverView() {
 
   // Memoize distance calculation for available pets
   const availablePets = useMemo(() => {
-    return discoveryPets.map((pet) => {
+    return discoveryPets.map((pet: Pet): Pet & { distance?: number; coordinates?: { lat: number; lon: number } } => {
+      let distance: number | undefined = undefined;
+      let coordinates: { lat: number; lon: number } | undefined = undefined;
       if (userPet?.location && pet.location) {
-        const distance = getDistanceBetweenLocations(userPet.location, pet.location);
-        const coordinates = pet.coordinates || parseLocation(pet.location);
-        return {
-          ...pet,
-          ...(distance !== undefined && { distance }),
-          ...(coordinates && { coordinates }),
-        };
+        const rawDistance = getDistanceBetweenLocations(userPet.location, pet.location);
+        distance = typeof rawDistance === 'number' ? rawDistance : undefined;
+        // Ensure coordinates are in { lat, lon } format
+        if (pet.coordinates && 'lat' in pet.coordinates && 'lon' in pet.coordinates) {
+          coordinates = pet.coordinates as { lat: number; lon: number };
+        } else {
+          const parsed = parseLocation(pet.location);
+          if (parsed && 'latitude' in parsed && 'longitude' in parsed) {
+            coordinates = { lat: parsed.latitude, lon: parsed.longitude };
+          }
+        }
       }
-      return pet;
+      // Ensure coordinates match the expected type
+      const finalCoordinates: { lat: number; lon: number } | undefined = coordinates 
+        ? { lat: coordinates.lat, lon: coordinates.lon }
+        : undefined;
+
+      return {
+        ...pet,
+        ...(distance !== undefined ? { distance } : {}),
+        ...(finalCoordinates ? { coordinates: finalCoordinates } : {}),
+      } as Pet & { distance?: number; coordinates?: { lat: number; lon: number } };
     });
   }, [discoveryPets, userPet?.location]);
 
@@ -261,15 +294,16 @@ export default function DiscoverView() {
     autoCalculate: true,
   });
 
-  const handleSwipe = async (action: 'like' | 'pass') => {
+  // Define handleSwipe after all dependencies are available
+  const handleSwipe = useCallback(async (action: 'like' | 'pass') => {
     if (!currentPet || !userPet) return;
 
     // Capture values before async operations to avoid stale closures
-    const petId = currentPet.id;
-    const petName = currentPet.name;
-    const userId = userPet.id;
-    const userName = userPet.name;
-    const score = compatibilityScore;
+    const petId = typeof currentPet.id === 'string' ? currentPet.id : String(currentPet.id ?? '');
+    const petName = typeof currentPet.name === 'string' ? currentPet.name : 'Pet';
+    const userId = typeof userPet.id === 'string' ? userPet.id : String(userPet.id ?? '');
+    const userName = typeof userPet.name === 'string' ? userPet.name : 'User';
+    const score = typeof compatibilityScore === 'number' ? compatibilityScore : 0;
 
     haptics.trigger(action === 'like' ? 'success' : 'light');
     setShowSwipeHint(false);
@@ -287,11 +321,11 @@ export default function DiscoverView() {
       };
 
       // Update swipe history
-      setSwipeHistory((prev) => [...(prev || []), newSwipe]);
+      void setSwipeHistory((prev: SwipeAction[] | undefined): SwipeAction[] => [...(prev ?? []), newSwipe]);
 
       if (action === 'like') {
-        setMatches((currentMatches) => {
-          const matchesArray = currentMatches || [];
+        void setMatches((currentMatches) => {
+          const matchesArray = currentMatches ?? [];
           const existingMatch = matchesArray.find(
             (m) => m.matchedPetId === petId || m.petId === petId
           );
@@ -301,7 +335,7 @@ export default function DiscoverView() {
           }
 
           const newMatch: Match = {
-            id: `match-${String(Date.now() ?? '')}`,
+            id: `match-${Date.now()}`,
             petId: userId,
             matchedPetId: petId,
             compatibilityScore: score,
@@ -327,373 +361,265 @@ export default function DiscoverView() {
       nextPet();
       resetSwipe();
     }, 300);
+  }, [currentPet, userPet, compatibilityScore, reasoning, markAsSwiped, setSwipeHistory, setMatches, celebrationDialog, t, nextPet, resetSwipe]);
+
+  // Update ref with latest handleSwipe
+  useEffect(() => {
+    handleSwipeRef.current = handleSwipe;
+  }, [handleSwipe]);
+
+  // Unified animation variants for premium polish
+  const emptyStateVariants = {
+    hidden: { scale: 0.8, rotate: -180, opacity: 0 },
+    visible: {
+      scale: 1,
+      rotate: 0,
+      opacity: 1,
+      transition: {
+        ...springConfigs.bouncy,
+        duration: motionDurations.smooth,
+      },
+    },
   };
-
-  // Animation hooks for empty states - always declared at top level
-  const emptyStateIconScale = useSharedValue(0);
-  const emptyStateIconRotate = useSharedValue(-180);
-  const emptyStateIconRotation = useSharedValue(0);
-  const emptyStatePulseScale = useSharedValue(1);
-  const emptyStatePulseOpacity = useSharedValue(0.5);
-  const emptyStateTitleOpacity = useSharedValue(0);
-  const emptyStateTitleY = useSharedValue(20);
-  const emptyStateDescOpacity = useSharedValue(0);
-  const emptyStateDescY = useSharedValue(20);
-
-  // Animation hooks for "no more" state - always declared at top level
-  const noMoreIconScale = useSharedValue(0);
-  const noMorePulseScale = useSharedValue(1);
-  const noMorePulseOpacity = useSharedValue(0.5);
-
-  useEffect(() => {
-    if (!userPet || availablePets.length === 0 || discoveryIndex >= availablePets.length) {
-      emptyStateIconScale.value = withSpring(1, springConfigs.bouncy);
-      emptyStateIconRotate.value = withSpring(0, springConfigs.bouncy);
-      emptyStateIconRotation.value = withRepeat(withTiming(360, { duration: 3000 }), -1, false);
-      emptyStatePulseScale.value = withRepeat(
-        withSequence(withTiming(1.5, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-        -1,
-        true
-      );
-      emptyStatePulseOpacity.value = withRepeat(
-        withSequence(withTiming(0, { duration: 1000 }), withTiming(0.5, { duration: 1000 })),
-        -1,
-        true
-      );
-      emptyStateTitleOpacity.value = withDelay(200, withTiming(1, timingConfigs.smooth));
-      emptyStateTitleY.value = withDelay(200, withTiming(0, timingConfigs.smooth));
-      emptyStateDescOpacity.value = withDelay(300, withTiming(1, timingConfigs.smooth));
-      emptyStateDescY.value = withDelay(300, withTiming(0, timingConfigs.smooth));
-
-      if (availablePets.length === 0 || discoveryIndex >= availablePets.length) {
-        noMoreIconScale.value = withSpring(1, springConfigs.bouncy);
-        noMorePulseScale.value = withRepeat(
-          withSequence(withTiming(1.2, { duration: 750 }), withTiming(1, { duration: 750 })),
-          -1,
-          true
-        );
-        noMorePulseOpacity.value = withRepeat(
-          withSequence(withTiming(0, { duration: 1000 }), withTiming(0.5, { duration: 1000 })),
-          -1,
-          true
-        );
-      }
-    }
-  }, [
-    userPet,
-    availablePets.length,
-    discoveryIndex,
-    emptyStateIconScale,
-    emptyStateIconRotate,
-    emptyStateIconRotation,
-    emptyStatePulseScale,
-    emptyStatePulseOpacity,
-    emptyStateTitleOpacity,
-    emptyStateTitleY,
-    emptyStateDescOpacity,
-    emptyStateDescY,
-    noMoreIconScale,
-    noMorePulseScale,
-    noMorePulseOpacity,
-  ]);
-
-  const emptyStateIconStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: emptyStateIconScale.value },
-      { rotate: `${emptyStateIconRotate.value}deg` },
-    ],
-  })) as AnimatedStyle;
-
-  const emptyStateRotateStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${emptyStateIconRotation.value}deg` }],
-  })) as AnimatedStyle;
-
-  const emptyStatePulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: emptyStatePulseScale.value }],
-    opacity: emptyStatePulseOpacity.value,
-  })) as AnimatedStyle;
-
-  const emptyStateTitleStyle = useAnimatedStyle(() => ({
-    opacity: emptyStateTitleOpacity.value,
-    transform: [{ translateY: emptyStateTitleY.value }],
-  })) as AnimatedStyle;
-
-  const emptyStateDescStyle = useAnimatedStyle(() => ({
-    opacity: emptyStateDescOpacity.value,
-    transform: [{ translateY: emptyStateDescY.value }],
-  })) as AnimatedStyle;
-
-  const noMoreIconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: noMoreIconScale.value }],
-  })) as AnimatedStyle;
-
-  const noMorePulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: noMorePulseScale.value }],
-  })) as AnimatedStyle;
-
-  const noMoreRingStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: noMorePulseScale.value * 1.2 }],
-    opacity: noMorePulseScale.value * 0.5,
-  })) as AnimatedStyle;
-
-  // Animation hooks for swipe hint
-  const swipeHintOpacity = useSharedValue(0);
-  const swipeHintY = useSharedValue(0);
-  const swipeHintLeftX = useSharedValue(0);
-  const swipeHintRightX = useSharedValue(0);
-
-  useEffect(() => {
-    if (showSwipeHint && currentIndex === 0) {
-      swipeHintOpacity.value = withTiming(1, timingConfigs.smooth);
-      swipeHintY.value = withRepeat(
-        withSequence(withTiming(10, { duration: 750 }), withTiming(0, { duration: 750 })),
-        -1,
-        true
-      );
-      swipeHintLeftX.value = withRepeat(
-        withSequence(withTiming(-10, { duration: 750 }), withTiming(0, { duration: 750 })),
-        -1,
-        true
-      );
-      swipeHintRightX.value = withRepeat(
-        withSequence(withTiming(10, { duration: 750 }), withTiming(0, { duration: 750 })),
-        -1,
-        true
-      );
-    } else {
-      swipeHintOpacity.value = withTiming(0, timingConfigs.smooth);
-    }
-  }, [showSwipeHint, currentIndex, swipeHintOpacity, swipeHintY, swipeHintLeftX, swipeHintRightX]);
-
-  const swipeHintContainerStyle = useAnimatedStyle(() => ({
-    opacity: swipeHintOpacity.value,
-  })) as AnimatedStyle;
-
-  const swipeHintYStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: swipeHintY.value }],
-  })) as AnimatedStyle;
-
-  const swipeHintLeftStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: swipeHintLeftX.value }],
-  })) as AnimatedStyle;
-
-  const swipeHintRightStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: swipeHintRightX.value }],
-  })) as AnimatedStyle;
-
-  // Animation hooks for pass button icon rotation
-  const passButtonIconRotate = useSharedValue(0);
-
-  useEffect(() => {
-    passButtonIconRotate.value = withRepeat(
-      withSequence(
-        withTiming(-10, { duration: 500 }),
-        withTiming(10, { duration: 500 }),
-        withTiming(0, { duration: 500 })
-      ),
-      -1,
-      false
-    );
-  }, [passButtonIconRotate]);
-
-  const passButtonIconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${passButtonIconRotate.value}deg` }],
-  })) as AnimatedStyle;
-
-  // Animation hooks for compatibility badge
-  const compatibilityBadgeScale = useSharedValue(0);
-  const compatibilityBadgeRotate = useSharedValue(-180);
-  const compatibilityBadgeY = useSharedValue(-20);
-  const compatibilityBadgeOpacity = useSharedValue(0);
-  const compatibilityBadgeHoverScale = useSharedValue(1);
-  const compatibilityGlowOpacity = useSharedValue(0.3);
-
-  useEffect(() => {
-    if (currentPet) {
-      compatibilityBadgeScale.value = withDelay(
-        400,
-        withSpring(1, { stiffness: 350, damping: 20 })
-      );
-      compatibilityBadgeRotate.value = withDelay(
-        400,
-        withSpring(0, { stiffness: 350, damping: 20 })
-      );
-      compatibilityBadgeY.value = withDelay(400, withSpring(0, { stiffness: 350, damping: 20 }));
-      compatibilityBadgeOpacity.value = withDelay(400, withTiming(1, { duration: 300 }));
-      compatibilityGlowOpacity.value = withRepeat(
-        withSequence(withTiming(0.5, { duration: 1000 }), withTiming(0.3, { duration: 1000 })),
-        -1,
-        true
-      );
-    }
-  }, [
-    currentPet,
-    compatibilityBadgeScale,
-    compatibilityBadgeRotate,
-    compatibilityBadgeY,
-    compatibilityBadgeOpacity,
-    compatibilityGlowOpacity,
-  ]);
-
-  const compatibilityBadgeStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: compatibilityBadgeScale.value * compatibilityBadgeHoverScale.value },
-      { rotate: `${compatibilityBadgeRotate.value}deg` },
-      { translateY: compatibilityBadgeY.value },
-    ],
-    opacity: compatibilityBadgeOpacity.value,
-  })) as AnimatedStyle;
-
-  const compatibilityGlowStyle = useAnimatedStyle(() => ({
-    opacity: compatibilityGlowOpacity.value,
-  })) as AnimatedStyle;
-
-  // Animation hooks for button content (icons, shimmer)
-  const likeButtonShimmerX = useSharedValue(-100);
-  const likeButtonHeartScale = useSharedValue(1);
-
-  useEffect(() => {
-    likeButtonShimmerX.value = withRepeat(withTiming(200, { duration: 2000 }), -1, false);
-    likeButtonHeartScale.value = withRepeat(
-      withSequence(withTiming(1.3, { duration: 500 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-  }, [likeButtonShimmerX, likeButtonHeartScale]);
-
-  const likeButtonShimmerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: `${likeButtonShimmerX.value}%` }],
-  })) as AnimatedStyle;
-
-  const likeButtonHeartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: likeButtonHeartScale.value }],
-  })) as AnimatedStyle;
-
-  // Animation hooks for distance badge
-  const distanceBadgeScale = useSharedValue(0);
-  const distanceBadgeOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (currentPet?.distance !== undefined) {
-      distanceBadgeScale.value = withDelay(100, withSpring(1, springConfigs.bouncy));
-      distanceBadgeOpacity.value = withDelay(100, withTiming(1, timingConfigs.smooth));
-    }
-  }, [currentPet?.distance, distanceBadgeScale, distanceBadgeOpacity]);
-
-  const distanceBadgeStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: distanceBadgeScale.value }],
-    opacity: distanceBadgeOpacity.value,
-  })) as AnimatedStyle;
-
-  // Animation hooks for breakdown dialog
-  const breakdownDialogOpacity = useSharedValue(0);
-  const breakdownDialogY = useSharedValue(20);
-
-  useEffect(() => {
-    if (breakdownDialog.isOpen) {
-      breakdownDialogOpacity.value = withTiming(1, timingConfigs.smooth);
-      breakdownDialogY.value = withTiming(0, timingConfigs.smooth);
-    } else {
-      breakdownDialogOpacity.value = withTiming(0, timingConfigs.smooth);
-      breakdownDialogY.value = withTiming(20, timingConfigs.smooth);
-    }
-  }, [breakdownDialog.isOpen, breakdownDialogOpacity, breakdownDialogY]);
-
-  const breakdownDialogStyle = useAnimatedStyle(() => ({
-    opacity: breakdownDialogOpacity.value,
-    transform: [{ translateY: breakdownDialogY.value }],
-  })) as AnimatedStyle;
+  const rotateVariants = {
+    rotate: {
+      rotate: 360,
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: 'linear',
+      },
+    },
+  };
+  const pulseVariants = {
+    pulse: {
+      scale: [1, 1.5, 1],
+      opacity: [0.5, 0, 0.5],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      },
+    },
+  };
+  const textVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.2,
+        duration: motionDurations.smooth,
+        ease: 'easeOut',
+      },
+    },
+  };
+  const noMorePulseVariants = {
+    pulse: {
+      scale: [1, 1.2, 1],
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      },
+    },
+  };
 
   if (isLoading) {
     return null;
   }
 
+  const prefersReducedMotion = useReducedMotion();
+
   if (!userPet) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <AnimatedView
-          style={emptyStateIconStyle}
-          className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
-        >
-          <AnimatedView style={emptyStateRotateStyle}>
-            <Sparkle size={48} className="text-primary" />
-          </AnimatedView>
-          <AnimatedView
-            style={emptyStatePulseStyle}
-            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
-          >
-            {null}
-          </AnimatedView>
-        </AnimatedView>
-        <AnimatedView style={emptyStateTitleStyle} className="text-2xl font-bold mb-2" as="h2">
-          {t.discover.createProfile}
-        </AnimatedView>
-        <AnimatedView
-          style={emptyStateDescStyle}
-          className="text-muted-foreground mb-6 max-w-md"
-          as="p"
-        >
-          {t.discover.createProfileDesc}
-        </AnimatedView>
-      </div>
+      <PageTransitionWrapper key="discover-no-user" direction="up">
+        <main aria-label="Discover pets" className={cn(
+          'flex flex-col items-center justify-center min-h-[60vh] text-center',
+          getSpacingClassesFromConfig({ paddingX: 'xl' })
+        )}>
+          <section aria-label="No user profile state" role="status" aria-live="polite">
+            <motion.div
+              variants={emptyStateVariants}
+              initial="hidden"
+              animate="visible"
+              className={cn(
+                'w-24 h-24 flex items-center justify-center relative',
+                getRadiusClasses('full'),
+                getColorClasses('primary', 'bg'),
+                getSpacingClassesFromConfig({ marginY: 'xl' })
+              )}
+              style={{ backgroundColor: 'rgba(var(--primary) / 0.2)' }}
+              aria-hidden="true"
+            >
+              <motion.div variants={rotateVariants} animate={prefersReducedMotion ? false : 'rotate'}>
+                <Sparkle size={48} className={getColorClasses('primary', 'text')} aria-hidden="true" />
+              </motion.div>
+              <motion.div
+                variants={pulseVariants}
+                animate={prefersReducedMotion ? false : 'pulse'}
+                className={cn(
+                  'absolute inset-0',
+                  getRadiusClasses('full')
+                )}
+                style={{ backgroundColor: 'rgba(var(--primary) / 0.2)' }}
+                aria-hidden="true"
+              />
+            </motion.div>
+            <motion.h2
+              variants={textVariants}
+              initial="hidden"
+              animate="visible"
+              className={cn(
+                getTypographyClasses('h2'),
+                getSpacingClassesFromConfig({ marginY: 'sm' })
+              )}
+            >
+              {t.discover?.createProfile ?? 'Create Your Profile'}
+            </motion.h2>
+            <motion.p
+              variants={textVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: prefersReducedMotion ? 0 : 0.1, duration: motionDurations.smooth }}
+              className={cn(
+                getTypographyClasses('body'),
+                getColorClasses('mutedForeground', 'text'),
+                getSpacingClassesFromConfig({ marginY: 'xl' }),
+                'max-w-md'
+              )}
+            >
+              {t.discover?.createProfileDesc ?? 'Create a profile to start discovering pets near you'}
+            </motion.p>
+          </section>
+        </main>
+      </PageTransitionWrapper>
     );
   }
 
-  if (availablePets.length === 0 || discoveryIndex >= availablePets.length) {
+  if (!Array.isArray(availablePets) || availablePets.length === 0 || discoveryIndex >= availablePets.length) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <AnimatedView
-          style={noMoreIconStyle}
-          className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
-        >
-          <AnimatedView style={noMorePulseStyle}>
-            <Heart size={48} className="text-primary" />
-          </AnimatedView>
-          <AnimatedView
-            style={noMoreRingStyle}
-            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
-          >
-            {null}
-          </AnimatedView>
-        </AnimatedView>
-        <AnimatedView style={emptyStateTitleStyle} className="text-2xl font-bold mb-2" as="h2">
-          {t.discover.noMore}
-        </AnimatedView>
-        <AnimatedView
-          style={emptyStateDescStyle}
-          className="text-muted-foreground mb-6 max-w-md"
-          as="p"
-        >
-          {availablePets.length === 0 && currentIndex === 0
-            ? t.discover.noMoreDescAdjust
-            : t.discover.noMoreDesc}
-        </AnimatedView>
-      </div>
+      <PageTransitionWrapper key="discover-empty" direction="up">
+        <main aria-label="Discover pets" className={cn(
+          'flex flex-col items-center justify-center min-h-[60vh] text-center',
+          getSpacingClassesFromConfig({ paddingX: 'xl' })
+        )}>
+          <section aria-label="No more pets state" role="status" aria-live="polite">
+            <motion.div
+              variants={emptyStateVariants}
+              initial="hidden"
+              animate="visible"
+              className={cn(
+                'w-24 h-24 flex items-center justify-center relative',
+                getRadiusClasses('full'),
+                getColorClasses('primary', 'bg'),
+                getSpacingClassesFromConfig({ marginY: 'xl' })
+              )}
+              style={{ backgroundColor: 'rgba(var(--primary) / 0.2)' }}
+              aria-hidden="true"
+            >
+              <motion.div variants={noMorePulseVariants} animate={prefersReducedMotion ? false : 'pulse'}>
+                <Heart size={48} className={getColorClasses('primary', 'text')} aria-hidden="true" />
+              </motion.div>
+              <motion.div
+                variants={noMorePulseVariants}
+                animate={prefersReducedMotion ? false : 'pulse'}
+                className={cn(
+                  'absolute inset-0',
+                  getRadiusClasses('full')
+                )}
+                style={{ backgroundColor: 'rgba(var(--primary) / 0.2)', scale: 1.2, opacity: 0.5 }}
+                aria-hidden="true"
+              />
+            </motion.div>
+            <motion.h2
+              variants={textVariants}
+              initial="hidden"
+              animate="visible"
+              className={cn(
+                getTypographyClasses('h2'),
+                getSpacingClassesFromConfig({ marginY: 'sm' })
+              )}
+            >
+              {t.discover?.noMore ?? 'No More Pets'}
+            </motion.h2>
+            <motion.p
+              variants={textVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: prefersReducedMotion ? 0 : 0.1, duration: motionDurations.smooth }}
+              className={cn(
+                getTypographyClasses('body'),
+                getColorClasses('mutedForeground', 'text'),
+                getSpacingClassesFromConfig({ marginY: 'xl' }),
+                'max-w-md'
+              )}
+            >
+              {availablePets.length === 0 && currentIndex === 0
+                ? (t.discover?.noMoreDescAdjust ?? 'Adjust your filters to see more pets')
+                : (t.discover?.noMoreDesc ?? 'You\'ve seen all available pets. Check back later for new matches!')}
+            </motion.p>
+          </section>
+        </main>
+      </PageTransitionWrapper>
     );
   }
 
-  const handleStoryCreated = (story: Story) => {
-    addStory(story as LocalStory);
-  };
+  const handleStoryCreated = useCallback((story: Story): void => {
+    if (story?.id) {
+      addStory(story as LocalStory);
+    }
+  }, [addStory]);
 
-  const handleStoryUpdate = (updatedStory: Story) => {
-    updateStory(updatedStory.id, updatedStory as Partial<LocalStory>);
-  };
+  const handleStoryUpdate = useCallback((updatedStory: Story): void => {
+    if (updatedStory?.id) {
+      updateStory(updatedStory.id, updatedStory as Partial<LocalStory>);
+    }
+  }, [updateStory]);
+
+  const userPetName = typeof userPet?.name === 'string' ? userPet.name : 'User';
+  const currentPetSafe = currentPet && typeof currentPet === 'object' ? currentPet : null;
 
   return (
     <PageTransitionWrapper key="discover-view" direction="up">
-      <main aria-label="Discover pets" className="max-w-2xl mx-auto px-2 sm:px-4">
-        <div className="mb-4 sm:mb-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <main aria-label="Discover pets" className={cn(
+        'max-w-2xl mx-auto',
+        getSpacingClassesFromConfig({ paddingX: 'lg', paddingY: '2xl' })
+      )}>
+        {/* Header Section */}
+        <header className={getSpacingClassesFromConfig({ marginY: 'xl' })}>
+          <div className={cn(
+            'flex items-center justify-between',
+            getSpacingClassesFromConfig({ marginY: 'lg' })
+          )}>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold mb-1">{t.discover.title}</h1>
-              <p className="text-sm text-muted-foreground hidden sm:block">
-                {t.discover.subtitle} {userPet.name}
+              <h1 className={cn(
+                getTypographyClasses('h1'),
+                getSpacingClassesFromConfig({ marginY: 'sm' })
+              )}>
+                {t.discover?.title ?? 'Discover'}
+              </h1>
+              <p className={cn(
+                getTypographyClasses('bodySmall'),
+                getColorClasses('mutedForeground', 'text'),
+                'hidden sm:block'
+              )}>
+                {t.discover?.subtitle ?? 'Find your perfect match'} {userPetName}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 justify-between">
-            <div className="inline-flex items-center bg-muted/50 rounded-xl p-1 border border-border">
+          {/* View Mode and Filters Section */}
+          <section aria-label="View mode and filters" className={cn(
+            'flex items-center justify-between',
+            getSpacingClassesFromConfig({ gap: 'sm' })
+          )}>
+            <div className={cn(
+              'inline-flex items-center',
+              getColorClasses('muted', 'bg'),
+              getRadiusClasses('xl'),
+              getSpacingClassesFromConfig({ padding: 'xs' }),
+              getColorClasses('border', 'border')
+            )} role="group" aria-label="View mode selector">
               <Button
                 variant={viewMode === 'cards' ? 'default' : 'ghost'}
                 size="sm"
@@ -701,10 +627,16 @@ export default function DiscoverView() {
                   haptics.trigger('selection');
                   setViewMode('cards');
                 }}
-                className="h-8 sm:h-9 px-2 sm:px-4 rounded-lg text-xs sm:text-sm"
+                className={cn(
+                  focusRing,
+                  getRadiusClasses('lg'),
+                  getTypographyClasses('bodySmall')
+                )}
+                aria-label="View as cards"
+                aria-pressed={viewMode === 'cards'}
               >
-                <SquaresFour size={16} className="sm:mr-2" />
-                <span className="hidden sm:inline">{t.map.cards}</span>
+                <SquaresFour size={16} className="sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">{t.map?.cards ?? 'Cards'}</span>
               </Button>
               <Button
                 variant={viewMode === 'map' ? 'default' : 'ghost'}
@@ -713,39 +645,78 @@ export default function DiscoverView() {
                   haptics.trigger('selection');
                   setViewMode('map');
                 }}
-                className="h-8 sm:h-9 px-2 sm:px-4 rounded-lg text-xs sm:text-sm"
+                className={cn(
+                  focusRing,
+                  getRadiusClasses('lg'),
+                  getTypographyClasses('bodySmall')
+                )}
+                aria-label="View as map"
+                aria-pressed={viewMode === 'map'}
               >
-                <MapPin size={16} className="sm:mr-2" />
-                <span className="hidden sm:inline">{t.map.mapView}</span>
+                <MapPin size={16} className="sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">{t.map?.mapView ?? 'Map'}</span>
               </Button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'sm' }))}>
               <AnimatePresence>
-                {prefs.maxDistance < 100 && (
-                  <AnimatedView key="distance-badge">
+                {typeof prefs.maxDistance === 'number' && prefs.maxDistance < 100 && (
+                  <motion.div
+                    key="distance-badge"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: prefersReducedMotion ? 0 : motionDurations.fast }}
+                  >
                     <Badge
                       variant="outline"
-                      className="gap-1.5 text-xs font-semibold border-primary/30 bg-primary/5 text-primary px-2 py-1"
+                      className={cn(
+                        getTypographyClasses('caption'),
+                        getColorClasses('primary', 'text'),
+                        getSpacingClassesFromConfig({ paddingX: 'xs', paddingY: 'xs' }),
+                        'border-primary/30 bg-primary/5'
+                      )}
+                      aria-label={`Within ${prefs.maxDistance} miles`}
                     >
-                      <NavigationArrow size={14} weight="fill" />
+                      <NavigationArrow size={14} weight="fill" aria-hidden="true" />
                       Within {prefs.maxDistance} miles
                     </Badge>
-                  </AnimatedView>
+                  </motion.div>
                 )}
               </AnimatePresence>
-              <AnimatedView>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: prefersReducedMotion ? 0 : motionDurations.fast }}
+              >
                 <Badge
                   variant={showAdoptableOnly ? 'default' : 'outline'}
-                  className="gap-1.5 text-xs font-semibold cursor-pointer hover:bg-primary/10 transition-colors px-2 py-1"
+                  className={cn(
+                    getTypographyClasses('caption'),
+                    'cursor-pointer transition-colors',
+                    getSpacingClassesFromConfig({ paddingX: 'xs', paddingY: 'xs' }),
+                    'hover:bg-primary/10',
+                    focusRing
+                  )}
                   onClick={() => {
                     haptics.trigger('selection');
                     setShowAdoptableOnly(!showAdoptableOnly);
                   }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      haptics.trigger('selection');
+                      setShowAdoptableOnly(!showAdoptableOnly);
+                    }
+                  }}
+                  aria-label={showAdoptableOnly ? 'Show all pets' : 'Show only adoptable pets'}
+                  aria-pressed={showAdoptableOnly}
                 >
-                  <PawPrint size={14} weight="fill" />
+                  <PawPrint size={14} weight="fill" aria-hidden="true" />
                   {t.adoption?.adoptable ?? 'Adoptable'}
                 </Badge>
-              </AnimatedView>
+              </motion.div>
               <Button
                 variant="outline"
                 size="sm"
@@ -753,54 +724,63 @@ export default function DiscoverView() {
                   haptics.trigger('selection');
                   savedSearchesDialog.open();
                 }}
-                className="h-8 sm:h-9 px-2 sm:px-3 rounded-lg"
+                className={cn(
+                  focusRing,
+                  getRadiusClasses('lg')
+                )}
+                aria-label="View saved searches"
               >
-                <BookmarkSimple size={16} className="sm:mr-2" weight="fill" />
+                <BookmarkSimple size={16} className="sm:mr-2" weight="fill" aria-hidden="true" />
                 <span className="hidden sm:inline">Saved</span>
               </Button>
               <DiscoveryFilters />
             </div>
-          </div>
-        </div>
+          </section>
+        </header>
 
         {userPet && viewMode === 'cards' && (
-          <StoriesBar
-            allStories={stories || []}
-            currentUserId={userPet.id}
-            currentUserName={userPet.name}
-            currentUserPetId={userPet.id}
-            currentUserPetName={userPet.name}
-            currentUserPetPhoto={userPet.photo}
-            onStoryCreated={handleStoryCreated}
-            onStoryUpdate={handleStoryUpdate}
-          />
+          <section aria-label="Stories">
+            <StoriesBar
+              allStories={stories || []}
+              currentUserId={userPet.id}
+              currentUserName={userPet.name}
+              currentUserPetId={userPet.id}
+              currentUserPetName={userPet.name}
+              currentUserPetPhoto={userPet.photo}
+              onStoryCreated={handleStoryCreated}
+              onStoryUpdate={handleStoryUpdate}
+            />
+          </section>
         )}
 
         {viewMode === 'map' ? (
-          <DiscoverMapMode
-            pets={availablePets as Pet[]}
-            userPet={userPet}
-            onSwipe={(pet, action) => {
-              const tempIndex = currentIndex;
-              const foundIndex = availablePets.findIndex((p) => p.id === pet.id);
-              if (foundIndex !== -1) {
-                setCurrentIndex(foundIndex);
-              }
-              setTimeout(() => {
-                handleSwipe(action);
-                if (tempIndex !== foundIndex) {
-                  setCurrentIndex(tempIndex);
+          <section aria-label="Map view">
+            <DiscoverMapMode
+              pets={availablePets.map(p => ({ ...p, distance: p.distance ?? undefined })) as Pet[]}
+              userPet={userPet}
+              onSwipe={(pet, action) => {
+                const tempIndex = currentIndex;
+                const foundIndex = availablePets.findIndex((p) => p.id === pet.id);
+                if (foundIndex !== -1) {
+                  setCurrentIndex(foundIndex);
                 }
-              }, 50);
-            }}
-          />
+                setTimeout(() => {
+                  void handleSwipe(action);
+                  if (tempIndex !== foundIndex) {
+                    setCurrentIndex(tempIndex);
+                  }
+                }, 50);
+              }}
+            />
+          </section>
         ) : (
-          <div className="relative h-125 sm:h-150 flex items-center justify-center mb-6">
+          <section aria-label="Pet card stack">
+          <div className={cn('relative h-[500px] sm:h-[600px] flex items-center justify-center', getSpacingClassesFromConfig({ marginY: 'xl' }))}>
             <AnimatePresence mode="wait">
-              {currentPet && (
-                <AnimatedView
-                  key={currentPet.id}
-                  style={swipeAnimatedStyle}
+              {currentPetSafe && (
+                <motion.div
+                  key={typeof currentPetSafe.id === 'string' ? currentPetSafe.id : String(currentPetSafe.id ?? '')}
+                  style={cardStyle}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -809,321 +789,361 @@ export default function DiscoverView() {
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                   className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
+                  role="article"
+                  aria-label={`Pet card: ${typeof currentPetSafe.name === 'string' ? currentPetSafe.name : 'Pet'}`}
                 >
-                  <AnimatedView
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-linear-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
-                    style={likeOpacityStyle}
+                  <motion.div
+                    style={likeOverlayStyle}
+                    className={cn(
+                      'absolute -top-8 left-1/2 -translate-x-1/2 bg-linear-to-r from-primary to-accent rounded-full text-white font-bold shadow-2xl z-50 border-4 border-white',
+                      getTypographyClasses('body'),
+                      getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'md' })
+                    )}
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Like overlay"
                   >
-                    <Heart size={24} weight="fill" className="inline mr-2" />
+                    <Heart size={24} weight="fill" className="inline mr-2" aria-hidden="true" />
                     LIKE
-                  </AnimatedView>
-                  <AnimatedView
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-linear-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl z-50 border-4 border-white"
-                    style={passOpacityStyle}
+                  </motion.div>
+                  <motion.div
+                    style={passOverlayStyle}
+                    className={cn(
+                      'absolute -top-8 left-1/2 -translate-x-1/2 bg-linear-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold shadow-2xl z-50 border-4 border-white',
+                      getTypographyClasses('body'),
+                      getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'md' })
+                    )}
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Pass overlay"
                   >
                     PASS
-                    <X size={24} weight="bold" className="inline ml-2" />
-                  </AnimatedView>
+                    <X size={24} weight="bold" className="inline ml-2" aria-hidden="true" />
+                  </motion.div>
                   {showSwipeHint && currentIndex === 0 && (
-                    <AnimatedView
-                      style={swipeHintContainerStyle}
+                    <motion.div
                       className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
                     >
-                      <AnimatedView style={swipeHintYStyle} className="flex gap-12">
-                        <AnimatedView
-                          style={swipeHintLeftStyle}
-                          className="flex items-center gap-2 glass-strong px-4 py-2 rounded-full backdrop-blur-xl border border-white/30"
-                        >
-                          <span className="text-2xl">👈</span>
+                      <div className={getSpacingClassesFromConfig({ gap: '2xl' })}>
+                        <div className={cn(
+                          'flex items-center glass-strong rounded-full backdrop-blur-xl border border-white/30',
+                          getSpacingClassesFromConfig({ gap: 'sm', paddingX: 'lg', paddingY: 'sm' })
+                        )}>
+                          <span className="text-2xl" aria-hidden="true">👈</span>
                           <span className="text-white font-semibold drop-shadow-lg">
                             {t.discover.swipeHintPass}
                           </span>
-                        </AnimatedView>
-                        <AnimatedView
-                          style={swipeHintRightStyle}
-                          className="flex items-center gap-2 glass-strong px-4 py-2 rounded-full backdrop-blur-xl border border-white/30"
-                        >
+                        </div>
+                        <div className={cn(
+                          'flex items-center glass-strong rounded-full backdrop-blur-xl border border-white/30',
+                          getSpacingClassesFromConfig({ gap: 'sm', paddingX: 'lg', paddingY: 'sm' })
+                        )}>
                           <span className="text-white font-semibold drop-shadow-lg">
                             {t.discover.swipeHintLike}
                           </span>
-                          <span className="text-2xl">👉</span>
-                        </AnimatedView>
-                      </AnimatedView>
-                    </AnimatedView>
+                          <span className="text-2xl" aria-hidden="true">👉</span>
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
                   <div className="h-full overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl">
                     <div className="relative h-full flex flex-col bg-linear-to-br from-white/50 to-white/30">
                       <div className="relative h-96 overflow-hidden group">
-                        <AnimatedView
+                        <motion.div
                           className="absolute inset-0 bg-linear-to-br from-primary/25 via-accent/15 to-secondary/20 z-10 pointer-events-none"
-                          style={useAnimatedStyle(() => ({ opacity: 0 })) as AnimatedStyle}
-                          onMouseEnter={() => {}}
-                        >
-                          {null}
-                        </AnimatedView>
-                        <img
-                          src={currentPet.photo}
-                          alt={currentPet.name}
-                          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-110"
+                          aria-hidden="true"
                         />
+                        {typeof currentPetSafe.photo === 'string' && currentPetSafe.photo.length > 0 && (
+                          <img
+                            src={currentPetSafe.photo}
+                            alt={`${typeof currentPetSafe.name === 'string' ? currentPetSafe.name : 'Pet'} - ${typeof currentPetSafe.breed === 'string' ? currentPetSafe.breed : ''}`}
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-110"
+                          />
+                        )}
                         <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
-                        <AnimatedView
-                          style={compatibilityBadgeStyle}
-                          className="absolute top-4 right-4 glass-strong px-4 py-2 rounded-full font-bold text-lg shadow-2xl backdrop-blur-xl border-2 border-white/40"
-                          onMouseEnter={() => {
-                            compatibilityBadgeHoverScale.value = withSpring(
-                              1.15,
-                              springConfigs.bouncy
-                            );
-                          }}
-                          onMouseLeave={() => {
-                            compatibilityBadgeHoverScale.value = withSpring(
-                              1,
-                              springConfigs.bouncy
-                            );
-                          }}
+                        <motion.button
+                          className={cn('absolute top-4 right-4 glass-strong rounded-full font-bold shadow-2xl backdrop-blur-xl border-2 border-white/40', getTypographyClasses('body'), getSpacingClassesFromConfig({ paddingX: 'lg', paddingY: 'sm' }), focusRing)}
+                          whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+                          whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
                           onClick={() => {
                             haptics.trigger('selection');
                             breakdownDialog.toggle();
                           }}
+                          aria-label={`View compatibility breakdown: ${typeof compatibilityScore === 'number' ? compatibilityScore : 0}% match`}
+                          aria-expanded={breakdownDialog.isOpen}
                         >
                           <span className="bg-linear-to-r from-accent via-primary to-secondary bg-clip-text text-transparent animate-gradient">
-                            {compatibilityScore}% {t.discover.match}
+                            {typeof compatibilityScore === 'number' ? compatibilityScore : 0}% {t.discover?.match ?? 'Match'}
                           </span>
-                          <AnimatedView
+                          <motion.div
                             className="absolute inset-0 rounded-full"
-                            style={compatibilityGlowStyle}
-                          >
-                            {null}
-                          </AnimatedView>
-                        </AnimatedView>
-                        <AnimatedView
-                          className="absolute top-4 left-4 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl cursor-pointer transition-transform hover:scale-110 active:scale-90"
+                            animate={prefersReducedMotion ? false : { opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            aria-hidden="true"
+                          />
+                        </motion.button>
+                        <motion.button
+                          className={cn('absolute top-4 left-4 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl', focusRing)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => {
                             haptics.trigger('selection');
                             selectedPetDialog.open();
                           }}
+                          aria-label="View pet details"
                         >
-                          <Info size={20} className="text-white drop-shadow-lg" weight="bold" />
-                        </AnimatedView>
-                        <AnimatedView
-                          className="absolute bottom-4 right-4 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl cursor-pointer transition-transform hover:scale-110 active:scale-90"
+                          <Info size={20} className="text-white drop-shadow-lg" weight="bold" aria-hidden="true" />
+                        </motion.button>
+                        <motion.button
+                          className={cn('absolute bottom-4 right-4 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl', focusRing)}
+                          whileHover={{ scale: 1.1, rotate: breakdownDialog.isOpen ? 360 : 0 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => {
                             haptics.trigger('selection');
                             breakdownDialog.toggle();
                           }}
-                          style={
-                            useAnimatedStyle(() => ({
-                              transform: [{ rotate: breakdownDialog.isOpen ? '360deg' : '0deg' }],
-                            })) as AnimatedStyle
-                          }
+                          aria-label="View compatibility breakdown"
                         >
                           <ChartBar
                             size={20}
                             className="text-white drop-shadow-lg"
                             weight={breakdownDialog.isOpen ? 'fill' : 'bold'}
+                            aria-hidden="true"
                           />
-                        </AnimatedView>
+                        </motion.button>
                       </div>
 
-                      <div className="flex-1 p-6 overflow-y-auto">
-                        <div className="flex items-start justify-between mb-4">
+                      <div className={cn('flex-1 overflow-y-auto', getSpacingClassesFromConfig({ padding: 'xl' }))}>
+                        <div className={cn('flex items-start justify-between', getSpacingClassesFromConfig({ marginY: 'lg' }))}>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-2xl font-bold truncate">{currentPet.name}</h3>
-                              {currentPet.verified && (
+                            <div className={cn('flex items-center', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+                              <h3 className={cn(getTypographyClasses('h3'), 'truncate')}>
+                                {typeof currentPetSafe.name === 'string' ? currentPetSafe.name : 'Pet'}
+                              </h3>
+                              {Boolean(currentPetSafe.verified) && (
                                 <VerificationBadge
-                                  verified={currentPet.verified}
+                                  verified={Boolean(currentPetSafe.verified)}
                                   level={
-                                    verificationRequests?.[currentPet.id]?.verificationLevel ||
-                                    'basic'
+                                    typeof verificationRequests === 'object' && verificationRequests !== null && typeof currentPetSafe.id === 'string'
+                                      ? (verificationRequests[currentPetSafe.id]?.verificationLevel ?? 'basic')
+                                      : 'basic'
                                   }
                                   size="sm"
                                 />
                               )}
                             </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-muted-foreground flex items-center gap-1 truncate">
-                                <MapPin size={16} weight="fill" />
-                                {currentPet.location}
-                              </p>
-                              {currentPet.distance !== undefined && (
-                                <AnimatedView style={distanceBadgeStyle}>
+                            <div className={cn('flex items-center flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))}>
+                              {typeof currentPetSafe.location === 'string' && currentPetSafe.location.length > 0 && (
+                                <p className={cn(getColorClasses('mutedForeground', 'text'), 'flex items-center truncate', getSpacingClassesFromConfig({ gap: 'xs' }))}>
+                                  <MapPin size={16} weight="fill" aria-hidden="true" />
+                                  {currentPetSafe.location}
+                                </p>
+                              )}
+                              {typeof currentPetSafe.distance === 'number' && currentPetSafe.distance >= 0 && (
+                                <div>
                                   <Badge
                                     variant="secondary"
-                                    className="gap-1 bg-linear-to-r from-primary/10 to-accent/10 border border-primary/20 text-foreground font-semibold px-2 py-0.5"
+                                    className={cn(
+                                      getSpacingClassesFromConfig({ gap: 'xs', paddingX: 'sm', paddingY: 'xs' }),
+                                      'bg-linear-to-r from-primary/10 to-accent/10 border border-primary/20 text-foreground font-semibold'
+                                    )}
+                                    aria-label={`Distance: ${formatDistance(currentPetSafe.distance)}`}
                                   >
                                     <NavigationArrow
                                       size={12}
                                       weight="fill"
-                                      className="text-primary"
+                                      className={getColorClasses('primary', 'text')}
+                                      aria-hidden="true"
                                     />
-                                    {formatDistance(currentPet.distance)}
+                                    {formatDistance(currentPetSafe.distance)}
                                   </Badge>
-                                </AnimatedView>
+                                </div>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        {currentPet.trustProfile && (
-                          <div className="mb-4">
-                            <PetRatings trustProfile={currentPet.trustProfile} compact />
+                        {currentPetSafe.trustProfile && typeof currentPetSafe.trustProfile === 'object' && (
+                          <div className={getSpacingClassesFromConfig({ marginY: 'lg' })}>
+                            <PetRatings trustProfile={currentPetSafe.trustProfile} compact />
                           </div>
                         )}
 
-                        {currentPet.trustProfile?.badges &&
-                          Array.isArray(currentPet.trustProfile.badges) &&
-                          currentPet.trustProfile.badges.length > 0 && (
-                            <div className="mb-4">
+                        {currentPetSafe.trustProfile &&
+                          typeof currentPetSafe.trustProfile === 'object' &&
+                          Array.isArray(currentPetSafe.trustProfile.badges) &&
+                          currentPetSafe.trustProfile.badges.length > 0 && (
+                            <div className={getSpacingClassesFromConfig({ marginY: 'lg' })}>
                               <TrustBadges
-                                badges={currentPet.trustProfile.badges.slice(0, 4)}
+                                badges={currentPetSafe.trustProfile.badges.slice(0, 4)}
                                 compact
                               />
                             </div>
                           )}
 
-                        <div className="space-y-4">
+                        <div className={getSpacingClassesFromConfig({ spaceY: 'lg' })}>
                           <div>
-                            <p className="text-sm font-semibold text-muted-foreground mb-2">
-                              {t.discover.about}
+                            <p className={cn(getTypographyClasses('bodySmall'), 'font-semibold', getColorClasses('mutedForeground', 'text'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>
+                              {t.discover?.about ?? 'About'}
                             </p>
-                            <p className="text-foreground">
-                              {currentPet.breed} • {currentPet.age} {t.common.years} •{' '}
-                              {currentPet.gender}
+                            <p className={getColorClasses('foreground', 'text')}>
+                              {typeof currentPetSafe.breed === 'string' ? currentPetSafe.breed : ''}
+                              {typeof currentPetSafe.breed === 'string' && typeof currentPetSafe.age === 'number' ? ' • ' : ''}
+                              {typeof currentPetSafe.age === 'number' ? `${currentPetSafe.age} ${t.common?.years ?? 'years'}` : ''}
+                              {typeof currentPetSafe.age === 'number' && typeof currentPetSafe.gender === 'string' ? ' • ' : ''}
+                              {typeof currentPetSafe.gender === 'string' ? currentPetSafe.gender : ''}
                             </p>
                           </div>
 
-                          {reasoning.length > 0 && (
+                          {Array.isArray(reasoning) && reasoning.length > 0 && (
                             <div>
-                              <p className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                                <Sparkle size={16} weight="fill" className="text-accent" />
-                                {t.discover.whyMatch}
+                              <p className={cn(getTypographyClasses('bodySmall'), 'font-semibold', getColorClasses('mutedForeground', 'text'), getSpacingClassesFromConfig({ marginY: 'sm', gap: 'sm' }), 'flex items-center')}>
+                                <Sparkle size={16} weight="fill" className={getColorClasses('accent', 'text')} aria-hidden="true" />
+                                {t.discover?.whyMatch ?? 'Why you match'}
                               </p>
-                              <div className="space-y-1">
-                                {reasoning.map((reason, idx) => (
-                                  <p key={idx} className="text-sm text-foreground">
-                                    • {reason}
-                                  </p>
-                                ))}
-                              </div>
+                              <ul className={getSpacingClassesFromConfig({ spaceY: 'xs' })} role="list">
+                                {reasoning.map((reason, idx) => {
+                                  const reasonString = typeof reason === 'string' ? reason : String(reason ?? idx);
+                                  return (
+                                    <li key={idx} className={cn(getTypographyClasses('bodySmall'), getColorClasses('foreground', 'text'))}>
+                                      • {reasonString}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
                             </div>
                           )}
 
-                          {currentPet.personality &&
-                            Array.isArray(currentPet.personality) &&
-                            currentPet.personality.length > 0 && (
-                              <div>
-                                <p className="text-sm font-semibold text-muted-foreground mb-2">
-                                  {t.discover.personality}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {currentPet.personality.map((trait, idx) => (
-                                    <Badge key={idx} variant="secondary">
-                                      {trait}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                          {Array.isArray(currentPetSafe.personality) && currentPetSafe.personality.length > 0 && (
+                            <div>
+                              <p className={cn(getTypographyClasses('bodySmall'), 'font-semibold', getColorClasses('mutedForeground', 'text'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>
+                                {t.discover?.personality ?? 'Personality'}
+                              </p>
+                              <ul className={cn('flex flex-wrap', getSpacingClassesFromConfig({ gap: 'sm' }))} role="list">
+                                {currentPetSafe.personality.map((trait, idx) => {
+                                  const traitString = typeof trait === 'string' ? trait : String(trait ?? idx);
+                                  return (
+                                    <li key={idx}>
+                                      <Badge variant="secondary">{traitString}</Badge>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="p-6 glass-effect border-t border-white/20 flex gap-4 backdrop-blur-xl">
+                      <div className={cn('glass-effect border-t border-white/20 flex backdrop-blur-xl', getSpacingClassesFromConfig({ padding: 'xl', gap: 'lg' }))} role="group" aria-label="Swipe actions">
                         <Button
                           size="lg"
                           variant="outline"
                           className="flex-1 w-full h-14 border-2 glass-effect hover:glass-strong hover:border-destructive/50 hover:bg-destructive/10 group backdrop-blur-xl"
                           onClick={() => {
                             haptics.trigger('light');
-                            handleSwipe('pass');
+                            void handleSwipe('pass');
                           }}
+                          aria-label="Pass on this pet"
                         >
-                          <AnimatedView style={passButtonIconStyle}>
-                            <X
-                              size={28}
-                              weight="bold"
-                              className="text-foreground/70 group-hover:text-destructive transition-colors drop-shadow-lg"
-                            />
-                          </AnimatedView>
+                          <X
+                            size={28}
+                            weight="bold"
+                            className="text-foreground/70 group-hover:text-destructive transition-colors drop-shadow-lg"
+                            aria-hidden="true"
+                          />
                         </Button>
                         <Button
                           size="lg"
                           className="flex-1 w-full h-14 bg-linear-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-2xl hover:shadow-accent/50 group relative overflow-hidden neon-glow"
                           onClick={() => {
                             haptics.trigger('success');
-                            handleSwipe('like');
+                            void handleSwipe('like');
                           }}
+                          aria-label="Like this pet"
                         >
-                          <AnimatedView
+                          <div
                             className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
-                            style={likeButtonShimmerStyle}
-                          >
-                            {null}
-                          </AnimatedView>
-                          <AnimatedView style={likeButtonHeartStyle}>
-                            <Heart
-                              size={28}
-                              weight="fill"
-                              className="relative z-10 drop-shadow-2xl"
-                            />
-                          </AnimatedView>
+                            aria-hidden="true"
+                          />
+                          <Heart
+                            size={28}
+                            weight="fill"
+                            className="relative z-10 drop-shadow-2xl"
+                            aria-hidden="true"
+                          />
                         </Button>
                       </div>
                     </div>
                   </div>
-                </AnimatedView>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
+          </section>
         )}
 
-        {breakdownDialog.isOpen && compatibilityFactors && (
-          <AnimatedView style={breakdownDialogStyle}>
-            <CompatibilityBreakdown factors={compatibilityFactors} className="mb-6" />
-          </AnimatedView>
+        {/* Compatibility Breakdown */}
+        {breakdownDialog.isOpen && compatibilityFactors && Array.isArray(compatibilityFactors) && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: prefersReducedMotion ? 0 : motionDurations.smooth }}
+            aria-label="Compatibility breakdown"
+          >
+            <CompatibilityBreakdown factors={compatibilityFactors} className={getSpacingClassesFromConfig({ marginY: 'xl' })} />
+          </motion.section>
         )}
 
+        {/* Pet Detail Dialog */}
         <AnimatePresence>
-          {selectedPetDialog.isOpen && currentPet && (
-            <Suspense fallback={null}>
+          {selectedPetDialog.isOpen && currentPetSafe && (
+            <Suspense fallback={
+              <div role="status" aria-live="polite" aria-label="Loading pet details">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" aria-hidden="true"></div>
+              </div>
+            }>
               <EnhancedPetDetailView
-                key={currentPet.id}
-                pet={currentPet}
+                key={typeof currentPetSafe.id === 'string' ? currentPetSafe.id : String(currentPetSafe.id ?? '')}
+                pet={currentPetSafe}
                 onClose={selectedPetDialog.close}
                 onLike={() => {
-                  handleSwipe('like');
+                  void handleSwipe('like');
                   selectedPetDialog.close();
                 }}
                 onPass={() => {
-                  handleSwipe('pass');
+                  void handleSwipe('pass');
                   selectedPetDialog.close();
                 }}
-                compatibilityScore={compatibilityScore}
-                matchReasons={reasoning}
+                compatibilityScore={typeof compatibilityScore === 'number' ? compatibilityScore : 0}
+                matchReasons={Array.isArray(reasoning) ? reasoning : []}
                 showActions={true}
               />
             </Suspense>
           )}
         </AnimatePresence>
 
+        {/* Match Celebration */}
         <MatchCelebration
           show={celebrationDialog.isOpen}
-          petName1={userPet?.name || ''}
-          petName2={matchedPetName}
+          petName1={userPetName}
+          petName2={typeof matchedPetName === 'string' ? matchedPetName : ''}
           onComplete={celebrationDialog.close}
         />
 
+        {/* Saved Searches Dialog */}
         {savedSearchesDialog.isOpen && (
           <Dialog open={savedSearchesDialog.isOpen} onOpenChange={savedSearchesDialog.setOpen}>
-            <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogContent className="max-w-2xl max-h-[80vh]" role="dialog" aria-modal="true" aria-label="Saved searches">
               <SavedSearchesManager
                 currentPreferences={prefs}
                 onApplySearch={(newPreferences) => {
-                  const event = new CustomEvent('updateDiscoveryPreferences', {
-                    detail: newPreferences,
-                  });
-                  window.dispatchEvent(event);
+                  if (typeof window !== 'undefined') {
+                    const event = new CustomEvent('updateDiscoveryPreferences', {
+                      detail: newPreferences,
+                    });
+                    window.dispatchEvent(event);
+                  }
                 }}
                 onClose={savedSearchesDialog.close}
               />
@@ -1132,5 +1152,13 @@ export default function DiscoverView() {
         )}
       </main>
     </PageTransitionWrapper>
+  );
+}
+
+export default function DiscoverView() {
+  return (
+    <ScreenErrorBoundary screenName="Discover" enableNavigation={true} enableReporting={false}>
+      <DiscoverViewContent />
+    </ScreenErrorBoundary>
   );
 }

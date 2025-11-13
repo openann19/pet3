@@ -5,7 +5,12 @@
  * Feels more expensive than any competitor app
  */
 
-import { MotionView, usePressBounce, useHoverLift, useMagnetic } from '@petspark/motion';
+'use client';
+
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useCallback, useState } from 'react';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface PremiumButtonProps {
   label: string;
@@ -26,17 +31,84 @@ export function PremiumButton({
   className = '',
   onPress,
 }: PremiumButtonProps) {
-  // Motion hooks - combine for premium feel
-  const pressBounce = usePressBounce(0.94);
-  const hoverLift = useHoverLift(size === 'lg' ? 8 : size === 'md' ? 6 : 4);
-  const magneticEffect = useMagnetic(magnetic ? 80 : 0);
+  const reducedMotion = useReducedMotion();
+  
+  // Motion values for animations
+  const scale = useMotionValue(1);
+  const translateY = useMotionValue(0);
+  const magneticX = useMotionValue(0);
+  const magneticY = useMotionValue(0);
+  const [isPressed, setIsPressed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Combine all animated styles
-  const combinedAnimatedStyles = [
-    pressBounce.animatedStyle,
-    hoverLift.animatedStyle,
-    magnetic ? magneticEffect.animatedStyle : undefined,
-  ].filter(Boolean);
+  // Press bounce handler
+  const handlePressIn = useCallback(() => {
+    if (disabled || reducedMotion) return;
+    setIsPressed(true);
+    void animate(scale, 0.94, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [disabled, reducedMotion, scale]);
+
+  const handlePressOut = useCallback(() => {
+    if (disabled || reducedMotion) return;
+    setIsPressed(false);
+    void animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    }).then(() => {
+      onPress();
+    });
+  }, [disabled, reducedMotion, scale, onPress]);
+
+  // Hover lift handler
+  const handleMouseEnter = useCallback(() => {
+    if (disabled || reducedMotion) return;
+    setIsHovered(true);
+    const liftAmount = size === 'lg' ? 8 : size === 'md' ? 6 : 4;
+    void animate(translateY, -liftAmount, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [disabled, reducedMotion, translateY, size]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (disabled || reducedMotion) return;
+    setIsHovered(false);
+    void animate(translateY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [disabled, reducedMotion, translateY]);
+
+  // Magnetic effect handler
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!magnetic || disabled || reducedMotion) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distance = 80;
+    
+    const deltaX = (e.clientX - centerX) / distance;
+    const deltaY = (e.clientY - centerY) / distance;
+    
+    void animate(magneticX, deltaX * 4, {
+      type: 'spring',
+      damping: 20,
+      stiffness: 300,
+    });
+    void animate(magneticY, deltaY * 4, {
+      type: 'spring',
+      damping: 20,
+      stiffness: 300,
+    });
+  }, [magnetic, disabled, reducedMotion, magneticX, magneticY]);
 
   // Base classes for styling
   const baseClasses =
@@ -59,32 +131,25 @@ export function PremiumButton({
   const allClasses = `${String(baseClasses ?? '')} ${String(sizeClasses[size] ?? '')} ${String(variantClasses[variant] ?? '')} ${String(disabledClasses ?? '')} ${String(className ?? '')}`;
 
   return (
-    <button
+    <motion.button
       className={allClasses}
-      onMouseDown={() => {
-        if (!disabled) {
-          pressBounce.onPressIn();
-        }
+      style={{
+        scale,
+        x: magnetic ? magneticX : 0,
+        y: magnetic ? magneticY : translateY,
       }}
-      onMouseUp={() => {
-        if (!disabled) {
-          pressBounce.onPressOut();
-          onPress();
-        }
-      }}
-      onMouseEnter={hoverLift.onMouseEnter}
-      onMouseLeave={hoverLift.onMouseLeave}
-      onMouseMove={magnetic ? magneticEffect.onPointerMove : undefined}
+      onMouseDown={handlePressIn}
+      onMouseUp={handlePressOut}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseMove={magnetic ? handleMouseMove : undefined}
       disabled={disabled}
       type="button"
+      whileHover={reducedMotion ? undefined : { scale: isPressed ? 0.94 : 1 }}
+      whileTap={reducedMotion ? undefined : { scale: 0.94 }}
     >
-      <MotionView
-        animatedStyle={combinedAnimatedStyles}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        {label}
-      </MotionView>
-    </button>
+      {label}
+    </motion.button>
   );
 }
 

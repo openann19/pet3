@@ -1,16 +1,16 @@
 'use client';
+import { motion } from 'framer-motion';
 
-import React, { useCallback, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import React, { useCallback, useState } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { PremiumButton } from '../PremiumButton';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useUIConfig } from "@/hooks/use-ui-config";
-import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { getTypographyClasses } from '@/lib/typography';
+import { getMotionDuration } from '@/lib/design-tokens';
 
 export interface PremiumErrorStateProps {
   title?: string;
@@ -34,47 +34,25 @@ export function PremiumErrorState({
   className,
 }: PremiumErrorStateProps): React.JSX.Element {
   const _uiConfig = useUIConfig();
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const scale = useSharedValue(0.9);
-  const opacity = useSharedValue(0);
-  const shake = useSharedValue(0);
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      scale.value = 1;
-      opacity.value = 1;
-      return;
-    }
-    const scaleTransition = withSpring(1, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
-    const opacityTransition = withSpring(1, springConfigs.smooth);
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
-  }, [scale, opacity, prefersReducedMotion]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.get() }, { translateX: shake.get() }],
-      opacity: opacity.get(),
-    };
-  });
+  const reducedMotion = useReducedMotion();
+  const [shakeX, setShakeX] = useState(0);
 
   const handleRetry = useCallback(() => {
-    if (!prefersReducedMotion) {
-      const shake1Transition = withSpring(10, springConfigs.bouncy);
-      animate(shake, shake1Transition.target, shake1Transition.transition);
+    if (!reducedMotion) {
+      // Use motion duration token for shake animation timing
+      const shakeDuration = Number.parseInt(getMotionDuration('fast').replace('ms', ''), 10) || 100;
+      setShakeX(10);
       setTimeout(() => {
-        const shake2Transition = withSpring(-10, springConfigs.bouncy);
-        animate(shake, shake2Transition.target, shake2Transition.transition);
+        setShakeX(-10);
         setTimeout(() => {
-          const shake3Transition = withSpring(0, springConfigs.smooth);
-          animate(shake, shake3Transition.target, shake3Transition.transition);
-        }, 100);
-      }, 100);
+          setShakeX(0);
+        }, shakeDuration);
+      }, shakeDuration);
     }
 
     haptics.impact('medium');
     onRetry?.();
-  }, [onRetry, shake, prefersReducedMotion]);
+  }, [onRetry, reducedMotion]);
 
   const errorMessage = typeof error === 'string' ? error : error?.message ?? message;
   const errorDetails = typeof error === 'object' && error?.stack ? error.stack : undefined;
@@ -86,14 +64,19 @@ export function PremiumErrorState({
   };
 
   return (
-    <AnimatedView
-      style={animatedStyle}
+    <motion.div
       className={cn('flex flex-col items-center', variants[variant], className)}
+      initial={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1, x: shakeX }}
+      transition={reducedMotion ? undefined : {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+      }}
     >
       <div className="mb-4 text-(--danger)" aria-hidden="true">
         <AlertCircle size={48} />
       </div>
-      <h3 className={cn(getTypographyClasses('subtitle'), 'mb-2 text-(--text-primary)')}>
+      <h3 className={cn(getTypographyClasses('h2'), 'mb-2 text-(--text-primary)')}>
         {title}
       </h3>
       {errorMessage && (
@@ -106,7 +89,7 @@ export function PremiumErrorState({
           <summary className={cn(getTypographyClasses('caption'), 'cursor-pointer mb-2 text-(--text-muted)')}>
             Error Details
           </summary>
-          <pre className={cn(getTypographyClasses('hint'), 'p-4 bg-(--surface) rounded-md overflow-auto text-(--text-muted)')}>
+          <pre className={cn(getTypographyClasses('body-sm'), 'p-4 bg-(--surface) rounded-md overflow-auto text-(--text-muted)')}>
             {errorDetails}
           </pre>
         </details>
@@ -121,6 +104,6 @@ export function PremiumErrorState({
           {retryLabel}
         </PremiumButton>
       )}
-    </AnimatedView>
+    </motion.div>
   );
 }

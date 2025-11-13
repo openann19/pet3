@@ -1,8 +1,12 @@
-import { MotionView } from '@petspark/motion';
+'use client';
+
 import { ChatCircle, Check, Checks } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { ChatRoom } from '@/lib/chat-types';
 import { formatMessageTime } from '@/lib/chat-utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { staggerContainerVariants, staggerItemVariants, getVariantsWithReducedMotion, motionDurations } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface ChatRoomsListProps {
   rooms: ChatRoom[];
@@ -11,50 +15,62 @@ interface ChatRoomsListProps {
 }
 
 export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: ChatRoomsListProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   if (rooms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <MotionView
+        <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
           className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
         >
-          <MotionView
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+          <motion.div
+            animate={prefersReducedMotion ? {} : { scale: [1, 1.2, 1] }}
+            transition={{ duration: 1.5, repeat: prefersReducedMotion ? 0 : Infinity }}
           >
             <ChatCircle size={48} className="text-primary" weight="fill" />
-          </MotionView>
-          <MotionView
-            className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
-            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </MotionView>
-        <MotionView
+          </motion.div>
+          {!prefersReducedMotion && (
+            <motion.div
+              className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
+              animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          )}
+        </motion.div>
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: prefersReducedMotion ? 0 : 0.2 }}
           className="text-2xl font-bold mb-2"
         >
           No Conversations Yet
-        </MotionView>
-        <MotionView
+        </motion.div>
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: prefersReducedMotion ? 0 : 0.3 }}
           className="text-muted-foreground max-w-md"
         >
           Start chatting with your matches to plan playdates and get to know each other!
-        </MotionView>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 overflow-y-auto max-h-full">
-      {rooms.map((room, idx) => {
+    <motion.ul
+      className="space-y-2 overflow-y-auto max-h-full"
+      role="list"
+      aria-label="Chat rooms list"
+      variants={getVariantsWithReducedMotion(staggerContainerVariants, prefersReducedMotion)}
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatePresence mode="popLayout">
+        {rooms.map((room, idx) => {
         const unreadValue =
           typeof room.unreadCount === 'number'
             ? room.unreadCount
@@ -64,25 +80,27 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
         const hasUnread = unreadValue > 0;
 
         return (
-          <MotionView
+          <motion.li
             key={room.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05, type: 'spring', stiffness: 300, damping: 30 }}
+            variants={getVariantsWithReducedMotion(staggerItemVariants, prefersReducedMotion)}
+            layout
+            transition={{
+              delay: prefersReducedMotion ? 0 : idx * 0.05,
+              duration: prefersReducedMotion ? 0 : motionDurations.smooth,
+            }}
           >
-            <MotionView
-              as="button"
+            <motion.button
               onClick={() => onSelectRoom(room)}
               className={`w-full text-left p-4 rounded-2xl transition-all relative overflow-hidden ${
-                String(selectedRoomId === room.id
-                                    ? 'glass-strong shadow-lg scale-[1.02] border border-primary/30'
-                                    : 'glass-effect hover:glass-strong hover:scale-[1.01]' ?? '')
+                selectedRoomId === room.id
+                  ? 'glass-strong shadow-lg scale-[1.02] border border-primary/30'
+                  : 'glass-effect hover:glass-strong hover:scale-[1.01]'
               }`}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
             >
-              {hasUnread && (
-                <MotionView
+              {hasUnread && !prefersReducedMotion && (
+                <motion.div
                   className="absolute inset-0 bg-linear-to-r from-primary/5 to-accent/5"
                   animate={{ opacity: [0.5, 0.8, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -91,8 +109,8 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
 
               <div className="flex items-start gap-3 relative z-10">
                 <div className="relative shrink-0">
-                  <MotionView
-                    animate={hasUnread ? { scale: [1, 1.05, 1] } : {}}
+                  <motion.div
+                    animate={hasUnread && !prefersReducedMotion ? { scale: [1, 1.05, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <Avatar
@@ -103,22 +121,22 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                         {room.matchedPetName?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
-                  </MotionView>
+                  </motion.div>
 
                   {hasUnread && (
-                    <MotionView
+                    <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       className="absolute -top-1 -right-1 min-w-6 h-6 rounded-full bg-linear-to-br from-accent to-primary flex items-center justify-center shadow-lg px-2"
                     >
-                      <MotionView
+                      <motion.span
                         className="text-white text-xs font-bold"
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 1, repeat: Infinity }}
+                        animate={prefersReducedMotion ? {} : { scale: [1, 1.1, 1] }}
+                        transition={{ duration: 1, repeat: prefersReducedMotion ? 0 : Infinity }}
                       >
                         {unreadValue > 99 ? '99+' : String(unreadValue)}
-                      </MotionView>
-                    </MotionView>
+                      </motion.span>
+                    </motion.div>
                   )}
                 </div>
 
@@ -173,30 +191,31 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                   </div>
 
                   {room.isTyping && (
-                    <MotionView
+                    <motion.div
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="flex items-center gap-1 mt-1"
                     >
                       <div className="flex gap-1">
                         {[0, 1, 2].map((i) => (
-                          <MotionView
+                          <motion.div
                             key={i}
                             className="w-2 h-2 rounded-full bg-primary"
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                            animate={prefersReducedMotion ? {} : { scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1, repeat: prefersReducedMotion ? 0 : Infinity, delay: i * 0.2 }}
                           />
                         ))}
                       </div>
                       <span className="text-xs text-primary">typing...</span>
-                    </MotionView>
+                    </motion.div>
                   )}
                 </div>
               </div>
-            </MotionView>
-          </MotionView>
+            </motion.button>
+          </motion.li>
         );
       })}
-    </div>
+      </AnimatePresence>
+    </motion.ul>
   );
 }
