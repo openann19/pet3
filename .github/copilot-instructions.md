@@ -239,9 +239,38 @@ Component.displayName = 'Component';
 
 ### Animation
 
-- Web: Use `@petspark/motion` package (custom animation library)
-- Mobile: React Native Reanimated + Shopify Skia
-- Shared: Platform-agnostic animation utilities in `packages/motion/`
+- **Web: Use Framer Motion** - The web app uses Framer Motion for all animations
+  - Import from `framer-motion` directly: `import { motion } from 'framer-motion'`
+  - Or use `@petspark/motion` for compatibility APIs
+  - **DO NOT** use React Native Reanimated in web code
+  - **DO NOT** import from `react-native` in web files
+- **Mobile**: React Native Reanimated + Shopify Skia
+- **Shared**: Platform-agnostic animation utilities in `packages/motion/`
+- **Migration**: See `FRAMER_MOTION_MIGRATION.md` for migration guide
+
+#### Animation Patterns (Web)
+
+```tsx
+// ✅ Preferred: Declarative Framer Motion
+import { motion } from 'framer-motion';
+
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3 }}
+>
+  Content
+</motion.div>
+
+// ✅ Alternative: Imperative with motion values
+import { useMotionValue, animate } from '@petspark/motion';
+
+const opacity = useMotionValue(0);
+animate(opacity, 1, { duration: 0.3 });
+
+// ❌ AVOID: React Native imports in web
+import { Animated } from 'react-native'; // Wrong!
+```
 
 ## Git Workflow
 

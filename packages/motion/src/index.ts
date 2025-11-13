@@ -162,18 +162,28 @@ export const Extrapolation = {
 export type AnimatedStyle = import('react').CSSProperties
 export type AnimatedProps = Record<string, unknown>
 
-// Default Animated export (stub for compatibility)
+// Animated export for backward compatibility - use MotionView/MotionText instead
+// These are deprecated and will be removed in a future version
 export const Animated = {
-  View: () => null,
-  Text: () => null,
-  Image: () => null,
-  ScrollView: () => null,
+  View: MotionView,
+  Text: MotionText,
+  Image: motion.img,
+  ScrollView: MotionScrollView,
 }
+
+// Direct Framer Motion exports for web
+export { motion }
 
 // Re-export custom primitives
 export { MotionView } from './primitives/MotionView'
 export { MotionText } from './primitives/MotionText'
 export { MotionScrollView } from './primitives/MotionScrollView'
+
+// Import for Animated export
+import { MotionView } from './primitives/MotionView'
+import { MotionText } from './primitives/MotionText'
+import { MotionScrollView } from './primitives/MotionScrollView'
+import { motion } from 'framer-motion'
 
 // Re-export custom hooks/recipes
 export { usePressBounce } from './recipes/usePressBounce'

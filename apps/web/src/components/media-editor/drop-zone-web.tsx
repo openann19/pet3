@@ -1,8 +1,8 @@
 'use client';
 
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { motion } from 'framer-motion';
+import type { CSSProperties } from 'react';
 
 const isWeb = typeof window !== 'undefined';
 
@@ -68,21 +68,21 @@ export function DropZoneWeb({ onDrop }: DropZoneWebProps): React.ReactElement | 
   };
 
   return (
-    <AnimatedView
+    <motion.div
       ref={ref}
       style={dropZoneStyle}
       role="button"
       aria-label="Drop photo or video here"
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
     >
-      <Text style={styles.text}>Drag & drop photo or video</Text>
-    </AnimatedView>
+      <span style={textStyle}>Drag & drop photo or video</span>
+    </motion.div>
   );
 }
 
-const styles = StyleSheet.create({
-  text: {
-    color: '#999',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
+const textStyle: CSSProperties = {
+  color: '#999',
+  fontSize: 14,
+  fontWeight: '500',
+};
