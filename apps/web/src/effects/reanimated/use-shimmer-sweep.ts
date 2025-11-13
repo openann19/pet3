@@ -46,42 +46,6 @@ export function useShimmerSweep(options: UseShimmerSweepOptions = {}): UseShimme
     );
   }, [duration, delay, opacityRange, x, opacity]);
 
-      x.value = withRepeat(
-        withSequence(
-          withTiming(-sweepWidth, { duration: 0 }),
-          withTiming(sweepWidth, { duration, easing })
-        ),
-        -1,
-        false
-      )
-
-      opacity.value = withRepeat(
-        withSequence(
-          withTiming(minOpacity, { duration: Math.max(0, delay) }),
-          withTiming(maxOpacity, { duration: duration * 0.5 }),
-          withTiming(minOpacity, { duration: duration * 0.5 })
-        ),
-        -1,
-        false
-      )
-    }
-
-    const stop = () => {
-      cancelAnimation(x)
-      cancelAnimation(opacity)
-      x.value = -sweepWidth
-      opacity.value = minOpacity
-    }
-
-    if (paused || sweepWidth <= 0) {
-      stop()
-      return stop
-    }
-
-    start()
-    return stop
-  }, [delay, duration, easing, maxOpacity, minOpacity, paused, width, x, opacity])
-
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateX: `${x.value}%` }],
@@ -92,6 +56,6 @@ export function useShimmerSweep(options: UseShimmerSweepOptions = {}): UseShimme
   return {
     x,
     opacity,
-    style,
+    style: animatedStyle,
   };
 }

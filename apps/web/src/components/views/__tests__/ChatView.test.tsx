@@ -71,7 +71,7 @@ vi.mock('@/contexts/AppContext', () => ({
 
 vi.mock('@/lib/chat-service', () => ({
   getRoomMessages: vi.fn(() => Promise.resolve({ messages: [] }))
-})))
+}))
 
 vi.mock('@/lib/chat-utils', () => ({
   createChatRoom: vi.fn((matchId, petId1, petId2, name1, name2, photo1, photo2) => ({
