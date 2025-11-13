@@ -24,21 +24,21 @@ The PetSpark web application currently uses React Native Reanimated compatibilit
 
 ### Files Affected by Directory
 
-| Directory | File Count | Priority |
-|-----------|------------|----------|
-| `src/effects/reanimated/` | 51 | 🔴 High - Core animation infrastructure |
-| `src/components/chat/` | 20 | 🔴 High - User-facing features |
-| `src/hooks/` | 19 | 🟡 Medium - Reusable logic |
-| `src/components/` | 18 | 🔴 High - Core UI components |
-| `src/agi_ui_engine/effects/` | 17 | 🟢 Low - Advanced features |
-| `src/components/enhanced/` | 13 | 🟡 Medium - Premium features |
-| `src/components/chat/bubble-wrapper-god-tier/effects/` | 9 | 🟡 Medium - Chat enhancements |
-| `src/components/views/` | 7 | 🔴 High - Main views |
-| `src/hooks/micro-interactions/` | 4 | 🟡 Medium - UX polish |
-| `src/effects/chat/media/` | 4 | 🟡 Medium - Media handling |
-| `src/components/notifications/` | 4 | 🟡 Medium - Notifications |
-| `src/components/call/` | 4 | 🟡 Medium - Video calls |
-| Other directories | ~50+ | Various |
+| Directory                                              | File Count | Priority                                |
+| ------------------------------------------------------ | ---------- | --------------------------------------- |
+| `src/effects/reanimated/`                              | 51         | 🔴 High - Core animation infrastructure |
+| `src/components/chat/`                                 | 20         | 🔴 High - User-facing features          |
+| `src/hooks/`                                           | 19         | 🟡 Medium - Reusable logic              |
+| `src/components/`                                      | 18         | 🔴 High - Core UI components            |
+| `src/agi_ui_engine/effects/`                           | 17         | 🟢 Low - Advanced features              |
+| `src/components/enhanced/`                             | 13         | 🟡 Medium - Premium features            |
+| `src/components/chat/bubble-wrapper-god-tier/effects/` | 9          | 🟡 Medium - Chat enhancements           |
+| `src/components/views/`                                | 7          | 🔴 High - Main views                    |
+| `src/hooks/micro-interactions/`                        | 4          | 🟡 Medium - UX polish                   |
+| `src/effects/chat/media/`                              | 4          | 🟡 Medium - Media handling              |
+| `src/components/notifications/`                        | 4          | 🟡 Medium - Notifications               |
+| `src/components/call/`                                 | 4          | 🟡 Medium - Video calls                 |
+| Other directories                                      | ~50+       | Various                                 |
 
 ### Deprecated APIs in Use
 
@@ -46,13 +46,13 @@ The following APIs from `@petspark/motion` are compatibility shims and should be
 
 ```typescript
 // ❌ Avoid - Reanimated compatibility APIs
-import { 
+import {
   useSharedValue,
-  useAnimatedStyle, 
+  useAnimatedStyle,
   withSpring,
   withTiming,
   useDerivedValue,
-  interpolate
+  interpolate,
 } from '@petspark/motion';
 ```
 
@@ -63,6 +63,7 @@ import {
 ### Pattern 1: Simple Entrance Animation
 
 **Before (Reanimated-style):**
+
 ```tsx
 import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -80,7 +81,7 @@ function Component() {
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.get(),
-    transform: [{ scale: scale.get() }]
+    transform: [{ scale: scale.get() }],
   }));
 
   return <AnimatedView style={animatedStyle}>Content</AnimatedView>;
@@ -88,6 +89,7 @@ function Component() {
 ```
 
 **After (Framer Motion - Declarative):**
+
 ```tsx
 import { motion } from 'framer-motion';
 
@@ -105,6 +107,7 @@ function Component() {
 ```
 
 **Benefits:**
+
 - 60% less code
 - No useEffect needed
 - Declarative and self-documenting
@@ -115,6 +118,7 @@ function Component() {
 ### Pattern 2: Interactive Hover/Tap Animation
 
 **Before:**
+
 ```tsx
 import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -133,15 +137,11 @@ function Button() {
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }]
+    transform: [{ scale: scale.get() }],
   }));
 
   return (
-    <AnimatedView
-      style={animatedStyle}
-      onMouseDown={handlePressIn}
-      onMouseUp={handlePressOut}
-    >
+    <AnimatedView style={animatedStyle} onMouseDown={handlePressIn} onMouseUp={handlePressOut}>
       Click me
     </AnimatedView>
   );
@@ -149,6 +149,7 @@ function Button() {
 ```
 
 **After:**
+
 ```tsx
 import { motion } from 'framer-motion';
 
@@ -166,6 +167,7 @@ function Button() {
 ```
 
 **Benefits:**
+
 - 70% less code
 - No manual event handlers
 - Built-in gesture support
@@ -176,6 +178,7 @@ function Button() {
 ### Pattern 3: Controlled Animation (Imperative)
 
 **Before:**
+
 ```tsx
 import { useSharedValue, useAnimatedStyle, withTiming, animate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -189,7 +192,7 @@ function ProgressBar({ progress }: { progress: number }) {
   }, [progress, width]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    width: `${width.get()}%`
+    width: `${width.get()}%`,
   }));
 
   return <AnimatedView style={animatedStyle} className="progress-fill" />;
@@ -197,6 +200,7 @@ function ProgressBar({ progress }: { progress: number }) {
 ```
 
 **After (when you need imperative control):**
+
 ```tsx
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { useEffect } from 'react';
@@ -209,21 +213,19 @@ function ProgressBar({ progress }: { progress: number }) {
   }, [progress, width]);
 
   return (
-    <motion.div 
-      className="progress-fill"
-      style={{ width: useTransform(width, v => `${v}%`) }}
-    />
+    <motion.div className="progress-fill" style={{ width: useTransform(width, (v) => `${v}%`) }} />
   );
 }
 ```
 
 **Or (declarative - better):**
+
 ```tsx
 import { motion } from 'framer-motion';
 
 function ProgressBar({ progress }: { progress: number }) {
   return (
-    <motion.div 
+    <motion.div
       className="progress-fill"
       animate={{ width: `${progress}%` }}
       transition={{ duration: 0.5 }}
@@ -233,6 +235,7 @@ function ProgressBar({ progress }: { progress: number }) {
 ```
 
 **Benefits:**
+
 - Framer Motion's useMotionValue is native, not a polyfill
 - useTransform is more efficient than Reanimated's useDerivedValue
 - Declarative approach (second example) is even simpler
@@ -242,6 +245,7 @@ function ProgressBar({ progress }: { progress: number }) {
 ### Pattern 4: Exit Animations with AnimatePresence
 
 **Before:**
+
 ```tsx
 import { Presence } from '@petspark/motion';
 import { useSharedValue, useAnimatedStyle, withSpring, animate } from '@petspark/motion';
@@ -263,7 +267,7 @@ function Toast({ show }: { show: boolean }) {
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.get(),
-    transform: [{ translateY: y.get() }]
+    transform: [{ translateY: y.get() }],
   }));
 
   return (
@@ -275,6 +279,7 @@ function Toast({ show }: { show: boolean }) {
 ```
 
 **After:**
+
 ```tsx
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -297,6 +302,7 @@ function Toast({ show }: { show: boolean }) {
 ```
 
 **Benefits:**
+
 - No manual show/hide state management
 - Exit animations handled automatically
 - Cleaner conditional rendering
@@ -306,6 +312,7 @@ function Toast({ show }: { show: boolean }) {
 ### Pattern 5: List Stagger Animations
 
 **Before:**
+
 ```tsx
 import { useSharedValue, useAnimatedStyle, withDelay, withSpring, animate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -327,7 +334,7 @@ function List({ items }: { items: string[] }) {
 
         const animatedStyle = useAnimatedStyle(() => ({
           opacity: opacity.get(),
-          transform: [{ translateY: y.get() }]
+          transform: [{ translateY: y.get() }],
         }));
 
         return (
@@ -342,6 +349,7 @@ function List({ items }: { items: string[] }) {
 ```
 
 **After:**
+
 ```tsx
 import { motion } from 'framer-motion';
 
@@ -350,23 +358,19 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const item = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
+  show: { opacity: 1, y: 0 },
 };
 
 function List({ items }: { items: string[] }) {
   return (
-    <motion.ul
-      variants={container}
-      initial="hidden"
-      animate="show"
-    >
+    <motion.ul variants={container} initial="hidden" animate="show">
       {items.map((text) => (
         <motion.li key={text} variants={item}>
           {text}
@@ -378,6 +382,7 @@ function List({ items }: { items: string[] }) {
 ```
 
 **Benefits:**
+
 - Built-in stagger support
 - No manual timing calculations
 - Cleaner code with variants
@@ -388,6 +393,7 @@ function List({ items }: { items: string[] }) {
 ### Pattern 6: Scroll-Based Animations
 
 **Before:**
+
 ```tsx
 import { useSharedValue, useAnimatedStyle, useDerivedValue, interpolate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -399,12 +405,10 @@ function ParallaxSection() {
     scrollY.value = e.currentTarget.scrollTop;
   };
 
-  const opacity = useDerivedValue(() => 
-    interpolate(scrollY.value, [0, 200], [1, 0])
-  );
+  const opacity = useDerivedValue(() => interpolate(scrollY.value, [0, 200], [1, 0]));
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value
+    opacity: opacity.value,
   }));
 
   return (
@@ -416,6 +420,7 @@ function ParallaxSection() {
 ```
 
 **After:**
+
 ```tsx
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
@@ -434,6 +439,7 @@ function ParallaxSection() {
 ```
 
 **Benefits:**
+
 - Built-in scroll tracking
 - Normalized progress (0-1)
 - Better performance
@@ -605,12 +611,12 @@ function Component() {
 
 ```typescript
 // ❌ Wrong - this will be 300 seconds!
-withTiming(value, { duration: 300 })
+withTiming(value, { duration: 300 });
 // Becomes
-animate(value, target, { duration: 300 })
+animate(value, target, { duration: 300 });
 
 // ✅ Correct - convert to seconds
-animate(value, target, { duration: 0.3 })
+animate(value, target, { duration: 0.3 });
 ```
 
 ### ❌ Pitfall 2: Transform Arrays
@@ -698,24 +704,14 @@ import {
   useScroll,
   useSpring,
   useVelocity,
-  useAnimationControls
+  useAnimationControls,
 } from 'framer-motion';
 
 // Utilities
-import {
-  animate,
-  AnimatePresence,
-  useReducedMotion,
-  useInView
-} from 'framer-motion';
+import { animate, AnimatePresence, useReducedMotion, useInView } from 'framer-motion';
 
 // Types
-import type {
-  Variants,
-  Transition,
-  MotionProps,
-  MotionValue
-} from 'framer-motion';
+import type { Variants, Transition, MotionProps, MotionValue } from 'framer-motion';
 ```
 
 ### Deprecated Imports (Do Not Use)
@@ -723,13 +719,13 @@ import type {
 ```typescript
 // ❌ Do not import from @petspark/motion for web
 import {
-  useSharedValue,      // Use useMotionValue
-  useAnimatedStyle,    // Use motion.div with style prop
-  withSpring,          // Use { type: 'spring' } in transition
-  withTiming,          // Use { duration } in transition
-  useDerivedValue,     // Use useTransform
-  interpolate,         // Use useTransform
-  Animated,            // Use motion
+  useSharedValue, // Use useMotionValue
+  useAnimatedStyle, // Use motion.div with style prop
+  withSpring, // Use { type: 'spring' } in transition
+  withTiming, // Use { duration } in transition
+  useDerivedValue, // Use useTransform
+  interpolate, // Use useTransform
+  Animated, // Use motion
 } from '@petspark/motion';
 
 // ❌ Never import from react-native in web code
@@ -806,12 +802,12 @@ A: No. Follow the phased approach above. Test thoroughly after each phase.
 
 ## Timeline
 
-| Phase | Duration | Completion |
-|-------|----------|------------|
-| Phase 1: Core Infrastructure | Week 1 | 0% |
-| Phase 2: High-Traffic Components | Week 2 | 0% |
-| Phase 3: Enhanced Components | Week 3 | 0% |
-| Phase 4: Advanced Features | Week 4+ | 0% |
+| Phase                            | Duration | Completion |
+| -------------------------------- | -------- | ---------- |
+| Phase 1: Core Infrastructure     | Week 1   | 0%         |
+| Phase 2: High-Traffic Components | Week 2   | 0%         |
+| Phase 3: Enhanced Components     | Week 3   | 0%         |
+| Phase 4: Advanced Features       | Week 4+  | 0%         |
 
 **Estimated Total**: 4-6 weeks for complete migration
 
