@@ -31,7 +31,7 @@ export function ProfileScreen(): React.JSX.Element {
             <FeatureCard
               key={pet.id}
               title={pet.name}
-              subtitle={`${pet.breedName} • ${pet.location.city}`}
+              subtitle={`${String(pet.breedName ?? '')} • ${String(pet.location.city ?? '')}`}
             >
               <InfoRow label="Life stage" value={pet.lifeStage} />
               <InfoRow

@@ -9,7 +9,7 @@ import {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useApp } from '@/contexts/AppContext';
@@ -556,7 +556,7 @@ export function MediaViewer({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           className="fixed inset-0 z-50 flex items-center justify-center"
-          onPointerDownOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => { e.preventDefault(); }}
         >
           <div
             className="relative w-full h-full flex items-center justify-center"
@@ -577,7 +577,7 @@ export function MediaViewer({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onOpenChange(false)}
+                      onClick={() => { onOpenChange(false); }}
                       className="rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm"
                     >
                       <X size={24} />
@@ -722,7 +722,7 @@ export function MediaViewer({
                     >
                       <img
                         src={currentMedia.url}
-                        alt={`Post media ${currentIndex + 1}`}
+                        alt={`Post media ${String(currentIndex + 1 ?? '')}`}
                         className="max-w-full max-h-full object-contain select-none"
                         draggable={false}
                       />
@@ -784,7 +784,7 @@ export function MediaViewer({
                     className={`h-2 rounded-full transition-all duration-300 ${
                       index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
                     }`}
-                    aria-label={`View ${media[index]?.type === 'video' ? 'video' : 'photo'} ${index + 1}`}
+                    aria-label={`View ${String(media[index]?.type === 'video' ? 'video' : 'photo' ?? '')} ${String(index + 1 ?? '')}`}
                   />
                 ))}
               </div>

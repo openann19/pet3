@@ -9,6 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
@@ -48,16 +49,16 @@ export function ToggleButton({
   }))
 
   const handlePress = useCallback(() => {
-    if (disabled) return
+    if (isTruthy(disabled)) return
 
     const newChecked = !checked
     onCheckedChange?.(newChecked)
 
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       scale.value = withTiming(newChecked ? 1 : 0.95, { duration: 200 })
       opacity.value = withTiming(newChecked ? 1 : 0.7, { duration: 200 })
     } else {
-      if (newChecked) {
+      if (isTruthy(newChecked)) {
         scale.value = withSpring(1, SPRING_CONFIG)
         opacity.value = withSpring(1, SPRING_CONFIG)
       } else {

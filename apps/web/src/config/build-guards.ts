@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 /**
  * Build-time guards to prevent mock code from reaching production
  */
@@ -36,7 +38,7 @@ if (import.meta.env.PROD) {
     throw new Error(`
   ❌ PRODUCTION BLOCKER: Missing required environment variables
 
-  Missing: ${missing.join(', ')}
+  Missing: ${String(missing.join(', ') ?? '')}
 
   Required for production:
   ${requiredEnvVars.map((key) => `- ${key}=<value>`).join('\n')}

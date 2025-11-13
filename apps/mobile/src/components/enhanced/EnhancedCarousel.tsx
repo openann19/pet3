@@ -22,6 +22,8 @@ import Animated, {
 } from 'react-native-reanimated'
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
 import * as Haptics from 'expo-haptics'
+import { isTruthy } from '@petspark/shared';
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 const AnimatedView = Animated.createAnimatedComponent(View)
@@ -98,7 +100,7 @@ export function EnhancedCarousel({
       }, autoPlayInterval)
 
       return () => {
-        if (autoPlayRef.current) {
+        if (isTruthy(autoPlayRef.current)) {
           clearInterval(autoPlayRef.current)
         }
       }

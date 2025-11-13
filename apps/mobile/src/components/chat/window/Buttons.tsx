@@ -9,7 +9,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => onSelect(sticker.emoji)}
+      onPress={() => { onSelect(sticker.emoji); }}
       style={{ padding: 8, borderRadius: 12 }}
     >
       <Text style={{ fontSize: 24 }}>{sticker.emoji}</Text>

@@ -109,7 +109,7 @@ beforeAll(async () => {
       res.end(
         JSON.stringify({
           data: {
-            recordingId: `recording-${payload.roomId}`,
+            recordingId: `recording-${String(payload.roomId ?? '')}`,
             status: 'recording' as const,
           },
         })
@@ -126,8 +126,8 @@ beforeAll(async () => {
             recordingId: recordingId || 'recording-1',
             roomId: 'room-1',
             status: 'completed' as const,
-            url: `https://storage.example.com/${recordingId}.mp4`,
-            hlsUrl: `https://storage.example.com/${recordingId}.m3u8`,
+            url: `https://storage.example.com/${String(recordingId ?? '')}.mp4`,
+            hlsUrl: `https://storage.example.com/${String(recordingId ?? '')}.m3u8`,
           },
         })
       );

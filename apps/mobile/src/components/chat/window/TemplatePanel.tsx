@@ -25,10 +25,10 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
         {MESSAGE_TEMPLATES.slice(0, 4).map(template => (
           <Pressable
             key={template.id}
-            onPress={() => onSelect(template)}
+            onPress={() => { onSelect(template); }}
             style={styles.templateItem}
             accessibilityRole="button"
-            accessibilityLabel={`Select template: ${template.text}`}
+            accessibilityLabel={`Select template: ${String(template.text ?? '')}`}
           >
             {template.icon && <Text style={styles.icon}>{template.icon}</Text>}
             <View style={styles.templateContent}>

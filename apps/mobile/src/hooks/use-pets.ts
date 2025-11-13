@@ -93,14 +93,14 @@ export function useLikePet(): UseMutationResult<
       context: { previousPets?: PaginatedResponse<PetProfile> } | undefined
     ) => {
       // Rollback on error
-      if (context?.previousPets) {
+      if (isTruthy(context?.previousPets)) {
         queryClient.setQueryData(['pets'], context.previousPets)
       }
     },
     onSuccess: (_data: ApiResponse<Match | null>, _petId: string) => {
       // Update matches if match occurred
       if (_data.data && 'id' in _data.data) {
-        addMatch(_data.data as Match)
+        addMatch(_data.data)
       }
 
       // Invalidate matches query
@@ -116,7 +116,7 @@ export function useLikePet(): UseMutationResult<
 /**
  * Hook to dislike a pet with optimistic updates
  */
-export function useDislikePet(): UseMutationResult<ApiResponse<null>, unknown, string, unknown> {
+export function useDislikePet(): UseMutationResult<ApiResponse<null>, unknown, string> {
   const queryClient = useQueryClient()
   const { markAsSwiped } = usePetsStore()
 

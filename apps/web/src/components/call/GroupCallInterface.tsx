@@ -31,7 +31,7 @@ import {
   withTiming,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { GroupCallSession, CallParticipant } from '@/lib/call-types';
 import { formatCallDuration } from '@/lib/call-utils';
 import { haptics } from '@/lib/haptics';
@@ -72,7 +72,7 @@ function ParticipantVideo({
   const pulseScale = useSharedValue(1);
 
   useEffect(() => {
-    if (isRaised) {
+    if (isTruthy(isRaised)) {
       pulseScale.value = withRepeat(
         withSequence(withTiming(1.1, { duration: 500 }), withTiming(1, { duration: 500 })),
         -1,
@@ -97,7 +97,7 @@ function ParticipantVideo({
         isSpotlight ? 'col-span-full row-span-2' : ''
       )}
       role="article"
-      aria-label={`Participant ${participant.name}`}
+      aria-label={`Participant ${String(participant.name ?? '')}`}
     >
       {isVideoCall && participant.isVideoEnabled && stream ? (
         <video
@@ -105,7 +105,7 @@ function ParticipantVideo({
           autoPlay
           playsInline
           className="w-full h-full object-cover"
-          aria-label={`Video stream for ${participant.name}`}
+          aria-label={`Video stream for ${String(participant.name ?? '')}`}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
@@ -231,7 +231,7 @@ export default function GroupCallInterface({
   }, [totalParticipants]);
 
   useEffect(() => {
-    if (isActive) {
+    if (isTruthy(isActive)) {
       durationIntervalRef.current = setInterval(() => {
         setDuration((prev) => prev + 1);
       }, 1000);
@@ -394,7 +394,7 @@ export default function GroupCallInterface({
   }, [onInviteParticipants, session.call.id]);
 
   const statusIndicator = useMemo(() => {
-    if (isActive) {
+    if (isTruthy(isActive)) {
       return (
         <>
           <ActiveIndicator />
@@ -501,7 +501,7 @@ export default function GroupCallInterface({
                   size="icon"
                   variant="ghost"
                   className="rounded-full"
-                  aria-label={`Toggle layout: ${session.layout}`}
+                  aria-label={`Toggle layout: ${String(session.layout ?? '')}`}
                 >
                   {session.layout === 'grid' ? (
                     <GridFour size={20} weight="fill" aria-hidden="true" />

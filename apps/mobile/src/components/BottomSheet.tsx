@@ -37,7 +37,7 @@ export function BottomSheet({
   const modalAnimation = useModalAnimation({ isVisible: visible, duration: 250 })
 
   useEffect(() => {
-    if (visible) {
+    if (isTruthy(visible)) {
       translateY.value = withSpring(0, springConfig)
     } else {
       translateY.value = withSpring(height, springConfig)

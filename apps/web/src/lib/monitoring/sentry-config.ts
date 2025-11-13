@@ -65,7 +65,7 @@ class SentryConfigImpl {
 
   captureException(error: Error, context?: Record<string, unknown>): void {
     Sentry.withScope((scope: Sentry.Scope) => {
-      if (context) {
+      if (isTruthy(context)) {
         Object.entries(context).forEach(([key, value]) => {
           scope.setTag(key, String(value));
         });
@@ -80,7 +80,7 @@ class SentryConfigImpl {
     context?: Record<string, unknown>
   ): void {
     Sentry.withScope((scope: Sentry.Scope) => {
-      if (context) {
+      if (isTruthy(context)) {
         Object.entries(context).forEach(([key, value]) => {
           scope.setContext(key, value as Record<string, unknown>);
         });

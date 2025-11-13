@@ -76,12 +76,12 @@ export function VirtualList<T>({
   return (
     <div
       ref={containerRef}
-      className={`overflow-y-auto ${containerClassName}`}
+      className={`overflow-y-auto ${String(containerClassName ?? '')}`}
       style={{ contain: 'strict' }}
     >
       <div
         style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
+          height: `${String(rowVirtualizer.getTotalSize() ?? '')}px`,
           width: '100%',
           position: 'relative',
         }}
@@ -99,7 +99,7 @@ export function VirtualList<T>({
                 top: 0,
                 left: 0,
                 width: '100%',
-                transform: `translateY(${virtualItem.start}px)`,
+                transform: `translateY(${String(virtualItem.start ?? '')}px)`,
               }}
               data-index={virtualItem.index}
             >

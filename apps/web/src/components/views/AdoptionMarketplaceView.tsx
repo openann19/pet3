@@ -21,6 +21,32 @@ type ViewTab = 'browse' | 'my-listings' | 'my-applications';
 
 import { useAdoptionMarketplace } from '@/hooks/adoption/use-adoption-marketplace';
 
+// List item component with animation
+function AdoptionListingItem({ 
+  listing, 
+  index, 
+  onSelect 
+}: { 
+  listing: AdoptionListing
+  index: number
+  onSelect: () => void 
+}) {
+  const itemAnimation = useEntryAnimation({ 
+    initialY: 20, 
+    initialOpacity: 0,
+    delay: index * 50 
+  })
+  
+  return (
+    <AnimatedView style={itemAnimation.animatedStyle}>
+      <AdoptionListingCard
+        listing={listing}
+        onSelect={onSelect}
+      />
+    </AnimatedView>
+  )
+}
+
 export default function AdoptionMarketplaceView() {
   const [activeTab, setActiveTab] = useState<ViewTab>('browse');
   const [showFilters, setShowFilters] = useState(false);
@@ -63,6 +89,16 @@ export default function AdoptionMarketplaceView() {
     haptics.impact('light');
     setShowFilters(!showFilters);
   };
+
+  // Empty state animation
+  const emptyStateAnimation = useEntryAnimation({ 
+    initialY: 20, 
+    initialOpacity: 0,
+    delay: 0 
+  })
+
+  // List presence hook
+  const listPresence = useAnimatePresence(filteredListings.length > 0 && !loading)
 
   return (
     <PageTransitionWrapper key="adoption-marketplace-view" direction="up">

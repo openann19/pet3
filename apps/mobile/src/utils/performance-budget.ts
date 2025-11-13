@@ -6,6 +6,7 @@
 
 import { createLogger } from './logger'
 import { telemetry } from './telemetry'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('performance-budget')
 
@@ -211,7 +212,7 @@ export function createFrameRateMonitor(onJankDetected?: (frameTimeMs: number) =>
 
   return {
     start: (): void => {
-      if (isRunning) {
+      if (isTruthy(isRunning)) {
         return
       }
       isRunning = true

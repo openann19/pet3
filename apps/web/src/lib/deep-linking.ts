@@ -171,7 +171,7 @@ class DeepLinkManager {
             }
           }
 
-          if (matches) {
+          if (isTruthy(matches)) {
             return {
               path: routePath,
               params: { ...extractedParams, ...params },
@@ -199,7 +199,7 @@ class DeepLinkManager {
   async handleRoute(route: DeepLinkRoute): Promise<void> {
     const handler = this.config.routes.get(route.path);
 
-    if (handler) {
+    if (isTruthy(handler)) {
       try {
         await handler(route);
         logger.info('Deep link handled', { path: route.path, appState: this.appState });

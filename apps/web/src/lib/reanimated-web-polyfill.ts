@@ -126,7 +126,7 @@ export function withDecay(config: WithDecayConfig): number {
   let finalValue = velocity * (1 - deceleration);
 
   // Apply clamp if provided
-  if (clamp) {
+  if (isTruthy(clamp)) {
     const [min, max] = clamp;
     finalValue = Math.max(min, Math.min(max, finalValue));
   }
@@ -241,7 +241,7 @@ export function useAnimatedStyle<T extends CSSProperties>(
           const value = t[key];
 
           if (key === 'translateX' || key === 'translateY') {
-            return `${key}(${value}px)`;
+            return `${String(key ?? '')}(${String(value ?? '')}px)`;
           } else if (key === 'scale' || key === 'scaleX' || key === 'scaleY') {
             return `${key}(${value})`;
           } else if (
@@ -252,7 +252,7 @@ export function useAnimatedStyle<T extends CSSProperties>(
           ) {
             return `${key}(${value}deg)`;
           }
-          return `${key}(${value})`;
+          return `${String(key ?? '')}(${String(value ?? '')})`;
         })
         .join(' ');
 
@@ -337,7 +337,7 @@ export function cancelAnimation(_sharedValue: SharedValue<unknown>): void {
 }
 
 // Clock (no-op for web, not needed)
-export function useClock(): SharedValue<number> {
+export function useClock(): SharedValue {
   return useSharedValue(Date.now());
 }
 

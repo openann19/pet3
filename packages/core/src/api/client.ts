@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@/core/guards';
+
 /**
  * Unified API Client
  *
@@ -113,7 +115,7 @@ function normalizeError(
 }
 
 function generateCorrelationId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+  return `${String(Date.now() ?? '')}-${String(Math.random().toString(36).substring(2, 9) ?? '')}`
 }
 
 export class UnifiedAPIClient {
@@ -148,7 +150,7 @@ export class UnifiedAPIClient {
     }
 
     // If already refreshing, wait for that promise
-    if (this.refreshTokenPromise) {
+    if (isTruthy(this.refreshTokenPromise)) {
       return this.refreshTokenPromise
     }
 
@@ -174,7 +176,7 @@ export class UnifiedAPIClient {
     attempt = 0
   ): Promise<Response> {
     const headers = new Headers(this.config.defaultHeaders)
-    if (options.headers) {
+    if (isTruthy(options.headers)) {
       Object.entries(options.headers).forEach(([key, value]) => {
         headers.set(key, String(value))
       })

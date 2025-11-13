@@ -18,6 +18,7 @@ import {
   type WithSpringConfig,
 } from 'react-native-reanimated'
 import { createLogger } from '../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('usePullToRefresh')
 
@@ -108,7 +109,7 @@ export function usePullToRefresh(
 
     return () => {
       mounted = false
-      if (removeListener) {
+      if (isTruthy(removeListener)) {
         if (typeof removeListener === 'function') {
           removeListener()
         } else if ('remove' in removeListener) {
@@ -127,7 +128,7 @@ export function usePullToRefresh(
   const animateTo = useCallback(
     (y: number) => {
       // Respect reduced motion: shorter timing instead of spring
-      if (reducedMotionSV.value) {
+      if (isTruthy(reducedMotionSV.value)) {
         translateY.value = withTiming(y, { duration: 120 })
       } else {
         translateY.value = withSpring(y, springConfig)
@@ -160,7 +161,7 @@ export function usePullToRefresh(
   useDerivedValue(() => {
     const p = Math.min(1, Math.max(0, translateY.value / threshold))
     progress.value = p
-    if (onPullProgressRef.current) {
+    if (isTruthy(onPullProgressRef.current)) {
       // Bounce to JS sparingly when it changes perceptibly (>2% change)
       const diff = Math.abs(p - lastProgressSV.value)
       if (p === 0 || p === 1 || diff > 0.02) {
@@ -204,7 +205,7 @@ export function usePullToRefresh(
         }
       })
       .onEnd(() => {
-        if (isRefreshingSV.value) return
+        if (isTruthy(isRefreshingSV.value)) return
         if (translateY.value >= threshold) {
           // Snap to threshold and kick off refresh
           animateTo(threshold)

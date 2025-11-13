@@ -153,7 +153,7 @@ export function checkBadgeEligibility(
   const badges: TrustBadge[] = [];
   const now = Date.now();
 
-  if (metrics.isVerified) {
+  if (isTruthy(metrics.isVerified)) {
     badges.push({
       id: generateULID(),
       type: 'verified',
@@ -164,7 +164,7 @@ export function checkBadgeEligibility(
     });
   }
 
-  if (metrics.hasVaccinations) {
+  if (isTruthy(metrics.hasVaccinations)) {
     badges.push({
       id: generateULID(),
       type: 'health-certified',

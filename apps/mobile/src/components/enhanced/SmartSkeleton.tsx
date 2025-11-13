@@ -8,6 +8,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '../../effects/chat/core/reduced-motion'
+import { isTruthy } from '@petspark/shared';
 
 export interface SmartSkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'card' | 'avatar' | 'post'
@@ -71,10 +72,10 @@ export function SmartSkeleton({
       overflow: 'hidden',
     }
 
-    if (width) {
+    if (isTruthy(width)) {
       base.width = typeof width === 'number' ? width : undefined
     }
-    if (height) {
+    if (isTruthy(height)) {
       base.height = typeof height === 'number' ? height : undefined
     }
 
@@ -95,7 +96,7 @@ export function SmartSkeleton({
                 borderRadius: size / 2,
               },
             ]}
-            testID={`${testID}-circular`}
+            testID={`${String(testID ?? '')}-circular`}
           >
             {animate && (
               <AnimatedShimmer
@@ -126,7 +127,7 @@ export function SmartSkeleton({
                 borderRadius: 8,
               },
             ]}
-            testID={`${testID}-rectangular`}
+            testID={`${String(testID ?? '')}-rectangular`}
           >
             {animate && (
               <AnimatedShimmer
@@ -146,7 +147,7 @@ export function SmartSkeleton({
 
       case 'card': {
         return (
-          <View style={[baseStyle, styles.card]} testID={`${testID}-card`}>
+          <View style={[baseStyle, styles.card]} testID={`${String(testID ?? '')}-card`}>
             {animate && (
               <AnimatedShimmer
                 style={[
@@ -174,7 +175,7 @@ export function SmartSkeleton({
 
       case 'avatar': {
         return (
-          <View style={styles.avatarContainer} testID={`${testID}-avatar`}>
+          <View style={styles.avatarContainer} testID={`${String(testID ?? '')}-avatar`}>
             <View style={[baseStyle, styles.avatarCircle]}>
               {animate && (
                 <AnimatedShimmer
@@ -225,7 +226,7 @@ export function SmartSkeleton({
 
       case 'post': {
         return (
-          <View style={[baseStyle, styles.post]} testID={`${testID}-post`}>
+          <View style={[baseStyle, styles.post]} testID={`${String(testID ?? '')}-post`}>
             {animate && (
               <AnimatedShimmer
                 style={[
@@ -272,7 +273,7 @@ export function SmartSkeleton({
                 borderRadius: 4,
               },
             ]}
-            testID={`${testID}-text`}
+            testID={`${String(testID ?? '')}-text`}
           >
             {animate && (
               <AnimatedShimmer
@@ -319,7 +320,7 @@ export function PostSkeleton({
   return (
     <View style={styles.postContainer} testID={testID}>
       {Array.from({ length: count }).map((_, i) => (
-        <SmartSkeleton key={i} variant="post" testID={`${testID}-${i}`} />
+        <SmartSkeleton key={i} variant="post" testID={`${String(testID ?? '')}-${String(i ?? '')}`} />
       ))}
     </View>
   )
@@ -337,7 +338,7 @@ export function CardGridSkeleton({
   return (
     <View style={styles.gridContainer} testID={testID}>
       {Array.from({ length: count }).map((_, i) => (
-        <SmartSkeleton key={i} variant="card" testID={`${testID}-${i}`} />
+        <SmartSkeleton key={i} variant="card" testID={`${String(testID ?? '')}-${String(i ?? '')}`} />
       ))}
     </View>
   )
@@ -355,7 +356,7 @@ export function ListSkeleton({
   return (
     <View style={styles.listContainer} testID={testID}>
       {Array.from({ length: count }).map((_, i) => (
-        <SmartSkeleton key={i} variant="avatar" testID={`${testID}-${i}`} />
+        <SmartSkeleton key={i} variant="avatar" testID={`${String(testID ?? '')}-${String(i ?? '')}`} />
       ))}
     </View>
   )

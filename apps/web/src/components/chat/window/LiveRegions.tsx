@@ -178,7 +178,7 @@ export function LiveRegions({ children, className }: LiveRegionsProps): JSX.Elem
         return;
       }
 
-      if (e.shiftKey) {
+      if (isTruthy(e.shiftKey)) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
           lastElement?.focus();

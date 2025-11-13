@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@mobile/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedView = Animated.View
@@ -119,7 +120,7 @@ function DialogContent({
   const y = useSharedValue(20)
 
   useEffect(() => {
-    if (visible) {
+    if (isTruthy(visible)) {
       opacity.value = withTiming(1, {
         duration: reducedMotion ? MOTION_DURATIONS.fast : MOTION_DURATIONS.smooth,
       })
@@ -146,7 +147,7 @@ function DialogContent({
   })
 
   const handleClose = useCallback((): void => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
     onClose()
@@ -216,7 +217,7 @@ export function Dialog({
   }, [reducedMotionSV])
 
   const handleClose = useCallback((): void => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
     onClose()

@@ -3,8 +3,9 @@
  * Elements follow cursor with smooth spring physics and magnetic attraction
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import { useState, useCallback } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseMagneticHoverOptions {
   strength?: number;
@@ -65,7 +66,7 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
   );
 
   const handleRef = useCallback((element: HTMLElement | null) => {
-    if (element) {
+    if (isTruthy(element)) {
       setElementRect(element.getBoundingClientRect());
     }
   }, []);

@@ -10,7 +10,7 @@ import {
   withSequence,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useCallback, useState } from 'react';
 import { makeRng } from '@petspark/shared';
 
@@ -140,7 +140,7 @@ export function useConfettiBurst(options: UseConfettiBurstOptions = {}): UseConf
           transform: [
             { translateX: x },
             { translateY: y },
-            { rotate: `${rotation}deg` },
+            { rotate: `${String(rotation ?? '')}deg` },
             { scale },
           ],
           opacity,

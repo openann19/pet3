@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
+import { useSharedValue, withSpring, useAnimatedStyle } from '@petspark/motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { imagePrefetcher } from '@/lib/image-prefetcher';
 import { useNativeSwipe } from '@/hooks/use-native-swipe';
@@ -174,7 +174,7 @@ export function CardStack<T extends CardData>({
 
         return (
           <div
-            key={`${pooled.card.id}-${pooled.index}`}
+            key={`${String(pooled.card.id ?? '')}-${String(pooled.index ?? '')}`}
             className="absolute inset-0"
             style={{
               zIndex: pooled.zIndex,
@@ -367,14 +367,14 @@ function SwipeableCard<T extends CardData>({
 
         <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 px-4 pointer-events-auto">
           <button
-            onClick={() => onButtonSwipe('left')}
+            onClick={() => { onButtonSwipe('left'); }}
             className="w-14 h-14 rounded-full bg-gray-600 flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
             aria-label="Pass"
           >
             ✕
           </button>
           <button
-            onClick={() => onButtonSwipe('right')}
+            onClick={() => { onButtonSwipe('right'); }}
             className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
             aria-label="Like"
           >

@@ -8,6 +8,7 @@
 import { Project, Node } from 'ts-morph'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import logger from '@/core/logger';
 
 const WEB_DIR = 'apps/web/src/components/chat/window'
 const MOB_DIR = 'apps/mobile/src/components/chat/window'
@@ -15,12 +16,12 @@ const MOB_DIR = 'apps/mobile/src/components/chat/window'
 const project = new Project({ skipAddingFilesFromTsConfig: true })
 
 if (!fs.existsSync(WEB_DIR)) {
-  console.error(`❌ Web directory not found: ${WEB_DIR}`)
+  logger.error(`❌ Web directory not found: ${String(WEB_DIR ?? '')}`)
   process.exit(1)
 }
 
 if (!fs.existsSync(MOB_DIR)) {
-  console.error(`❌ Mobile directory not found: ${MOB_DIR}`)
+  logger.error(`❌ Mobile directory not found: ${String(MOB_DIR ?? '')}`)
   process.exit(1)
 }
 
@@ -32,10 +33,10 @@ let failed = false
 
 for (const f of webFiles) {
   const base = f.replace(/\.tsx$/, '')
-  const nativePath = path.join(MOB_DIR, `${base}.native.tsx`)
+  const nativePath = path.join(MOB_DIR, `${String(base ?? '')}.native.tsx`)
 
   if (!fs.existsSync(nativePath)) {
-    console.error(`❌ Missing mobile: ${nativePath}`)
+    logger.error(`❌ Missing mobile: ${String(nativePath ?? '')}`)
     failed = true
     continue
   }
@@ -72,16 +73,16 @@ for (const f of webFiles) {
         decls.some(d => {
           const text = d.getText()
           return (
-            text.includes(`export default ${name}`) ||
-            text.includes(`export { ${name} }`) ||
-            text.includes(`export function ${name}`) ||
-            text.includes(`export class ${name}`)
+            text.includes(`export default ${String(name ?? '')}`) ||
+            text.includes(`export { ${String(name ?? '')} }`) ||
+            text.includes(`export function ${String(name ?? '')}`) ||
+            text.includes(`export class ${String(name ?? '')}`)
           )
         })
       )
 
       if (!hasExport && name !== base) {
-        console.error(`❌ Mismatch export name: ${base} expected default ${name}`)
+        logger.error(`❌ Mismatch export name: ${String(base ?? '')} expected default ${String(name ?? '')}`)
         failed = true
       }
     }
@@ -93,9 +94,9 @@ for (const f of webFiles) {
 }
 
 if (failed) {
-  console.error('----')
-  console.error('Mobile parity check failed. Create corresponding .native.tsx implementations.')
+  logger.error('----')
+  logger.error('Mobile parity check failed. Create corresponding .native.tsx implementations.')
   process.exit(1)
 } else {
-  console.log('✅ Mobile parity OK')
+  logger.info('✅ Mobile parity OK')
 }

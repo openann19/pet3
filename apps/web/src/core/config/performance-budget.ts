@@ -89,7 +89,7 @@ export class PerformanceBudget {
       if (size > budget.chunk) {
         violations.push({
           category: 'bundle',
-          metric: `chunk:${chunkName}`,
+          metric: `chunk:${String(chunkName ?? '')}`,
           actual: size,
           budget: budget.chunk,
           severity: 'warning',
@@ -103,7 +103,7 @@ export class PerformanceBudget {
       if (size > budget.vendor) {
         violations.push({
           category: 'bundle',
-          metric: `vendor:${vendorName}`,
+          metric: `vendor:${String(vendorName ?? '')}`,
           actual: size,
           budget: budget.vendor,
           severity: 'warning',

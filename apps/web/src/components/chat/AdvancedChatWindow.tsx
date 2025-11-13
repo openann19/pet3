@@ -293,9 +293,9 @@ export default function AdvancedChatWindow({
         {/* Only render when seeds > 0 to avoid initial mount animations */}
         {burstSeed > 0 && (
           <ReactionBurstParticles
-            key={`burst-${burstSeed}`}
+            key={`burst-${String(burstSeed ?? '')}`}
             enabled={true}
-            seed={`reaction-${room.id}-${burstSeed}`}
+            seed={`reaction-${String(room.id ?? '')}-${String(burstSeed ?? '')}`}
             className="pointer-events-none fixed inset-0 z-50"
             onComplete={() => {
               // Effect completed, can reset seed after delay if needed
@@ -304,9 +304,9 @@ export default function AdvancedChatWindow({
         )}
         {confettiSeed > 0 && (
           <ConfettiBurst
-            key={`confetti-${confettiSeed}`}
+            key={`confetti-${String(confettiSeed ?? '')}`}
             enabled={true}
-            seed={`confetti-${room.id}-${confettiSeed}`}
+            seed={`confetti-${String(room.id ?? '')}-${String(confettiSeed ?? '')}`}
             className="pointer-events-none fixed inset-0 z-50"
             onComplete={() => {
               // Effect completed, can reset seed after delay if needed
@@ -333,7 +333,7 @@ export default function AdvancedChatWindow({
       {showSmartSuggestions && messageManagement.messages.length >= 0 && (
         <SmartSuggestionsPanel
           onSelect={inputHandling.handleSuggestionSelect}
-          onDismiss={() => setShowSmartSuggestions(false)}
+          onDismiss={() => { setShowSmartSuggestions(false); }}
         />
       )}
 
@@ -365,14 +365,14 @@ export default function AdvancedChatWindow({
               });
             } else {
               inputHandling.handleSuggestionSelect({
-                id: `template-${Date.now()}`,
+                id: `template-${String(Date.now() ?? '')}`,
                 text: template.text,
                 category: 'suggestion',
               });
             }
           } else {
             inputHandling.handleSuggestionSelect({
-              id: `template-${Date.now()}`,
+              id: `template-${String(Date.now() ?? '')}`,
               text: template.text,
               category: 'suggestion',
             });

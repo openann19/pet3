@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 /**
  * Frame Drop Counter
  *
@@ -42,7 +44,7 @@ export function trackFrame(): void {
   // Track memory usage (if available)
   if (typeof performance !== 'undefined' && 'memory' in performance) {
     const memory = (performance as { memory?: { usedJSHeapSize: number } }).memory
-    if (memory) {
+    if (isTruthy(memory)) {
       const usedMB = memory.usedJSHeapSize / (1024 * 1024)
       if (usedMB > metrics.memoryPeak) {
         metrics.memoryPeak = usedMB

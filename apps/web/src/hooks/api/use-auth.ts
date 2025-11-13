@@ -86,8 +86,7 @@ export function useLogout(): UseMutationResult<{ success: boolean }, unknown, vo
 export function useRefreshToken(): UseMutationResult<
   { accessToken: string; refreshToken: string },
   unknown,
-  string,
-  unknown
+  string
 > {
   return useMutation({
     mutationFn: (refreshToken: string) => authAPI.refreshToken(refreshToken),

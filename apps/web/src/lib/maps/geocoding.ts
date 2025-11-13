@@ -24,7 +24,7 @@ export interface GeocodingMetrics {
 let requestIdCounter = 0;
 
 function generateRequestId(): string {
-  return `geocoding_${Date.now()}_${++requestIdCounter}`;
+  return `geocoding_${String(Date.now() ?? '')}_${String(++requestIdCounter ?? '')}`;
 }
 
 export async function forwardGeocode(
@@ -49,7 +49,7 @@ export async function forwardGeocode(
       language,
       limit: '10',
       ...(proximity && {
-        proximity: `${proximity.lng},${proximity.lat}`,
+        proximity: `${String(proximity.lng ?? '')},${String(proximity.lat ?? '')}`,
       }),
     });
 
@@ -63,7 +63,7 @@ export async function forwardGeocode(
     });
 
     if (!response.ok) {
-      throw new Error(`Geocoding failed: ${response.statusText}`);
+      throw new Error(`Geocoding failed: ${String(response.statusText ?? '')}`);
     }
 
     const data = await response.json();
@@ -150,7 +150,7 @@ export async function reverseGeocode(
     });
 
     if (!response.ok) {
-      throw new Error(`Reverse geocoding failed: ${response.statusText}`);
+      throw new Error(`Reverse geocoding failed: ${String(response.statusText ?? '')}`);
     }
 
     const data = await response.json();
@@ -162,7 +162,7 @@ export async function reverseGeocode(
     }
 
     const result: GeocodingResult = {
-      id: feature.id || `place_${Date.now()}_${Math.random()}`,
+      id: feature.id || `place_${String(Date.now() ?? '')}_${String(Math.random() ?? '')}`,
       name: feature.place_name || 'Unknown location',
       address: feature.place_name || '',
       location: {
@@ -175,7 +175,7 @@ export async function reverseGeocode(
 
     const metrics: GeocodingMetrics = {
       requestId,
-      query: `${location.lat},${location.lng}`,
+      query: `${String(location.lat ?? '')},${String(location.lng ?? '')}`,
       latency,
       resultCount: 1,
     };
@@ -190,7 +190,7 @@ export async function reverseGeocode(
 
     const metrics: GeocodingMetrics = {
       requestId,
-      query: `${location.lat},${location.lng}`,
+      query: `${String(location.lat ?? '')},${String(location.lng ?? '')}`,
       latency,
       resultCount: 0,
       error: err.message,

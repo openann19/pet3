@@ -9,6 +9,7 @@ import * as Notifications from 'expo-notifications'
 import { useEffect, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 import { createLogger } from '../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('usePushNotifications')
 
@@ -61,10 +62,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     )
 
     return () => {
-      if (notificationListener.current) {
+      if (isTruthy(notificationListener.current)) {
         Notifications.removeNotificationSubscription(notificationListener.current)
       }
-      if (responseListener.current) {
+      if (isTruthy(responseListener.current)) {
         Notifications.removeNotificationSubscription(responseListener.current)
       }
     }

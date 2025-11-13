@@ -39,7 +39,7 @@ export interface UseOutboxReturn {
  * not cryptographic security or determinism
  */
 function generateIdempotencyKey(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
+  return `${String(Date.now() ?? '')}-${String(Math.random().toString(36).substring(2, 15) ?? '')}`
 }
 
 function calculateExponentialBackoff(
@@ -49,7 +49,7 @@ function calculateExponentialBackoff(
   jitter: boolean
 ): number {
   const exponentialDelay = Math.min(2 ** attempt * baseDelay, maxDelay)
-  if (jitter) {
+  if (isTruthy(jitter)) {
     const jitterAmount = exponentialDelay * 0.1 * Math.random()
     return Math.floor(exponentialDelay + jitterAmount)
   }
@@ -323,7 +323,7 @@ export function useOutbox(options: UseOutboxOptions): UseOutboxReturn {
         ]
       })
 
-      if (isOnlineRef.current) {
+      if (isTruthy(isOnlineRef.current)) {
         scheduleNext()
       }
     },
@@ -364,7 +364,7 @@ export function useOutbox(options: UseOutboxOptions): UseOutboxReturn {
       window.addEventListener('offline', handleOffline)
       isOnlineRef.current = navigator.onLine
 
-      if (isOnlineRef.current) {
+      if (isTruthy(isOnlineRef.current)) {
         scheduleNext()
       }
 

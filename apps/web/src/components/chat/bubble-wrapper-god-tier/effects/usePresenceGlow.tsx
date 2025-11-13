@@ -7,7 +7,7 @@ import {
   withSequence,
   withTiming,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -36,7 +36,7 @@ export function PresenceGlow({
     const glowOpacity = useSharedValue(0);
 
   useEffect(() => {
-    if (isActive) {
+    if (isTruthy(isActive)) {
       glowOpacity.value = withRepeat(
         withSequence(
           withTiming(intensity, {

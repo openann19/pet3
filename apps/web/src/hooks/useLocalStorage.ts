@@ -70,7 +70,7 @@ export function useLocalStorage<T>(
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => { window.removeEventListener('storage', handleStorageChange); };
   }, [key, syncAcrossTabs]);
 
   return [storedValue, setValue, removeValue];

@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { scriptLogger } from '../src/lib/script-logger';
+import { isTruthy } from '@petspark/shared'
 
 interface LengthBucket {
   key: string;
@@ -85,7 +86,7 @@ function generateCSV(buckets: LengthBucket[]): string {
       const enText = compBucket.enText || '';
       const bgText = compBucket.bgText || '';
       const ratio = compBucket.ratio || 0;
-      return `"${b.key}",${compBucket.enLength || 0},${compBucket.bgLength || 0},${b.length},"${b.bucket}","${b.status}","${enText.replace(/"/g, '""')}","${bgText.replace(/"/g, '""')}",${ratio.toFixed(2)}`;
+      return `"${String(b.key ?? '')}",${String((compBucket.enLength ?? 0) || 0)},${String((compBucket.bgLength ?? 0) || 0)},${String(b.length ?? '')},"${String(b.bucket ?? '')}","${String(b.status ?? '')}","${String(enText.replace(/"/g, '""') ?? '')}","${String(bgText.replace(/"/g, '""') ?? '')}",${String(ratio.toFixed(2) ?? '')}`;
     })
     .join('\n');
   return header + rows;
@@ -102,13 +103,13 @@ function generateReport(buckets: LengthBucket[]): string {
   const avgRatio = avgEnLength > 0 ? avgBgLength / avgEnLength : 0;
 
   let report = '# i18n Length Check Report\n\n';
-  report += `**Total strings checked:** ${buckets.length}\n\n`;
-  report += `**Average EN length:** ${avgEnLength.toFixed(1)} chars\n`;
-  report += `**Average BG length:** ${avgBgLength.toFixed(1)} chars\n`;
-  report += `**Average BG/EN ratio:** ${avgRatio.toFixed(2)}x\n\n`;
-  report += `- ✅ OK (≤60 chars): ${ok.length}\n`;
-  report += `- ⚠️  WARNING (61-120 chars): ${warnings.length}\n`;
-  report += `- 🚨 CRITICAL (>120 chars): ${critical.length}\n\n`;
+  report += `**Total strings checked:** ${String(buckets.length ?? '')}\n\n`;
+  report += `**Average EN length:** ${String(avgEnLength.toFixed(1) ?? '')} chars\n`;
+  report += `**Average BG length:** ${String(avgBgLength.toFixed(1) ?? '')} chars\n`;
+  report += `**Average BG/EN ratio:** ${String(avgRatio.toFixed(2) ?? '')}x\n\n`;
+  report += `- ✅ OK (≤60 chars): ${String(ok.length ?? '')}\n`;
+  report += `- ⚠️  WARNING (61-120 chars): ${String(warnings.length ?? '')}\n`;
+  report += `- 🚨 CRITICAL (>120 chars): ${String(critical.length ?? '')}\n\n`;
 
   if (critical.length > 0) {
     report += '## 🚨 Critical Issues (>120 characters)\n\n';
@@ -124,7 +125,7 @@ function generateReport(buckets: LengthBucket[]): string {
       report += `- **${b.key}** (${b.length} chars): ${b.text}\n`;
     });
     if (warnings.length > 10) {
-      report += `\n_...and ${warnings.length - 10} more warnings_\n`;
+      report += `\n_...and ${String(warnings.length - 10)} more warnings_\n`;
     }
     report += '\n';
   }
@@ -143,21 +144,10 @@ async function main(): Promise<void> {
       // Import the translations object dynamically
       const i18nModule: unknown = await import(i18nPath);
 
-      // Type guard for translations module
-      interface TranslationsModule {
-        translations?: {
-          en?: Record<string, unknown>;
-          bg?: Record<string, unknown>;
-        };
-      }
-
-      function isTranslationsModule(module: unknown): module is TranslationsModule {
-        return typeof module === 'object' && module !== null && 'translations' in module;
-      }
-
-      if (isTranslationsModule(i18nModule) && i18nModule.translations) {
-        enTranslations = i18nModule.translations.en ?? {};
-        bgTranslations = i18nModule.translations.bg ?? {};
+      const translations = safelyExtractTranslations(i18nModule);
+      if (translations) {
+        enTranslations = translations.en ?? {};
+        bgTranslations = translations.bg ?? {};
       } else {
         // Fallback: try to read and parse as JSON (if exported)
         const content = readFileSync(i18nPath, 'utf-8');
@@ -170,6 +160,10 @@ async function main(): Promise<void> {
           scriptLogger.warn(
             '⚠️  For accurate results, export translations as JSON or use tsx to run this script.'
           );
+          const enJson = JSON.parse(enMatch[1]);
+          const bgJson = JSON.parse(bgMatch[1]);
+          enTranslations = enJson;
+          bgTranslations = bgJson;
         }
       }
     } catch {
@@ -242,7 +236,7 @@ async function main(): Promise<void> {
     const csv = generateCSV(buckets);
     const csvPath = resolve(process.cwd(), 'i18n-length-report.csv');
     writeFileSync(csvPath, csv);
-    scriptLogger.writeLine(`✅ CSV report saved to: ${csvPath}`);
+    scriptLogger.writeLine(`✅ CSV report saved to: ${String(csvPath ?? '')}`);
 
     // Generate and display report
     const report = generateReport(buckets);
@@ -251,12 +245,12 @@ async function main(): Promise<void> {
     // Write report to file
     const reportPath = resolve(process.cwd(), 'i18n-length-report.md');
     writeFileSync(reportPath, report);
-    scriptLogger.writeLine(`✅ Markdown report saved to: ${reportPath}`);
+    scriptLogger.writeLine(`✅ Markdown report saved to: ${String(reportPath ?? '')}`);
 
     // Exit with error if critical issues found
     const critical = buckets.filter((b) => b.status === 'CRITICAL');
     if (critical.length > 0) {
-      scriptLogger.writeErrorLine(`\n❌ Found ${critical.length} critical length violations`);
+      scriptLogger.writeErrorLine(`\n❌ Found ${String(critical.length ?? '')} critical length violations`);
       process.exit(1);
     }
 

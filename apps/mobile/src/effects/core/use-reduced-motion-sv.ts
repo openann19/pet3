@@ -11,6 +11,7 @@ import { useEffect } from 'react'
 import { AccessibilityInfo, Platform } from 'react-native'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
 import { createLogger } from '../../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useReducedMotionSV')
 
@@ -55,7 +56,7 @@ export function useReducedMotionSV(): SharedValue<boolean> {
       const subscription = AccessibilityInfo.addEventListener?.(
         'reduceMotionChanged' as const,
         (enabled: boolean) => {
-          if (mounted) {
+          if (isTruthy(mounted)) {
             sv.value = enabled
           }
         }

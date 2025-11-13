@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 export interface ImageDimensions {
   width: number;
   height: number;
@@ -72,7 +74,7 @@ export async function optimizeImage(file: File, options: OptimizationOptions = {
             reject(new Error('Failed to create blob'));
           }
         },
-        `image/${format}`,
+        `image/${String(format ?? '')}`,
         quality
       );
     };
@@ -208,8 +210,8 @@ export function generatePlaceholderDataUrl(
   color = '#f0f0f0'
 ): string {
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-      <rect width="100%" height="100%" fill="${color}"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="${String(width ?? '')}" height="${String(height ?? '')}">
+      <rect width="100%" height="100%" fill="${String(color ?? '')}"/>
     </svg>
   `;
   return `data:image/svg+xml;base64,${btoa(svg)}`;

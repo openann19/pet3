@@ -5,6 +5,7 @@
 
 import { useRef, useEffect } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type SwipeDirection = 'up' | 'down' | 'left' | 'right';
 
@@ -93,7 +94,7 @@ export function useGestureSwipe<T extends HTMLElement = HTMLDivElement>(
       const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
       let direction: SwipeDirection;
 
-      if (isHorizontal) {
+      if (isTruthy(isHorizontal)) {
         direction = deltaX > 0 ? 'right' : 'left';
       } else {
         direction = deltaY > 0 ? 'down' : 'up';

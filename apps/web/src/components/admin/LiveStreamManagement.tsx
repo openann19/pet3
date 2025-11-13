@@ -169,11 +169,11 @@ export function LiveStreamManagement() {
                 {streams.map((stream) => (
                   <button
                     key={stream.id}
-                    onClick={() => setSelectedStream(stream)}
+                    onClick={() => { setSelectedStream(stream); }}
                     className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      selectedStream?.id === stream.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                      String(selectedStream?.id === stream.id
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border hover:border-primary/50' ?? '')
                     }`}
                   >
                     <div className="flex items-start gap-3">

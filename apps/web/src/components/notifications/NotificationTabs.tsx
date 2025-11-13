@@ -197,8 +197,8 @@ export function NotificationTabs({
 
   // a11y ids
   const baseId = useId();
-  const idForTab = (k: TabKey) => `${baseId}-tab-${k}`;
-  const idForPanel = (k: TabKey) => `${baseId}-panel-${k}`;
+  const idForTab = (k: TabKey) => `${String(baseId ?? '')}-tab-${String(k ?? '')}`;
+  const idForPanel = (k: TabKey) => `${String(baseId ?? '')}-panel-${String(k ?? '')}`;
 
   // Roving tabindex for keyboard
   const [focusIndex, setFocusIndex] = useState(() =>
@@ -272,8 +272,8 @@ export function NotificationTabs({
     const x = aRect.left - cRect.left + container.scrollLeft;
     const w = aRect.width;
 
-    indicatorRef.current.style.transform = `translateX(${x}px)`;
-    indicatorRef.current.style.width = `${w}px`;
+    indicatorRef.current.style.transform = `translateX(${String(x ?? '')}px)`;
+    indicatorRef.current.style.width = `${String(w ?? '')}px`;
   }, [selected]);
 
   useLayoutEffect(() => {
@@ -286,8 +286,8 @@ export function NotificationTabs({
     const ResizeObserverConstructor =
       typeof window !== 'undefined' && 'ResizeObserver' in window ? window.ResizeObserver : null;
     let ro: ResizeObserver | null = null;
-    if (ResizeObserverConstructor) {
-      ro = new ResizeObserverConstructor(() => updateIndicator());
+    if (isTruthy(ResizeObserverConstructor)) {
+      ro = new ResizeObserverConstructor(() => { updateIndicator(); });
       ro.observe(c);
     }
     const onScroll = () => updateIndicator();
@@ -300,8 +300,8 @@ export function NotificationTabs({
 
   // Swipe between tabs + down to close
   const shellRef = useRef<HTMLDivElement>(null);
-  const handleSwipeLeft = useCallback(() => step(1), [step]);
-  const handleSwipeRight = useCallback(() => step(-1), [step]);
+  const handleSwipeLeft = useCallback(() => { step(1); }, [step]);
+  const handleSwipeRight = useCallback(() => { step(-1); }, [step]);
   const handleSwipeDown = useCallback(() => onRequestClose?.(), [onRequestClose]);
   useSwipe(shellRef as React.RefObject<HTMLElement>, {
     onLeft: handleSwipeLeft,
@@ -353,12 +353,12 @@ export function NotificationTabs({
   useEffect(() => {
     const el = tablistRef.current;
     if (!el) return;
-    const calc = () => setOverflowing(el.scrollWidth > el.clientWidth + 2);
+    const calc = () => { setOverflowing(el.scrollWidth > el.clientWidth + 2); };
     calc();
     const ResizeObserverConstructor =
       typeof window !== 'undefined' && 'ResizeObserver' in window ? window.ResizeObserver : null;
     let ro: ResizeObserver | null = null;
-    if (ResizeObserverConstructor) {
+    if (isTruthy(ResizeObserverConstructor)) {
       ro = new ResizeObserverConstructor(calc);
       ro.observe(el);
     }
@@ -435,8 +435,8 @@ export function NotificationTabs({
                 aria-selected={selectedBool}
                 aria-controls={idForPanel(k)}
                 tabIndex={selectedBool ? 0 : -1}
-                onClick={() => activate(k)}
-                onKeyDown={(e) => onKeyDownTab(e, i)}
+                onClick={() => { activate(k); }}
+                onKeyDown={(e) => { onKeyDownTab(e, i); }}
                 className={cx(
                   'relative select-none whitespace-nowrap',
                   'px-3 h-10 min-w-11 min-h-11',

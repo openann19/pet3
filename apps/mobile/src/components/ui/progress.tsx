@@ -26,7 +26,7 @@ export function Progress({
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      width: `${progress.value}%`,
+      width: `${String(progress.value ?? '')}%`,
     }
   })
 

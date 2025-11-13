@@ -1,9 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { MotionView } from '@petspark/motion';
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
 import React from 'react';
 import type { ReactNode } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface EnhancedCardProps {
   children: ReactNode;
@@ -32,13 +33,13 @@ export default function EnhancedCard({
 
   // Hover animation
   const handleMouseEnter = React.useCallback(() => {
-    if (hover) {
+    if (isTruthy(hover)) {
       hoverY.value = withTiming(-4, { duration: 200 });
     }
   }, [hover]);
 
   const handleMouseLeave = React.useCallback(() => {
-    if (hover) {
+    if (isTruthy(hover)) {
       hoverY.value = withTiming(0, { duration: 200 });
     }
   }, [hover]);

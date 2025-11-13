@@ -88,7 +88,7 @@ export function Slider({
   }))
 
   const animatedTrackStyle = useAnimatedStyle(() => ({
-    width: `${thumbPosition.value}%`,
+    width: `${thumbPosition.value}%` as `${number}%`,
   }))
 
   return (

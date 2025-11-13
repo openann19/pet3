@@ -138,7 +138,7 @@ export function useConfettiBurst(options: UseConfettiBurstOptions = {}): UseConf
           transform: [
             { translateX: x },
             { translateY: y },
-            { rotate: `${rotation}deg` },
+            { rotate: `${String(rotation ?? '')}deg` },
             { scale },
           ],
           opacity,

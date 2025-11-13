@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { WifiHigh, WifiSlash } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export function OfflineIndicator(): JSX.Element | null {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -10,7 +11,7 @@ export function OfflineIndicator(): JSX.Element | null {
   useEffect(() => {
     const handleOnline = (): void => {
       setIsOnline(true);
-      if (wasOffline) {
+      if (isTruthy(wasOffline)) {
         setShowReconnected(true);
         setTimeout(() => {
           setShowReconnected(false);

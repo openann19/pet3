@@ -7,7 +7,7 @@ import {
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
@@ -113,7 +113,7 @@ export function MapLocationPicker({
   }, [selectedLat, selectedLon, fetchAddress]);
 
   const handleUseCurrentLocation = useCallback((): void => {
-    if (navigator.geolocation) {
+    if (isTruthy(navigator.geolocation)) {
       navigator.geolocation.getCurrentPosition(
         (position): void => {
           setSelectedLat(position.coords.latitude);

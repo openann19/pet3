@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 export interface SearchOptions<T> {
   keys: (keyof T)[];
   threshold?: number;

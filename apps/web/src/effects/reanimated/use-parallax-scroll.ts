@@ -3,7 +3,7 @@
  * Depth-based parallax scrolling with multiple layers
  */
 
-import { useSharedValue, useAnimatedStyle, interpolate } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, interpolate } from '@petspark/motion';
 import { useCallback, useEffect } from 'react';
 
 export interface UseParallaxScrollOptions {
@@ -29,7 +29,7 @@ export function useParallaxScroll(options: UseParallaxScrollOptions = {}) {
     if (!enabled) return;
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); };
   }, [enabled, handleScroll]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -62,7 +62,7 @@ export function useParallaxLayers(layerCount = 3) {
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); };
   }, [handleScroll]);
 
   const createLayerStyle = useCallback(

@@ -64,7 +64,7 @@ export function TrustBadges({ badges, compact = false, showLabels = false }: Tru
           const Icon = badgeIcons[badge.type];
           const colorClass = badgeColors[badge.type];
 
-          if (showLabels) {
+          if (isTruthy(showLabels)) {
             return (
               <Tooltip key={badge.id}>
                 <TooltipTrigger asChild>

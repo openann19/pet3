@@ -19,7 +19,7 @@ import {
   withSequence,
   Easing,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { adaptiveAnimationConfigs } from '../../core/adaptive-animation-config';
@@ -77,7 +77,7 @@ export function useScrollFabMagnetic(
       const baseDuration = getReducedMotionDuration(ENTRY_DURATION, reducedMotion.value);
       const duration = scaleDuration(baseDuration);
 
-      if (reducedMotion.value) {
+      if (isTruthy(reducedMotion.value)) {
         scale.value = withTiming(1, {
           duration,
           easing: Easing.linear,

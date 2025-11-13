@@ -291,7 +291,7 @@ export class EnhancedNotificationService {
         createdAt: notification.createdAt,
       });
 
-      if (user.preferences.notifications.push) {
+      if (isTruthy(user.preferences.notifications.push)) {
         const notificationData = {
           id: notification.id,
           title: notification.title,
@@ -358,7 +358,7 @@ export class EnhancedNotificationService {
         : `You have ${notifications.length} new notifications`;
 
     return {
-      id: `digest-${userId}-${Date.now()}`,
+      id: `digest-${String(userId ?? '')}-${String(Date.now() ?? '')}`,
       userId,
       type: 'like_received',
       title: 'Notifications Summary',

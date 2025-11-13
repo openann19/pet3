@@ -44,17 +44,17 @@ export const useUserStore = create<UserStore>()(
       user: null,
       isAuthenticated: false,
       setUser: (user: User) =>
-        set({
+        { set({
           user,
           isAuthenticated: true,
-        }),
+        }); },
       clearUser: () =>
-        set({
+        { set({
           user: null,
           isAuthenticated: false,
-        }),
+        }); },
       addPet: (pet: PetProfile) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -62,9 +62,9 @@ export const useUserStore = create<UserStore>()(
               pets: [...state.user.pets, pet],
             },
           }
-        }),
+        }); },
       updatePet: (petId: string, updates: Partial<PetProfile>) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -74,9 +74,9 @@ export const useUserStore = create<UserStore>()(
               ),
             },
           }
-        }),
+        }); },
       removePet: (petId: string) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -84,9 +84,9 @@ export const useUserStore = create<UserStore>()(
               pets: state.user.pets.filter((p: PetProfile) => p.id !== petId),
             },
           }
-        }),
+        }); },
       addMatch: (match: Match) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -94,9 +94,9 @@ export const useUserStore = create<UserStore>()(
               matches: [...state.user.matches, match],
             },
           }
-        }),
+        }); },
       updateMatch: (matchId: string, updates: Partial<Match>) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -106,9 +106,9 @@ export const useUserStore = create<UserStore>()(
               ),
             },
           }
-        }),
+        }); },
       removeMatch: (matchId: string) =>
-        set((state: UserStore) => {
+        { set((state: UserStore) => {
           if (!state.user) return state
           return {
             user: {
@@ -116,7 +116,7 @@ export const useUserStore = create<UserStore>()(
               matches: state.user.matches.filter((m: Match) => m.id !== matchId),
             },
           }
-        }),
+        }); },
     })) as StateCreator<UserStore>,
     {
       name: 'user-storage',

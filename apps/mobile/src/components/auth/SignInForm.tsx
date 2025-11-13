@@ -129,7 +129,7 @@ export default function SignInForm({
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1500))
-      const mockToken = `mock_token_${Date.now()}`
+      const mockToken = `mock_token_${String(Date.now() ?? '')}`
       await setAuthToken(mockToken)
       await setUserEmail(email)
       await setIsAuthenticated(true)

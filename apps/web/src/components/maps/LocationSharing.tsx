@@ -16,6 +16,7 @@ import { openInMaps } from '@/lib/maps/deep-links';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface LocationBubbleProps {
   location: Location;
@@ -39,7 +40,7 @@ export function LocationBubble({
 
   const handleTap = (): void => {
     haptics.trigger('light');
-    if (onTap) {
+    if (isTruthy(onTap)) {
       onTap();
     } else {
       setShowFullMap(true);
@@ -179,7 +180,7 @@ export function LocationPicker({
 
   const handleMapClick = (location: Location): void => {
     haptics.trigger('light');
-    if (sharingPrecise) {
+    if (isTruthy(sharingPrecise)) {
       setSelectedLocation(location);
     } else {
       const coarse = snapToGrid(location, mapSettings.PRIVACY_GRID_METERS);

@@ -13,6 +13,7 @@ import { useCallback, useEffect } from 'react'
 import * as Haptics from 'expo-haptics'
 import { springConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseNavButtonAnimationOptions {
   isActive?: boolean
@@ -60,9 +61,9 @@ export function useNavButtonAnimation(
   const indicatorWidth = useSharedValue(0)
 
   useEffect(() => {
-    if (isActive) {
+    if (isTruthy(isActive)) {
       // Active state animations
-      if (enablePulse) {
+      if (isTruthy(enablePulse)) {
         iconScale.value = withRepeat(
           withSequence(
             withSpring(pulseScale, springConfigs.bouncy),
@@ -75,7 +76,7 @@ export function useNavButtonAnimation(
         iconScale.value = withSpring(1.1, springConfigs.smooth)
       }
 
-      if (enableRotation) {
+      if (isTruthy(enableRotation)) {
         iconRotation.value = withRepeat(
           withTiming(rotationAmplitude, {
             duration: 1200,
@@ -108,7 +109,7 @@ export function useNavButtonAnimation(
   ])
 
   const handlePress = useCallback(() => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
 
@@ -130,7 +131,7 @@ export function useNavButtonAnimation(
   }, [hapticFeedback, scale, translateY])
 
   const handlePressIn = useCallback(() => {
-    if (isActive) return
+    if (isTruthy(isActive)) return
 
     scale.value = withSpring(1.08, springConfigs.smooth)
     translateY.value = withSpring(-3, springConfigs.smooth)
@@ -141,7 +142,7 @@ export function useNavButtonAnimation(
   }, [isActive, scale, translateY, rotation])
 
   const handlePressOut = useCallback(() => {
-    if (isActive) return
+    if (isTruthy(isActive)) return
 
     scale.value = withSpring(1, springConfigs.smooth)
     translateY.value = withSpring(0, springConfigs.smooth)

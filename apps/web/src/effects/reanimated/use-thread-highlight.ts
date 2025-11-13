@@ -8,7 +8,7 @@ import {
   withSequence,
   withDelay,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect, useCallback } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 
@@ -38,7 +38,7 @@ const DEFAULT_ENABLED = true;
 
 export function useThreadHighlight(
   options: UseThreadHighlightOptions = {}
-): UseThreadHighlightReturn {
+): UseThreadHighlightWebReturn {
   const {
     isThreadMessage = DEFAULT_IS_THREAD_MESSAGE,
     highlightDuration = DEFAULT_HIGHLIGHT_DURATION,
@@ -127,13 +127,7 @@ export function useThreadHighlight(
   });
 
   return {
-    scale,
-    highlightOpacity,
-    previewOpacity,
-    previewTranslateY,
-    animatedStyle,
-    previewStyle,
-    highlightStyle,
+    ...baseResult,
     trigger,
     dismiss,
   };

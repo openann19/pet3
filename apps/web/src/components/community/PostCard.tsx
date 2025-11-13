@@ -7,7 +7,7 @@ import {
   withSpring,
   withTiming,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { communityAPI } from '@/api/community-api';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -142,7 +142,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
   const likeScale = useSharedValue(1);
 
   useEffect(() => {
-    if (isLiked) {
+    if (isTruthy(isLiked)) {
       likeScale.value = withSequence(
         withSpring(1.3, springConfigs.bouncy),
         withSpring(1, springConfigs.smooth)
@@ -342,7 +342,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
   const allMedia = (post.media ?? []).map((item, index) => {
     if (typeof item === 'string') {
       return {
-        id: `media-${index}`,
+        id: `media-${String(index ?? '')}`,
         url: item,
         thumbnail: item,
         type: 'photo' as const,
@@ -350,7 +350,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
     } else {
       // It's already a PostMedia object
       const mediaItem: MediaItem = {
-        id: item.id || `media-${index}`,
+        id: item.id || `media-${String(index ?? '')}`,
         url: item.url,
         thumbnail: item.thumbnail ?? item.url,
         type: item.type,

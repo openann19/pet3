@@ -174,7 +174,7 @@ function Sidebar({
     );
   }
 
-  if (isMobile) {
+  if (isTruthy(isMobile)) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent

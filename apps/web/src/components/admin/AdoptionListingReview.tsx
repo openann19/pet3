@@ -198,7 +198,7 @@ export function AdoptionListingReview() {
                       key={listing.id}
                       listing={listing}
                       isSelected={selectedListing?.id === listing.id}
-                      onSelect={() => setSelectedListing(listing)}
+                      onSelect={() => { setSelectedListing(listing); }}
                     />
                   ))
                 )}
@@ -240,7 +240,7 @@ export function AdoptionListingReview() {
                         <img
                           key={index}
                           src={photo}
-                          alt={`${selectedListing.petName} ${index + 1}`}
+                          alt={`${String(selectedListing.petName ?? '')} ${String(index + 1 ?? '')}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}
@@ -350,7 +350,7 @@ export function AdoptionListingReview() {
                       <label className="text-sm font-medium">Rejection Reason (if rejecting)</label>
                       <Textarea
                         value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
+                        onChange={(e) => { setRejectionReason(e.target.value); }}
                         placeholder="Explain why this listing is being rejected..."
                         rows={3}
                       />

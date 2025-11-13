@@ -61,15 +61,15 @@ function AdoptionProfileCard({
       style={animation.itemStyle}
       className="relative"
       role="article"
-      aria-label={`Adoption profile for ${profile.petName}`}
+      aria-label={`Adoption profile for ${String(profile.petName ?? '')}`}
     >
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         {isHidden ? (
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => onUnhide(profile._id)}
-            aria-label={`Unhide ${profile.petName}`}
+            onClick={() => { onUnhide(profile._id); }}
+            aria-label={`Unhide ${String(profile.petName ?? '')}`}
           >
             <Eye size={16} className="mr-2" aria-hidden="true" />
             Unhide
@@ -78,8 +78,8 @@ function AdoptionProfileCard({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onHide(profile._id)}
-            aria-label={`Hide ${profile.petName}`}
+            onClick={() => { onHide(profile._id); }}
+            aria-label={`Hide ${String(profile.petName ?? '')}`}
           >
             <EyeSlash size={16} className="mr-2" aria-hidden="true" />
             Hide
@@ -88,8 +88,8 @@ function AdoptionProfileCard({
         <Button
           size="sm"
           variant="destructive"
-          onClick={() => onDelete(profile)}
-          aria-label={`Delete ${profile.petName}`}
+          onClick={() => { onDelete(profile); }}
+          aria-label={`Delete ${String(profile.petName ?? '')}`}
         >
           <Trash size={16} className="mr-2" aria-hidden="true" />
           Delete
@@ -326,13 +326,13 @@ export default function AdoptionManagement(): JSX.Element {
                   id="adoption-search"
                   placeholder="Search by name, breed, or organization..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); }}
                   className="pl-10"
                   aria-label="Search adoption profiles"
                 />
               </div>
             </div>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabValue); }}>
               <TabsList role="tablist" aria-label="Filter adoption profiles">
                 <TabsTrigger value="all" role="tab" aria-selected={activeTab === 'all'}>
                   All

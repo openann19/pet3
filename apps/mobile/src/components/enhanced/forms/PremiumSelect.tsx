@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 
@@ -80,9 +81,9 @@ export function PremiumSelect({
     : options
 
   const handleOpen = useCallback(() => {
-    if (disabled) return
+    if (isTruthy(disabled)) return
     setIsOpen(true)
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       modalOpacity.value = withTiming(1, { duration: 200 })
       contentScale.value = withTiming(1, { duration: 200 })
     } else {
@@ -118,7 +119,7 @@ export function PremiumSelect({
 
   const displayValue = multiSelect
     ? selectedValues.length > 0
-      ? `${selectedValues.length} selected`
+      ? `${String(selectedValues.length ?? '')} selected`
       : placeholder
     : options.find(opt => opt.value === value)?.label || placeholder
 
@@ -167,7 +168,7 @@ export function PremiumSelect({
         <Text
           style={[
             styles.triggerText,
-            sizeStyles[size],
+            textSizeStyles[size],
             displayValue === placeholder && styles.placeholder,
           ]}
         >
@@ -209,7 +210,7 @@ export function PremiumSelect({
                   return (
                     <Pressable
                       key={option.value}
-                      onPress={() => handleSelect(option.value)}
+                      onPress={() => { handleSelect(option.value); }}
                       disabled={option.disabled}
                       style={({ pressed }) => [
                         styles.option,

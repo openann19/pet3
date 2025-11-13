@@ -148,7 +148,7 @@ export default function SaveToHighlightDialog({
                 <Input
                   id="new-highlight-title"
                   value={newHighlightTitle}
-                  onChange={(e) => setNewHighlightTitle(e.target.value)}
+                  onChange={(e) => { setNewHighlightTitle(e.target.value); }}
                   placeholder="e.g., Summer Adventures, Best Moments"
                   maxLength={30}
                   autoFocus
@@ -255,7 +255,7 @@ export default function SaveToHighlightDialog({
             <>
               <Button
                 variant="outline"
-                onClick={() => setShowNewHighlight(true)}
+                onClick={() => { setShowNewHighlight(true); }}
                 className="flex-1"
               >
                 <Plus size={18} weight="bold" className="mr-2" />

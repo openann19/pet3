@@ -6,7 +6,7 @@ import {
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
@@ -30,12 +30,14 @@ export interface UseFloatingParticleReturn {
   style: AnimatedStyle;
 }
 
+/**
+ * Web-specific floating particle hook
+ * Adapts the base hook with web-specific defaults and behaviors
+ */
 export function useFloatingParticle(
-  options: UseFloatingParticleOptions = {}
+  options: WebFloatingParticleOptions = {}
 ): UseFloatingParticleReturn {
   const {
-    initialX = 0,
-    initialY = 0,
     width = 1920,
     height = 1080,
     duration = 15,

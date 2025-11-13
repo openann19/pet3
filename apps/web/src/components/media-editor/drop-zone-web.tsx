@@ -53,13 +53,14 @@ export function DropZoneWeb({ onDrop }: DropZoneWebProps): React.ReactElement | 
     return null;
   }
 
-  const dropZoneStyle: Record<string, unknown> = {
+  const dropZoneStyle: CSSProperties = {
     borderWidth: 1,
     borderColor: '#666',
     borderStyle: 'dashed',
     backgroundColor: '#222',
     borderRadius: 12,
     padding: 24,
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -68,10 +69,10 @@ export function DropZoneWeb({ onDrop }: DropZoneWebProps): React.ReactElement | 
 
   return (
     <AnimatedView
-      ref={ref as React.Ref<HTMLDivElement>}
+      ref={ref}
       style={dropZoneStyle}
-      accessibilityRole="button"
-      {...({ 'aria-label': 'Drop photo or video here' } as React.HTMLAttributes<HTMLDivElement>)}
+      role="button"
+      aria-label="Drop photo or video here"
     >
       <Text style={styles.text}>Drag & drop photo or video</Text>
     </AnimatedView>

@@ -8,7 +8,7 @@ import {
   withRepeat,
   withSequence,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
@@ -40,14 +40,14 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
       return;
     }
 
-    if (visual.enableGlow) {
+    if (isTruthy(visual.enableGlow)) {
       glow.value = withTiming(0.8, {
         duration: 800,
         easing: Easing.out(Easing.ease),
       });
     }
 
-    if (visual.enableShimmer) {
+    if (isTruthy(visual.enableShimmer)) {
       shimmer.value = withRepeat(
         withSequence(
           withTiming(1, {
@@ -75,7 +75,7 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
       shadowOpacity: visual.enableGlow ? glow.value : 0,
       shadowRadius: visual.enableGlow ? 20 * glow.value : 0,
       backgroundColor: visual.enableGlow
-        ? `rgba(110, 231, 183, ${0.05 + glow.value * 0.1})`
+        ? `rgba(110, 231, 183, ${String(0.05 + glow.value * 0.1)})`
         : undefined,
       opacity: visual.enableShimmer ? 0.9 + shimmer.value * 0.1 : undefined,
     };

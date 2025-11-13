@@ -79,7 +79,7 @@ export default function UsersView() {
           userMap.set(ownerId, {
             id: ownerId,
             name: ownerName,
-            email: `${ownerName.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+            email: `${String(ownerName.toLowerCase().replace(/\s+/g, '.') ?? '')}@example.com`,
             role: 'user',
             status: 'active',
             joinedAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -232,7 +232,7 @@ export default function UsersView() {
               <Input
                 placeholder="Search users by name or email..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); }}
                 className="pl-10"
               />
             </div>
@@ -260,15 +260,15 @@ export default function UsersView() {
 
       <ScrollArea className="flex-1 px-6 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Presence visible={filteredUsers.length > 0}>
-            {filteredUsers.map((user, index) => (
-              <MotionView
-                key={user.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.03 }}
-              >
+          {filteredUsers.map((user, index) => {
+            const entry = useEntryAnimation({
+              initialScale: 0.95,
+              initialOpacity: 0,
+              delay: index * 30
+            })
+            
+            return (
+              <AnimatedView key={user.id} style={entry.animatedStyle}>
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -305,7 +305,7 @@ export default function UsersView() {
                           size="sm"
                           variant="outline"
                           className="w-full mt-4"
-                          onClick={() => handleViewUser(user)}
+                          onClick={() => { handleViewUser(user); }}
                         >
                           <Eye size={16} className="mr-2" />
                           View Details
@@ -314,9 +314,9 @@ export default function UsersView() {
                     </div>
                   </CardContent>
                 </Card>
-              </MotionView>
-            ))}
-          </Presence>
+              </AnimatedView>
+            )
+          })}
         </div>
 
         {filteredUsers.length === 0 && (
@@ -452,7 +452,7 @@ export default function UsersView() {
               <Key size={16} className="mr-2" />
               Reset Password
             </Button>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => { setDialogOpen(false); }}>
               Close
             </Button>
           </DialogFooter>
@@ -472,14 +472,14 @@ export default function UsersView() {
             <div className="flex gap-2">
               <Button
                 variant={resetPasswordMode === 'email' ? 'default' : 'outline'}
-                onClick={() => setResetPasswordMode('email')}
+                onClick={() => { setResetPasswordMode('email'); }}
                 className="flex-1"
               >
                 Send Reset Email
               </Button>
               <Button
                 variant={resetPasswordMode === 'manual' ? 'default' : 'outline'}
-                onClick={() => setResetPasswordMode('manual')}
+                onClick={() => { setResetPasswordMode('manual'); }}
                 className="flex-1"
               >
                 Set New Password
@@ -492,7 +492,7 @@ export default function UsersView() {
                 <Input
                   type="password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => { setNewPassword(e.target.value); }}
                   placeholder="Enter new password"
                   minLength={8}
                 />

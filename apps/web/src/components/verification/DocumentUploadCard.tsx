@@ -162,7 +162,7 @@ export function DocumentUploadCard({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => onDelete(existingDocument.id)}
+                  onClick={() => { onDelete(existingDocument.id); }}
                 >
                   <Trash size={16} weight="bold" />
                 </Button>

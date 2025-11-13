@@ -7,6 +7,7 @@ import { colors } from '@mobile/theme/colors'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { createLogger } from '../utils/logger'
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('ErrorBoundary')
 
@@ -102,8 +103,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   override render(): ReactNode {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
+    if (isTruthy(this.state.hasError)) {
+      if (isTruthy(this.props.fallback)) {
         return this.props.fallback
       }
 

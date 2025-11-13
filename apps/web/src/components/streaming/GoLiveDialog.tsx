@@ -128,7 +128,7 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { setTitle(e.target.value); }}
               placeholder="e.g., Training my Golden Retriever!"
               maxLength={100}
             />
@@ -140,7 +140,7 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); }}
               placeholder="Tell viewers what your stream is about..."
               rows={3}
               maxLength={500}
@@ -190,7 +190,7 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
             <div className="flex gap-2">
               <Input
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={(e) => { setTagInput(e.target.value); }}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 placeholder="Add a tag..."
                 disabled={tags.length >= 5}
@@ -222,7 +222,7 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
             <Checkbox
               id="allowChat"
               checked={allowChat}
-              onCheckedChange={(checked) => setAllowChat(!!checked)}
+              onCheckedChange={(checked) => { setAllowChat(!!checked); }}
             />
             <Label htmlFor="allowChat" className="cursor-pointer flex items-center gap-2">
               <ChatCircle size={18} />

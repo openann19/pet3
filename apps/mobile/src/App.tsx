@@ -6,7 +6,7 @@ import { colors } from './theme/colors'
 import { initBackgroundUploads } from './utils/background-uploads'
 import { createLogger } from './utils/logger'
 import { StatusBar } from 'expo-status-bar'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 const logger = createLogger('App')
@@ -28,12 +28,44 @@ if (__DEV__ === false) {
 }
 
 export default function App(): React.JSX.Element {
+  const [ageVerified, setAgeVerified] = useState<boolean | null>(null)
+
   useEffect(() => {
     initBackgroundUploads().catch((error: unknown) => {
       const err = error instanceof Error ? error : new Error(String(error))
       logger.error('Failed to initialize background uploads', err)
     })
+
+    // Check age verification
+    isAgeVerified().then((verified) => {
+      setAgeVerified(verified)
+    }).catch((error) => {
+      logger.warn('Failed to check age verification', { error })
+      setAgeVerified(true) // Allow access if check fails
+    })
+
+    // Initialize error tracking
+    errorTracking.setUserContext('anonymous')
   }, [])
+
+  // Show age verification if not verified
+  if (ageVerified === false) {
+    return (
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <AgeVerification
+            onVerified={(verified) => setAgeVerified(verified)}
+            requiredAge={13}
+          />
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    )
+  }
+
+  // Show loading while checking age verification
+  if (ageVerified === null) {
+    return null // Or show a loading screen
+  }
 
   return (
     <ErrorBoundary>

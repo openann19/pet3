@@ -27,7 +27,7 @@ export async function sendMessage(
 ): Promise<Message> {
   // Create optimistic message
   const optimisticMessage: Message = {
-    id: `temp-${Date.now()}`,
+    id: `temp-${String(Date.now() ?? '')}`,
     roomId,
     senderId,
     type,

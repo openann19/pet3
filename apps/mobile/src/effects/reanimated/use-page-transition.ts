@@ -1,6 +1,7 @@
 import { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UsePageTransitionOptions {
   isVisible: boolean
@@ -24,7 +25,7 @@ export function usePageTransition(options: UsePageTransitionOptions): UsePageTra
   const scale = useSharedValue(0.98)
 
   useEffect(() => {
-    if (isVisible) {
+    if (isTruthy(isVisible)) {
       const delayMs = delay * 1000
       opacity.value = withDelay(delayMs, withTiming(1, { duration }))
       translateY.value = withDelay(delayMs, withTiming(0, { duration }))

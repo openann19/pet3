@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from '../logger';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('LocalStorage');
 
@@ -31,7 +32,7 @@ export function getStorageItem<T>(key: string): T | null {
     const parsed = JSON.parse(item) as StorageEntry<T>;
 
     // Check expiration
-    if (parsed.ttl) {
+    if (isTruthy(parsed.ttl)) {
       const now = Date.now();
       const isExpired = now - parsed.timestamp > parsed.ttl;
       if (isExpired) {
@@ -128,7 +129,7 @@ export function getStorageSize(): number {
     const keys = Object.keys(localStorage);
     keys.forEach((key) => {
       const item = localStorage.getItem(key);
-      if (item) {
+      if (isTruthy(item)) {
         size += key.length + item.length;
       }
     });

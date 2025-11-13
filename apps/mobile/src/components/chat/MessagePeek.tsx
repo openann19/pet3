@@ -18,6 +18,7 @@ import Animated, {
 import { useReducedMotionSV } from '../../effects/chat/core/reduced-motion'
 import { useFeatureFlags } from '../../config/feature-flags'
 import { springConfigs, timingConfigs } from '../../effects/reanimated/transitions'
+import { isTruthy } from '@petspark/shared';
 
 export interface MessagePeekNativeProps {
   message: {

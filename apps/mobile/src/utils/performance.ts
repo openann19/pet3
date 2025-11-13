@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from './logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('performance')
 
@@ -87,8 +88,8 @@ export function usePerformanceMeasure(
   endMeasure: () => void
 } {
   const startMeasure = (): void => {
-    if (enabled) {
-      performanceMonitor.mark(`${componentName}-render-start`)
+    if (isTruthy(enabled)) {
+      performanceMonitor.mark(`${String(componentName ?? '')}-render-start`)
     }
   }
 

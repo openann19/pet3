@@ -76,7 +76,7 @@ export function ChatFooter({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setShowTemplates(!showTemplates)}
+          onClick={() => { setShowTemplates(!showTemplates); }}
           className="shrink-0"
         >
           <Sparkle size={16} weight="fill" className="mr-1" />
@@ -92,7 +92,7 @@ export function ChatFooter({
         <AnimatePresence>
           <TemplatePanel
             key="templates"
-            onClose={() => setShowTemplates(false)}
+            onClose={() => { setShowTemplates(false); }}
             onSelect={(template) => {
               onTemplateSelect({
                 text: template.text,
@@ -152,7 +152,7 @@ export function ChatFooter({
               <Input
                 ref={inputRef}
                 value={inputValue}
-                onChange={(e) => onInputChange(e.target.value)}
+                onChange={(e) => { onInputChange(e.target.value); }}
                 onKeyDown={onInputKeyDown}
                 placeholder="Type a message..."
                 className="pr-12 glass-effect border-white/30 focus:border-primary/50 backdrop-blur-xl"

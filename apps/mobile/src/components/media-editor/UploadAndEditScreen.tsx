@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as ImagePicker from 'expo-image-picker'
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('UploadAndEditScreen')
 
@@ -63,7 +64,7 @@ export function UploadAndEditScreen(): React.ReactElement {
   }, [])
 
   const handleDone = useCallback(async () => {
-    if (selectedImage) {
+    if (isTruthy(selectedImage)) {
       setIsProcessing(true)
       try {
         // Process and compress image if needed
@@ -73,7 +74,7 @@ export function UploadAndEditScreen(): React.ReactElement {
         try {
           // Dynamic import to avoid bundling if not available
           const ImageManipulator = await import('expo-image-manipulator').catch(() => null)
-          if (ImageManipulator) {
+          if (isTruthy(ImageManipulator)) {
             const manipulatedImage = await ImageManipulator.manipulateAsync(
               selectedImage,
               [{ resize: { width: 1920 } }], // Resize to max width of 1920px
@@ -104,7 +105,7 @@ export function UploadAndEditScreen(): React.ReactElement {
   }, [selectedImage, onDone, navigation])
 
   const handleCancel = useCallback(() => {
-    if (onCancel) {
+    if (isTruthy(onCancel)) {
       onCancel()
     }
     navigation.goBack()

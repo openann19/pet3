@@ -22,7 +22,7 @@ export function Presence({ visible, children }: PresenceProps): JSX.Element {
   const a = useSharedValue(visible ? 1 : 0)
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Instant transition for reduced motion
       a.value = withTiming(visible ? 1 : 0, {
         duration: getReducedMotionDuration(120, true),
@@ -33,7 +33,7 @@ export function Presence({ visible, children }: PresenceProps): JSX.Element {
   }, [visible, reducedMotion, a])
 
   const style = useAnimatedStyle(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Minimal transform for reduced motion
       return {
         opacity: a.value,

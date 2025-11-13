@@ -6,6 +6,7 @@
 
 import { useEffect } from 'react'
 import { createLogger } from './logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('telemetry')
 
@@ -67,7 +68,7 @@ class TelemetryService {
     this.events.push(telemetryEvent)
 
     // Send to analytics service in production
-    if (__DEV__) {
+    if (isTruthy(__DEV__)) {
       logger.debug('Telemetry event', telemetryEvent)
     } else {
       // In production, send to analytics service
@@ -130,7 +131,7 @@ class TelemetryService {
 
     this.traces.push(trace)
 
-    if (__DEV__) {
+    if (isTruthy(__DEV__)) {
       logger.debug('Performance trace', trace)
     }
 
@@ -220,16 +221,16 @@ class TelemetryService {
       // Dynamic import to avoid circular dependency
       const { secureStorage } = await import('./secure-storage')
       const stored = await secureStorage.getItem('anonUserId')
-      if (stored) {
+      if (isTruthy(stored)) {
         return stored
       }
 
-      const newId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+      const newId = `anon_${String(Date.now() ?? '')}_${String(Math.random().toString(36).substring(2, 11) ?? '')}`
       await secureStorage.setItem('anonUserId', newId)
       return newId
     } catch {
       // Fallback if secure storage fails
-      const newId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+      const newId = `anon_${String(Date.now() ?? '')}_${String(Math.random().toString(36).substring(2, 11) ?? '')}`
       return newId
     }
   }

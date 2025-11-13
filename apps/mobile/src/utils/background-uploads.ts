@@ -2,7 +2,11 @@ import NetInfo from '@react-native-community/netinfo'
 import { Platform } from 'react-native'
 export const BG_UPLOAD_TASK = 'bg-upload-task'
 
-async function flushPendingUploads(): Promise<boolean> {
+export const BG_UPLOAD_TASK = 'bg-upload-task'
+
+const logger = createLogger('background-uploads')
+
+async function flushQueue(): Promise<boolean> {
   try {
     // Dynamic import with type assertion for optional module
     const mod = (await import('../lib/upload-queue').catch((): null => null)) as {
@@ -43,6 +47,7 @@ export async function initBackgroundUploads(): Promise<void> {
       stopOnTerminate: false,
       startOnBoot: true,
     })
+    logger.info('Background upload task registered')
   } catch {
     // Task registration failed or module unavailable; ignore on unsupported platforms
   }

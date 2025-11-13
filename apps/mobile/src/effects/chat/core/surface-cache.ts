@@ -9,6 +9,7 @@
 
 import { Skia, type SkSurface } from '@shopify/react-native-skia'
 import { createLogger } from '../../../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('surface-cache')
 
@@ -62,7 +63,7 @@ class SurfaceCache {
     const surface = Skia.Surface.Make(width, height)
 
     if (!surface) {
-      throw new Error(`Failed to create Skia surface: ${key} (${width}x${height})`)
+      throw new Error(`Failed to create Skia surface: ${String(key ?? '')} (${String(width ?? '')}x${String(height ?? '')})`)
     }
 
     // Cache the surface
@@ -85,7 +86,7 @@ class SurfaceCache {
    */
   releaseSurface(key: string): void {
     const cached = this.cache.get(key)
-    if (cached) {
+    if (isTruthy(cached)) {
       cached.lastUsed = Date.now()
       logger.debug('Surface released', { key })
     }
@@ -96,7 +97,7 @@ class SurfaceCache {
    */
   removeSurface(key: string): void {
     const cached = this.cache.get(key)
-    if (cached) {
+    if (isTruthy(cached)) {
       cached.surface.dispose()
       this.cache.delete(key)
       logger.debug('Surface removed from cache', { key })

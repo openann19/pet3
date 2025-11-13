@@ -8,6 +8,7 @@ import {
 import { useEffect } from 'react'
 import { springConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseModalAnimationOptions {
   isVisible: boolean
@@ -30,7 +31,7 @@ export function useModalAnimation(options: UseModalAnimationOptions): UseModalAn
   const y = useSharedValue(20)
 
   useEffect(() => {
-    if (isVisible) {
+    if (isTruthy(isVisible)) {
       const delayMs = delay * 1000
       opacity.value = withDelay(delayMs, withTiming(1, { duration }))
       scale.value = withSpring(1, springConfigs.smooth)

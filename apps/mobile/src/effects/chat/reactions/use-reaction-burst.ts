@@ -23,6 +23,7 @@ import {
 import { triggerHaptic } from '../core/haptic-manager'
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion'
 import { logEffectEnd, logEffectStart } from '../core/telemetry'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Spring configuration for emoji lift
@@ -224,7 +225,7 @@ export function useReactionBurst(options: UseReactionBurstOptions = {}): UseReac
     })
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete()
       }, burstDuration)

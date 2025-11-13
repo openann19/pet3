@@ -4,7 +4,7 @@
 
 import { vi } from 'vitest'
 
-// Mock react-native-reanimated
+// Mock react-native-reanimated (no async import to avoid Promise spread)
 vi.mock('react-native-reanimated', () => {
   return {
     useSharedValue: (initialValue: unknown) => ({
@@ -21,6 +21,7 @@ vi.mock('react-native-reanimated', () => {
       poly: (n: number) => (t: number) => Math.pow(t, n),
       exp: (t: number) => Math.pow(2, 10 * (t - 1)),
       cubic: (t: number) => t * t * t,
+      linear: (t: number) => t,
     },
   }
 })
@@ -30,7 +31,7 @@ vi.mock('react-native', () => {
   return {
     Platform: {
       OS: 'web',
-      select: (obj: { web?: unknown; default?: unknown }) => obj.web || obj.default,
+      select: (obj: { web?: unknown; default?: unknown }) => obj.web ?? obj.default,
     },
     AccessibilityInfo: {
       isReduceMotionEnabled: () => Promise.resolve(false),

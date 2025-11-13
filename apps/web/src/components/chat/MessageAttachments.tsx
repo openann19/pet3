@@ -78,7 +78,7 @@ function VoiceAttachment({ attachment }: VoiceAttachmentProps): React.JSX.Elemen
             <div
               key={idx}
               className="flex-1 bg-current opacity-40 rounded-full"
-              style={{ height: `${Math.max(20, value * 100)}%` }}
+              style={{ height: `${String(Math.max(20, value * 100) ?? '')}%` }}
             />
           ))}
         </div>

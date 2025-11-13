@@ -128,7 +128,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
           highlight={selectedHighlight}
           currentUserId={currentUser?.id || 'user-1'}
           currentUserName={currentUser?.name || 'User'}
-          onClose={() => setSelectedHighlight(null)}
+          onClose={() => { setSelectedHighlight(null); }}
         />
       )}
 

@@ -3,7 +3,7 @@
  * Smooth, fluid swipe with elastic bounce and momentum
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring, withDecay } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withDecay } from '@petspark/motion';
 import { useCallback, useState } from 'react';
 
 export interface UseLiquidSwipeOptions {
@@ -82,7 +82,7 @@ export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}) {
     transform: [
       { translateX: translateX.value },
       { scale: scale.value },
-      { rotate: `${rotate.value}deg` },
+      { rotate: `${String(rotate.value ?? '')}deg` },
     ],
   }));
 

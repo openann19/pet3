@@ -74,7 +74,7 @@ export function ProtectedRoute({
     }
   }, [isAuthenticated, isLoading, user, adminOnly, moderatorOnly, requireKYC, navigate, location]);
 
-  if (isLoading) {
+  if (isTruthy(isLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner size="lg" />
@@ -95,7 +95,7 @@ export function ProtectedRoute({
   }
 
   // Check KYC status
-  if (requireKYC) {
+  if (isTruthy(requireKYC)) {
     if (kycStatus === 'checking') {
       return (
         <div className="min-h-screen flex items-center justify-center">

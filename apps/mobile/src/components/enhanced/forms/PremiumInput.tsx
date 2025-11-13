@@ -48,6 +48,7 @@ export interface PremiumInputProps extends Omit<TextInputProps, 'style'> {
   onClear?: () => void
   style?: ViewStyle
   testID?: string
+  type?: 'default' | 'password' | 'email' | 'numeric' | 'phone-pad'
 }
 
 export function PremiumInput({
@@ -98,7 +99,7 @@ export function PremiumInput({
 
   useEffect(() => {
     const timingConfig = { duration: 150 }
-    if (isFocused) {
+    if (isTruthy(isFocused)) {
       borderWidth.value = withSpring(2, { stiffness: 400, damping: 30 })
       borderColor.value = withTiming(error ? 1 : 0.5, timingConfig)
     } else {

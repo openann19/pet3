@@ -393,6 +393,57 @@ export function ContentModerationQueue() {
 
   const filteredItems = items.filter((item) => item.type === selectedType);
 
+  // Empty state component with animation
+  function EmptyState() {
+    const isEmpty = filteredItems.length === 0 && !loading
+    const presence = useAnimatePresence({ 
+      isVisible: isEmpty,
+      enterTransition: 'fade',
+      exitTransition: 'fade'
+    })
+    
+    if (!presence.shouldRender) return null
+    
+    return (
+      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+        <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No items in this queue</p>
+      </AnimatedView>
+    )
+  }
+
+  // Item component with animation
+  function ModerationItemCard({ item, index }: { item: ModerationItem; index: number }) {
+    const entry = useEntryAnimation({ 
+      initialY: 20, 
+      initialOpacity: 0,
+      delay: index * 50 
+    })
+    
+    return (
+      <AnimatedView style={entry.animatedStyle}>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => { setSelectedItem(item); }}
+        >
+          <div className="flex gap-4">
+            <div className="flex-1">
+              {renderContentPreview(item)}
+            </div>
+            <div className="flex items-center">
+              <Badge variant={
+                item.status === 'pending' ? 'secondary' :
+                item.status === 'approved' ? 'default' : 'destructive'
+              }>
+                {item.status}
+              </Badge>
+            </div>
+          </div>
+        </Card>
+      </AnimatedView>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -402,7 +453,7 @@ export function ContentModerationQueue() {
             Review and moderate Lost & Found alerts, Community posts, and Live streams
           </p>
         </div>
-        <Button onClick={loadQueue} variant="outline">
+        <Button onClick={() => { void loadQueue() }} variant="outline">
           <Clock size={16} className="mr-2" />
           Refresh
         </Button>
@@ -535,7 +586,7 @@ export function ContentModerationQueue() {
                     <label className="text-sm font-medium">Additional Notes</label>
                     <Textarea
                       value={decisionText}
-                      onChange={(e) => setDecisionText(e.target.value)}
+                      onChange={(e) => { setDecisionText(e.target.value); }}
                       placeholder="Add any additional context..."
                       rows={3}
                     />

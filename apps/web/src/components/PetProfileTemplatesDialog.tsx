@@ -26,7 +26,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 
 interface PetProfileTemplatesDialogProps {
   open: boolean;
@@ -141,7 +141,7 @@ export default function PetProfileTemplatesDialog({
             : 'bg-card border-2 border-border/60 hover:border-primary/40 hover:shadow-lg hover:bg-card/95'
         )}
         aria-pressed={isSelected}
-        aria-label={`Select ${template.name} template`}
+        aria-label={`Select ${String(template.name ?? '')} template`}
         style={{ minHeight: '44px' }}
       >
         {isSelected && (

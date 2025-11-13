@@ -46,13 +46,13 @@ export function VerificationLevelSelector({
             <MotionView
               as="button"
               key={level}
-              onClick={() => onSelectLevel(level)}
+              onClick={() => { onSelectLevel(level); }}
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
                 'relative p-4 rounded-xl border-2 transition-all text-left',
                 isSelected
-                  ? `bg-gradient-to-br ${color}`
+                  ? `bg-gradient-to-br ${String(color ?? '')}`
                   : 'bg-card border-border hover:border-primary/50'
               )}
             >

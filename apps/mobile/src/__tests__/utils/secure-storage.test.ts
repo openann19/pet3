@@ -243,7 +243,7 @@ describe('Secure Storage', () => {
 
   describe('Cache management', () => {
     it('should clear cache', () => {
-      expect(() => clearCache()).not.toThrow()
+      expect(() => { clearCache(); }).not.toThrow()
     })
   })
 
@@ -322,7 +322,7 @@ describe('Secure Storage', () => {
     })
 
     it('should provide clearCache method', () => {
-      expect(() => secureStorage.clearCache()).not.toThrow()
+      expect(() => { secureStorage.clearCache(); }).not.toThrow()
     })
   })
 

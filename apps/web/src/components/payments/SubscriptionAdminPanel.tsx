@@ -124,7 +124,7 @@ export function SubscriptionAdminPanel() {
     return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
   };
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -207,7 +207,7 @@ export function SubscriptionAdminPanel() {
                   <Input
                     placeholder="Search by user ID or plan..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => { setSearchQuery(e.target.value); }}
                     className="pl-10"
                   />
                 </div>
@@ -366,14 +366,14 @@ export function SubscriptionAdminPanel() {
               <Textarea
                 placeholder="Why is this subscription being comped?"
                 value={compReason}
-                onChange={(e) => setCompReason(e.target.value)}
+                onChange={(e) => { setCompReason(e.target.value); }}
                 rows={3}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCompDialogOpen(false)}>
+            <Button variant="outline" onClick={() => { setCompDialogOpen(false); }}>
               Cancel
             </Button>
             <Button onClick={handleCompSubscription}>Comp Subscription</Button>

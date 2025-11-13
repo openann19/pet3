@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useSharedValue, type SharedValue } from 'react-native-reanimated';
+import { useSharedValue, type SharedValue } from '@petspark/motion';
 
 // Type definitions for optional React Native AccessibilityInfo
 interface AccessibilityInfoType {
@@ -25,7 +25,7 @@ const MEDIA_QUERY = '(prefers-reduced-motion: reduce)';
 
 export function isReduceMotionEnabled(): boolean {
   // RN path: prefer AccessibilityInfo snapshot if available (non-blocking)
-  if (AccessibilityInfo?.isReduceMotionEnabled) {
+  if (isTruthy(AccessibilityInfo?.isReduceMotionEnabled)) {
     // We can't await here (sync API); return best guess (false) and let hooks update
     // Callers needing reactive updates should use hooks below.
   }

@@ -71,7 +71,7 @@ export function evaluateHardGates(
     });
   }
 
-  if (gates.requireVaccinations) {
+  if (isTruthy(gates.requireVaccinations)) {
     if (!pet1.health.vaccinationsUpToDate || !pet2.health.vaccinationsUpToDate) {
       failures.push({
         code: 'VACCINATION_REQUIRED',
@@ -83,7 +83,7 @@ export function evaluateHardGates(
     }
   }
 
-  if (gates.blockAggressionConflicts) {
+  if (isTruthy(gates.blockAggressionConflicts)) {
     if (pet1.health.aggressionFlags && pet2.socialization.comfortWithStrangers >= 3) {
       failures.push({
         code: 'AGGRESSION_CONFLICT',
@@ -296,7 +296,7 @@ function scoreSizeCompatibility(
   const matrix = getSizeCompatibilityMatrix(pet1.species);
   const compatible = matrix[pet1.size]?.includes(pet2.size) ?? false;
 
-  if (compatible) {
+  if (isTruthy(compatible)) {
     positive.push({
       en: 'Compatible sizes for safe play',
       bg: 'Съвместими размери за безопасна игра',

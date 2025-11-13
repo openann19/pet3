@@ -265,7 +265,7 @@ export async function checkRateLimit(
     if (recentAttempts.length >= maxRequests) {
       rateLimitManager['recordViolation'](ip, userId)
       const oldestAttempt = recentAttempts[0]
-      if (oldestAttempt) {
+      if (isTruthy(oldestAttempt)) {
         const resetAt = oldestAttempt + windowMs
         const responseTime = performance.now() - startTime
         rateLimitManager['updateMetrics'](action, false, responseTime)

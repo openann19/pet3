@@ -19,6 +19,7 @@ import {
 import Animated from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import { springConfigs } from '@/effects/reanimated/transitions'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
@@ -48,7 +49,7 @@ export function UltraEnhancedView({
     if (enableTransition && !reducedMotion.value) {
       opacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) })
       translateY.value = withSpring(0, springConfigs.smooth)
-    } else if (enableTransition) {
+    } else if (isTruthy(enableTransition)) {
       opacity.value = 1
       translateY.value = 0
     }
@@ -64,7 +65,7 @@ export function UltraEnhancedView({
         -1,
         true
       )
-    } else if (enableBreathing) {
+    } else if (isTruthy(enableBreathing)) {
       scale.value = 1
     }
   }, [enableBreathing, reducedMotion, scale])

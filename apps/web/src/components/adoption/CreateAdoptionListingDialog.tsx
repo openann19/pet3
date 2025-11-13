@@ -17,7 +17,7 @@ export function CreateAdoptionListingDialog({
 
   return (
     <CreateAdoptionListingWizard
-      onClose={() => onOpenChange(false)}
+      onClose={() => { onOpenChange(false); }}
       onSuccess={() => {
         onSuccess();
         onOpenChange(false);

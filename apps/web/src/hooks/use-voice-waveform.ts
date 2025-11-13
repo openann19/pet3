@@ -8,7 +8,7 @@ import {
   withSequence,
   withDelay,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 
@@ -47,7 +47,7 @@ export function useVoiceWaveform(options: UseVoiceWaveformOptions): UseVoiceWave
   });
 
   useEffect(() => {
-    if (isPlaying) {
+    if (isTruthy(isPlaying)) {
       barScales.forEach((scale, index) => {
         const waveformIndex = Math.floor((index / barCount) * normalizedWaveform.length);
         const baseValue = normalizedWaveform[waveformIndex] ?? 0.3;

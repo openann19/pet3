@@ -72,7 +72,7 @@ export class NotificationsService {
   async notifyNewSighting(sighting: Sighting, alert: LostAlert): Promise<void> {
     try {
       await pushNotificationManager.showNotification({
-        id: `sighting-${sighting.id}`,
+        id: `sighting-${String(sighting.id ?? '')}`,
         title: `New Sighting Reported!`,
         body: `Someone reported seeing ${alert.petSummary.name}`,
         icon:
@@ -125,8 +125,8 @@ export class NotificationsService {
             : (post.media[0] as { url?: string }).url
           : undefined;
       await pushNotificationManager.showNotification({
-        id: `community-post-${post.id}`,
-        title: `New Post by ${post.authorName}`,
+        id: `community-post-${String(post.id ?? '')}`,
+        title: `New Post by ${String(post.authorName ?? '')}`,
         body: post.text ? post.text.slice(0, 100) : 'New post',
         icon: post.authorAvatar ?? '/icon-192.png',
         ...(imageUrl ? { image: imageUrl } : {}),
@@ -174,8 +174,8 @@ export class NotificationsService {
       }
 
       await pushNotificationManager.showNotification({
-        id: `live-stream-${stream.id}`,
-        title: `${stream.hostName} is Live!`,
+        id: `live-stream-${String(stream.id ?? '')}`,
+        title: `${String(stream.hostName ?? '')} is Live!`,
         body: stream.title,
         icon: stream.hostAvatar ?? '/icon-192.png',
         tag: 'live-stream',
@@ -217,9 +217,9 @@ export class NotificationsService {
           (alert.photos && alert.photos.length > 0 ? alert.photos[0] : '/icon-192.png') ??
           '/icon-192.png';
         await pushNotificationManager.showNotification({
-          id: `alert-view-${alertId}-${viewCount}`,
-          title: `${viewCount} People Viewed Your Alert`,
-          body: `${alert.petSummary.name}'s alert has been seen by ${viewCount} people`,
+          id: `alert-view-${String(alertId ?? '')}-${String(viewCount ?? '')}`,
+          title: `${String(viewCount ?? '')} People Viewed Your Alert`,
+          body: `${String(alert.petSummary.name ?? '')}'s alert has been seen by ${String(viewCount ?? '')} people`,
           icon: iconUrl,
           tag: 'alert-view',
           data: {
@@ -246,7 +246,7 @@ export class NotificationsService {
       // Notify when post reaches certain milestones
       if (reactionCount === 10 || reactionCount === 50 || reactionCount === 100) {
         await pushNotificationManager.showNotification({
-          id: `post-popular-${post.id}-${reactionCount}`,
+          id: `post-popular-${String(post.id ?? '')}-${String(reactionCount ?? '')}`,
           title: `Your Post is Getting Popular!`,
           body: `Your post has ${reactionCount} reactions`,
           icon: post.authorAvatar ?? '/icon-192.png',

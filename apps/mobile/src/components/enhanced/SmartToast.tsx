@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -54,7 +55,7 @@ export function SmartToast({
   const reducedMotion = useReducedMotionSV()
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       opacity.value = withTiming(1, { duration: 200 })
       translateY.value = withTiming(0, { duration: 200 })
       scale.value = withTiming(1, { duration: 200 })

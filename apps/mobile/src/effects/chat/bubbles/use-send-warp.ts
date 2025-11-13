@@ -23,6 +23,7 @@ import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-mo
 import { logEffectEnd, logEffectStart } from '../core/telemetry'
 import { createAberrationShader } from '../shaders/aberration'
 import { createBloomShader, getBloomImageFilter } from '../shaders/bloom'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('send-warp')
 
@@ -149,7 +150,7 @@ export function useSendWarp(options: UseSendWarpOptions = {}): UseSendWarpReturn
     }
 
     // Call onComplete after animation
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete()
       }, slideDuration)
@@ -157,7 +158,7 @@ export function useSendWarp(options: UseSendWarpOptions = {}): UseSendWarpReturn
 
     // Log effect end
     setTimeout(() => {
-      if (effectIdRef.current) {
+      if (isTruthy(effectIdRef.current)) {
         logEffectEnd(effectIdRef.current, {
           durationMs: slideDuration,
           success: true,
@@ -187,7 +188,7 @@ export function useSendWarp(options: UseSendWarpOptions = {}): UseSendWarpReturn
 
   // Create bloom and aberration shaders (for use in Skia components)
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       const bloomShader = createBloomShader({ intensity: 0.85 })
       const aberrationShader = createAberrationShader({ amount: 1.0, intensity: 0.3 })
 

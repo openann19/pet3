@@ -9,7 +9,7 @@ import {
   withTiming,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useCallback } from 'react';
 
 export interface UseMorphShapeOptions {
@@ -102,7 +102,7 @@ export function useMorphShape(options: UseMorphShapeOptions = {}) {
       borderTopRightRadius: topRight,
       borderBottomRightRadius: bottomRight,
       borderBottomLeftRadius: bottomLeft,
-      transform: [{ scale }, { rotate: `${rotate}deg` }],
+      transform: [{ scale }, { rotate: `${String(rotate ?? '')}deg` }],
     };
   });
 

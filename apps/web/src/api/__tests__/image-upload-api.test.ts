@@ -26,7 +26,7 @@ beforeAll(async () => {
       res.end(
         JSON.stringify({
           data: {
-            signedUrl: `https://storage.example.com/${key}`,
+            signedUrl: `https://storage.example.com/${String(key ?? '')}`,
             key: key || 'test-key',
             expiresAt: new Date(Date.now() + 3600000).toISOString(),
           },

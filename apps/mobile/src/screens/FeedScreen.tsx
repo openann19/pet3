@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Platform, StyleSheet, Text, View } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('FeedScreen')
 
@@ -94,7 +95,7 @@ function DiscoveryList(): React.ReactElement {
     void loadPets()
   }, [loadPets])
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.accent} />
@@ -102,7 +103,7 @@ function DiscoveryList(): React.ReactElement {
     )
   }
 
-  if (error) {
+  if (isTruthy(error)) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
@@ -124,7 +125,7 @@ function DiscoveryList(): React.ReactElement {
       data={pets}
       keyExtractor={p => String(p.id)}
       renderItem={({ item }) => (
-        <FeatureCard title={item.name} subtitle={`${item.breed} • ${item.age} years old`}>
+        <FeatureCard title={item.name} subtitle={`${String(item.breed ?? '')} • ${String(item.age ?? '')} years old`}>
           <View style={styles.row}>
             <Text style={styles.label}>Species</Text>
             <Text style={styles.value}>{item.species}</Text>
@@ -241,7 +242,7 @@ function MapPane(): React.ReactElement {
 
   useEffect(() => {
     return () => {
-      if (throttleTimeoutRef.current) {
+      if (isTruthy(throttleTimeoutRef.current)) {
         clearTimeout(throttleTimeoutRef.current)
       }
     }

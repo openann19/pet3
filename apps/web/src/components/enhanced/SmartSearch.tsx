@@ -147,9 +147,9 @@ export function SmartSearch<T extends Record<string, unknown>>({
         <Input
           ref={inputRef}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+          onChange={(e) => { setQuery(e.target.value); }}
+          onFocus={() => { setIsFocused(true); }}
+          onBlur={() => setTimeout(() => { setIsFocused(false); }, 200)}
           placeholder={placeholder}
           aria-label={placeholder || 'Search'}
           className="pl-10 pr-10"
@@ -168,12 +168,9 @@ export function SmartSearch<T extends Record<string, unknown>>({
         )}
       </div>
 
-      <Presence visible={showDropdown}>
+      {presence.shouldRender && (
         <AnimatedView
-          style={{
-            opacity: 1,
-            transform: [{ translateY: 0 }, { scale: 1 }],
-          }}
+          style={presence.animatedStyle}
         >
           <Card className="absolute top-full mt-2 w-full max-h-100 overflow-y-auto shadow-xl border z-50 p-2">
             {query.trim() ? (
@@ -261,7 +258,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
             )}
           </Card>
         </AnimatedView>
-      </Presence>
+      )}
     </div>
   );
 }

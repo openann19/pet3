@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useSharedValue, withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
+import { useSharedValue, withTiming, useAnimatedStyle, Easing } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
@@ -63,7 +63,7 @@ export function useParticleFX(options: UseParticleFXOptions = {}): UseParticleFX
         const speed = 2 + Math.random() * 4;
 
         newParticles.push({
-          id: `particle-${i}-${Date.now()}`,
+          id: `particle-${String(i ?? '')}-${String(Date.now() ?? '')}`,
           x,
           y,
           vx: Math.cos(angle) * speed,

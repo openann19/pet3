@@ -127,7 +127,7 @@ export default function PlaydateScheduler({
 
     const playdateDate = formData.date ?? new Date().toISOString().split('T')[0];
     const newPlaydate: Playdate = {
-      id: `playdate-${Date.now()}`,
+      id: `playdate-${String(Date.now() ?? '')}`,
       matchId: match.id,
       petIds: [userPet.id, match.matchedPetId],
       ownerIds: [userPet.ownerId ?? 'user', match.matchedPetId],
@@ -267,12 +267,14 @@ export default function PlaydateScheduler({
     [setPlaydates]
   );
 
+  // Animation hooks
+  const containerEntry = useEntryAnimation({ initialOpacity: 0 })
+  const createFormPresence = useAnimatePresence({ isVisible: showCreateForm })
+
   return (
-    <MotionView
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <AnimatedView
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
+      style={containerEntry.animatedStyle}
     >
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
@@ -338,7 +340,7 @@ export default function PlaydateScheduler({
                     <CardTitle>Scheduled Playdates</CardTitle>
                     <CardDescription>Your upcoming meetups</CardDescription>
                   </div>
-                  <Button onClick={() => setShowCreateForm(true)} size="sm">
+                  <Button onClick={() => { setShowCreateForm(true); }} size="sm">
                     <Plus size={16} className="mr-2" />
                     Schedule Playdate
                   </Button>
@@ -447,7 +449,7 @@ export default function PlaydateScheduler({
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setShowLocationPicker(true)}
+                                    onClick={() => { setShowLocationPicker(true); }}
                                   >
                                     Change
                                   </Button>
@@ -457,7 +459,7 @@ export default function PlaydateScheduler({
                               <Button
                                 variant="outline"
                                 className="w-full justify-start"
-                                onClick={() => setShowLocationPicker(true)}
+                                onClick={() => { setShowLocationPicker(true); }}
                               >
                                 <MapTrifold size={18} className="mr-2" />
                                 Choose Location
@@ -485,15 +487,15 @@ export default function PlaydateScheduler({
                             </Button>
                             <Button
                               variant="outline"
-                              onClick={() => setShowCreateForm(false)}
+                              onClick={() => { setShowCreateForm(false); }}
                               className="flex-1"
                             >
                               Cancel
                             </Button>
                           </div>
                         </div>
-                      </MotionView>
-                    )}
+                    </AnimatedView>
+                  )}
 
                     {matchPlaydates.filter(
                       (p) => p.status !== 'completed' && p.status !== 'cancelled'
@@ -515,12 +517,10 @@ export default function PlaydateScheduler({
                             const isPastDate = isPast(new Date(playdate.date));
 
                             return (
-                              <MotionView
+                              <AnimatedView
                                 key={playdate.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.05 }}
                                 className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                                style={cardEntry.animatedStyle}
                               >
                                 <div className="flex items-start justify-between mb-3">
                                   <div className="flex items-start gap-3">
@@ -574,7 +574,7 @@ export default function PlaydateScheduler({
                                     {playdate.status === 'pending' && (
                                       <Button
                                         size="sm"
-                                        onClick={() => handleConfirmPlaydate(playdate.id)}
+                                        onClick={() => { handleConfirmPlaydate(playdate.id); }}
                                         className="flex-1"
                                       >
                                         <Check size={16} className="mr-2" />
@@ -585,7 +585,7 @@ export default function PlaydateScheduler({
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => handleCancelPlaydate(playdate.id)}
+                                        onClick={() => { handleCancelPlaydate(playdate.id); }}
                                         className="flex-1"
                                       >
                                         <X size={16} className="mr-2" />
@@ -597,7 +597,7 @@ export default function PlaydateScheduler({
                                     <Button
                                       size="sm"
                                       variant="secondary"
-                                      onClick={() => handleGetDirections(playdate)}
+                                      onClick={() => { handleGetDirections(playdate); }}
                                       className="flex-1"
                                     >
                                       <NavigationArrow size={16} className="mr-2" weight="bold" />
@@ -606,7 +606,7 @@ export default function PlaydateScheduler({
                                     <Button
                                       size="sm"
                                       variant="secondary"
-                                      onClick={() => handleShareLocation(playdate)}
+                                      onClick={() => { handleShareLocation(playdate); }}
                                       className="flex-1"
                                     >
                                       <ShareNetwork size={16} className="mr-2" weight="bold" />
@@ -619,7 +619,6 @@ export default function PlaydateScheduler({
                           })}
                       </div>
                     )}
-                  </Presence>
                 </ScrollArea>
               </CardContent>
             </Card>
@@ -645,14 +644,18 @@ export default function PlaydateScheduler({
                       {matchPlaydates
                         .filter((p) => p.status === 'completed' || p.status === 'cancelled')
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .map((playdate, index) => (
-                          <MotionView
-                            key={playdate.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="p-4 rounded-lg border bg-card opacity-75"
-                          >
+                        .map((playdate, index) => {
+                          const historyCardEntry = useEntryAnimation({ 
+                            initialY: 20, 
+                            delay: index * 50 
+                          })
+                          
+                          return (
+                            <AnimatedView
+                              key={playdate.id}
+                              className="p-4 rounded-lg border bg-card opacity-75"
+                              style={historyCardEntry.animatedStyle}
+                            >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -674,8 +677,9 @@ export default function PlaydateScheduler({
                               <MapPin size={14} />
                               {playdate.location.name}
                             </div>
-                          </MotionView>
-                        ))}
+                          </AnimatedView>
+                          )
+                        })}
                     </div>
                   )}
                 </ScrollArea>
@@ -692,7 +696,7 @@ export default function PlaydateScheduler({
               <Card className="p-6">
                 <div className="text-center">
                   <p className="text-destructive mb-2">Failed to load location picker</p>
-                  <Button onClick={() => setShowLocationPicker(false)}>Close</Button>
+                  <Button onClick={() => { setShowLocationPicker(false); }}>Close</Button>
                 </div>
               </Card>
             </div>
@@ -715,7 +719,7 @@ export default function PlaydateScheduler({
             <LocationPicker
               {...(selectedLocation !== null ? { value: selectedLocation } : {})}
               onChange={handleLocationChange}
-              onClose={() => setShowLocationPicker(false)}
+              onClose={() => { setShowLocationPicker(false); }}
             />
           </Suspense>
         </ErrorBoundary>

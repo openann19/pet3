@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { type ReactNode, useCallback } from 'react';
-import { useAnimatedStyle } from 'react-native-reanimated';
+import { useAnimatedStyle } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useBubbleTilt } from '@/effects/reanimated/use-bubble-tilt';
 import { useBubbleEntry } from '@/effects/reanimated/use-bubble-entry';
@@ -106,8 +106,8 @@ export function WebBubbleWrapper({
         { translateY: bubbleEntry.translateY.value },
         { translateX: bubbleEntry.translateX.value },
         { scale: bubbleEntry.scale.value },
-        { rotateX: `${bubbleTilt.rotateX.value}deg` },
-        { rotateY: `${bubbleTilt.rotateY.value}deg` },
+        { rotateX: `${String(bubbleTilt.rotateX.value ?? '')}deg` },
+        { rotateY: `${String(bubbleTilt.rotateY.value ?? '')}deg` },
       ],
     };
   }) as AnimatedStyle;
@@ -126,7 +126,7 @@ export function WebBubbleWrapper({
       position: 'absolute',
       inset: '-4px',
       borderRadius: 'inherit',
-      background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+      background: `radial-gradient(circle, ${String(glowColor ?? '')} 0%, transparent 70%)`,
       opacity: glowOpacity * glowIntensity,
       filter: `blur(8px)`,
       pointerEvents: 'none',

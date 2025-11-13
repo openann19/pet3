@@ -18,6 +18,57 @@ import { toast } from 'sonner';
 
 const logger = createLogger('UserPostsView');
 
+function EmptyStateView({ authorName }: { authorName: string }) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+        <User size={48} className="text-muted-foreground" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        {authorName} hasn't shared any posts yet
+      </p>
+    </AnimatedView>
+  )
+}
+
+function PostItemView({
+  post,
+  index,
+  onPostClick,
+  onAuthorClick
+}: {
+  post: Post
+  index: number
+  onPostClick: (postId: string) => void
+  onAuthorClick?: (authorId: string) => void
+}) {
+  const entry = useEntryAnimation({
+    initialY: 20,
+    initialOpacity: 0,
+    delay: index * 50
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <div
+        onClick={() => { onPostClick(post.id); }}
+        className="cursor-pointer"
+      >
+        <PostCard
+          post={post}
+          {...(onAuthorClick && { onAuthorClick })}
+        />
+      </div>
+    </AnimatedView>
+  )
+}
+
 interface UserPostsViewProps {
   userId: string;
   userName?: string;

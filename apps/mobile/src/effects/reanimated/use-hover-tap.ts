@@ -8,6 +8,7 @@ import {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { springConfigs } from './transitions'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseHoverTapOptions {
   pressScale?: number
@@ -62,7 +63,7 @@ export function useHoverTap(options: UseHoverTapOptions = {}): UseHoverTapReturn
   }, [scale, damping, stiffness])
 
   const handlePress = useCallback(() => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
     scale.value = withSpring(tapScale, { damping, stiffness }, () => {

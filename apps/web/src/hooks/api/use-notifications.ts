@@ -48,8 +48,7 @@ export function useMarkAsRead(): UseMutationResult<{ success: boolean }, unknown
 export function useMarkAllAsRead(): UseMutationResult<
   { success: boolean; count: number },
   unknown,
-  void,
-  unknown
+  void
 > {
   const queryClient = useQueryClient();
 

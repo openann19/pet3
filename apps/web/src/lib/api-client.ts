@@ -123,6 +123,7 @@ class APIClientImpl {
   private saveTokens(tokens: StoredTokens): void {
     const { accessToken, refreshToken } = tokens;
 
+    // Try to fetch CSRF token from backend
     try {
       this.accessToken = accessToken;
       localStorage.setItem(APIClientImpl.ACCESS_TOKEN_KEY, accessToken);
@@ -134,6 +135,8 @@ class APIClientImpl {
     } catch (error) {
       logger.error('Failed to persist auth tokens', { error });
     }
+
+    return null
   }
 
   private clearTokens(): void {
@@ -164,7 +167,16 @@ class APIClientImpl {
   }
 
   private async performTokenRefresh(): Promise<void> {
-    const response = await fetch(`${this.baseUrl}${ENDPOINTS.AUTH.REFRESH}`, {
+    const csrfToken = await this.getCSRFToken()
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    }
+
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken
+    }
+
+    const response = await fetch(`${String(this.baseUrl ?? '')}${String(ENDPOINTS.AUTH.REFRESH ?? '')}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: this.refreshToken }),
@@ -213,7 +225,9 @@ class APIClientImpl {
         if (response.status === 401 && this.refreshToken) {
           await this.handleUnauthorized();
 
-          const retryResponse = await fetch(`${this.baseUrl}${endpoint}`, {
+          // Retry request with new access token
+          const retryHeaders = await this.prepareHeaders(requestInit.headers)
+          const retryResponse = await fetch(`${String(this.baseUrl ?? '')}${String(endpoint ?? '')}`, {
             ...requestInit,
             headers: this.prepareHeaders(requestInit.headers),
             signal: controller.signal,
@@ -239,12 +253,13 @@ class APIClientImpl {
     return executeRequest();
   }
 
-  private prepareHeaders(headers?: HeadersInit): RequestHeaders {
+  private async prepareHeaders(headers?: HeadersInit): Promise<RequestHeaders> {
     const merged: RequestHeaders = {
       'Content-Type': 'application/json',
       ...(headers as RequestHeaders | undefined),
     };
 
+    // Add access token if available (stored in memory)
     if (this.accessToken) {
       merged['Authorization'] = `Bearer ${this.accessToken}`;
     }
@@ -280,7 +295,7 @@ class APIClientImpl {
   private async createAPIError(response: Response): Promise<APIClientError> {
     const errorDetails = await this.parseErrorDetails(response);
 
-    return new APIClientError(errorDetails.message || `HTTP ${response.status}`, {
+    return new APIClientError(errorDetails.message ?? `HTTP ${response.status}`, {
       status: response.status,
       ...(errorDetails.code ? { code: errorDetails.code } : {}),
       ...(errorDetails.details ? { details: errorDetails.details } : {}),

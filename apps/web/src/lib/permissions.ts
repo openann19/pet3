@@ -141,8 +141,8 @@ class PermissionsManager {
 
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
-        () => resolve(true),
-        () => resolve(false),
+        () => { resolve(true); },
+        () => { resolve(false); },
         { timeout: 10000 }
       );
     });

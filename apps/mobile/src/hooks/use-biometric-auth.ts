@@ -6,6 +6,7 @@
 import * as Haptics from 'expo-haptics'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { useState } from 'react'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface BiometricAuthResult {
   success: boolean
@@ -73,7 +74,7 @@ export function useBiometricAuth(): UseBiometricAuthReturn {
         disableDeviceFallback: false,
       })
 
-      if (result.success) {
+      if (isTruthy(result.success)) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         return {
           success: true,

@@ -75,7 +75,7 @@ export function SubscriptionStatusCard() {
     }
   };
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-12">
@@ -192,7 +192,7 @@ export function SubscriptionStatusCard() {
                 <Button
                   variant="ghost"
                   className="w-full"
-                  onClick={() => setPricingModalOpen(true)}
+                  onClick={() => { setPricingModalOpen(true); }}
                 >
                   View All Plans
                 </Button>

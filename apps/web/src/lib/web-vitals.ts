@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 /**
  * Web Vitals Integration
  *
@@ -39,7 +41,7 @@ function reportMetrics(): void {
   };
 
   // Send to telemetry endpoint if available
-  if (import.meta.env.PROD) {
+  if (isTruthy(import.meta.env.PROD)) {
     // In production, send to telemetry service
     // This would integrate with your telemetry system
     try {

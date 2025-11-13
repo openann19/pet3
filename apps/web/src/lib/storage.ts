@@ -139,7 +139,7 @@ class StorageService {
         const { type, key } = event.data as { type: string; key?: string };
 
         if (type === 'invalidate') {
-          if (key) {
+          if (isTruthy(key)) {
             // Invalidate specific key
             this.inMemoryCache.delete(key);
             logger.debug(`Cache invalidated for key: ${key}`);
@@ -171,7 +171,7 @@ class StorageService {
    * Broadcast cache invalidation to other tabs
    */
   private broadcastInvalidation(key?: string): void {
-    if (this.broadcastChannel) {
+    if (isTruthy(this.broadcastChannel)) {
       try {
         this.broadcastChannel.postMessage({ type: 'invalidate', key });
       } catch (error) {
@@ -186,7 +186,7 @@ class StorageService {
    * Broadcast update to other tabs
    */
   private broadcastUpdate(key: string): void {
-    if (this.broadcastChannel) {
+    if (isTruthy(this.broadcastChannel)) {
       try {
         this.broadcastChannel.postMessage({ type: 'update', key });
       } catch (error) {
@@ -403,7 +403,7 @@ class StorageService {
 
     // Get keys from IndexedDB
     try {
-      if (hasIndexedDBSupport) {
+      if (isTruthy(hasIndexedDBSupport)) {
         if (!this.db) {
           await this.initDB();
         }
@@ -554,7 +554,7 @@ class StorageService {
 
     // Clear IndexedDB
     try {
-      if (hasIndexedDBSupport) {
+      if (isTruthy(hasIndexedDBSupport)) {
         if (!this.db) {
           await this.initDB();
         }

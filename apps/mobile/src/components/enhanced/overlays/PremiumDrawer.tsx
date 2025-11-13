@@ -62,7 +62,7 @@ export function PremiumDrawer({
     const springConfig = reducedMotion.value ? { duration: 300 } : { stiffness: 400, damping: 30 }
     const timingConfig = { duration: 200 }
 
-    if (visible) {
+    if (isTruthy(visible)) {
       if (side === 'right' || side === 'left') {
         translateX.value = withSpring(0, springConfig)
       } else {

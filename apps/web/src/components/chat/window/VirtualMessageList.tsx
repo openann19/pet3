@@ -199,7 +199,7 @@ export function VirtualMessageList({
                 top: 0,
                 left: 0,
                 width: '100%',
-                transform: `translateY(${vi.start}px)`,
+                transform: `translateY(${String(vi.start ?? '')}px)`,
               }}
             >
               {row.type === 'header' ? (

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface UseKeyboardNavigationOptions {
   onEnter?: () => void;
@@ -39,43 +40,43 @@ export function useKeyboardNavigation(
     const handleKeyDown = (event: KeyboardEvent): void => {
       switch (event.key) {
         case 'Enter':
-          if (onEnter) {
+          if (isTruthy(onEnter)) {
             event.preventDefault();
             onEnter();
           }
           break;
         case 'Escape':
-          if (onEscape) {
+          if (isTruthy(onEscape)) {
             event.preventDefault();
             onEscape();
           }
           break;
         case 'ArrowUp':
-          if (onArrowUp) {
+          if (isTruthy(onArrowUp)) {
             event.preventDefault();
             onArrowUp();
           }
           break;
         case 'ArrowDown':
-          if (onArrowDown) {
+          if (isTruthy(onArrowDown)) {
             event.preventDefault();
             onArrowDown();
           }
           break;
         case 'ArrowLeft':
-          if (onArrowLeft) {
+          if (isTruthy(onArrowLeft)) {
             event.preventDefault();
             onArrowLeft();
           }
           break;
         case 'ArrowRight':
-          if (onArrowRight) {
+          if (isTruthy(onArrowRight)) {
             event.preventDefault();
             onArrowRight();
           }
           break;
         case ' ':
-          if (onSpace) {
+          if (isTruthy(onSpace)) {
             event.preventDefault();
             onSpace();
           }

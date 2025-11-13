@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, withRepeat } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming, withRepeat } from '@petspark/motion';
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
@@ -44,7 +44,7 @@ export function PresenceAvatar({
   }, [reduced, status, dur, rot]);
 
   const ring = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rot.value}deg` }],
+    transform: [{ rotate: `${String(rot.value ?? '')}deg` }],
     opacity: status === 'offline' ? 0 : 1,
   })) as AnimatedStyle;
 
@@ -70,7 +70,7 @@ export function PresenceAvatar({
       {status !== 'offline' && (
         <AnimatedView
           style={ring}
-          className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${ringColors} blur-[2px] opacity-80`}
+          className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${String(ringColors ?? '')} blur-[2px] opacity-80`}
         >
           <div />
         </AnimatedView>

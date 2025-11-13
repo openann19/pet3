@@ -351,7 +351,7 @@ export function PhotoModerationQueueAdmin() {
                   <Card
                     key={record.photoId}
                     className="p-4 cursor-pointer hover:bg-muted/50"
-                    onClick={() => setSelectedRecord(record)}
+                    onClick={() => { setSelectedRecord(record); }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -471,7 +471,7 @@ export function PhotoModerationQueueAdmin() {
                   <div className="text-sm font-medium mb-2">Decision Reason</div>
                   <Textarea
                     value={decisionReason}
-                    onChange={(e) => setDecisionReason(e.target.value)}
+                    onChange={(e) => { setDecisionReason(e.target.value); }}
                     placeholder="Enter reason for decision..."
                     rows={3}
                   />

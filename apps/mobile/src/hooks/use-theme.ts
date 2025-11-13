@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useColorScheme } from 'react-native'
 import { defaultThemeId, themes, type Theme } from '../theme/themes'
 import { createLogger } from '../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('useTheme')
 
@@ -21,7 +22,7 @@ export function useTheme(): {
     const loadTheme = async (): Promise<void> => {
       try {
         const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY)
-        if (saved) {
+        if (isTruthy(saved)) {
           setThemeId(saved)
         }
       } catch {

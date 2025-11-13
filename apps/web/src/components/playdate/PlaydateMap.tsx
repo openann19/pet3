@@ -135,7 +135,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
             <Button
               variant={viewMode === 'map' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('map')}
+              onClick={() => { setViewMode('map'); }}
             >
               <MapTrifold size={18} className="sm:mr-2" />
               <span className="hidden sm:inline">Map</span>
@@ -143,7 +143,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
             <Button
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => { setViewMode('list'); }}
             >
               <List size={18} className="sm:mr-2" />
               <span className="hidden sm:inline">List</span>
@@ -180,11 +180,11 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                         >
                           <Card
                             className={`p-3 cursor-pointer hover:shadow-lg transition-all ${
-                              selectedPlaydate?.id === playdate.id
-                                ? 'ring-2 ring-primary bg-primary/5'
-                                : 'hover:bg-accent/5'
+                              String(selectedPlaydate?.id === playdate.id
+                                                                      ? 'ring-2 ring-primary bg-primary/5'
+                                                                      : 'hover:bg-accent/5' ?? '')
                             }`}
-                            onClick={() => handleSelectPlaydate(playdate)}
+                            onClick={() => { handleSelectPlaydate(playdate); }}
                           >
                             <div className="flex items-start gap-2 mb-2">
                               <MapPin
@@ -252,11 +252,11 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                 >
                   <Card
                     className={`p-4 cursor-pointer hover:shadow-lg transition-all ${
-                      selectedPlaydate?.id === playdate.id
-                        ? 'ring-2 ring-primary bg-primary/5'
-                        : 'hover:bg-accent/5'
+                      String(selectedPlaydate?.id === playdate.id
+                                                      ? 'ring-2 ring-primary bg-primary/5'
+                                                      : 'hover:bg-accent/5' ?? '')
                     }`}
-                    onClick={() => handleSelectPlaydate(playdate)}
+                    onClick={() => { handleSelectPlaydate(playdate); }}
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">

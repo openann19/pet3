@@ -63,16 +63,16 @@ export async function generateAdoptionProfiles(count = 12): Promise<AdoptionProf
     const profilesData = JSON.parse(response) as LLMProfileData[];
 
     const profiles: AdoptionProfile[] = profilesData.map((data: LLMProfileData, index: number) => ({
-      _id: `adopt-${Date.now()}-${index}`,
-      petId: `pet-adopt-${Date.now()}-${index}`,
+      _id: `adopt-${String(Date.now() ?? '')}-${String(index ?? '')}`,
+      petId: `pet-adopt-${String(Date.now() ?? '')}-${String(index ?? '')}`,
       petName: data.petName,
-      petPhoto: `https://picsum.photos/seed/adopt-${Date.now()}-${index}/800/600`,
+      petPhoto: `https://picsum.photos/seed/adopt-${String(Date.now() ?? '')}-${String(index ?? '')}/800/600`,
       breed: data.breed,
       age: data.age,
       gender: data.gender,
       size: data.size,
       location: data.location,
-      shelterId: `shelter-${Math.floor(Math.random() * 10)}`,
+      shelterId: `shelter-${String(Math.floor(Math.random() * 10) ?? '')}`,
       shelterName: data.shelterName,
       status: 'available' as const,
       description: data.description,
@@ -116,8 +116,8 @@ function getFallbackProfiles(): AdoptionProfile[] {
 
   return [
     {
-      _id: `adopt-${timestamp}-1`,
-      petId: `pet-adopt-${timestamp}-1`,
+      _id: `adopt-${String(timestamp ?? '')}-1`,
+      petId: `pet-adopt-${String(timestamp ?? '')}-1`,
       petName: 'Max',
       petPhoto: `https://picsum.photos/seed/max-dog/800/600`,
       breed: 'Golden Retriever',
@@ -148,8 +148,8 @@ function getFallbackProfiles(): AdoptionProfile[] {
       contactPhone: '415-555-0123',
     },
     {
-      _id: `adopt-${timestamp}-2`,
-      petId: `pet-adopt-${timestamp}-2`,
+      _id: `adopt-${String(timestamp ?? '')}-2`,
+      petId: `pet-adopt-${String(timestamp ?? '')}-2`,
       petName: 'Luna',
       petPhoto: `https://picsum.photos/seed/luna-cat/800/600`,
       breed: 'Domestic Shorthair',
@@ -179,8 +179,8 @@ function getFallbackProfiles(): AdoptionProfile[] {
       contactPhone: '503-555-0456',
     },
     {
-      _id: `adopt-${timestamp}-3`,
-      petId: `pet-adopt-${timestamp}-3`,
+      _id: `adopt-${String(timestamp ?? '')}-3`,
+      petId: `pet-adopt-${String(timestamp ?? '')}-3`,
       petName: 'Buddy',
       petPhoto: `https://picsum.photos/seed/buddy-dog/800/600`,
       breed: 'Beagle Mix',

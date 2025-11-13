@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { AccessibilityInfo } from 'react-native'
+import { isTruthy } from '@petspark/shared';
 
 export interface AnnounceNewMessageProps {
   lastText: string | null
@@ -38,7 +39,7 @@ export function AnnounceTyping({ userName, multipleUsers = false }: AnnounceTypi
   const lastAnnouncedRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (userName) {
+    if (isTruthy(userName)) {
       const announcement = multipleUsers
         ? 'Multiple people are typing...'
         : `${userName} is typing...`

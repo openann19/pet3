@@ -333,7 +333,7 @@ export class LostFoundAPI {
   async verifySighting(sightingId: string, verified: boolean, userId: string): Promise<Sighting> {
     try {
       const response = await APIClient.post<CreateSightingResponse>(
-        `/alerts/sightings/${sightingId}/verify`,
+        `/alerts/sightings/${String(sightingId ?? '')}/verify`,
         { verified, userId }
       );
       return response.data.sighting;

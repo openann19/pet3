@@ -23,6 +23,7 @@ import { createLogger } from '../../../utils/logger'
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion'
 import { randomRange } from '../core/seeded-rng'
 import { logEffectEnd, logEffectStart } from '../core/telemetry'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('sticker-physics')
 
@@ -145,7 +146,7 @@ export function useStickerPhysics(options: UseStickerPhysicsOptions = {}): UseSt
     )
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete()
       }, duration)
@@ -175,7 +176,7 @@ export function useStickerPhysics(options: UseStickerPhysicsOptions = {}): UseSt
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
-        { rotate: `${rotation.value}deg` },
+        { rotate: `${String(rotation.value ?? '')}deg` },
         { scale: scale.value },
       ],
     }

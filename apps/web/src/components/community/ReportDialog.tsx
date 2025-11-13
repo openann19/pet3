@@ -149,7 +149,7 @@ export function ReportDialog({
             <Label htmlFor="report-reason">Reason for reporting</Label>
             <RadioGroup
               value={selectedReason}
-              onValueChange={(value) => setSelectedReason(value as ReportReason)}
+              onValueChange={(value) => { setSelectedReason(value as ReportReason); }}
               id="report-reason"
               aria-label="Select report reason"
             >
@@ -184,7 +184,7 @@ export function ReportDialog({
               <Textarea
                 id="report-details"
                 value={details}
-                onChange={(e) => setDetails(e.target.value)}
+                onChange={(e) => { setDetails(e.target.value); }}
                 placeholder="Provide any additional information that might help our review..."
                 rows={4}
                 className="resize-none"

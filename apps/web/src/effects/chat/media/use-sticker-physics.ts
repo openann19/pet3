@@ -18,7 +18,7 @@ import {
   useSharedValue,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { createLogger } from '@/lib/logger';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { randomRange } from '../core/seeded-rng';
@@ -152,7 +152,7 @@ export function useStickerPhysics(options: UseStickerPhysicsOptions = {}): UseSt
     );
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, finalDuration);
@@ -185,7 +185,7 @@ export function useStickerPhysics(options: UseStickerPhysicsOptions = {}): UseSt
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
-        { rotate: `${rotation.value}deg` },
+        { rotate: `${String(rotation.value ?? '')}deg` },
         { scale: scale.value },
       ],
     };

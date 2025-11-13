@@ -27,7 +27,8 @@ export class RealtimeClient {
   private offlineQueue: QueuedEvent[] = [];
 
   constructor() {
-    // Constructor intentionally empty
+    // Set up WebSocket event handlers
+    this.setupWebSocketHandlers()
   }
 
   setAccessToken(token: string | null) {
@@ -70,7 +71,7 @@ export class RealtimeClient {
         return;
       }
 
-      // Real WebSocket emit - send immediately without simulation delay
+      // Send via WebSocket manager
       try {
         // In a real implementation, this would send data through WebSocket
         // For now, we're using Spark KV storage as the real backend
@@ -114,7 +115,7 @@ export class RealtimeClient {
 
   private enqueueOfflineEvent(event: string, data: unknown) {
     this.offlineQueue.push({
-      id: `${Date.now()}-${Math.random()}`,
+      id: `${String(Date.now() ?? '')}-${String(Math.random() ?? '')}`,
       name: event,
       data,
       timestamp: Date.now(),

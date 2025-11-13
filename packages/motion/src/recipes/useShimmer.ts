@@ -21,7 +21,7 @@ export function useShimmer(width = 240, cycle = 1400): UseShimmerReturn {
   const opacity = useSharedValue(0.6)
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Reduced motion: static pulsing opacity at 0.8 Hz
       opacity.value = withRepeat(
         withTiming(1, { duration: 625 }), // 0.8 Hz = 1.25s cycle, half for up/down

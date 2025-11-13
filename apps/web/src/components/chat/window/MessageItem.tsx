@@ -5,7 +5,7 @@ import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { useSendWarp } from '@/effects/chat/bubbles/use-send-warp';
 import { useReceiveAirCushion } from '@/effects/chat/bubbles/use-receive-air-cushion';
-import { useAnimatedStyle } from 'react-native-reanimated';
+import { useAnimatedStyle } from '@petspark/motion';
 import { MapPin, Translate as TranslateIcon } from '@phosphor-icons/react';
 import MessageReactions from '../MessageReactions';
 import MessageAttachments from '../MessageAttachments';
@@ -96,7 +96,7 @@ export function MessageItem({
   return (
     <AnimatedView
       style={combined}
-      className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
     >
       {!isCurrentUser && message.senderAvatar && (
         <PresenceAvatar

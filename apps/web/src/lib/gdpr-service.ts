@@ -285,7 +285,7 @@ export class GDPRService {
         });
       }
 
-      if (result.success) {
+      if (isTruthy(result.success)) {
         logger.debug('Data deletion completed', {
           userId,
           deletedCollections: result.deletedCollections.length,

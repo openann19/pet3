@@ -290,7 +290,7 @@ function ActivityItem({ icon: Icon, title, description, time, type }: ActivityIt
 
   return (
     <div className="flex items-start gap-4">
-      <div className={`p-2 rounded-lg bg-muted ${colorMap[type]}`}>
+      <div className={`p-2 rounded-lg bg-muted ${String(colorMap[type] ?? '')}`}>
         <Icon size={16} weight="fill" />
       </div>
       <div className="flex-1 space-y-1">

@@ -39,17 +39,17 @@ function formatRelative(timestamp: number): string {
   const diff = Date.now() - timestamp
   if (diff >= ONE_DAY_MS) {
     const days = Math.floor(diff / ONE_DAY_MS)
-    return `${days}d ago`
+    return `${String(days ?? '')}d ago`
   }
 
   const hours = Math.floor(diff / (60 * 60 * 1000))
   if (hours > 0) {
-    return `${hours}h ago`
+    return `${String(hours ?? '')}h ago`
   }
 
   const minutes = Math.floor(diff / (60 * 1000))
   if (minutes > 0) {
-    return `${minutes}m ago`
+    return `${String(minutes ?? '')}m ago`
   }
 
   return 'Just now'
@@ -120,14 +120,14 @@ export function NotificationCenter(): React.JSX.Element {
 
       <View style={styles.filterRow}>
         <FilterChip
-          label={`All (${notifications.length})`}
+          label={`All (${String(notifications.length ?? '')})`}
           active={filter === 'all'}
-          onPress={() => setFilter('all')}
+          onPress={() => { setFilter('all'); }}
         />
         <FilterChip
-          label={`Unread (${unreadCount})`}
+          label={`Unread (${String(unreadCount ?? '')})`}
           active={filter === 'unread'}
-          onPress={() => setFilter('unread')}
+          onPress={() => { setFilter('unread'); }}
         />
       </View>
 
@@ -220,7 +220,7 @@ function NotificationRow({
           <Text style={styles.notificationTitle}>{notification.title}</Text>
           {!notification.read && (
             <Pressable
-              onPress={() => onMarkRead(notification.id)}
+              onPress={() => { onMarkRead(notification.id); }}
               style={styles.notificationAction}
               accessibilityRole="button"
             >
@@ -234,7 +234,7 @@ function NotificationRow({
         <Text style={styles.notificationTimestamp}>{formatRelative(notification.timestamp)}</Text>
       </View>
       <Pressable
-        onPress={() => onDelete(notification.id)}
+        onPress={() => { onDelete(notification.id); }}
         style={styles.deleteButton}
         accessibilityRole="button"
       >

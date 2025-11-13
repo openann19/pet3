@@ -8,7 +8,7 @@ import {
   withDelay,
   Easing,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useCallback, useState, useEffect } from 'react';
 import { makeRng } from '@petspark/shared';
 
@@ -71,7 +71,7 @@ export function useReactionTrail(options: UseReactionTrailOptions = {}): UseReac
         const offsetY = (rng() - 0.5) * 30;
 
         const particle: ReactionTrailParticle = {
-          id: `${Date.now()}-${i}-${rng()}`,
+          id: `${String(Date.now() ?? '')}-${String(i ?? '')}-${String(rng() ?? '')}`,
           x: useSharedValue(x + offsetX),
           y: useSharedValue(y + offsetY),
           scale: useSharedValue(0),

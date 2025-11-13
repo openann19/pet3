@@ -220,9 +220,9 @@ export const initializePushAndDeepLinks = async () => {
 
 export const sendMatchNotification = async (petName: string, petId: string) => {
   await pushNotifications.showNotification({
-    id: `match_${petId}`,
+    id: `match_${String(petId ?? '')}`,
     title: 'New Match! 🎉',
-    body: `You matched with ${petName}!`,
+    body: `You matched with ${String(petName ?? '')}!`,
     icon: '/icon-192.png',
     tag: 'match',
     data: {
@@ -249,8 +249,8 @@ export const sendMessageNotification = async (
   chatId: string
 ) => {
   await pushNotifications.showNotification({
-    id: `message_${chatId}_${Date.now()}`,
-    title: `Message from ${senderName}`,
+    id: `message_${String(chatId ?? '')}_${String(Date.now() ?? '')}`,
+    title: `Message from ${String(senderName ?? '')}`,
     body: message,
     icon: '/icon-192.png',
     tag: 'message',

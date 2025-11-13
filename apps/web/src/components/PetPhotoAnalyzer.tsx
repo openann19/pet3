@@ -16,7 +16,7 @@ import {
   withRepeat,
   withTiming,
   withSpring,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { toast } from 'sonner';
 
 const logger = createLogger('PetPhotoAnalyzer');
@@ -141,7 +141,7 @@ export default function PetPhotoAnalyzer({ onAnalysisComplete }: PetPhotoAnalyze
       const isDataUrl = photo.startsWith('data:');
       const prompt = buildLLMPrompt`You are an expert veterinarian and animal behaviorist. Analyze this pet photo and extract the following information. Be specific but realistic.
 
-${isDataUrl ? 'This is an uploaded/captured photo of a pet.' : `Photo URL: ${photo}`}
+${String(isDataUrl ? 'This is an uploaded/captured photo of a pet.' : `Photo URL: ${String(photo ?? '')}` ?? '')}
 
 Based on typical characteristics of pets in photos, provide:
 1. The most likely breed (be specific, e.g., "Golden Retriever" not just "Dog")
@@ -289,7 +289,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                     type="button"
                     size="sm"
                     variant={uploadMode === 'url' ? 'default' : 'outline'}
-                    onClick={() => setUploadMode('url')}
+                    onClick={() => { setUploadMode('url'); }}
                     className="gap-2"
                   >
                     <Upload size={16} weight="fill" />
@@ -328,7 +328,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                   <input
                     type="text"
                     value={photo}
-                    onChange={(e) => handlePhotoInput(e.target.value)}
+                    onChange={(e) => { handlePhotoInput(e.target.value); }}
                     placeholder="Paste image URL here..."
                     aria-label="Image URL"
                     className="flex-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20 transition-all"

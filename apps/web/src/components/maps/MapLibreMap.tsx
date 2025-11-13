@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useMapLibreMap, type MapMarker } from '@/lib/maps/useMapLibreMap';
 import type { Location } from '@/lib/maps/types';
 import { useApp } from '@/contexts/AppContext';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface MapLibreMapProps {
   center: Location;
@@ -36,9 +37,9 @@ export default function MapLibreMap({
     clusterMarkers,
   });
 
-  if (error) {
+  if (isTruthy(error)) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ height }}>
+      <div className={`flex items-center justify-center ${String(className ?? '')}`} style={{ height }}>
         <div className="text-center space-y-2 p-4">
           <p className="text-destructive font-semibold">
             {t.map?.errorLoadingMap || 'Error loading map'}
@@ -50,7 +51,7 @@ export default function MapLibreMap({
   }
 
   return (
-    <div className={`relative ${className}`} style={{ height }}>
+    <div className={`relative ${String(className ?? '')}`} style={{ height }}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
           <div className="text-center space-y-2">

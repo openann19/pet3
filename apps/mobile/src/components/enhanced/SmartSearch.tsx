@@ -17,6 +17,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import * as Haptics from 'expo-haptics'
 import { useStorage } from '@/hooks/use-storage'
 import { timingConfigs } from '@/effects/reanimated/transitions'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
@@ -92,7 +93,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
   const showDropdown = isFocused && (query.trim() || showHistory || showTrending)
 
   React.useEffect(() => {
-    if (showDropdown) {
+    if (isTruthy(showDropdown)) {
       dropdownOpacity.value = withTiming(1, timingConfigs.smooth)
       dropdownTranslateY.value = withTiming(0, timingConfigs.smooth)
     } else {
@@ -165,8 +166,8 @@ export function SmartSearch<T extends Record<string, unknown>>({
         <TextInput
           value={query}
           onChangeText={setQuery}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+          onFocus={() => { setIsFocused(true); }}
+          onBlur={() => setTimeout(() => { setIsFocused(false); }, 200)}
           placeholder={placeholder}
           style={styles.input}
           placeholderTextColor="#94a3b8"
@@ -179,7 +180,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
             <FlatList
               data={results}
               renderItem={renderItem}
-              keyExtractor={(_, index) => `result-${index}`}
+              keyExtractor={(_, index) => `result-${String(index ?? '')}`}
               style={styles.resultsList}
             />
           )}
@@ -190,7 +191,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
               <FlatList
                 data={searchHistory}
                 renderItem={renderHistoryItem}
-                keyExtractor={(_item, index) => `history-${index}`}
+                keyExtractor={(_item, index) => `history-${String(index ?? '')}`}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />
@@ -203,7 +204,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
               <FlatList
                 data={trendingSearches}
                 renderItem={renderTrendingItem}
-                keyExtractor={(_item, index) => `trending-${index}`}
+                keyExtractor={(_item, index) => `trending-${String(index ?? '')}`}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />

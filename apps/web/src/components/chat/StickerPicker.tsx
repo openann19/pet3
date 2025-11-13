@@ -7,7 +7,7 @@ import {
   withSpring,
   withTiming,
   withDelay,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { MagnifyingGlass, X, Crown, Clock } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -151,12 +151,12 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
               type="text"
               placeholder="Search stickers..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               className="pl-10 pr-10"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => { setSearchQuery(''); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X size={16} />
@@ -172,7 +172,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                 <Button
                   variant={selectedCategory === 'all' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => handleCategoryChange('all')}
+                  onClick={() => { handleCategoryChange('all'); }}
                   className="whitespace-nowrap rounded-full"
                 >
                   All
@@ -181,7 +181,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                   <Button
                     variant={selectedCategory === 'recent' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => handleCategoryChange('recent')}
+                    onClick={() => { handleCategoryChange('recent'); }}
                     className="whitespace-nowrap rounded-full gap-1.5"
                   >
                     <Clock size={14} weight="bold" />
@@ -191,7 +191,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                 <Button
                   variant={selectedCategory === 'premium' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => handleCategoryChange('premium')}
+                  onClick={() => { handleCategoryChange('premium'); }}
                   className="whitespace-nowrap rounded-full gap-1.5"
                 >
                   <Crown size={14} weight="fill" />
@@ -202,7 +202,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                     key={category.id}
                     variant={selectedCategory === category.id ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => handleCategoryChange(category.id)}
+                    onClick={() => { handleCategoryChange(category.id); }}
                     className="whitespace-nowrap rounded-full gap-1.5"
                   >
                     <span>{category.emoji}</span>
@@ -231,9 +231,9 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                     sticker={sticker}
                     index={index}
                     isHovered={hoveredSticker === sticker.id}
-                    onHover={() => setHoveredSticker(sticker.id)}
-                    onLeave={() => setHoveredSticker(null)}
-                    onClick={() => handleStickerClick(sticker)}
+                    onHover={() => { setHoveredSticker(sticker.id); }}
+                    onLeave={() => { setHoveredSticker(null); }}
+                    onClick={() => { handleStickerClick(sticker); }}
                   />
                 ))}
               </div>
@@ -279,7 +279,7 @@ function StickerButton({
   }, [index, opacity, scale]);
 
   useEffect(() => {
-    if (isHovered) {
+    if (isTruthy(isHovered)) {
       hoverScale.value = withSpring(1.2, springConfigs.bouncy, () => {
         hoverScale.value = withSpring(1, springConfigs.smooth);
       });

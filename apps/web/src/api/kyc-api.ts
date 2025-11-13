@@ -140,7 +140,7 @@ class KYCApiImpl {
   async handleKYCWebhook(request: KYCWebhookRequest): Promise<void> {
     try {
       await APIClient.post(
-        `${ENDPOINTS.KYC.GET_VERIFICATION(request.submissionId)}/webhook`,
+        `${String(ENDPOINTS.KYC.GET_VERIFICATION(request.submissionId) ?? '')}/webhook`,
         request
       );
     } catch (error) {
@@ -156,7 +156,7 @@ class KYCApiImpl {
   async manualKYCReview(request: ManualKYCReviewRequest): Promise<void> {
     try {
       await APIClient.post(
-        `${ENDPOINTS.KYC.GET_VERIFICATION(request.submissionId)}/review`,
+        `${String(ENDPOINTS.KYC.GET_VERIFICATION(request.submissionId) ?? '')}/review`,
         request
       );
     } catch (error) {
@@ -172,7 +172,7 @@ class KYCApiImpl {
   async recordAgeVerification(request: RecordAgeVerificationRequest): Promise<AgeVerification> {
     try {
       const response = await APIClient.post<AgeVerification>(
-        `${ENDPOINTS.KYC.STATUS}/age-verification`,
+        `${String(ENDPOINTS.KYC.STATUS ?? '')}/age-verification`,
         request
       );
       return response.data;
@@ -189,7 +189,7 @@ class KYCApiImpl {
   async recordConsent(request: RecordConsentRequest): Promise<ConsentRecord> {
     try {
       const response = await APIClient.post<ConsentRecord>(
-        `${ENDPOINTS.KYC.STATUS}/consent`,
+        `${String(ENDPOINTS.KYC.STATUS ?? '')}/consent`,
         request
       );
       return response.data;

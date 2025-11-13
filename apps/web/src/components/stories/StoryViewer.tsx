@@ -31,8 +31,8 @@ import {
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/reanimated';
-import * as Reanimated from 'react-native-reanimated';
-import { interpolate, Extrapolation } from 'react-native-reanimated';
+import * as Reanimated from '@petspark/motion';
+import { interpolate, Extrapolation } from '@petspark/motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import SaveToHighlightDialog from './SaveToHighlightDialog';
@@ -425,7 +425,7 @@ export default function StoryViewer({
                 aria-valuenow={idx === currentIndex ? progress : idx < currentIndex ? 100 : 0}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Story ${idx + 1} of ${stories.length}`}
+                aria-label={`Story ${String(idx + 1 ?? '')} of ${String(stories.length ?? '')}`}
               >
                 <AnimatedView
                   className="h-full bg-white"
@@ -565,7 +565,7 @@ export default function StoryViewer({
               loop
               muted={isMuted}
               playsInline
-              aria-label={`Video story by ${currentStory.userName}`}
+              aria-label={`Video story by ${String(currentStory.userName ?? '')}`}
             />
           )}
 
@@ -606,7 +606,7 @@ export default function StoryViewer({
                           reactionButtonTap.handlePress();
                           handleReaction(emoji);
                         }}
-                        aria-label={`React with ${emoji}`}
+                        aria-label={`React with ${String(emoji ?? '')}`}
                       >
                         {emoji}
                       </AnimatedView>
@@ -620,7 +620,7 @@ export default function StoryViewer({
               <div className="flex-1 relative">
                 <Input
                   value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
+                  onChange={(e) => { setReplyText(e.target.value); }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleReply();
@@ -633,7 +633,7 @@ export default function StoryViewer({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowReactions(!showReactions)}
+                  onClick={() => { setShowReactions(!showReactions); }}
                   className="absolute right-1 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
                   aria-label={showReactions ? 'Hide reactions' : 'Show reactions'}
                   aria-pressed={showReactions}

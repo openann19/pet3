@@ -1,6 +1,7 @@
 // ts-node scripts/verify-migration.ts
 import fs from 'node:fs'
 import path from 'node:path'
+import logger from '@/core/logger';
 
 type Check = { name: string; ok: () => boolean | string }
 const root = process.cwd()
@@ -75,13 +76,13 @@ const checks: Check[] = [
         'use-adoption',
       ]
       const hooksDir = path.join(root, 'apps/web/src/hooks/api')
-      if (!fs.existsSync(hooksDir)) return `Missing hooks dir: ${hooksDir}`
+      if (!fs.existsSync(hooksDir)) return `Missing hooks dir: ${String(hooksDir ?? '')}`
       const missing: string[] = []
       const noQuery: string[] = []
       const noMutation: string[] = []
 
       for (const n of need) {
-        const p = path.join(hooksDir, `${n}.ts`)
+        const p = path.join(hooksDir, `${String(n ?? '')}.ts`)
         if (!fs.existsSync(p)) {
           missing.push(p)
           continue
@@ -164,11 +165,11 @@ let failed = false
 for (const c of checks) {
   const r = c.ok()
   if (r === true) {
-    console.log(`✅ ${c.name}`)
+    logger.info(`✅ ${String(c.name ?? '')}`)
   } else {
     failed = true
-    console.error(`❌ ${c.name} – ${r}`)
+    logger.error(`❌ ${String(c.name ?? '')} – ${String(r ?? '')}`)
   }
 }
 if (failed) process.exit(1)
-console.log('🎯 Migration verification passed.')
+logger.info('🎯 Migration verification passed.')

@@ -8,7 +8,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Translate as TranslateIcon } from '@phosphor-icons/react';
-import { useAnimatedStyle } from 'react-native-reanimated';
+import { useAnimatedStyle } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
@@ -120,7 +120,7 @@ export function MessageItem({
   return (
     <AnimatedView
       style={combinedStyle}
-      className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
     >
       {!isCurrentUser && message.senderAvatar && (
         <PresenceAvatar
@@ -227,7 +227,7 @@ export function MessageItem({
                 size="sm"
                 variant="ghost"
                 className="absolute -bottom-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                onClick={() => onTranslate(message.id)}
+                onClick={() => { onTranslate(message.id); }}
               >
                 <TranslateIcon size={14} />
               </Button>

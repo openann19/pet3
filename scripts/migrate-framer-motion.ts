@@ -8,6 +8,7 @@
 
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, extname } from 'path'
+import logger from '@/core/logger';
 
 interface MigrationPattern {
   from: RegExp
@@ -107,12 +108,12 @@ function generateMigrationReport(rootDir: string): void {
   console.log(`Found ${framerMotionFiles.length} files using framer-motion:\n`)
 
   framerMotionFiles.forEach(file => {
-    console.log(`  - ${file.replace(rootDir, '')}`)
+    logger.info(`  - ${String(file.replace(rootDir, '') ?? '')}`)
   })
 
-  console.log(`\nMigration patterns to apply:`)
+  logger.info(`\nMigration patterns to apply:`)
   MIGRATION_PATTERNS.forEach((pattern, index) => {
-    console.log(`  ${index + 1}. ${pattern.description}`)
+    logger.info(`  ${String(index + 1 ?? '')}. ${String(pattern.description ?? '')}`)
   })
 }
 

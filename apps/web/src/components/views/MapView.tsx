@@ -30,8 +30,55 @@ import { useStorage } from '@/hooks/use-storage';
 import { toast } from 'sonner';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { logger } from '@/lib/logger';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 type MapViewMode = 'discover' | 'places' | 'playdate' | 'lost-pet' | 'matches';
+
+// Animated marker component
+function AnimatedMarker({
+  place,
+  index,
+  category,
+  onClick,
+}: {
+  place: Place;
+  index: number;
+  category: { id: string; name: string; icon: string; color: string } | undefined;
+  onClick: () => void;
+}) {
+  const markerEntry = useEntryAnimation({
+    initialScale: 0,
+    initialOpacity: 0,
+    delay: index * 50,
+    duration: 300,
+  });
+
+  return (
+    <AnimatedView
+      className="absolute"
+      style={[
+        markerEntry.animatedStyle,
+        {
+          left: `${20 + (index % 5) * 16}%`,
+          top: `${20 + Math.floor(index / 5) * 25}%`,
+        },
+      ]}
+    >
+      <button
+        onClick={onClick}
+        className="relative group cursor-pointer transform transition-transform hover:scale-110 active:scale-95"
+      >
+        <div
+          className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
+          style={{ backgroundColor: category?.color || '#ec4899' }}
+        >
+          {category?.icon || '📍'}
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+      </button>
+    </AnimatedView>
+  );
+}
 
 export default function MapView() {
   const { t } = useApp();
@@ -84,7 +131,7 @@ export default function MapView() {
   }, [preciseSharingEnabled, preciseSharingUntil]);
 
   useEffect(() => {
-    if (userLocation) {
+    if (isTruthy(userLocation)) {
       generateDemoPlaces(userLocation);
     }
   }, [userLocation, radiusKm]);
@@ -143,15 +190,15 @@ export default function MapView() {
       };
 
       places.push({
-        id: `place-${i}`,
-        name: `${category.name} ${i + 1}`,
-        description: `Great ${category.name.toLowerCase()} in your area`,
+        id: `place-${String(i ?? '')}`,
+        name: `${String(category.name ?? '')} ${String(i + 1 ?? '')}`,
+        description: `Great ${String(category.name.toLowerCase() ?? '')} in your area`,
         category: category.id,
         location,
-        address: `${Math.floor(Math.random() * 999)} Main St, City`,
-        phone: `+1-555-${Math.floor(Math.random() * 9000) + 1000}`,
+        address: `${String(Math.floor(Math.random() * 999) ?? '')} Main St, City`,
+        phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000 ?? '')}`,
         hours: '9:00 AM - 6:00 PM',
-        photos: [`https://images.unsplash.com/photo-${1560807700000 + i * 1000000}?w=400&q=80`],
+        photos: [`https://images.unsplash.com/photo-${String(1560807700000 + i * 1000000 ?? '')}?w=400&q=80`],
         verified: Math.random() > 0.3,
         petFriendly: true,
         rating: 3.5 + Math.random() * 1.5,
@@ -206,6 +253,42 @@ export default function MapView() {
   }, [nearbyPlaces, selectedCategory, searchQuery]);
 
   const displayLocation = preciseSharingEnabled && userLocation ? userLocation : coarseLocation;
+
+  // Animation hooks
+  const searchBarEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
+  const privacyBannerEntry = useEntryAnimation({ initialY: -20, delay: 100, duration: 300 });
+  const preciseBannerEntry = useEntryAnimation({ initialY: -20, delay: 0, duration: 300 });
+  const statsFooterEntry = useEntryAnimation({ initialY: 20, delay: 200 });
+  const listSidebarPresence = useAnimatePresence({ isVisible: showList });
+  const detailSheetPresence = useAnimatePresence({ isVisible: !!selectedMarker && selectedMarker.type === 'place' });
+
+  // Sidebar slide animation
+  const sidebarX = useSharedValue(100);
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${sidebarX.value}%` }],
+  }));
+
+  // Detail sheet slide animation
+  const detailSheetY = useSharedValue(100);
+  const detailSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: `${detailSheetY.value}%` }],
+  }));
+
+  useEffect(() => {
+    if (showList) {
+      sidebarX.value = withSpring(0, { damping: 30, stiffness: 300 });
+    } else {
+      sidebarX.value = withSpring(100, { damping: 30, stiffness: 300 });
+    }
+  }, [showList, sidebarX]);
+
+  useEffect(() => {
+    if (selectedMarker && selectedMarker.type === 'place') {
+      detailSheetY.value = withSpring(0, { damping: 30, stiffness: 300 });
+    } else {
+      detailSheetY.value = withSpring(100, { damping: 30, stiffness: 300 });
+    }
+  }, [selectedMarker, detailSheetY]);
 
   return (
     <PageTransitionWrapper key="map-view" direction="up">

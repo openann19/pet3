@@ -135,11 +135,11 @@ import { additionalThemes } from './themes-extended'
  */
 export const allThemes: Record<string, Theme> = {
   ...themes,
-  ...Object.entries(additionalThemes).reduce(
+  ...Object.entries(additionalThemes).reduce<Record<string, Theme>>(
     (acc, [id, theme]) => ({
       ...acc,
       [id]: { ...theme, id },
     }),
-    {} as Record<string, Theme>
+    {}
   ),
 }

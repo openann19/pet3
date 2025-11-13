@@ -24,7 +24,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -499,7 +499,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
     }
 
     const petData: Pet = {
-      id: editingPet?.id || `pet-${Date.now()}`,
+      id: editingPet?.id || `pet-${String(Date.now() ?? '')}`,
       name,
       breed,
       age: parseInt(age),
@@ -671,8 +671,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Input
                   id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={`e.g., ${petType === 'dog' ? 'Max' : petType === 'cat' ? 'Whiskers' : petType === 'bird' ? 'Charlie' : petType === 'rabbit' ? 'Fluffy' : petType === 'fish' ? 'Bubbles' : 'Buddy'}`}
+                  onChange={(e) => { setName(e.target.value); }}
+                  placeholder={`e.g., ${String(petType === 'dog' ? 'Max' : petType === 'cat' ? 'Whiskers' : petType === 'bird' ? 'Charlie' : petType === 'rabbit' ? 'Fluffy' : petType === 'fish' ? 'Bubbles' : 'Buddy' ?? '')}`}
                   className="mt-1"
                   autoFocus
                 />
@@ -682,8 +682,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Input
                   id="breed"
                   value={breed}
-                  onChange={(e) => setBreed(e.target.value)}
-                  placeholder={`e.g., ${petType === 'dog' ? 'Golden Retriever' : petType === 'cat' ? 'Maine Coon' : petType === 'bird' ? 'Parakeet' : petType === 'rabbit' ? 'Holland Lop' : petType === 'fish' ? 'Betta' : 'Mixed'}`}
+                  onChange={(e) => { setBreed(e.target.value); }}
+                  placeholder={`e.g., ${String(petType === 'dog' ? 'Golden Retriever' : petType === 'cat' ? 'Maine Coon' : petType === 'bird' ? 'Parakeet' : petType === 'rabbit' ? 'Holland Lop' : petType === 'fish' ? 'Betta' : 'Mixed' ?? '')}`}
                   className="mt-1"
                 />
               </div>
@@ -695,7 +695,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   min="0"
                   max="30"
                   value={age}
-                  onChange={(e) => setAge(e.target.value)}
+                  onChange={(e) => { setAge(e.target.value); }}
                   placeholder="3"
                   className="mt-1"
                 />
@@ -722,7 +722,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       type="button"
                       variant={gender === 'male' ? 'default' : 'outline'}
                       className="w-full h-16 text-lg"
-                      onClick={() => setGender('male')}
+                      onClick={() => { setGender('male'); }}
                     >
                       ♂ Male
                     </Button>
@@ -732,7 +732,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       type="button"
                       variant={gender === 'female' ? 'default' : 'outline'}
                       className="w-full h-16 text-lg"
-                      onClick={() => setGender('female')}
+                      onClick={() => { setGender('female'); }}
                     >
                       ♀ Female
                     </Button>
@@ -765,7 +765,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Input
                   id="location"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => { setLocation(e.target.value); }}
                   placeholder="e.g., San Francisco, CA"
                   className="mt-1"
                 />
@@ -805,7 +805,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               <Input
                 id="photo"
                 value={photo}
-                onChange={(e) => setPhoto(e.target.value)}
+                onChange={(e) => { setPhoto(e.target.value); }}
                 placeholder="https://images.unsplash.com/photo-..."
                 className="mt-1"
               />
@@ -823,8 +823,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               <Textarea
                 id="bio"
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder={`Tell us what makes ${name || 'your pet'} special...`}
+                onChange={(e) => { setBio(e.target.value); }}
+                placeholder={`Tell us what makes ${String(name || 'your pet' ?? '')} special...`}
                 rows={3}
                 className="mt-1"
               />

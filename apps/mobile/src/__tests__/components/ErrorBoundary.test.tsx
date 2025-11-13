@@ -7,10 +7,12 @@ import { fireEvent, render } from '@testing-library/react-native'
 import React from 'react'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { ErrorBoundary } from '../../components/ErrorBoundary'
+import { logger } from '../../lib/logger'
+import { isTruthy } from '@petspark/shared'
 
 // Component that throws an error
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }): React.JSX.Element => {
-  if (shouldThrow) {
+  if (isTruthy(shouldThrow)) {
     throw new Error('Test error')
   }
   return <>{'No error'}</>

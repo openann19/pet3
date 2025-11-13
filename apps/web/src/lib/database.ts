@@ -82,7 +82,7 @@ export class DatabaseService {
       filtered = filtered.filter((item) => this.matchesFilter(item, options.filter!));
     }
 
-    if (options.sortBy) {
+    if (isTruthy(options.sortBy)) {
       filtered.sort((a, b) => {
         const sortKey = options.sortBy!;
         const aVal = a[sortKey];

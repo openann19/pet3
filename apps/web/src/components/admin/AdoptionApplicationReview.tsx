@@ -253,7 +253,7 @@ function ApplicationCard({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onToggleExpanded(application._id)}
+            onClick={() => { onToggleExpanded(application._id); }}
             className="gap-2"
           >
             {isExpanded ? (
@@ -274,7 +274,7 @@ function ApplicationCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onReviewClick(application, 'reject')}
+                onClick={() => { onReviewClick(application, 'reject'); }}
                 className="gap-2 border-red-500/30 hover:bg-red-500/10 hover:text-red-600"
               >
                 <XCircle size={16} weight="fill" />
@@ -282,7 +282,7 @@ function ApplicationCard({
               </Button>
               <Button
                 size="sm"
-                onClick={() => onReviewClick(application, 'approve')}
+                onClick={() => { onReviewClick(application, 'approve'); }}
                 className="gap-2 bg-green-600 hover:bg-green-700"
               >
                 <CheckCircle size={16} weight="fill" />
@@ -539,7 +539,7 @@ export default function AdoptionApplicationReview() {
     }
   };
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <div className="flex-1 overflow-auto p-6 space-y-6">
         <div className="text-center py-12">
@@ -632,12 +632,12 @@ export default function AdoptionApplicationReview() {
                 <Input
                   placeholder="Search by applicant name, email, or pet name..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); }}
                   className="pl-10"
                 />
               </div>
             </div>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); }}>
               <TabsList>
                 <TabsTrigger value="all">
                   All{' '}
@@ -765,7 +765,7 @@ export default function AdoptionApplicationReview() {
                       : 'Explain why this application is being rejected...'
                   }
                   value={reviewNotes}
-                  onChange={(e) => setReviewNotes(e.target.value)}
+                  onChange={(e) => { setReviewNotes(e.target.value); }}
                   rows={4}
                 />
                 <p className="text-xs text-muted-foreground">

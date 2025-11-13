@@ -54,6 +54,108 @@ const MAX_VIDEO_DURATION = 60;
 type MediaType = 'photo' | 'video';
 type CropSize = 'square' | 'portrait' | 'landscape' | 'original';
 
+// Image preview item component
+function ImagePreviewItem({ 
+  img, 
+  index, 
+  onRemove 
+}: { 
+  img: string
+  index: number
+  onRemove: () => void 
+}) {
+  const imageEntry = useEntryAnimation({ 
+    initialScale: 0.8, 
+    initialOpacity: 0,
+    delay: index * 50 
+  })
+  
+  return (
+    <AnimatedView
+      style={imageEntry.animatedStyle}
+      className="relative aspect-square rounded-lg overflow-hidden bg-muted group"
+    >
+      <img 
+        src={img} 
+        alt={`Upload ${String(index + 1 ?? '')}`}
+        className="w-full h-full object-cover"
+      />
+      <button
+        onClick={onRemove}
+        className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <X size={16} />
+      </button>
+    </AnimatedView>
+  )
+}
+
+// Video play button with hover animation
+function VideoPlayButton({ 
+  isPlaying, 
+  onClick 
+}: { 
+  isPlaying: boolean
+  onClick: () => void 
+}) {
+  const hoverAnimation = useHoverAnimation({ scale: 1.1 })
+  
+  return (
+    <AnimatedView
+      style={hoverAnimation.animatedStyle}
+      onMouseEnter={hoverAnimation.handleMouseEnter}
+      onMouseLeave={hoverAnimation.handleMouseLeave}
+      onMouseDown={hoverAnimation.handleMouseDown}
+      onMouseUp={hoverAnimation.handleMouseUp}
+      onClick={onClick}
+      className="bg-white/90 hover:bg-white rounded-full p-4 shadow-2xl cursor-pointer"
+    >
+      {isPlaying ? (
+        <Pause size={32} weight="fill" className="text-black" />
+      ) : (
+        <Play size={32} weight="fill" className="text-black" />
+      )}
+    </AnimatedView>
+  )
+}
+
+// Crop size button with hover animation
+function CropSizeButton({ 
+  label, 
+  icon, 
+  desc, 
+  isSelected, 
+  onClick 
+}: { 
+  label: string
+  icon: string
+  desc?: string | undefined
+  isSelected: boolean
+  onClick: () => void 
+}) {
+  const hoverAnimation = useHoverAnimation({ scale: 1.02 })
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`p-3 rounded-lg border-2 transition-all text-left ${
+        String(isSelected
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50' ?? '')
+      }`}
+      style={hoverAnimation.animatedStyle as React.CSSProperties}
+      onMouseEnter={hoverAnimation.handleMouseEnter}
+      onMouseLeave={hoverAnimation.handleMouseLeave}
+      onMouseDown={hoverAnimation.handleMouseDown}
+      onMouseUp={hoverAnimation.handleMouseUp}
+    >
+      <div className="text-xl mb-0.5">{icon}</div>
+      <div className="text-xs font-medium">{label}</div>
+      {desc && <div className="text-xs text-muted-foreground">{desc}</div>}
+    </button>
+  )
+}
+
 interface VideoUploadState {
   file: File | null;
   previewUrl: string | null;
@@ -327,7 +429,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
       if (tags.length > 0) {
         postData.tags = tags;
       }
-      if (location) {
+      if (isTruthy(location)) {
         postData.location = {
           city: location.placeName?.split(',')[0] || 'Unknown',
           country: location.placeName?.split(',').pop()?.trim() || 'Unknown',
@@ -426,7 +528,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {images.map((img, index) => (
-                    <MotionView
+                    <ImagePreviewItem
                       key={index}
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -447,9 +549,9 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                     </MotionView>
                   ))}
                 </div>
-              </MotionView>
-            )}
-          </Presence>
+              </AnimatedView>
+            ) : null
+          })()}
 
           {/* Video Preview */}
           <Presence visible={!!videoState.previewUrl}>
@@ -484,26 +586,28 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                   )}
                 </div>
 
-                {videoState.isCompressing && videoState.compressionProgress && (
-                  <MotionView
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2"
-                  >
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-primary">
-                        {videoState.compressionProgress.message}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {Math.round(videoState.compressionProgress.progress)}%
-                      </span>
-                    </div>
-                    <Progress value={videoState.compressionProgress.progress} className="h-2" />
-                    <div className="text-xs text-muted-foreground">
-                      Stage: {videoState.compressionProgress.stage}
-                    </div>
-                  </MotionView>
-                )}
+                {videoState.isCompressing && videoState.compressionProgress && (() => {
+                  const progressAnimation = useEntryAnimation({ initialY: -10, initialOpacity: 0 })
+                  return (
+                    <AnimatedView
+                      style={progressAnimation.animatedStyle}
+                      className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2"
+                    >
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-primary">
+                          {videoState.compressionProgress.message}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {Math.round(videoState.compressionProgress.progress)}%
+                        </span>
+                      </div>
+                      <Progress value={videoState.compressionProgress.progress} className="h-2" />
+                      <div className="text-xs text-muted-foreground">
+                        Stage: {videoState.compressionProgress.stage}
+                      </div>
+                    </AnimatedView>
+                  )
+                })()}
 
                 {videoState.error && (
                   <MotionView
@@ -525,29 +629,21 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                     ref={videoPreviewRef}
                     src={videoState.previewUrl}
                     className="w-full h-full object-contain"
-                    onPlay={() => setIsVideoPlaying(true)}
-                    onPause={() => setIsVideoPlaying(false)}
-                    onEnded={() => setIsVideoPlaying(false)}
+                    onPlay={() => { setIsVideoPlaying(true); }}
+                    onPause={() => { setIsVideoPlaying(false); }}
+                    onEnded={() => { setIsVideoPlaying(false); }}
                     loop
                   />
 
                   <button
                     onClick={toggleVideoPlayback}
                     className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
-                    disabled={videoState.isCompressing}
                   >
-                    <MotionView
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="bg-white/90 hover:bg-white rounded-full p-4 shadow-2xl"
-                    >
-                      {isVideoPlaying ? (
-                        <Pause size={32} weight="fill" className="text-black" />
-                      ) : (
-                        <Play size={32} weight="fill" className="text-black" />
-                      )}
-                    </MotionView>
-                  </button>
+                    <VideoPlayButton
+                      isPlaying={isVideoPlaying}
+                      onClick={toggleVideoPlayback}
+                    />
+                  </div>
 
                   <button
                     onClick={handleRemoveVideo}
@@ -566,9 +662,9 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                     </div>
                   )}
                 </div>
-              </MotionView>
-            )}
-          </Presence>
+              </AnimatedView>
+            ) : null
+          })()}
 
           {/* Media Options Popup */}
           <Presence visible={showMediaOptions}>
@@ -584,14 +680,14 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowMediaOptions(false)}
+                    onClick={() => { setShowMediaOptions(false); }}
                     className="h-8 w-8 p-0"
                   >
                     <X size={16} />
                   </Button>
                 </div>
 
-                <Tabs value={mediaType} onValueChange={(v) => setMediaType(v as MediaType)}>
+                <Tabs value={mediaType} onValueChange={(v) => { setMediaType(v as MediaType); }}>
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="photo" className="gap-2">
                       <Camera size={16} />
@@ -632,7 +728,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                       </div>
                     </div>
                     <Button
-                      onClick={() => handleImageUpload()}
+                      onClick={() => { handleImageUpload(); }}
                       className="w-full"
                       disabled={images.length >= MAX_IMAGES}
                     >
@@ -679,9 +775,9 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                     </Button>
                   </TabsContent>
                 </Tabs>
-              </MotionView>
-            )}
-          </Presence>
+              </AnimatedView>
+            ) : null
+          })()}
 
           {/* Tag pets */}
           {userPets && userPets.length > 0 && (
@@ -721,7 +817,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
               <input
                 type="text"
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={(e) => { setTagInput(e.target.value); }}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                 placeholder={t.community?.addTag || 'Add tag...'}
                 className="flex-1 px-3 py-2 text-sm border border-input bg-background rounded-md"
@@ -782,7 +878,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowMediaOptions(!showMediaOptions)}
+              onClick={() => { setShowMediaOptions(!showMediaOptions); }}
               className="gap-2"
             >
               {showMediaOptions ? (

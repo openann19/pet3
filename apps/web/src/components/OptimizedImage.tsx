@@ -100,7 +100,7 @@ export function OptimizedImage({
     }
   };
 
-  if (hasError) {
+  if (isTruthy(hasError)) {
     return (
       <div
         className={cn('flex items-center justify-center bg-muted text-muted-foreground', className)}

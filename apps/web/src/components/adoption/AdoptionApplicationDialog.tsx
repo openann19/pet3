@@ -178,7 +178,7 @@ export function AdoptionApplicationDialog({
               <Input
                 id="name"
                 value={formData.applicantName}
-                onChange={(e) => setFormData({ ...formData, applicantName: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, applicantName: e.target.value }); }}
                 required
               />
             </div>
@@ -191,7 +191,7 @@ export function AdoptionApplicationDialog({
                 id="email"
                 type="email"
                 value={formData.applicantEmail}
-                onChange={(e) => setFormData({ ...formData, applicantEmail: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, applicantEmail: e.target.value }); }}
                 required
               />
             </div>
@@ -202,7 +202,7 @@ export function AdoptionApplicationDialog({
                 id="phone"
                 type="tel"
                 value={formData.applicantPhone}
-                onChange={(e) => setFormData({ ...formData, applicantPhone: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, applicantPhone: e.target.value }); }}
               />
             </div>
           </div>
@@ -286,7 +286,7 @@ export function AdoptionApplicationDialog({
                 <Input
                   placeholder={t.adoption?.describeOtherPets ?? 'Describe your other pets...'}
                   value={formData.otherPetsDetails}
-                  onChange={(e) => setFormData({ ...formData, otherPetsDetails: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, otherPetsDetails: e.target.value }); }}
                 />
               )}
             </div>
@@ -310,7 +310,7 @@ export function AdoptionApplicationDialog({
                 <Input
                   placeholder={t.adoption?.childrenAges ?? 'Ages of children...'}
                   value={formData.childrenAges}
-                  onChange={(e) => setFormData({ ...formData, childrenAges: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, childrenAges: e.target.value }); }}
                 />
               )}
             </div>
@@ -331,7 +331,7 @@ export function AdoptionApplicationDialog({
                   t.adoption?.experiencePlaceholder ?? 'Tell us about your experience with pets...'
                 }
                 value={formData.experience}
-                onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, experience: e.target.value }); }}
                 rows={3}
               />
             </div>
@@ -345,7 +345,7 @@ export function AdoptionApplicationDialog({
                 id="reason"
                 placeholder={t.adoption?.reasonPlaceholder ?? 'Tell us why you want to adopt...'}
                 value={formData.reason}
-                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, reason: e.target.value }); }}
                 rows={4}
                 required
               />
@@ -356,7 +356,7 @@ export function AdoptionApplicationDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => { onOpenChange(false); }}
               className="flex-1"
               disabled={isSubmitting}
             >

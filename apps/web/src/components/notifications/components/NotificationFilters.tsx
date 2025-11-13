@@ -37,7 +37,7 @@ export function NotificationFilters({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Tabs value={filter} onValueChange={(value) => onFilterChange(value as NotificationFilter)}>
+        <Tabs value={filter} onValueChange={(value) => { onFilterChange(value as NotificationFilter); }}>
           <TabsList>
             <TabsTrigger value="all">
               All
@@ -56,7 +56,7 @@ export function NotificationFilters({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onViewChange(view === 'grouped' ? 'list' : 'grouped')}
+            onClick={() => { onViewChange(view === 'grouped' ? 'list' : 'grouped'); }}
             className={cn(view === 'grouped' && 'bg-primary/10')}
           >
             {view === 'grouped' ? <SquaresFour size={20} /> : <List size={20} />}
@@ -73,7 +73,7 @@ export function NotificationFilters({
             key={category.value}
             variant={selectedCategory === category.value ? 'default' : 'outline'}
             size="sm"
-            onClick={() => onCategoryChange(category.value)}
+            onClick={() => { onCategoryChange(category.value); }}
           >
             {category.label}
             {category.count > 0 && (

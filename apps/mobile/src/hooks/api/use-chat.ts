@@ -79,8 +79,7 @@ export function useChatMessages(
 export function useSendMessage(): UseMutationResult<
   Message,
   unknown,
-  { chatRoomId: string; content: string },
-  unknown
+  { chatRoomId: string; content: string }
 > {
   const queryClient = useQueryClient()
 
@@ -102,8 +101,7 @@ export function useSendMessage(): UseMutationResult<
 export function useMarkAsRead(): UseMutationResult<
   { success: boolean },
   unknown,
-  { chatRoomId: string; messageId: string },
-  unknown
+  { chatRoomId: string; messageId: string }
 > {
   const queryClient = useQueryClient()
 

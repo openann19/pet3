@@ -35,7 +35,7 @@ export function LostAlertCard({
               src={alert.photos[0]}
               alt={alert.petSummary.name}
               className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
+              onError={() => { setImageError(true); }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

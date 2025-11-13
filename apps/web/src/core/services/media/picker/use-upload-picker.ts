@@ -161,7 +161,7 @@ export function useUploadPicker(): UseUploadPickerReturn {
 
         const isVideo = /\.(mp4|mov|m4v|webm)$/i.test(result.name);
 
-        if (isVideo) {
+        if (isTruthy(isVideo)) {
           return {
             type: 'video',
             uri: result.uri,

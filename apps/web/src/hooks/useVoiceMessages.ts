@@ -17,7 +17,7 @@ export function useVoiceMessages(roomId: string): {
   getVoiceMessage: (messageId: string) => VoiceMessageData | undefined;
 } {
   const [voiceMessages, setVoiceMessages] = useStorage<Record<string, VoiceMessageData>>(
-    `voice-messages-${roomId}`,
+    `voice-messages-${String(roomId ?? '')}`,
     {}
   );
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);

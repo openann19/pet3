@@ -32,6 +32,12 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: mockUseAuth,
 }));
 
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <BrowserRouter>
+    {children}
+  </BrowserRouter>
+)
+
 describe('ProtectedRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,9 +55,9 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter>
+      <TestWrapper>
         <ProtectedRoute>
-          <div data-testid="protected-content">Protected Content</div>
+          <div>Protected Content</div>
         </ProtectedRoute>
       </MemoryRouter>
     );
@@ -67,9 +73,9 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter>
+      <TestWrapper>
         <ProtectedRoute>
-          <div data-testid="protected-content">Protected Content</div>
+          <div>Protected Content</div>
         </ProtectedRoute>
       </MemoryRouter>
     );
@@ -90,10 +96,10 @@ describe('ProtectedRoute', () => {
       isLoading: true,
     });
 
-    const { getByTestId } = render(
-      <MemoryRouter>
+    render(
+      <TestWrapper>
         <ProtectedRoute>
-          <div data-testid="protected-content">Protected Content</div>
+          <div>Protected Content</div>
         </ProtectedRoute>
       </MemoryRouter>
     );
@@ -109,9 +115,9 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter>
+      <TestWrapper>
         <ProtectedRoute adminOnly>
-          <div data-testid="protected-content">Protected Content</div>
+          <div>Admin Content</div>
         </ProtectedRoute>
       </MemoryRouter>
     );
@@ -127,9 +133,9 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter>
+      <TestWrapper>
         <ProtectedRoute adminOnly>
-          <div data-testid="protected-content">Protected Content</div>
+          <div>Admin Content</div>
         </ProtectedRoute>
       </MemoryRouter>
     );

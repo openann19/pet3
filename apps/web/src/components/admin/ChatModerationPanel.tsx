@@ -114,7 +114,7 @@ export default function ChatModerationPanel() {
     (r) => r && typeof r.status === 'string' && (r.status === 'reviewed' || r.status === 'resolved')
   );
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-muted-foreground">Loading reports...</div>
@@ -159,7 +159,7 @@ export default function ChatModerationPanel() {
                 <Card
                   key={report.id}
                   className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => setSelectedReport(report)}
+                  onClick={() => { setSelectedReport(report); }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 /**
  * Query Cache - In-memory cache for API responses with TTL support
  * Provides efficient caching with automatic expiration and size management
@@ -39,7 +41,7 @@ export class QueryCache {
     const now = Date.now();
     const isExpired = now - entry.timestamp > entry.ttl;
 
-    if (isExpired) {
+    if (isTruthy(isExpired)) {
       this.cache.delete(key);
       return null;
     }
@@ -142,7 +144,7 @@ export function generateCacheKey(endpoint: string, params?: Record<string, unkno
   }
   const sortedParams = Object.keys(params)
     .sort()
-    .map((key) => `${key}=${JSON.stringify(params[key])}`)
+    .map((key) => `${String(key ?? '')}=${String(JSON.stringify(params[key]) ?? '')}`)
     .join('&');
-  return `${endpoint}?${sortedParams}`;
+  return `${String(endpoint ?? '')}?${String(sortedParams ?? '')}`;
 }

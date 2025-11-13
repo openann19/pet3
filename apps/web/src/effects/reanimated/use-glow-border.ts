@@ -11,8 +11,9 @@ import {
   withTiming,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseGlowBorderOptions {
   color?: string;
@@ -34,7 +35,7 @@ export function useGlowBorder(options: UseGlowBorderOptions = {}) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       progress.value = withRepeat(
         withSequence(
           withTiming(1, { duration: speed, easing: Easing.inOut(Easing.ease) }),
@@ -54,8 +55,8 @@ export function useGlowBorder(options: UseGlowBorderOptions = {}) {
     const shadowOpacity = interpolate(progress.value, [0, 0.5, 1], [0.3, 0.8, 0.3]);
 
     return {
-      boxShadow: `0 0 ${glowIntensity}px ${pulseSize}px ${color}, 0 0 ${glowIntensity * 0.5}px ${pulseSize * 0.5}px ${color} inset`,
-      filter: `drop-shadow(0 0 ${glowIntensity * 0.5}px ${color})`,
+      boxShadow: `0 0 ${String(glowIntensity ?? '')}px ${String(pulseSize ?? '')}px ${String(color ?? '')}, 0 0 ${String(glowIntensity * 0.5 ?? '')}px ${String(pulseSize * 0.5 ?? '')}px ${String(color ?? '')} inset`,
+      filter: `drop-shadow(0 0 ${String(glowIntensity * 0.5 ?? '')}px ${String(color ?? '')})`,
       opacity: shadowOpacity,
     };
   });

@@ -24,7 +24,7 @@ export function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX
       <Button
         variant="outline"
         className="w-full justify-start text-left h-auto py-2 px-3"
-        onClick={() => onSelect(template)}
+        onClick={() => { onSelect(template); }}
         onMouseEnter={hover.handleMouseEnter}
         onMouseLeave={hover.handleMouseLeave}
       >

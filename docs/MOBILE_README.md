@@ -1,6 +1,6 @@
 # Mobile Development Guide
 
-This guide covers local development, EAS builds, code signing, and deployment for the Pet3 native mobile applications.
+This guide covers local development, EAS builds, code signing, and deployment for the Pet3 mobile applications.
 
 ## Table of Contents
 
@@ -55,9 +55,9 @@ This guide covers local development, EAS builds, code signing, and deployment fo
    npm run build
    ```
 
-3. **Navigate to native app:**
+3. **Navigate to mobile app:**
    ```bash
-   cd apps/native
+   cd apps/mobile
    ```
 
 ### Running the App
@@ -86,7 +86,7 @@ npm run web      # Open in web browser
 
 ### Development Workflow
 
-1. Make code changes in `apps/native/src/`
+1. Make code changes in `apps/mobile/src/`
 2. Changes hot-reload automatically
 3. For shared package changes:
    ```bash
@@ -118,7 +118,7 @@ npm run web      # Open in web browser
 2. Login to EAS:
 
    ```bash
-   cd apps/native
+   cd apps/mobile
    eas login
    ```
 
@@ -129,7 +129,7 @@ npm run web      # Open in web browser
 
 ### 3. Update Bundle Identifiers
 
-Update these values in `apps/native/app.json` to match your organization:
+Update these values in `apps/mobile/app.config.ts` to match your organization:
 
 - **iOS**: `"ios.bundleIdentifier"`: Change from `com.openann19.pet3` to your identifier
 - **Android**: `"android.package"`: Change from `com.openann19.pet3` to your package name
@@ -156,7 +156,7 @@ Update these values in `apps/native/app.json` to match your organization:
 
 ### Configure EAS for Android
 
-The `apps/native/eas.json` file is already configured to use environment variables for Android signing. The variables are:
+The `apps/mobile/eas.json` file is already configured to use environment variables for Android signing. The variables are:
 
 - `ANDROID_KEYSTORE_BASE64`: Base64-encoded keystore file
 - `ANDROID_KEYSTORE_PASSWORD`: Password for the keystore
@@ -166,7 +166,7 @@ The `apps/native/eas.json` file is already configured to use environment variabl
 ### Local Android Build
 
 ```bash
-cd apps/native
+cd apps/mobile
 eas build --platform android --profile production --local
 ```
 
@@ -177,7 +177,7 @@ eas build --platform android --profile production --local
 EAS can automatically manage iOS certificates and provisioning profiles:
 
 ```bash
-cd apps/native
+cd apps/mobile
 eas build --platform ios --profile production
 ```
 
@@ -269,7 +269,7 @@ git push origin v1.0.0
 #### 1. Build AAB
 
 ```bash
-cd apps/native
+cd apps/mobile
 eas build --platform android --profile production
 ```
 
@@ -292,7 +292,7 @@ eas build --platform android --profile production
 #### 1. Build IPA
 
 ```bash
-cd apps/native
+cd apps/mobile
 eas build --platform ios --profile production
 ```
 
@@ -379,7 +379,7 @@ When moving code from web to shared:
 ### Incremental Screen Migration
 
 1. Start with simple, read-only screens
-2. Implement in `apps/native/src/screens/`
+2. Implement in `apps/mobile/src/screens/`
 3. Use React Navigation for navigation
 4. Style with NativeWind or StyleSheet
 
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
 #### "Module not found: @pet3/shared"
 
 - Ensure shared package is built: `cd packages/shared && npm run build`
-- Check Metro cache: `cd apps/native && expo start --clear`
+- Check Metro cache: `cd apps/mobile && expo start --clear`
 
 #### "Keystore not found"
 
@@ -447,7 +447,7 @@ expo start --clear
 #### TypeScript Errors
 
 ```bash
-cd apps/native
+cd apps/mobile
 npm run typecheck
 ```
 

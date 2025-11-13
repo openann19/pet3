@@ -19,6 +19,7 @@ import MapLibreMap from '@/components/maps/MapLibreMap';
 import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface LostFoundMapProps {
   alerts: LostPetAlert[];
@@ -68,7 +69,7 @@ export default function LostFoundMap({
       filtered = filtered.filter((alert) => alert.lastSeenTime >= cutoff);
     }
 
-    if (userLocation) {
+    if (isTruthy(userLocation)) {
       filtered = filtered.filter((alert) => {
         const distance = calculateDistance(userLocation, alert.lastSeen);
         return distance <= radiusKm;

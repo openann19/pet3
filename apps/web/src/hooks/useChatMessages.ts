@@ -47,7 +47,7 @@ export function useChatMessages({
 
   // Outbox for offline message queuing
   const outbox = useOutbox({
-    storageKey: `chat-outbox-${roomId}`,
+    storageKey: `chat-outbox-${String(roomId ?? '')}`,
     sendFn: async (payload: unknown) => {
       const { chatRoomId, content } = payload as { chatRoomId: string; content: string };
       await chatAPI.sendMessage(chatRoomId, content);

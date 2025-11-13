@@ -9,6 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
@@ -58,13 +59,13 @@ export function IconButton({
   }, [])
 
   const handlePress = useCallback(() => {
-    if (disabled) return
+    if (isTruthy(disabled)) return
 
     if (enableRipple) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
 
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       isActive.value = withTiming(1, { duration: 100 })
       if (activeTimeoutRef.current !== null) {
         clearTimeout(activeTimeoutRef.current)

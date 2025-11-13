@@ -228,7 +228,7 @@ export const notifications = new NotificationManager();
 export function showMatchNotification(petName: string, yourPetName: string) {
   return notifications.success(
     "It's a Match! 🎉",
-    `${yourPetName} and ${petName} are now connected!`,
+    `${String(yourPetName ?? '')} and ${String(petName ?? '')} are now connected!`,
     {
       duration: 5000,
       important: true,
@@ -244,7 +244,7 @@ export function showMatchNotification(petName: string, yourPetName: string) {
 
 export function showMessageNotification(senderName: string, message: string) {
   return notifications.info(
-    `New message from ${senderName}`,
+    `New message from ${String(senderName ?? '')}`,
     message.length > 50 ? message.substring(0, 50) + '...' : message,
     {
       duration: 4000,

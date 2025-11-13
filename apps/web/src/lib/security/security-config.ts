@@ -72,7 +72,7 @@ class SecurityConfigImpl {
 
     Object.entries(keys).forEach(([service, key]) => {
       if (key && this.isKeyExposed(key)) {
-        logger.error(`${service} API key appears to be a secret key - use public key only`, {
+        logger.error(`${String(service ?? '')} API key appears to be a secret key - use public key only`, {
           service,
           keyPrefix: key.substring(0, 10),
         });
@@ -215,7 +215,7 @@ class SecurityConfigImpl {
   // GDPR Compliance
   async exportUserData(userId: string): Promise<Blob> {
     // This would call backend API to get all user data
-    const response = await fetch(`/api/users/${userId}/export`, {
+    const response = await fetch(`/api/users/${String(userId ?? '')}/export`, {
       headers: {
         Authorization: `Bearer ${this.secureRetrieve('access_token')}`,
       },
@@ -230,7 +230,7 @@ class SecurityConfigImpl {
 
   async deleteUserData(userId: string): Promise<void> {
     // This would call backend API to delete all user data
-    const response = await fetch(`/api/users/${userId}`, {
+    const response = await fetch(`/api/users/${String(userId ?? '')}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${this.secureRetrieve('access_token')}`,

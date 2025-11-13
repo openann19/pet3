@@ -11,8 +11,9 @@ import {
   withTiming,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseBreathingAnimationOptions {
   minScale?: number;
@@ -40,7 +41,7 @@ export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}
   }[easing];
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       progress.value = withRepeat(
         withSequence(
           withTiming(1, { duration, easing: easingFunction }),

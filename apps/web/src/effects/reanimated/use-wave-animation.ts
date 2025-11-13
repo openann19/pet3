@@ -1,6 +1,6 @@
 /**
- * Wave Animation
- * Flowing wave effect for backgrounds and decorative elements
+ * Wave Animation (Web Adapter)
+ * Delegates to shared motion hook for parity and reduced-motion handling.
  */
 
 import {
@@ -10,16 +10,10 @@ import {
   withTiming,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 
-export interface UseWaveAnimationOptions {
-  amplitude?: number;
-  frequency?: number;
-  speed?: number;
-  direction?: 'horizontal' | 'vertical';
-  enabled?: boolean;
-}
+export const useWaveAnimation = useSharedWaveAnimation
 
 export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
   const {

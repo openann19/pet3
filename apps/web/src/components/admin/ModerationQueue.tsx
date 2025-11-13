@@ -16,14 +16,11 @@ import { moderationService, photoService } from '@/lib/backend-services';
 import type { ModerationReason, ModerationTask, PhotoRecord } from '@/lib/backend-types';
 import { createLogger } from '@/lib/logger';
 import {
-  Calendar,
   CheckCircle,
   Clock,
-  Dog,
   Eye,
   Image as ImageIcon,
   ShieldCheck,
-  User,
   Warning,
   XCircle,
 } from '@phosphor-icons/react';
@@ -395,11 +392,11 @@ export function ModerationQueue() {
             <DialogTitle>Photo Review</DialogTitle>
           </DialogHeader>
 
-          {detailPhoto && detailPhoto.safetyCheck && (
+          {detailPhoto?.safetyCheck && (
             <div className="space-y-6">
               <div className="aspect-video bg-muted rounded-lg overflow-hidden">
                 <img
-                  src={detailPhoto.originalUrl}
+                  src={detailPhoto?.originalUrl ?? ''}
                   alt="Photo for review"
                   className="w-full h-full object-contain"
                 />
@@ -546,7 +543,7 @@ export function ModerationQueue() {
                     <label className="text-sm font-medium">Additional Notes</label>
                     <Textarea
                       value={decisionText}
-                      onChange={(e) => setDecisionText(e.target.value)}
+                      onChange={(e) => { setDecisionText(e.target.value); }}
                       placeholder="Add any additional context..."
                       rows={3}
                     />

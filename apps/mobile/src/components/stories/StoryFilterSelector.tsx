@@ -22,6 +22,7 @@ import Animated, {
 import { FILTER_CATEGORIES, getFiltersByCategory } from '../../lib/story-templates'
 import type { StoryFilter } from '../../lib/story-templates'
 import { useReducedMotionSV } from '../../effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
 const AnimatedView = Animated.createAnimatedComponent(View)
@@ -91,7 +92,7 @@ function FilterItem({
       onPressOut={handlePressOut}
       activeOpacity={0.8}
       accessibilityRole="button"
-      accessibilityLabel={`Select filter: ${filter.name}`}
+      accessibilityLabel={`Select filter: ${String(filter.name ?? '')}`}
       accessibilityState={{ selected: isSelected }}
     >
       <View style={styles.filterPreview}>
@@ -101,7 +102,7 @@ function FilterItem({
             source={{ uri: mediaPreview }}
             style={styles.filterImage}
             resizeMode="cover"
-            accessibilityLabel={`Preview with ${filter.name} filter`}
+            accessibilityLabel={`Preview with ${String(filter.name ?? '')} filter`}
           />
         ) : (
           <View
@@ -212,7 +213,7 @@ export default function StoryFilterSelector({
 
   const handleImageRef = useCallback((filterId: string) => {
     return (ref: Image | null) => {
-      if (ref) {
+      if (isTruthy(ref)) {
         previewRefs.current.set(filterId, ref)
       } else {
         previewRefs.current.delete(filterId)
@@ -248,7 +249,7 @@ export default function StoryFilterSelector({
                 style={[styles.categoryButton, isSelected && styles.categoryButtonSelected]}
                 onPress={() => handleCategorySelect(category.id)}
                 accessibilityRole="button"
-                accessibilityLabel={`Filter category: ${category.name}`}
+                accessibilityLabel={`Filter category: ${String(category.name ?? '')}`}
                 accessibilityState={{ selected: isSelected }}
               >
                 <Text style={styles.categoryIcon}>{category.icon}</Text>

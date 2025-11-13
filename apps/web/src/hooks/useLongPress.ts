@@ -5,6 +5,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface LongPressHandlers {
   onLongPress?: () => void;
@@ -32,7 +33,7 @@ export function useLongPress<T extends HTMLElement = HTMLDivElement>(
   const isLongPressing = useRef<boolean>(false);
 
   const cancel = useCallback(() => {
-    if (timerRef.current) {
+    if (isTruthy(timerRef.current)) {
       clearTimeout(timerRef.current);
       timerRef.current = undefined;
     }

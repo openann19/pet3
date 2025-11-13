@@ -1,6 +1,7 @@
 // ts-node scripts/verify-effects.ts
 import fs from 'node:fs'
 import path from 'node:path'
+import logger from '@/core/logger';
 
 const root = process.cwd()
 function filesUnder(d: string) {
@@ -45,7 +46,7 @@ const rnd = effects.filter(f => {
   return !hasSeededRng
 })
 if (rnd.length) {
-  fail(`Random usage in effects (without seeded RNG):\n${rnd.join('\n')}`)
+  fail(`Random usage in effects (without seeded RNG):\n${String(rnd.join('\n') ?? '')}`)
 } else {
   pass('No Math.random() in effects (or using seeded RNG)')
 }
@@ -60,7 +61,7 @@ const rm = effects.filter(f => {
 if (rm.length === 0) {
   fail('No reduced-motion checks found in effects')
 } else {
-  pass(`Reduced-motion checks present in ${rm.length} effect file(s)`)
+  pass(`Reduced-motion checks present in ${String(rm.length ?? '')} effect file(s)`)
 }
 
 // Check for haptics usage (with cooldown check)
@@ -77,9 +78,9 @@ if (hap.length === 0) {
     return /cooldown|throttle|debounce|lastHapticTime|hapticCooldown/i.test(content)
   })
   if (hapWithCooldown.length === 0 && hap.length > 0) {
-    console.warn(`⚠️  Haptics used in ${hap.length} file(s) but cooldown logic not detected`)
+    logger.warn(`⚠️  Haptics used in ${String(hap.length ?? '')} file(s) but cooldown logic not detected`)
   }
-  pass(`Haptics wired in ${hap.length} effect file(s)`)
+  pass(`Haptics wired in ${String(hap.length ?? '')} effect file(s)`)
 }
 
 // Check for Reanimated usage
@@ -90,8 +91,8 @@ const ra = effects.filter(f => {
 if (ra.length === 0) {
   fail('No reanimated imports in effects')
 } else {
-  pass(`Reanimated used in ${ra.length} effect file(s)`)
+  pass(`Reanimated used in ${String(ra.length ?? '')} effect file(s)`)
 }
 
 if (bad) process.exit(1)
-console.log('🎯 Effects verification passed.')
+logger.info('🎯 Effects verification passed.')

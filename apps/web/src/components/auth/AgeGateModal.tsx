@@ -135,7 +135,7 @@ export default function AgeGateModal({ open, onVerified, onClose }: AgeGateModal
                 type="text"
                 placeholder={t.auth?.countryPlaceholder || 'e.g., United States'}
                 value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                onChange={(e) => { setCountry(e.target.value); }}
                 className="w-full"
               />
             </div>

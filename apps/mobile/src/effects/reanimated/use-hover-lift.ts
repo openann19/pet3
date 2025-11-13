@@ -8,6 +8,7 @@ import {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { springConfigs } from './transitions'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseHoverLiftOptions {
   scale?: number
@@ -61,7 +62,7 @@ export function useHoverLift(options: UseHoverLiftOptions = {}): UseHoverLiftRet
   }, [scale, translateY, damping, stiffness])
 
   const handlePressIn = useCallback(() => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
     scale.value = withSpring(scaleValue, { damping, stiffness })

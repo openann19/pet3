@@ -53,7 +53,7 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
         const result: ApplicationWithProfile = {
           ...app,
         };
-        if (profile) {
+        if (isTruthy(profile)) {
           result.profile = profile;
         }
         return result;
@@ -113,7 +113,7 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
     }
   };
 
-  if (isLoading) {
+  if (isTruthy(isLoading)) {
     return (
       <div className="flex items-center justify-center min-h-100">
         <div className="text-center">

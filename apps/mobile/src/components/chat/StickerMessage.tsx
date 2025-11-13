@@ -13,6 +13,7 @@ import {
 } from '../../effects/reanimated/use-sticker-animation'
 import { springConfigs } from '../../effects/reanimated/transitions'
 import * as Haptics from 'expo-haptics'
+import { isTruthy } from '@petspark/shared';
 
 export interface StickerMessageProps {
   sticker: Sticker
@@ -53,7 +54,7 @@ export function StickerMessage({
   const handlePressIn = useCallback(() => {
     setIsPressed(true)
     pressScale.value = withSpring(0.95, springConfigs.smooth)
-    if (sticker.animation) {
+    if (isTruthy(sticker.animation)) {
       stickerAnimation.trigger()
     }
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -106,9 +107,9 @@ export function StickerMessage({
           stickerAnimation.animatedStyle,
           pressStyle,
         ]}
-        testID={`${testID}-sticker`}
+        testID={`${String(testID ?? '')}-sticker`}
       >
-        <Text style={styles.emoji} testID={`${testID}-emoji`}>
+        <Text style={styles.emoji} testID={`${String(testID ?? '')}-emoji`}>
           {sticker.emoji}
         </Text>
       </AnimatedTouchable>

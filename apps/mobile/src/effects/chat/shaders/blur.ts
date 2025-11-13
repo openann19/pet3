@@ -57,7 +57,7 @@ export function createBlurFilter(config: BlurConfig): SkImageFilter {
   const blurFilter = Skia.ImageFilter.MakeBlur(finalSigma, finalSigma, 0, null)
 
   if (!blurFilter) {
-    throw new Error(`Failed to create blur filter: radius=${clampedRadius}, sigma=${finalSigma}`)
+    throw new Error(`Failed to create blur filter: radius=${String(clampedRadius ?? '')}, sigma=${String(finalSigma ?? '')}`)
   }
 
   logger.debug('Blur filter created', { radius: clampedRadius, sigma: finalSigma })
@@ -111,7 +111,7 @@ export function applyBlurWithSurface(
   const clampedRadius = Math.max(8, Math.min(16, blurRadius))
 
   // Create a cache key for this blur configuration
-  const surfaceKey = `blur-${clampedRadius}-${sourceWidth}x${sourceHeight}`
+  const surfaceKey = `blur-${String(clampedRadius ?? '')}-${String(sourceWidth ?? '')}x${String(sourceHeight ?? '')}`
 
   // Get or create cached surface (for future use in rendering pipeline)
   surfaceCache.getSurface(surfaceKey, sourceWidth, sourceHeight)

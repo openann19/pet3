@@ -4,7 +4,7 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { useMemo } from 'react';
-import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useAnimatedStyle, useSharedValue, withSpring } from '@petspark/motion';
 
 export interface UseMoodThemeOptions {
   text: string;
@@ -45,21 +45,21 @@ export function useMoodTheme(options: UseMoodThemeOptions): UseMoodThemeReturn {
     const hasNegative = negativeWords.some((word) => lowerText.includes(word));
     const hasNeutral = neutralWords.some((word) => lowerText.includes(word));
 
-    if (hasPositive) {
+    if (isTruthy(hasPositive)) {
       return [
         `rgba(110, 231, 183, ${0.15 * theme.gradientIntensity})`,
         `rgba(139, 92, 246, ${0.1 * theme.gradientIntensity})`,
       ];
     }
 
-    if (hasNegative) {
+    if (isTruthy(hasNegative)) {
       return [
         `rgba(239, 68, 68, ${0.15 * theme.gradientIntensity})`,
         `rgba(251, 146, 60, ${0.1 * theme.gradientIntensity})`,
       ];
     }
 
-    if (hasNeutral) {
+    if (isTruthy(hasNeutral)) {
       return [
         `rgba(148, 163, 184, ${0.15 * theme.gradientIntensity})`,
         `rgba(203, 213, 225, ${0.1 * theme.gradientIntensity})`,

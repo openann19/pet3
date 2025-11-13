@@ -225,7 +225,7 @@ class CommunityApiImpl {
   async savePost(postId: string): Promise<SavedPost> {
     try {
       const response = await APIClient.post<SavedPost>(
-        `${ENDPOINTS.COMMUNITY.POST(postId)}/save`,
+        `${String(ENDPOINTS.COMMUNITY.POST(postId) ?? '')}/save`,
         {}
       );
       return response.data;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useSharedValue, withSpring, withTiming, Easing } from 'react-native-reanimated';
+import { useSharedValue, withSpring, withTiming, Easing } from '@petspark/motion';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useCallback } from 'react';
@@ -90,7 +90,7 @@ export function AnimatedCard({
   }, [hover, isClickable, scale, translateY]);
 
   const handleClick = useCallback(() => {
-    if (isClickable) {
+    if (isTruthy(isClickable)) {
       scale.value = withSpring(0.98, { damping: 15, stiffness: 400 }, () => {
         scale.value = withSpring(1, { damping: 15, stiffness: 400 });
       });

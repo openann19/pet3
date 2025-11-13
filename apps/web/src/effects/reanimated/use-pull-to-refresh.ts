@@ -8,7 +8,7 @@ import {
   withTiming,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { springConfigs, timingConfigs } from './transitions';
 import type { AnimatedStyle } from './animated-view';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -107,7 +107,7 @@ export function usePullToRefresh({
   }, [enabled, threshold, pullDistance, pullOpacity, pullRotation, pullScale, onRefresh]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    if (reducedMotion) {
+    if (isTruthy(reducedMotion)) {
       return {
         transform: [{ translateY: 0 }],
         opacity: 0,
@@ -121,7 +121,7 @@ export function usePullToRefresh({
   }) as AnimatedStyle;
 
   const indicatorStyle = useAnimatedStyle(() => {
-    if (reducedMotion) {
+    if (isTruthy(reducedMotion)) {
       return {
         transform: [{ rotate: '0deg' }, { scale: 0.5 }],
       };

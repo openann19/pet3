@@ -1,5 +1,6 @@
 import type { ApiClientConfig, ApiResponse, RequestOptions } from './types'
 import { ApiError } from './types'
+import { isTruthy, isDefined } from '@/core/guards';
 
 export function createApiClient(config: ApiClientConfig) {
   const { baseUrl, apiKey, timeout = 30000, headers: defaultHeaders = {} } = config
@@ -23,12 +24,12 @@ export function createApiClient(config: ApiClientConfig) {
       ...customHeaders,
     }
 
-    if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`
+    if (isTruthy(apiKey)) {
+      headers['Authorization'] = `Bearer ${String(apiKey ?? '')}`
     }
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), requestTimeout)
+    const timeoutId = setTimeout(() => { controller.abort(); }, requestTimeout)
 
     try {
       const response = await fetch(url, {
@@ -56,7 +57,7 @@ export function createApiClient(config: ApiClientConfig) {
 
       if (!response.ok) {
         throw new ApiError(
-          `API request failed: ${response.statusText}`,
+          `API request failed: ${String(response.statusText ?? '')}`,
           response.status,
           response.statusText,
           data

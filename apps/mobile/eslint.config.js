@@ -1,7 +1,11 @@
 import js from '@eslint/js'
+import importPlugin from 'eslint-plugin-import'
+import promise from 'eslint-plugin-promise'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactNative from 'eslint-plugin-react-native'
+import security from 'eslint-plugin-security'
+import sonarjs from 'eslint-plugin-sonarjs'
 import unicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 import ultraChatfx from './tools/ultra-chatfx/eslint-plugin-ultra-chatfx.js'
@@ -15,25 +19,34 @@ export default tseslint.config(
       '**/.expo/**',
       '**/coverage/**',
       '**/*.config.js',
+      '**/*.config.cjs',
       '**/*.config.mjs',
       '**/*.config.cjs',
       '**/.eslintrc.cjs',
       '**/.lintstagedrc.js',
       '**/index.js',
       '**/__tests__/**',
+      'scripts/**',
+      'tools/**',
       'android/**',
       'ios/**',
       'metro.config.cjs',
     ],
   },
+  { linterOptions: { reportUnusedDisableDirectives: 'error' } },
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     files: ['**/*.{ts,tsx}'],
     plugins: {
+      import: importPlugin,
+      promise: promise,
       react,
       'react-hooks': reactHooks,
       'react-native': reactNative,
+      security: security,
+      sonarjs: sonarjs,
       unicorn,
       'ultra-chatfx': ultraChatfx,
     },
@@ -57,9 +70,19 @@ export default tseslint.config(
       react: {
         version: 'detect',
       },
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.json',
+        },
+        node: {
+          extensions: ['.ts', '.tsx', '.js', '.jsx', '.cjs', '.json'],
+        },
+      },
     },
     rules: {
-      // TypeScript
+      ...reactHooks.configs.recommended.rules,
+      
+      // TypeScript - Enhanced with web app's strict rules
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

@@ -345,7 +345,7 @@ export function AdoptionListingDetailDialog({
           {listing.status === 'active' && (
             <div className="flex gap-2">
               <Button
-                onClick={() => setShowApplicationForm(true)}
+                onClick={() => { setShowApplicationForm(true); }}
                 className="flex-1 gap-2"
                 size="lg"
               >
@@ -392,7 +392,7 @@ export function AdoptionListingDetailDialog({
                     id="homeCheckConsent"
                     checked={applicationData.homeCheckConsent}
                     onCheckedChange={(checked) =>
-                      setApplicationData({ ...applicationData, homeCheckConsent: checked === true })
+                      { setApplicationData({ ...applicationData, homeCheckConsent: checked === true }); }
                     }
                   />
                   <Label htmlFor="homeCheckConsent" className="text-sm">

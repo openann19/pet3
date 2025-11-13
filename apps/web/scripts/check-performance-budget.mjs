@@ -17,11 +17,12 @@ const DIST_DIR = join(ROOT, 'dist')
 
 // Import performance budget config
 // Note: This is a simplified version for CI - actual config is in TypeScript
+// Based on Core Web Vitals targets: LCP < 2.5s, FID < 100ms, CLS < 0.1
 const BUDGETS = {
-  initial: 200, // KB (gzipped)
-  total: 1000, // KB (gzipped)
-  chunk: 300, // KB (gzipped)
-  vendor: 500, // KB (gzipped)
+  initial: 200, // KB (gzipped) - Target for fast LCP
+  total: 1000, // KB (gzipped) - Total bundle size limit
+  chunk: 300, // KB (gzipped) - Individual chunk limit
+  vendor: 500, // KB (gzipped) - Vendor chunk limit
 }
 
 let errors = 0

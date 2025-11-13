@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 
@@ -62,7 +63,7 @@ export function PremiumToast({
   const reducedMotion = useReducedMotionSV()
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       opacity.value = withTiming(1, { duration: 200 })
       translateY.value = withTiming(0, { duration: 200 })
       scale.value = withTiming(1, { duration: 200 })
@@ -82,7 +83,7 @@ export function PremiumToast({
   useEffect(() => {
     if (!showProgress || isPaused || duration === 0) return
 
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       progressWidth.value = withTiming(0, { duration })
     } else {
       progressWidth.value = withTiming(0, { duration })
@@ -101,7 +102,7 @@ export function PremiumToast({
   }))
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
+    width: `${progressWidth.value}%` as `${number}%`,
   }))
 
   const colorScheme = colors[type]

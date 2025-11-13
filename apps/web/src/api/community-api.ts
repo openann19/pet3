@@ -535,7 +535,7 @@ export function getCommunityAPI(): CommunityAPI {
 export const communityAPI = getCommunityAPI();
 
 // HMR support: reset instance on hot module replacement
-if (import.meta.hot) {
+if (isTruthy(import.meta.hot)) {
   import.meta.hot.accept(() => {
     communityAPIInstance = null;
   });

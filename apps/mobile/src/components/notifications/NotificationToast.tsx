@@ -84,7 +84,7 @@ export function NotificationToast({
         style={[styles.toast, { backgroundColor }]}
         onPress={handleDismiss}
         accessibilityRole="alert"
-        accessibilityLabel={`${notification.type}: ${notification.title}`}
+        accessibilityLabel={`${String(notification.type ?? '')}: ${String(notification.title ?? '')}`}
       >
         <View style={styles.content}>
           <Text style={styles.title}>{notification.title}</Text>

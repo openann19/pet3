@@ -1,3 +1,6 @@
+// Import from the base logger instead of creating circular dependency
+import baseLogger from '../logger';
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export interface LogContext {

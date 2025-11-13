@@ -56,7 +56,7 @@ export function PremiumButton({
 
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
-  const allClasses = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${disabledClasses} ${className}`;
+  const allClasses = `${String(baseClasses ?? '')} ${String(sizeClasses[size] ?? '')} ${String(variantClasses[variant] ?? '')} ${String(disabledClasses ?? '')} ${String(className ?? '')}`;
 
   return (
     <button

@@ -25,6 +25,7 @@ import { createLogger } from '../../../utils/logger'
 import { useReducedMotionSV } from '../core/reduced-motion'
 import { getBloomImageFilter } from '../shaders/bloom'
 import { getCachedBlurFilter } from '../shaders/blur'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('liquid-dots')
 
@@ -89,7 +90,7 @@ export function useLiquidDots(options: UseLiquidDotsOptions = {}): UseLiquidDots
   const startAnimation = useCallback(() => {
     const isReducedMotion = reducedMotion.value
 
-    if (isReducedMotion) {
+    if (isTruthy(isReducedMotion)) {
       // Reduced Motion: Static pulsing opacity at 0.8 Hz
       const pulseOpacity = withRepeat(
         withSequence(
@@ -175,7 +176,7 @@ export function useLiquidDots(options: UseLiquidDotsOptions = {}): UseLiquidDots
   }, [reducedMotion, dot1Y, dot1Opacity, dot2Y, dot2Opacity, dot3Y, dot3Opacity])
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       startAnimation()
     } else {
       // Reset values

@@ -93,7 +93,7 @@ export default function CreateHighlightDialog({
     const selectedStoryObjects = userStories.filter((s) => selectedStories.has(s.id));
     const firstPet = userPets?.[0];
 
-    if (existingHighlight) {
+    if (isTruthy(existingHighlight)) {
       setHighlights((current) =>
         (current || []).map((h) =>
           h.id === existingHighlight.id
@@ -147,7 +147,7 @@ export default function CreateHighlightDialog({
             <Input
               id="highlight-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { setTitle(e.target.value); }}
               placeholder="e.g., Summer Adventures, Best Moments"
               maxLength={30}
             />
@@ -179,11 +179,11 @@ export default function CreateHighlightDialog({
                         className="relative"
                       >
                         <button
-                          onClick={() => handleToggleStory(story.id)}
+                          onClick={() => { handleToggleStory(story.id); }}
                           className={`aspect-[9/16] rounded-2xl overflow-hidden relative group w-full border-2 transition-all ${
-                            isSelected
-                              ? 'border-primary shadow-lg'
-                              : 'border-transparent hover:border-border'
+                            String(isSelected
+                                                            ? 'border-primary shadow-lg'
+                                                            : 'border-transparent hover:border-border' ?? '')
                           }`}
                         >
                           <img
@@ -217,7 +217,7 @@ export default function CreateHighlightDialog({
 
                         {isSelected && !isCover && (
                           <Button
-                            onClick={() => handleSetCover(story)}
+                            onClick={() => { handleSetCover(story); }}
                             variant="secondary"
                             size="sm"
                             className="absolute bottom-2 left-2 right-2 text-xs h-7"
@@ -235,7 +235,7 @@ export default function CreateHighlightDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => { onOpenChange(false); }}>
             Cancel
           </Button>
           <Button

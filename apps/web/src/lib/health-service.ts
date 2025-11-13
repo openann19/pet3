@@ -103,7 +103,7 @@ export class HealthService {
   }
 
   /**
-   * Get version info from backend
+   * Get version info from backend /api/version endpoint
    */
   async getVersion(): Promise<{
     version: string;
@@ -188,8 +188,8 @@ export class HealthService {
 
     return {
       status: 'healthy',
-      version: config.current.BUILD_VERSION,
-      commitSha: config.current.COMMIT_SHA,
+      version: ENV.VITE_APP_VERSION,
+      commitSha: import.meta.env.VITE_COMMIT_SHA || 'unknown',
       timestamp: new Date().toISOString(),
       uptime: Date.now() - this.startTime,
       checks,

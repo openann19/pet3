@@ -16,7 +16,7 @@ import {
   useSharedValue,
   withTiming,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { createLogger } from '@/lib/logger';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { logEffectEnd, logEffectStart } from '../core/telemetry';
@@ -234,7 +234,7 @@ export function useConfettiBurst(options: UseConfettiBurstOptions = {}): UseConf
     }, finalDuration);
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, finalDuration);

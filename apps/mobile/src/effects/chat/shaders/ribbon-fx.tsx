@@ -20,6 +20,7 @@ import React, { useMemo, useState } from 'react'
 import type { SharedValue } from 'react-native-reanimated'
 import { useAnimatedReaction } from 'react-native-reanimated'
 import { createLogger } from '../../../utils/logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('ribbon-shader')
 
@@ -103,7 +104,7 @@ export function createRibbonPath(
       } else {
         path.lineTo(curr.x, curr.y)
       }
-    } else if (next) {
+    } else if (isTruthy(next)) {
       // Middle segments: use prev and next for control points
       const cp1x = prev.x + (curr.x - prev.x) * finalConfig.curveTension
       const cp1y = prev.y + (curr.y - prev.y) * finalConfig.curveTension

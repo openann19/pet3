@@ -9,12 +9,14 @@
     "ios": "expo run:ios",
     "web": "node ./scripts/run-expo-offline.mjs start --web",
     "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "lint:fix": "eslint . --fix",
     "verify:ultra": "node scripts/verify-ultra-chatfx.mjs",
     "verify:parity": "node scripts/verify-parity.mjs",
     "verify:budget": "node scripts/verify-budget.mjs",
     "test": "vitest",
-    "test:cov": "vitest run --coverage",
+    "test:ui": "vitest --ui",
     "test:run": "vitest run --passWithNoTests",
     "test:performance": "tsx scripts/performance/validate-performance.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
@@ -100,20 +102,37 @@
     "@vitejs/plugin-react-swc": "^3.11.0",
     "@vitest/coverage-v8": "^4.0.7",
     "babel-plugin-module-resolver": "^5.0.2",
+    "depcheck": "^1.4.7",
     "eslint": "^9.28.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.37.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-native": "^4.1.0",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-sonarjs": "^0.25.1",
     "eslint-plugin-unicorn": "^62.0.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "minimatch": "^9.0.3",
+    "prettier": "^3.4.2",
     "react-test-renderer": "18.2.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "~5.3.3",
+    "ts-prune": "^0.10.3",
+    "typescript": "~5.7.2",
     "typescript-eslint": "^8.38.0",
     "vitest": "^4.0.7"
   },
   "engines": {
     "node": ">=18"
   },
-  "type": "module"
+  "type": "module",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{css,md}": [
+      "prettier --write"
+    ]
+  }
 }

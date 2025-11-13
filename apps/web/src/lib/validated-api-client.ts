@@ -162,7 +162,7 @@ export class ValidatedAPIClient {
           'Request timeout',
           {
             code: 'REQUEST_TIMEOUT',
-            message: `Request timed out after ${timeout}ms`,
+            message: `Request timed out after ${String(timeout ?? '')}ms`,
             correlationId,
             timestamp: new Date().toISOString(),
           },

@@ -13,7 +13,7 @@ import {
   withRepeat,
   withSequence,
   withSpring,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export default function WelcomeModal(): JSX.Element | null {
@@ -52,6 +52,60 @@ export default function WelcomeModal(): JSX.Element | null {
   const arrowStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: arrowX.value }],
   })) as AnimatedStyle;
+
+  // Animation hooks
+  const containerEntry = useEntryAnimation({ initialOpacity: 0 })
+  const titleEntry = useEntryAnimation({ initialY: 20, delay: 300 })
+  const subtitleEntry = useEntryAnimation({ initialY: 20, delay: 400 })
+  const buttonEntry = useEntryAnimation({ initialY: 20, delay: 1000 })
+  const closeButtonHover = useHoverLift({ scale: 1.1 })
+  const closeButtonRotate = useSharedValue(0)
+  const closeButtonRotateStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${closeButtonRotate.value}deg` }],
+  }))
+  const closeButtonTap = useBounceOnTap({ scale: 0.9 })
+  const buttonHover = useHoverLift({ scale: 1.05 })
+  const buttonTap = useBounceOnTap({ scale: 0.95 })
+
+  // Background gradient animation
+  const bgScale = useSharedValue(1)
+  const bgRotate = useSharedValue(0)
+  const bgStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: bgScale.value },
+      { rotate: `${bgRotate.value}deg` },
+    ],
+  }))
+
+  // Heart icon animations
+  const heartScale = useSharedValue(1)
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }))
+
+  // Heart pulse animation
+  const heartPulseScale = useSharedValue(1)
+  const heartPulseOpacity = useSharedValue(0.5)
+  const heartPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartPulseScale.value }],
+    opacity: heartPulseOpacity.value,
+  }))
+
+  // Arrow animation
+  const arrowX = useSharedValue(0)
+  const arrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: arrowX.value }],
+  }))
+
+  // Logo entry animation
+  const logoScale = useSharedValue(0)
+  const logoRotate = useSharedValue(-180)
+  const logoStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: logoScale.value },
+      { rotate: `${logoRotate.value}deg` },
+    ],
+  }))
 
   useEffect(() => {
     if (!hasSeenWelcome) {
@@ -164,6 +218,7 @@ export default function WelcomeModal(): JSX.Element | null {
           <AnimatedView
             style={iconAnimatedStyle}
             className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
+            style={logoStyle}
           >
             <AnimatedView style={iconPulseStyle}>
               <Heart size={40} className="text-white" weight="fill" />

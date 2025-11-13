@@ -8,6 +8,7 @@ import {
 } from 'react-native-reanimated'
 import { useCallback, useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseShimmerOptions {
   duration?: number
@@ -71,7 +72,7 @@ export function useShimmer(options: UseShimmerOptions = {}): UseShimmerReturn {
   }, [shimmerWidth, translateX, opacity])
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       const timer = setTimeout(() => {
         start()
       }, delay)

@@ -7,6 +7,7 @@
 import type { AccessibilityProps } from 'react-native'
 import { Platform } from 'react-native'
 import { createLogger } from './logger'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('accessibility')
 
@@ -123,10 +124,10 @@ export function createAccessibilityLabel(
  */
 export function formatAccessibilityValue(current: number, max: number, unit?: string): string {
   const percentage = Math.round((current / max) * 100)
-  if (unit) {
-    return `${current} ${unit} of ${max} ${unit}, ${percentage}%`
+  if (isTruthy(unit)) {
+    return `${String(current ?? '')} ${String(unit ?? '')} of ${String(max ?? '')} ${String(unit ?? '')}, ${String(percentage ?? '')}%`
   }
-  return `${current} of ${max}, ${percentage}%`
+  return `${String(current ?? '')} of ${String(max ?? '')}, ${String(percentage ?? '')}%`
 }
 
 /**
@@ -138,7 +139,7 @@ export function announceToScreenReader(
 ): void {
   // This would typically use a native module or accessibility service
   // For now, we ensure proper accessibilityLabel is set
-  if (__DEV__) {
+  if (isTruthy(__DEV__)) {
     logger.debug('Screen reader announcement', { message, priority })
   }
 }

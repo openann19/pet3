@@ -71,7 +71,7 @@ export function BillingIssueBanner() {
       <Alert variant="destructive" className="relative">
         <Warning className="h-5 w-5" />
         <button
-          onClick={() => setDismissed(true)}
+          onClick={() => { setDismissed(true); }}
           className="absolute right-4 top-4 opacity-70 hover:opacity-100 transition-opacity"
           aria-label="Dismiss"
         >

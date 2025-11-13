@@ -185,7 +185,7 @@ export function VerificationDialog({ open, onOpenChange, petId, userId }: Verifi
         [petId]: reviewedRequest,
       }));
 
-      if (approve) {
+      if (isTruthy(approve)) {
         toast.success('Verification approved! 🎉', {
           description: `Your pet has been verified with a trust score of ${reviewedRequest.trustScore}/100`,
         });

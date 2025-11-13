@@ -14,6 +14,11 @@ export interface SpringConfig {
 
 export type WithSpringConfig = SpringConfig
 
+export interface TimingConfig {
+  duration?: number
+  easing?: (value: number) => number
+}
+
 /**
  * Validated spring configuration ranges
  * These values are enforced by unit tests

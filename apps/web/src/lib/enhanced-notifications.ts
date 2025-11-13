@@ -36,9 +36,9 @@ export async function createMatchNotification(
   return addNotification({
     type: 'match',
     title: "It's a Match! 🎉",
-    message: `${yourPetName} and ${petName} are perfect companions!`,
+    message: `${String(yourPetName ?? '')} and ${String(petName ?? '')} are perfect companions!`,
     priority: 'high',
-    actionUrl: `/matches/${matchId}`,
+    actionUrl: `/matches/${String(matchId ?? '')}`,
     actionLabel: 'View Match',
     metadata: {
       petName,
@@ -54,10 +54,10 @@ export async function createMessageNotification(
 ) {
   return addNotification({
     type: 'message',
-    title: `New message from ${senderName}`,
+    title: `New message from ${String(senderName ?? '')}`,
     message: message.length > 80 ? message.substring(0, 80) + '...' : message,
     priority: 'normal',
-    actionUrl: `/chat/${roomId}`,
+    actionUrl: `/chat/${String(roomId ?? '')}`,
     actionLabel: 'Reply',
     metadata: {
       userName: senderName,
@@ -122,7 +122,7 @@ export async function createModerationNotification(action: string, reason: strin
   return addNotification({
     type: 'moderation',
     title: 'Moderation Notice',
-    message: `${action}: ${reason}`,
+    message: `${String(action ?? '')}: ${String(reason ?? '')}`,
     priority: 'urgent',
     actionUrl: '/profile',
     actionLabel: 'Learn More',

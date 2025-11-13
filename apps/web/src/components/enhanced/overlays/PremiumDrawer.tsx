@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
@@ -15,8 +15,8 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet';
 import { X } from 'lucide-react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { isTruthy } from '@petspark/shared';
 
 export interface PremiumDrawerProps {
   open?: boolean;
@@ -58,31 +58,39 @@ export function PremiumDrawer({
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    if (open) {
+    if (isTruthy(open)) {
       if (side === 'right' || side === 'left') {
-        translateX.value = withSpring(0, springConfigs.smooth);
+        const xTransition = withSpring(0, springConfigs.smooth);
+        animate(translateX, xTransition.target, xTransition.transition);
       } else {
-        translateY.value = withSpring(0, springConfigs.smooth);
+        const yTransition = withSpring(0, springConfigs.smooth);
+        animate(translateY, yTransition.target, yTransition.transition);
       }
-      opacity.value = withTiming(1, { duration: 200 });
+      const opacityTransition = withTiming(1, { duration: 200 });
+      animate(opacity, opacityTransition.target, opacityTransition.transition);
     } else {
       if (side === 'right') {
-        translateX.value = withSpring(100, springConfigs.smooth);
+        const xTransition = withSpring(100, springConfigs.smooth);
+        animate(translateX, xTransition.target, xTransition.transition);
       } else if (side === 'left') {
-        translateX.value = withSpring(-100, springConfigs.smooth);
+        const xTransition = withSpring(-100, springConfigs.smooth);
+        animate(translateX, xTransition.target, xTransition.transition);
       } else if (side === 'top') {
-        translateY.value = withSpring(-100, springConfigs.smooth);
+        const yTransition = withSpring(-100, springConfigs.smooth);
+        animate(translateY, yTransition.target, yTransition.transition);
       } else {
-        translateY.value = withSpring(100, springConfigs.smooth);
+        const yTransition = withSpring(100, springConfigs.smooth);
+        animate(translateY, yTransition.target, yTransition.transition);
       }
-      opacity.value = withTiming(0, { duration: 150 });
+      const opacityTransition = withTiming(0, { duration: 150 });
+      animate(opacity, opacityTransition.target, opacityTransition.transition);
     }
   }, [open, side, translateX, translateY, opacity]);
 
   const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { translateY: translateY.value }],
-    opacity: opacity.value,
-  })) as AnimatedStyle;
+    transform: [{ translateX: translateX.get() }, { translateY: translateY.get() }],
+    opacity: opacity.get(),
+  }));
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -111,7 +119,7 @@ export function PremiumDrawer({
 
           {showCloseButton && (
             <button
-              onClick={() => handleOpenChange(false)}
+              onClick={() => { handleOpenChange(false); }}
               className="absolute top-4 right-4 rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
               aria-label="Close drawer"
             >

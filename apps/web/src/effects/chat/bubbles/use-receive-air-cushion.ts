@@ -16,7 +16,7 @@ import {
   withSpring,
   withTiming,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion';
 import { triggerHaptic } from '../core/haptic-manager';
 import { logEffectStart, logEffectEnd } from '../core/telemetry';
@@ -131,7 +131,7 @@ export function useReceiveAirCushion(
     }
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, scaleDurationAdapted);

@@ -367,7 +367,7 @@ describe('APIClient', () => {
     it('should reset circuit breaker', () => {
       apiClient.resetCircuitBreaker()
       // Circuit breaker should be reset
-      expect(() => apiClient.resetCircuitBreaker()).not.toThrow()
+      expect(() => { apiClient.resetCircuitBreaker(); }).not.toThrow()
     })
   })
 
@@ -567,7 +567,7 @@ describe('APIClient', () => {
     it('should cleanup resources on destroy', () => {
       apiClient.destroy()
       // Should not throw
-      expect(() => apiClient.destroy()).not.toThrow()
+      expect(() => { apiClient.destroy(); }).not.toThrow()
     })
   })
 })

@@ -4,6 +4,8 @@
  * Location: apps/mobile/src/utils/logger.ts
  */
 
+import { isDefined } from '@petspark/shared';
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -23,9 +25,78 @@ export interface LogEntry {
 
 type LogHandler = (entry: LogEntry) => void | Promise<void>
 
+type GlobalWithLogLevel = typeof globalThis & { __LOG_LEVEL__?: string }
+
+type EnvWithLogLevel = NodeJS.ProcessEnv & { EXPO_PUBLIC_LOG_LEVEL?: string }
+
+const parseLogLevel = (value?: string | null): LogLevel | undefined => {
+  if (!value) return undefined
+  const normalized = value.toString().trim().toUpperCase()
+  if (!normalized) return undefined
+  const resolved = (LogLevel as unknown as Record<string, LogLevel>)[normalized]
+  return typeof resolved === 'number' ? resolved : undefined
+}
+
+const resolveDefaultLevel = (): LogLevel => {
+  const env = (typeof process !== 'undefined' ? (process.env as EnvWithLogLevel) : undefined) ?? {}
+  const envLevel = env.EXPO_PUBLIC_LOG_LEVEL ?? env.LOG_LEVEL ?? null
+  const parsed = parseLogLevel(envLevel)
+  if (isDefined(parsed)) {
+    return parsed
+  }
+
+  const runtimeOverride = parseLogLevel((globalThis as GlobalWithLogLevel).__LOG_LEVEL__ ?? null)
+  if (isDefined(runtimeOverride)) {
+    return runtimeOverride
+  }
+
+  if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    return LogLevel.DEBUG
+  }
+
+  return LogLevel.INFO
+}
+
+const globalHandlers = new Set<LogHandler>()
+
+const consoleHandler: LogHandler = (entry) => {
+  const { level, message, context, data, error, timestamp } = entry
+  const prefixParts = [timestamp]
+  if (context) {
+    prefixParts.push(context)
+  }
+  const prefix = prefixParts.length > 0 ? `[${prefixParts.join(' ')}]` : ''
+  const extras: unknown[] = []
+  if (isDefined(data)) extras.push(data)
+  if (error) extras.push(error)
+
+  switch (level) {
+    case LogLevel.DEBUG:
+      console.debug(prefix, message, ...extras)
+      break
+    case LogLevel.INFO:
+      console.info(prefix, message, ...extras)
+      break
+    case LogLevel.WARN:
+      console.warn(prefix, message, ...extras)
+      break
+    case LogLevel.ERROR:
+      console.error(prefix, message, ...extras)
+      break
+    default:
+      console.log(prefix, message, ...extras)
+  }
+}
+
+globalHandlers.add(consoleHandler)
+
+export function registerGlobalLogHandler(handler: LogHandler): void {
+  globalHandlers.add(handler)
+}
+
 class Logger {
-  private level: LogLevel = LogLevel.NONE
-  private handlers: LogHandler[] = []
+  private level: LogLevel
+  private handlers: Set<LogHandler> = new Set()
   private context: string = ''
 
   constructor(context?: string) {
@@ -104,11 +175,11 @@ class Logger {
   }
 
   addHandler(handler: LogHandler): void {
-    this.handlers.push(handler)
+    this.handlers.add(handler)
   }
 
   private shouldLog(level: LogLevel): boolean {
-    return level >= this.level
+    return this.level !== LogLevel.NONE && level >= this.level
   }
 
   private async log(
@@ -123,7 +194,7 @@ class Logger {
       level,
       message,
       ...(this.context ? { context: this.context } : {}),
-      ...(data !== undefined ? { data } : {}),
+      ...(isDefined(data) ? { data } : {}),
       timestamp: new Date().toISOString(),
       ...(error ? { error } : {}),
     }
@@ -161,7 +232,7 @@ class Logger {
 }
 
 // Create default logger instance
-export const logger = new Logger()
+export const logger = new Logger('mobile-app')
 
 // Factory function to create contextual loggers
 export function createLogger(context: string): Logger {

@@ -14,7 +14,7 @@ import {
   withSequence,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -232,7 +232,7 @@ function BadgeAnimation({ unreadCount, hasUrgent }: BadgeAnimationProps): JSX.El
   }, [scale, opacity]);
 
   useEffect(() => {
-    if (hasUrgent) {
+    if (isTruthy(hasUrgent)) {
       pulseScale.value = withRepeat(
         withSequence(withTiming(1.2, { duration: 500 }), withTiming(1, { duration: 500 })),
         -1,

@@ -87,7 +87,7 @@ export function ChatInputBar({
       onSend(inputValue.trim(), 'text')
       setInputValue('')
       setIsTyping(false)
-      if (typingTimeoutRef.current) {
+      if (isTruthy(typingTimeoutRef.current)) {
         clearTimeout(typingTimeoutRef.current)
         typingTimeoutRef.current = null
       }
@@ -99,7 +99,7 @@ export function ChatInputBar({
       setInputValue(text)
       setIsTyping(true)
 
-      if (typingTimeoutRef.current) {
+      if (isTruthy(typingTimeoutRef.current)) {
         clearTimeout(typingTimeoutRef.current)
       }
 
@@ -113,7 +113,7 @@ export function ChatInputBar({
 
   useEffect(() => {
     return () => {
-      if (typingTimeoutRef.current) {
+      if (isTruthy(typingTimeoutRef.current)) {
         clearTimeout(typingTimeoutRef.current)
       }
     }
@@ -313,7 +313,7 @@ export function ChatInputBar({
                       }}
                       style={styles.stickerItem}
                       accessibilityRole="button"
-                      accessibilityLabel={`Send ${sticker.name} sticker`}
+                      accessibilityLabel={`Send ${String(sticker.name ?? '')} sticker`}
                     >
                       <Text style={styles.stickerEmoji}>{sticker.emoji}</Text>
                     </Pressable>
@@ -331,7 +331,7 @@ export function ChatInputBar({
                       }}
                       style={styles.stickerItem}
                       accessibilityRole="button"
-                      accessibilityLabel={`React with ${emoji}`}
+                      accessibilityLabel={`React with ${String(emoji ?? '')}`}
                     >
                       <Text style={styles.stickerEmoji}>{emoji}</Text>
                     </Pressable>

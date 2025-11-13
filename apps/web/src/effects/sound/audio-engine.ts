@@ -251,7 +251,7 @@ class AudioEngineImpl {
         );
 
         // Sustain
-        if (env.sustain?.duration) {
+        if (isTruthy(env.sustain?.duration)) {
           gainNode.gain.linearRampToValueAtTime(
             (env.sustain?.level || volume * 0.8) * this.masterVolume,
             now + env.sustain.duration
@@ -480,7 +480,7 @@ class AudioEngineImpl {
     this.contextPool = [];
 
     // Close main context
-    if (this.audioContext) {
+    if (isTruthy(this.audioContext)) {
       try {
         await this.audioContext.close();
       } catch {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
@@ -101,7 +101,7 @@ function HealthRecordItem({ record, index }: HealthRecordItemProps): JSX.Element
       </div>
       <p className="text-sm text-muted-foreground mb-2">
         {format(new Date(record.date), 'MMM dd, yyyy')}
-        {record.veterinarian && ` • ${record.veterinarian}`}
+        {record.veterinarian && ` • ${String(record.veterinarian ?? '')}`}
       </p>
       <p className="text-sm">{record.description}</p>
       {record.diagnosis && (
@@ -132,7 +132,7 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
     <AnimatedView
       style={staggeredAnimation.itemStyle}
       className={`flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow ${
-        reminder.completed ? 'opacity-50' : ''
+        String(reminder.completed ? 'opacity-50' : '' ?? '')
       }`}
     >
       <div
@@ -158,7 +158,7 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
           {format(new Date(reminder.dueDate), 'MMM dd, yyyy')}
           {!reminder.completed &&
             (isOverdue
-              ? ` • ${Math.abs(daysUntil)} days overdue`
+              ? ` • ${String(Math.abs(daysUntil) ?? '')} days overdue`
               : daysUntil === 0
                 ? ' • Due today'
                 : ` • ${daysUntil} days away`)}
@@ -176,11 +176,11 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
 
 export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): JSX.Element {
   const [vaccinations, setVaccinations] = useStorage<VaccinationRecord[]>(
-    `vaccinations-${pet.id}`,
+    `vaccinations-${String(pet.id ?? '')}`,
     []
   );
   const [healthRecords, setHealthRecords] = useStorage<HealthRecord[]>(
-    `health-records-${pet.id}`,
+    `health-records-${String(pet.id ?? '')}`,
     []
   );
   const [reminders, setReminders] = useStorage<VetReminder[]>(`reminders-${pet.id}`, []);
@@ -312,7 +312,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
   const handleAddVaccination = useCallback((): void => {
     try {
       const newVaccination: VaccinationRecord = {
-        id: `vac-${Date.now()}`,
+        id: `vac-${String(Date.now() ?? '')}`,
         petId: pet.id,
         type: 'rabies',
         name: 'Rabies Vaccination',
@@ -336,7 +336,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
   const handleAddHealthRecord = useCallback((): void => {
     try {
       const newRecord: HealthRecord = {
-        id: `health-${Date.now()}`,
+        id: `health-${String(Date.now() ?? '')}`,
         petId: pet.id,
         type: 'checkup',
         title: 'Annual Checkup',
@@ -360,7 +360,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
   const handleAddReminder = useCallback((): void => {
     try {
       const newReminder: VetReminder = {
-        id: `rem-${Date.now()}`,
+        id: `rem-${String(Date.now() ?? '')}`,
         petId: pet.id,
         type: 'vaccination',
         title: 'Vaccination Due',

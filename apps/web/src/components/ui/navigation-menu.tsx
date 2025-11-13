@@ -29,10 +29,31 @@ function NavigationMenu({
   );
 }
 
+interface NavigationMenuListProps
+  extends ComponentProps<typeof NavigationMenuPrimitive.List> {
+  readonly activeIndex?: number
+  readonly showInkBar?: boolean
+}
+
 function NavigationMenuList({
   className,
+  activeIndex = 0,
+  showInkBar = true,
   ...props
-}: ComponentProps<typeof NavigationMenuPrimitive.List>) {
+}: NavigationMenuListProps) {
+  const listRef = useRef<HTMLUListElement | null>(null)
+
+  const handleListRef = useCallback((node: HTMLUListElement | null) => {
+    listRef.current = node
+  }, [])
+
+  const clampedIndex = useMemo(() => {
+    if (!Number.isFinite(activeIndex)) {
+      return 0
+    }
+    return Math.max(0, Math.floor(activeIndex))
+  }, [activeIndex])
+
   return (
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"

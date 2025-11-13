@@ -978,7 +978,7 @@ describe('handleRefund', () => {
 
     // Create initial audit log with 1000 entries
     const initialAuditLog = Array.from({ length: 1000 }, (_, i) => ({
-      id: `audit-${i}`,
+      id: `audit-${String(i ?? '')}`,
       timestamp: new Date().toISOString(),
       action: 'test',
       userId: 'test-user',
@@ -1211,7 +1211,7 @@ describe('updateBusinessConfig', () => {
 
   it('should limit audit log to 1000 entries for config update', async () => {
     const initialAuditLog = Array.from({ length: 1000 }, (_, i) => ({
-      id: `audit-${i}`,
+      id: `audit-${String(i ?? '')}`,
       timestamp: new Date().toISOString(),
       action: 'test',
       userId: 'test-user',

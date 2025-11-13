@@ -215,7 +215,7 @@ export default function AdminLayout({
                     'w-full justify-start gap-3 h-11',
                     !sidebarOpen && 'justify-center px-2'
                   )}
-                  onClick={() => handleViewChange(item.id)}
+                  onClick={() => { handleViewChange(item.id); }}
                   title={!sidebarOpen ? item.label : undefined}
                 >
                   <Icon size={20} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />

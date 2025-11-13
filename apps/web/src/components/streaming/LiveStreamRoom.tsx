@@ -256,7 +256,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
                 exit={{ opacity: 0 }}
                 transition={{ duration: 3, ease: 'easeOut' }}
                 className="absolute bottom-20 text-4xl"
-                style={{ left: `${reaction.x}%` }}
+                style={{ left: `${String(reaction.x ?? '')}%` }}
               >
                 {reaction.emoji}
               </MotionView>
@@ -270,7 +270,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={() => { setIsMuted(!isMuted); }}
             className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80"
           >
             {isMuted ? <MicrophoneSlash size={24} /> : <Microphone size={24} />}
@@ -288,7 +288,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsCameraOff(!isCameraOff)}
+            onClick={() => { setIsCameraOff(!isCameraOff); }}
             className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80"
           >
             <CameraRotate size={24} />
@@ -313,7 +313,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowChat(false)}
+                onClick={() => { setShowChat(false); }}
                 className="text-white hover:bg-white/10 rounded-full"
               >
                 <X size={20} />
@@ -350,7 +350,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
               <div className="flex gap-2">
                 <Input
                   value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
+                  onChange={(e) => { setMessageInput(e.target.value); }}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Send a message..."
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -373,7 +373,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setShowChat(true)}
+          onClick={() => { setShowChat(true); }}
           className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80 z-10"
         >
           <ChatCircle size={24} weight="fill" />

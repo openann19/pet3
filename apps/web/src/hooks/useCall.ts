@@ -227,7 +227,7 @@ export function useCall(
   };
 
   const declineCall = () => {
-    if (incomingCall) {
+    if (isTruthy(incomingCall)) {
       addToHistory({
         id: incomingCall.id,
         roomId: incomingCall.roomId,

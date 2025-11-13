@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import {
   ArrowUUpLeft,
   Check,
-  Checks, // Double check icon
+  Checks,
   Clock,
   Copy,
   Fire, // Reply icon alternative
@@ -46,7 +46,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { memo, useEffect, useRef, useState, useMemo } from 'react';
-import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from '@petspark/motion';
 import { AnimatedAIWrapper, BubbleWrapperGodTier } from './bubble-wrapper-god-tier';
 import { useHapticFeedback } from './bubble-wrapper-god-tier/effects/useHapticFeedback';
 import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/useParticleBurstOnEvent';
@@ -504,7 +504,7 @@ function MessageBubble({
   });
 
   const combinedAnimatedStyle = useAnimatedStyle(() => {
-    if (isDeleting) {
+    if (isTruthy(isDeleting)) {
       return {
         opacity: deleteAnimation.opacity.value,
         transform: [
@@ -878,7 +878,7 @@ function MessageBubble({
             }}
           >
             <button
-              onClick={() => setShowReactions(true)}
+              onClick={() => { setShowReactions(true); }}
               className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-md text-sm"
             >
               <Smiley size={16} />
@@ -937,7 +937,7 @@ function MessageBubble({
             {REACTIONS.map(({ type, label }) => (
               <button
                 key={type}
-                onClick={() => handleReact(type)}
+                onClick={() => { handleReact(type); }}
                 className="p-2 hover:bg-muted rounded-full transition-colors"
                 aria-label={label}
               >

@@ -11,6 +11,7 @@ import {
 import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import type { ReactNode } from 'react'
+import { isTruthy } from '@petspark/shared';
 
 export interface PremiumAvatarProps {
   src?: string
@@ -179,7 +180,7 @@ export function PremiumAvatar({
                 right: 0,
               },
             ]}
-            accessibilityLabel={`Status: ${status}`}
+            accessibilityLabel={`Status: ${String(status ?? '')}`}
           />
         )}
       </Component>
@@ -196,7 +197,7 @@ export function PremiumAvatar({
               right: -badgeSizes[size].width / 2,
             },
           ]}
-          accessibilityLabel={`Badge: ${badge}`}
+          accessibilityLabel={`Badge: ${String(badge ?? '')}`}
         >
           <Text
             style={[

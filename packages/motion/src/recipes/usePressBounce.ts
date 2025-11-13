@@ -24,7 +24,7 @@ export function usePressBounce(scaleOnPress = 0.96, scaleOnRelease = 1): UsePres
   const s = useSharedValue(scaleOnRelease)
 
   const onPressIn = useCallback(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Instant animation for reduced motion
       s.value = withTiming(scaleOnPress, { duration: getReducedMotionDuration(120, true) })
     } else {
@@ -33,7 +33,7 @@ export function usePressBounce(scaleOnPress = 0.96, scaleOnRelease = 1): UsePres
   }, [scaleOnPress, reducedMotion, s])
 
   const onPressOut = useCallback(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Instant animation for reduced motion
       s.value = withTiming(scaleOnRelease, { duration: getReducedMotionDuration(120, true) })
     } else {

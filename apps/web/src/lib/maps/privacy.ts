@@ -1,19 +1,20 @@
 import type { Location } from './types';
 import { snapToGrid } from './utils';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface PrivacyLocation extends Location {
   isPrecise: boolean;
   sessionId: string;
 }
 
-let sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+let sessionId = `session_${String(Date.now() ?? '')}_${String(Math.random().toString(36).substr(2, 9) ?? '')}`;
 
 export function applyPrivacyToLocation(
   location: Location,
   isPreciseSharing: boolean,
   gridSizeMeters: number
 ): PrivacyLocation {
-  if (isPreciseSharing) {
+  if (isTruthy(isPreciseSharing)) {
     return {
       ...location,
       isPrecise: true,
@@ -49,7 +50,7 @@ export function getPrivacyBlurredLocation(location: Location, gridSizeMeters = 5
 }
 
 export function resetPrivacySession(): void {
-  sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  sessionId = `session_${String(Date.now() ?? '')}_${String(Math.random().toString(36).substr(2, 9) ?? '')}`;
 }
 
 export function degradePrecisionOverTime(

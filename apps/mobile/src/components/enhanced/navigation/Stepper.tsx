@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
@@ -43,7 +44,7 @@ export function Stepper({
   const reducedMotion = useReducedMotionSV()
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
+    width: `${progressWidth.value}%` as `${number}%`,
   }))
 
   const handleStepPress = useCallback(
@@ -58,7 +59,7 @@ export function Stepper({
 
   const progressPercentage = steps.length > 1 ? (currentStep / (steps.length - 1)) * 100 : 0
 
-  if (reducedMotion.value) {
+  if (isTruthy(reducedMotion.value)) {
     progressWidth.value = withTiming(progressPercentage, { duration: 300 })
   } else {
     progressWidth.value = withSpring(progressPercentage, SPRING_CONFIG)
@@ -76,7 +77,7 @@ export function Stepper({
             <View key={step.id} style={styles.verticalStep}>
               <View style={styles.verticalStepContent}>
                 <AnimatedPressable
-                  onPress={() => handleStepPress(index)}
+                  onPress={() => { handleStepPress(index); }}
                   disabled={isUpcoming}
                   style={[
                     styles.stepCircle,
@@ -141,7 +142,7 @@ export function Stepper({
           return (
             <View key={step.id} style={styles.horizontalStep}>
               <AnimatedPressable
-                onPress={() => handleStepPress(index)}
+                onPress={() => { handleStepPress(index); }}
                 disabled={isUpcoming}
                 style={[
                   styles.stepCircle,

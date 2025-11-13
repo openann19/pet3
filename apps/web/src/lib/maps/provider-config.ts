@@ -1,5 +1,6 @@
 import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('MapProviderConfig');
 
@@ -61,7 +62,7 @@ export function getAdminMapProviderConfig(): MapProviderConfig {
 
   try {
     const stored = localStorage.getItem('admin-map-provider-config');
-    if (stored) {
+    if (isTruthy(stored)) {
       cachedAdminConfig = JSON.parse(stored);
       return cachedAdminConfig || getEnvConfig();
     }
@@ -121,7 +122,7 @@ export const mapProviderConfig = getAdminMapProviderConfig();
 export function getMapStyleUrl(): string {
   const config = getAdminMapProviderConfig();
   if (config.MAP_STYLE_URL.includes('?key=')) {
-    return `${config.MAP_STYLE_URL}${config.MAP_TILES_API_KEY}`;
+    return `${String(config.MAP_STYLE_URL ?? '')}${String(config.MAP_TILES_API_KEY ?? '')}`;
   }
   return config.MAP_STYLE_URL;
 }

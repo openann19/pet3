@@ -3,6 +3,7 @@ import { createLogger } from '@/lib/logger';
 import { Warning } from '@phosphor-icons/react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('ErrorBoundary');
 
@@ -56,9 +57,9 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   override render(): ReactNode {
-    if (this.state.hasError) {
+    if (isTruthy(this.state.hasError)) {
       // Use custom fallback if provided
-      if (this.props.fallback) {
+      if (isTruthy(this.props.fallback)) {
         return this.props.fallback;
       }
 

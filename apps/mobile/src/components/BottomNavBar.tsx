@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavBarAnimation, useNavButtonAnimation } from '../effects/reanimated'
 import { colors } from '../theme/colors'
 import * as Haptics from 'expo-haptics'
+import { isTruthy } from '@petspark/shared';
 
 export type TabKey = 'community' | 'chat' | 'feed' | 'adopt' | 'matches' | 'profile'
 
@@ -195,7 +196,7 @@ function TabItem({ item, selected, onPress }: TabItemProps): React.ReactElement 
   const badgeOpacity = useSharedValue(item.badge && item.badge > 0 ? 1 : 0)
 
   useEffect(() => {
-    if (selected) {
+    if (isTruthy(selected)) {
       glowOpacity.value = withSpring(1, { damping: 20, stiffness: 400 })
     } else {
       glowOpacity.value = withTiming(0, { duration: 200 })

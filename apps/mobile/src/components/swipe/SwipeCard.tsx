@@ -111,7 +111,7 @@ function SwipeCardComponent({
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
-        { rotateZ: `${rotate.value}deg` },
+        { rotateZ: `${String(rotate.value ?? '')}deg` },
         { scale: scale.value },
       ],
       opacity,

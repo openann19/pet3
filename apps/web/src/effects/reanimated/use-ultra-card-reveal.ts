@@ -10,8 +10,9 @@ import {
   withDelay,
   withSequence,
   interpolate,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseUltraCardRevealOptions {
   delay?: number;
@@ -39,7 +40,7 @@ export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}) {
   const translateZ = useSharedValue(-100);
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       const staggerDelay = delay + index * 100;
 
       progress.value = withDelay(
@@ -75,8 +76,8 @@ export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}) {
       transform: [
         { perspective },
         { scale: scale.value },
-        { rotateX: `${rotateX.value}deg` },
-        { rotateY: `${rotateY.value}deg` },
+        { rotateX: `${String(rotateX.value ?? '')}deg` },
+        { rotateY: `${String(rotateY.value ?? '')}deg` },
         { translateZ: translateZ.value },
       ],
     };

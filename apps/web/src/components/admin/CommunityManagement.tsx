@@ -31,7 +31,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { communityService } from '@/lib/community-service';
 import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 const logger = createLogger('CommunityManagement');
@@ -294,11 +294,11 @@ export default function CommunityManagement() {
               <Input
                 placeholder="Search posts by content or author..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); }}
                 className="pl-10"
               />
             </div>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); }}>
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="flagged">
@@ -357,7 +357,7 @@ export default function CommunityManagement() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <Button variant="outline" onClick={() => { setShowDeleteDialog(false); }}>
               Cancel
             </Button>
             <Button

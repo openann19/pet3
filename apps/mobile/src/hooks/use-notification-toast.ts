@@ -1,6 +1,7 @@
 import type { Notification, NotificationOptions } from '@mobile/components/notifications'
 import { useNotifications } from '@mobile/components/notifications'
 import { useCallback } from 'react'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Convenience hook for showing notifications
@@ -22,11 +23,11 @@ export function useNotificationToast(): {
         title,
         ...(message !== undefined && message !== '' ? { message } : {}),
       }
-      if (options) {
+      if (isTruthy(options)) {
         if (options.duration !== undefined) {
           notification.duration = options.duration
         }
-        if (options.action) {
+        if (isTruthy(options.action)) {
           notification.action = options.action
         }
         if (options.icon !== undefined && options.icon !== '') {
@@ -46,8 +47,8 @@ export function useNotificationToast(): {
         duration: options?.duration ?? 5000,
         ...(message !== undefined && message !== '' ? { message } : {}),
       }
-      if (options) {
-        if (options.action) {
+      if (isTruthy(options)) {
+        if (isTruthy(options.action)) {
           notification.action = options.action
         }
         if (options.icon !== undefined && options.icon !== '') {
@@ -66,11 +67,11 @@ export function useNotificationToast(): {
         title,
         ...(message !== undefined && message !== '' ? { message } : {}),
       }
-      if (options) {
+      if (isTruthy(options)) {
         if (options.duration !== undefined) {
           notification.duration = options.duration
         }
-        if (options.action) {
+        if (isTruthy(options.action)) {
           notification.action = options.action
         }
         if (options.icon !== undefined && options.icon !== '') {
@@ -89,11 +90,11 @@ export function useNotificationToast(): {
         title,
         ...(message !== undefined && message !== '' ? { message } : {}),
       }
-      if (options) {
+      if (isTruthy(options)) {
         if (options.duration !== undefined) {
           notification.duration = options.duration
         }
-        if (options.action) {
+        if (isTruthy(options.action)) {
           notification.action = options.action
         }
         if (options.icon !== undefined && options.icon !== '') {

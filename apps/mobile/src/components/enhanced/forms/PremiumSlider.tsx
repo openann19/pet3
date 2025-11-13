@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.View
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -54,7 +55,7 @@ export function PremiumSlider({
 
   const handleSlidingStart = useCallback((): void => {
     setIsDragging(true)
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       tooltipOpacity.value = withTiming(1, { duration: 200 })
       tooltipScale.value = withTiming(1, { duration: 200 })
     } else {
@@ -120,7 +121,7 @@ export function PremiumSlider({
               style={[
                 styles.tooltip,
                 {
-                  left: `${((value - min) / (max - min)) * 100}%`,
+                  left: `${((value - min) / (max - min)) * 100}%` as const,
                 },
                 tooltipStyle,
               ]}

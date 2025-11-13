@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo, useRef } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface InteractiveMapProps {
   center: Location;
@@ -49,7 +50,7 @@ function MapController({
 
   useMapEvents({
     click: (e) => {
-      if (onMapClick) {
+      if (isTruthy(onMapClick)) {
         onMapClick({
           lat: e.latlng.lat,
           lng: e.latlng.lng,
@@ -98,12 +99,12 @@ export default function InteractiveMap({
         };
 
         clusters.push({
-          id: `cluster-${marker.id}`,
+          id: `cluster-${String(marker.id ?? '')}`,
           location: clusterCenter,
           data: nearby,
           icon: L.divIcon({
             className: 'custom-cluster-icon',
-            html: `<div class="cluster-marker">${nearby.length}</div>`,
+            html: `<div class="cluster-marker">${String(nearby.length ?? '')}</div>`,
             iconSize: [40, 40],
             iconAnchor: [20, 20],
           }),
@@ -120,7 +121,7 @@ export default function InteractiveMap({
   }, [markers, clusterMarkers]);
 
   return (
-    <div className={`relative ${className}`} style={{ height }}>
+    <div className={`relative ${String(className ?? '')}`} style={{ height }}>
       <style>{`
         .leaflet-container {
           font-family: inherit;
@@ -168,7 +169,7 @@ export default function InteractiveMap({
             icon={marker.icon || DEFAULT_ICON}
             eventHandlers={{
               click: () => {
-                if (onMarkerClick) {
+                if (isTruthy(onMarkerClick)) {
                   onMarkerClick(marker);
                 }
               },

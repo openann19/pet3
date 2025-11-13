@@ -83,7 +83,7 @@ export const mapAPI = {
   },
 
   async updatePlace(id: string, updates: Partial<Place>): Promise<Place> {
-    const response = await fetch(`/api/map/places/${id}`, {
+    const response = await fetch(`/api/map/places/${String(id ?? '')}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -132,7 +132,7 @@ export const mapAPI = {
   },
 
   async updateLostPetAlert(id: string, updates: Partial<LostPetAlert>): Promise<LostPetAlert> {
-    const response = await fetch(`/api/map/lost-pets/${id}`, {
+    const response = await fetch(`/api/map/lost-pets/${String(id ?? '')}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -219,7 +219,7 @@ export const mapAPI = {
   },
 
   async updateCategory(id: string, updates: Partial<PlaceCategory>): Promise<PlaceCategory> {
-    const response = await fetch(`/api/map/categories/${id}`, {
+    const response = await fetch(`/api/map/categories/${String(id ?? '')}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),

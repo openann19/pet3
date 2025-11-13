@@ -57,7 +57,7 @@ export class WebSocketManager {
     this.messageTimeout = options.messageTimeout ?? 5000;
   }
 
-  connect(accessToken: string): void {
+  connect(accessToken?: string): void {
     if (this.state === 'connected' || this.state === 'connecting') {
       return;
     }
@@ -275,6 +275,51 @@ export class WebSocketManager {
     if (this.heartbeatTimer !== undefined) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = undefined;
+    }
+  }
+
+  /**
+   * Get access token from APIClient
+   */
+  private getAccessToken(): string | null {
+    // Access token is stored in APIClient memory
+    // We need to get it from the auth service or APIClient
+    // For now, return null and let the caller provide it
+    return this.accessToken
+  }
+
+  /**
+   * Handle authentication error - refresh token and reconnect
+   */
+  private async handleAuthError(): Promise<void> {
+    if (this.refreshInProgress) {
+      return
+    }
+
+    this.refreshInProgress = true
+    logger.info('WebSocket auth error, attempting token refresh')
+
+    try {
+      // Token refresh is handled by APIClient automatically
+      // We just need to get the new token and reconnect
+      // The token refresh happens when APIClient makes a request
+      // For WebSocket, we'll reconnect with a fresh token
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for refresh
+      
+      // Get fresh token (this would come from auth service)
+      const newToken = this.getAccessToken()
+      if (newToken) {
+        this.reconnectAttempts = 0 // Reset attempts after successful refresh
+        this.connect(newToken)
+      } else {
+        logger.error('Failed to get new access token after refresh')
+        this.emit('connection', { status: 'auth_failed' })
+      }
+    } catch (error) {
+      logger.error('Failed to refresh token for WebSocket', { error: error instanceof Error ? error : new Error(String(error)) })
+      this.emit('connection', { status: 'auth_failed' })
+    } finally {
+      this.refreshInProgress = false
     }
   }
 

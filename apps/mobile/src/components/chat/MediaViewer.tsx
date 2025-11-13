@@ -16,6 +16,7 @@ import { useGlassMorphZoom } from '../../effects/chat/media/use-glass-morph-zoom
 import { useStickerPhysics } from '../../effects/chat/media/use-sticker-physics'
 import { ChromaticAberrationFX } from '../../effects/chat/shaders/chromatic-aberration'
 import { createLogger } from '../../utils/logger'
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('MediaViewer')
 
@@ -66,7 +67,7 @@ export function MediaViewer({
 
   // Open modal
   useEffect(() => {
-    if (visible) {
+    if (isTruthy(visible)) {
       // Set aberration center to image center
       glassZoom.aberrationCenter.value = {
         x: (SCREEN_WIDTH - 40) / 2,

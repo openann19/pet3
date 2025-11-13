@@ -41,7 +41,7 @@ function colorToHex([r, g, b]: [number, number, number], a = 1): string {
   const bb = to(b)
   const aa = to(a)
   const hex = (aa << 24) | (rr << 16) | (gg << 8) | bb
-  return `#${hex.toString(16).padStart(8, '0')}`
+  return `#${String(hex.toString(16).padStart(8, '0') ?? '')}`
 }
 
 export function AdditiveBloom({

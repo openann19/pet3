@@ -157,8 +157,8 @@ describe('PremiumNotificationBell', () => {
     const manyNotifications: PremiumNotification[] = Array.from({ length: 100 }, (_, i) => ({
       id: String(i),
       type: 'match',
-      title: `Notification ${i}`,
-      message: `Message ${i}`,
+      title: `Notification ${String(i ?? '')}`,
+      message: `Message ${String(i ?? '')}`,
       timestamp: Date.now() - i * 1000,
       read: false,
       archived: false,

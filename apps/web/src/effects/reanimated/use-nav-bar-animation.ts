@@ -8,7 +8,7 @@ import {
   withRepeat,
   withSequence,
   withDelay,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
@@ -70,7 +70,7 @@ export function useNavBarAnimation(
 
   const shimmerStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: `${shimmerTranslateX.value}%` }],
+      transform: [{ translateX: `${String(shimmerTranslateX.value ?? '')}%` }],
       opacity: shimmerOpacity.value,
     };
   }) as AnimatedStyle;

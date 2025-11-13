@@ -2,13 +2,17 @@
 
 This repository is organized as a monorepo containing web and native mobile applications with shared business logic.
 
+> **📖 For comprehensive architecture documentation, see [architecture.md](./architecture.md)**
+
+This document provides a quick overview. For detailed information about the architecture, patterns, and best practices, please refer to the main architecture documentation.
+
 ## Structure
 
 ```
 pet3/
 ├── apps/
 │   ├── web/          # React web application (existing)
-│   └── native/       # Expo/React Native mobile app (iOS, Android, Web)
+│   └── mobile/       # React Native mobile app (iOS, Android, Web)
 ├── packages/
 │   └── shared/       # Shared TypeScript utilities and types
 ├── .github/
@@ -33,7 +37,7 @@ This project uses npm workspaces to manage dependencies and enable code sharing 
 - Expo-managed React Native application
 - Targets iOS, Android, and Web platforms
 - Uses React Navigation, NativeWind (Tailwind), and shared packages
-- See `apps/native/README.md` and `docs/MOBILE_README.md` for setup and development
+- See `apps/mobile/README.md` and `docs/MOBILE_README.md` for setup and development
 
 ### Packages
 
@@ -74,7 +78,7 @@ npm run dev
 #### Native App
 
 ```bash
-cd apps/native
+cd apps/mobile
 npm start
 ```
 
@@ -170,8 +174,9 @@ Run the validation script to verify the setup:
 
 ## Documentation
 
+- **Architecture**: [`architecture.md`](./architecture.md) - Comprehensive architecture documentation
 - **Mobile Development**: `docs/MOBILE_README.md`
-- **Native App**: `apps/native/README.md`
+- **Mobile App**: `apps/mobile/README.md`
 - **Shared Package**: `packages/shared/README.md`
 - **Web App**: `apps/web/README.md`
 
@@ -207,7 +212,7 @@ This alignment simplifies dependency management and ensures consistent behavior 
 If shared package imports fail:
 
 1. Ensure shared package is built: `cd packages/shared && npm run build`
-2. Clear Metro cache (native): `cd apps/native && expo start --clear`
+2. Clear Metro cache (mobile): `cd apps/mobile && expo start --clear`
 3. Clear node_modules and reinstall: `rm -rf node_modules && npm install`
 
 ### TypeScript Errors
@@ -216,7 +221,7 @@ Run typecheck to identify issues:
 
 ```bash
 cd packages/shared && npm run typecheck
-cd apps/native && npm run typecheck
+cd apps/mobile && npm run typecheck
 cd apps/web && npm run typecheck
 ```
 

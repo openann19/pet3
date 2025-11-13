@@ -431,7 +431,7 @@ export default function ReportsView() {
                 <p className="text-sm font-medium">Resolution notes:</p>
                 <Textarea
                   value={resolution}
-                  onChange={(e) => setResolution(e.target.value)}
+                  onChange={(e) => { setResolution(e.target.value); }}
                   placeholder="Explain the action taken and reasoning..."
                   rows={4}
                 />

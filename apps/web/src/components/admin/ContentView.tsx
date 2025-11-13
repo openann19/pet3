@@ -69,7 +69,7 @@ export default function ContentView() {
           <Input
             placeholder="Search pets by name or breed..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); }}
             className="pl-10"
           />
         </div>
@@ -199,7 +199,7 @@ export default function ContentView() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => { setDialogOpen(false); }}>
               Close
             </Button>
             <Button variant="destructive" onClick={handleRemovePet}>
@@ -215,6 +215,61 @@ export default function ContentView() {
       </Dialog>
     </div>
   );
+}
+
+interface AnimatedPetCardProps {
+  pet: Pet
+  index: number
+  onReview: (pet: Pet) => void
+}
+
+function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
+  const entry = useEntryAnimation({
+    initialScale: 0.95,
+    initialOpacity: 0,
+    delay: index * 20
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <div className="aspect-square relative bg-muted">
+          {pet.photo ? (
+            <img
+              src={pet.photo}
+              alt={pet.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon size={48} className="text-muted-foreground" />
+            </div>
+          )}
+          <Badge className="absolute top-2 right-2" variant="secondary">
+            Active
+          </Badge>
+        </div>
+        <CardContent className="p-4">
+          <h3 className="font-semibold truncate">{pet.name}</h3>
+          <p className="text-sm text-muted-foreground truncate">
+            {pet.breed} • {pet.age?.toString() ?? 'N/A'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Owner: {pet.ownerName}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full mt-3"
+            onClick={() => { onReview(pet); }}
+          >
+            <Eye size={16} className="mr-2" />
+            Review
+          </Button>
+        </CardContent>
+      </Card>
+    </AnimatedView>
+  )
 }
 
 function InfoItem({ label, value }: { label: string; value: string }) {

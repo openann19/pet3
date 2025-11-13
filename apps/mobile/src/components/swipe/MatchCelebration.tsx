@@ -15,6 +15,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated'
+import { isTruthy } from '@petspark/shared';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
@@ -39,7 +40,7 @@ export function MatchCelebration({
   const rotation = useSharedValue(0)
 
   useEffect(() => {
-    if (visible) {
+    if (isTruthy(visible)) {
       // Haptic feedback
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
 

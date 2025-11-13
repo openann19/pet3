@@ -70,7 +70,7 @@ function isLegacyMediaQueryList(
 
 export function isReduceMotionEnabled(): boolean {
   // RN path: prefer AccessibilityInfo snapshot if available (non-blocking)
-  if (AccessibilityInfo?.isReduceMotionEnabled) {
+  if (isTruthy(AccessibilityInfo?.isReduceMotionEnabled)) {
     // We can't await here (sync API); return best guess (false) and let hooks update
     // Callers needing reactive updates should use hooks below.
   }

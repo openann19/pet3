@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { queryCache, generateCacheKey } from '../lib/cache/query-cache';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface UseApiCacheOptions<T> {
   enabled?: boolean;
@@ -53,7 +54,7 @@ export function useApiCache<T>(
     async (isInitial = false) => {
       if (!key || !enabled) return;
 
-      if (isInitial) {
+      if (isTruthy(isInitial)) {
         setIsLoading(true);
       } else {
         setIsRefetching(true);
@@ -82,7 +83,7 @@ export function useApiCache<T>(
     if (!key || !enabled) return;
 
     const cachedData = queryCache.get<T>(key);
-    if (cachedData) {
+    if (isTruthy(cachedData)) {
       setData(cachedData);
       if (refetchOnMount) {
         // Fire-and-forget: refetch in background with error handling inside
@@ -103,7 +104,7 @@ export function useApiCache<T>(
       void fetchData(false);
     }, refetchInterval);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [refetchInterval, enabled, key, fetchData]);
 
   const refetch = useCallback(async () => {

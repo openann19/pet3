@@ -257,7 +257,7 @@ export class WebRTCPeer {
       this.cleanupListener = null;
     }
 
-    if (this.peer) {
+    if (isTruthy(this.peer)) {
       try {
         this.peer.destroy();
       } catch (error) {

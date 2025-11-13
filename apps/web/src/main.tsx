@@ -70,6 +70,18 @@ try {
   rootLogger.error('Error reporting initialization failed', err);
 }
 
+// Initialize worldwide scale features
+import { initializeWorldwideScale } from './lib/worldwide-scale-init';
+
+// Initialize worldwide scale features after a short delay to ensure other services are ready
+setTimeout(() => {
+  void initializeWorldwideScale({
+    enableServiceWorker: import.meta.env.PROD,
+    enableErrorTracking: true,
+    enableWebVitals: import.meta.env.PROD,
+  })
+}, 100)
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element not found. Make sure <div id="root"></div> exists in index.html');

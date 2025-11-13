@@ -67,8 +67,7 @@ export function useAdoptionProfile(id: string | null | undefined): UseQueryResul
 export function useSubmitApplication(): UseMutationResult<
   { success: boolean; applicationId: string },
   unknown,
-  SubmitApplicationData,
-  unknown
+  SubmitApplicationData
 > {
   const queryClient = useQueryClient();
 

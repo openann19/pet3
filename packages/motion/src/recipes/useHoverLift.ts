@@ -26,7 +26,7 @@ export function useHoverLift(px = 8, scale = 1.03): UseHoverLiftReturn {
   const s = useSharedValue(1)
 
   const enter = () => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Instant animation for reduced motion
       y.value = withTiming(-px, { duration: getReducedMotionDuration(120, true) })
       s.value = withTiming(scale, { duration: getReducedMotionDuration(120, true) })
@@ -37,7 +37,7 @@ export function useHoverLift(px = 8, scale = 1.03): UseHoverLiftReturn {
   }
 
   const leave = () => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       // Instant animation for reduced motion
       y.value = withTiming(0, { duration: getReducedMotionDuration(120, true) })
       s.value = withTiming(1, { duration: getReducedMotionDuration(120, true) })

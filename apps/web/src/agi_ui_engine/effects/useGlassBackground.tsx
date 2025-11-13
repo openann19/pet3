@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming, Easing } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
 
@@ -51,9 +51,9 @@ export function useGlassBackground(
     }
 
     return {
-      backdropFilter: `blur(${blurIntensity.value * 20}px)`,
-      WebkitBackdropFilter: `blur(${blurIntensity.value * 20}px)`,
-      backgroundColor: `rgba(255, 255, 255, ${0.1 * blurIntensity.value})`,
+      backdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
+      WebkitBackdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
+      backgroundColor: `rgba(255, 255, 255, ${String(0.1 * blurIntensity.value)})`,
       borderWidth: 1,
       borderColor: `rgba(255, 255, 255, ${0.2 * blurIntensity.value})`,
     };

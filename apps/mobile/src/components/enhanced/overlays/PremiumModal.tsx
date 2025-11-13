@@ -17,6 +17,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
+import { isTruthy } from '@petspark/shared';
 
 import type { IconProps } from 'react-native-vector-icons/Icon'
 
@@ -62,7 +63,7 @@ export function PremiumModal({
     const springConfig = reducedMotion.value ? { duration: 200 } : { stiffness: 400, damping: 30 }
     const timingConfig = { duration: 200 }
 
-    if (visible) {
+    if (isTruthy(visible)) {
       scale.value = withSpring(1, springConfig)
       opacity.value = withTiming(1, timingConfig)
       backdropOpacity.value = withTiming(1, timingConfig)

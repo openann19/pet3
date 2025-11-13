@@ -409,6 +409,23 @@ vi.mock('@/config/env', () => ({
 
 // Mock react-native for web tests
 vi.mock('react-native', () => ({
+  default: {
+    View: 'div',
+    Text: 'span',
+    Image: 'img',
+    StyleSheet: {
+      create: (styles: Record<string, unknown>) => styles,
+      hairlineWidth: 1,
+      absoluteFillObject: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+    },
+    Platform: {
+      OS: 'web',
+    },
+    AccessibilityInfo: {
+      isReduceMotionEnabled: vi.fn(() => Promise.resolve(false)),
+      addEventListener: vi.fn(() => ({ remove: vi.fn() })),
+    },
+  },
   View: 'div',
   Text: 'span',
   Image: 'img',
@@ -419,6 +436,10 @@ vi.mock('react-native', () => ({
   },
   Platform: {
     OS: 'web',
+  },
+  AccessibilityInfo: {
+    isReduceMotionEnabled: vi.fn(() => Promise.resolve(false)),
+    addEventListener: vi.fn(() => ({ remove: vi.fn() })),
   },
 }));
 
@@ -507,6 +528,7 @@ vi.mock('react-native-reanimated', () => {
   AnimatedComponent.a = AnimatedA;
 
   return {
+    ...(actual || {}),
     default: AnimatedComponent,
     Animated: AnimatedNamespace,
     useSharedValue: vi.fn((initial: number) => createMockSharedValueReanimated(initial)),
@@ -607,6 +629,7 @@ vi.mock('react-native-reanimated', () => {
     makeRemote: vi.fn((initial: number) => createMockSharedValueReanimated(initial)),
   };
 });
+
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);

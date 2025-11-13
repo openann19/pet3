@@ -155,7 +155,7 @@ export function createChatRoom(
   const now = new Date().toISOString();
 
   return {
-    id: `chat-${matchId}`,
+    id: `chat-${String(matchId ?? '')}`,
     participantIds: [petId1, petId2],
     type: 'direct',
     matchId,

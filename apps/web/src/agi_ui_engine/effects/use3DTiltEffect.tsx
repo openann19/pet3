@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
@@ -46,7 +46,7 @@ export function use3DTiltEffect(options: Use3DTiltEffectOptions = {}): Use3DTilt
   const rotateY = useSharedValue(0);
 
   const handleMouseMove = useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>): void => {
+    (e: React.MouseEvent): void => {
       if (!enabled || !visual.enable3DTilt) {
         return;
       }

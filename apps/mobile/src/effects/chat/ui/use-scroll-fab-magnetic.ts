@@ -21,6 +21,7 @@ import {
   type SharedValue,
 } from 'react-native-reanimated'
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Spring configuration for entry
@@ -78,7 +79,7 @@ export function useScrollFabMagnetic(
     if (enabled && isVisible) {
       const duration = getReducedMotionDuration(ENTRY_DURATION, reducedMotion.value)
 
-      if (reducedMotion.value) {
+      if (isTruthy(reducedMotion.value)) {
         scale.value = withTiming(1, {
           duration,
           easing: Easing.linear,

@@ -61,14 +61,11 @@ export default function CompatibilityBreakdown({
           animate={{ opacity: 1, y: 0 }}
           className="text-lg font-bold mb-4 flex items-center gap-2 bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
         >
-          <MotionText
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-          >
+          <AnimatedView style={emojiStyle} className="inline-block">
             📊
-          </MotionText>
+          </AnimatedView>
           Compatibility Breakdown
-        </MotionView>
+        </AnimatedView>
         <div className="space-y-4">
           {Object.entries(factors).map(([key, _value], idx) => {
             const animatedPercentage = Math.round((animatedValues[key] || 0) * 100);
@@ -77,7 +74,7 @@ export default function CompatibilityBreakdown({
             const colorClass = factorColors[key as keyof typeof factorColors];
 
             return (
-              <MotionView
+              <FactorItem
                 key={key}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}

@@ -22,8 +22,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated'
 import { useLiquidDots } from '../../effects/chat/typing/use-liquid-dots'
-import { useScrollFabMagnetic } from '../../effects/chat/ui/use-scroll-fab-magnetic'
+import { MagneticScrollFab } from './MagneticScrollFab'
 import { MessageBubble, type Message } from './MessageBubble'
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Typing dot component
@@ -94,7 +95,7 @@ export function ChatList({
       setShowScrollFab(shouldShowFab)
 
       // Update badge count based on unread messages
-      if (shouldShowFab) {
+      if (isTruthy(shouldShowFab)) {
         const unreadCount = Math.floor(distanceFromBottom / 60) // Approximate
         if (unreadCount !== badgeCount) {
           previousBadgeCountRef.current = badgeCount
@@ -118,13 +119,6 @@ export function ChatList({
   }, [messages.length, onScrollToBottom])
 
   // Scroll FAB effect
-  const scrollFab = useScrollFabMagnetic({
-    enabled: true,
-    isVisible: showScrollFab,
-    badgeCount,
-    previousBadgeCount: previousBadgeCountRef.current,
-  })
-
   // Typing indicator liquid dots
   const typingDots = useLiquidDots({
     enabled: isTyping,
@@ -180,12 +174,6 @@ export function ChatList({
       </Animated.View>
     )
   }, [isTyping, typingDots])
-
-  // Scroll FAB animated style
-  const fabAnimatedStyle = scrollFab.animatedStyle
-
-  // Badge animated style
-  const badgeAnimatedStyle = scrollFab.badgeAnimatedStyle
 
   return (
     <GestureHandlerRootView style={styles.container}>

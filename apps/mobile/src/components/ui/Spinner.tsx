@@ -14,6 +14,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated'
+import { isTruthy } from '@petspark/shared';
 
 export interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg'
@@ -52,7 +53,7 @@ export function Spinner({
   const opacity = useSharedValue(1)
 
   useEffect(() => {
-    if (reducedMotion) {
+    if (isTruthy(reducedMotion)) {
       // For reduced motion, use a slower, less noticeable animation
       rotation.value = withRepeat(
         withTiming(360, {
@@ -86,7 +87,7 @@ export function Spinner({
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ rotate: `${rotation.value}deg` }],
+      transform: [{ rotate: `${String(rotation.value ?? '')}deg` }],
       opacity: opacity.value,
     }
   })

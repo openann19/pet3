@@ -1,3 +1,5 @@
+import { isTruthy, isDefined } from '@petspark/shared';
+
 /**
  * Browser-only dynamic loader for NSFWJS + TFJS (avoids bundling Node deps)
  *
@@ -35,8 +37,8 @@ let modelPromise: Promise<{
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     // Check if script already loaded
-    const existingScript = document.querySelector(`script[src="${src}"]`);
-    if (existingScript) {
+    const existingScript = document.querySelector(`script[src="${String(src ?? '')}"]`);
+    if (isTruthy(existingScript)) {
       resolve();
       return;
     }
@@ -44,8 +46,8 @@ function loadScript(src: string): Promise<void> {
     const script = document.createElement('script');
     script.src = src;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    script.onload = () => { resolve(); };
+    script.onerror = () => { reject(new Error(`Failed to load script: ${String(src ?? '')}`)); };
     document.head.appendChild(script);
   });
 }

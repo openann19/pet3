@@ -225,7 +225,7 @@ export default function SupportChatPanel() {
             <h1 className="text-3xl font-bold tracking-tight">Support Tickets</h1>
             <p className="text-muted-foreground">Manage customer support requests and issues</p>
           </div>
-          <Button onClick={() => setCreateTicketOpen(true)}>
+          <Button onClick={() => { setCreateTicketOpen(true); }}>
             <Plus size={16} className="mr-2" />
             Create Ticket
           </Button>
@@ -278,7 +278,7 @@ export default function SupportChatPanel() {
               <Input
                 placeholder="Search tickets..."
                 value={filter.search || ''}
-                onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+                onChange={(e) => { setFilter({ ...filter, search: e.target.value }); }}
                 className="pl-10"
               />
             </div>
@@ -424,7 +424,7 @@ export default function SupportChatPanel() {
                           {message.userName.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`flex-1 ${message.isAdmin ? 'text-right' : ''}`}>
+                      <div className={`flex-1 ${String(message.isAdmin ? 'text-right' : '' ?? '')}`}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-sm">{message.userName}</span>
                           {message.isAdmin && (
@@ -452,7 +452,7 @@ export default function SupportChatPanel() {
                 <div className="flex gap-2">
                   <Textarea
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => { setNewMessage(e.target.value); }}
                     placeholder="Type your message..."
                     className="flex-1 min-h-20"
                     onKeyDown={(e) => {
@@ -530,7 +530,7 @@ export default function SupportChatPanel() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateTicketOpen(false)}>
+            <Button variant="outline" onClick={() => { setCreateTicketOpen(false); }}>
               Cancel
             </Button>
             <Button>Create Ticket</Button>

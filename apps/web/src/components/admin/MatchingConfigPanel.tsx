@@ -179,7 +179,7 @@ export function MatchingConfigPanel() {
     return Object.values(config.weights).reduce((sum, val) => sum + val, 0);
   };
 
-  if (loading) {
+  if (isTruthy(loading)) {
     return (
       <Card>
         <CardContent className="py-8">
@@ -258,7 +258,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="allowCrossSpecies"
               checked={config.hardGates.allowCrossSpecies}
-              onCheckedChange={(val) => handleHardGateChange('allowCrossSpecies', val)}
+              onCheckedChange={(val) => { handleHardGateChange('allowCrossSpecies', val); }}
             />
           </div>
 
@@ -274,7 +274,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="requireVaccinations"
               checked={config.hardGates.requireVaccinations}
-              onCheckedChange={(val) => handleHardGateChange('requireVaccinations', val)}
+              onCheckedChange={(val) => { handleHardGateChange('requireVaccinations', val); }}
             />
           </div>
 
@@ -288,7 +288,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="blockAggressionConflicts"
               checked={config.hardGates.blockAggressionConflicts}
-              onCheckedChange={(val) => handleHardGateChange('blockAggressionConflicts', val)}
+              onCheckedChange={(val) => { handleHardGateChange('blockAggressionConflicts', val); }}
             />
           </div>
 
@@ -302,7 +302,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="requireApprovedMedia"
               checked={config.hardGates.requireApprovedMedia}
-              onCheckedChange={(val) => handleHardGateChange('requireApprovedMedia', val)}
+              onCheckedChange={(val) => { handleHardGateChange('requireApprovedMedia', val); }}
             />
           </div>
 
@@ -316,7 +316,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="enforceNeuterPolicy"
               checked={config.hardGates.enforceNeuterPolicy}
-              onCheckedChange={(val) => handleHardGateChange('enforceNeuterPolicy', val)}
+              onCheckedChange={(val) => { handleHardGateChange('enforceNeuterPolicy', val); }}
             />
           </div>
 
@@ -352,7 +352,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="MATCH_ALLOW_CROSS_SPECIES"
               checked={config.featureFlags.MATCH_ALLOW_CROSS_SPECIES}
-              onCheckedChange={(val) => handleFeatureFlagChange('MATCH_ALLOW_CROSS_SPECIES', val)}
+              onCheckedChange={(val) => { handleFeatureFlagChange('MATCH_ALLOW_CROSS_SPECIES', val); }}
             />
           </div>
 
@@ -366,7 +366,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="MATCH_REQUIRE_VACCINATION"
               checked={config.featureFlags.MATCH_REQUIRE_VACCINATION}
-              onCheckedChange={(val) => handleFeatureFlagChange('MATCH_REQUIRE_VACCINATION', val)}
+              onCheckedChange={(val) => { handleFeatureFlagChange('MATCH_REQUIRE_VACCINATION', val); }}
             />
           </div>
 
@@ -380,7 +380,7 @@ export function MatchingConfigPanel() {
             <Switch
               id="MATCH_AI_HINTS_ENABLED"
               checked={config.featureFlags.MATCH_AI_HINTS_ENABLED}
-              onCheckedChange={(val) => handleFeatureFlagChange('MATCH_AI_HINTS_ENABLED', val)}
+              onCheckedChange={(val) => { handleFeatureFlagChange('MATCH_AI_HINTS_ENABLED', val); }}
             />
           </div>
 

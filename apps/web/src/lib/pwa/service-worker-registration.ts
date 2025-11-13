@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from '../logger';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const logger = createLogger('ServiceWorkerRegistration');
 
@@ -41,14 +42,22 @@ export async function registerServiceWorkerWithCleanup(
   }
 
   // Only register in production
-  if (import.meta.env.DEV) {
+  if (isTruthy(import.meta.env.DEV)) {
     logger.debug('Service worker registration skipped in development');
     return null;
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
+    // Try enhanced service worker first, fallback to basic one
+    const swPath = '/sw-enhanced.js'
+    const registration = await navigator.serviceWorker.register(swPath, {
       scope: '/',
+    }).catch(async () => {
+      // Fallback to basic service worker
+      logger.warn('Enhanced service worker failed, using basic one')
+      return await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      })
     });
 
     const updateFoundHandler = () => {
@@ -109,7 +118,7 @@ export async function unregisterServiceWorker(): Promise<boolean> {
 
   try {
     const registration = await navigator.serviceWorker.getRegistration();
-    if (registration) {
+    if (isTruthy(registration)) {
       return await registration.unregister();
     }
     return false;

@@ -41,7 +41,7 @@ export default function StoryTemplateSelector({
           <Input
             placeholder="Search templates..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); }}
             className="pl-10"
           />
         </div>
@@ -53,7 +53,7 @@ export default function StoryTemplateSelector({
                 key={category.id}
                 variant={selectedCategory === category.id ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSelectedCategory(category.id)}
+                onClick={() => { setSelectedCategory(category.id); }}
                 className={cn(
                   'whitespace-nowrap',
                   selectedCategory === category.id && 'bg-gradient-to-r from-primary to-accent'
@@ -81,7 +81,7 @@ export default function StoryTemplateSelector({
                   duration: 0.2,
                   delay: index * 0.03,
                 }}
-                onClick={() => onSelectTemplate(template)}
+                onClick={() => { onSelectTemplate(template); }}
                 className={cn(
                   'relative aspect-[9/16] rounded-xl overflow-hidden border-2 transition-all duration-200',
                   selectedTemplate.id === template.id

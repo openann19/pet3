@@ -3,8 +3,9 @@
  * Smooth carousel with spring physics and snap points
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring, interpolate } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, interpolate } from '@petspark/motion';
 import { useCallback, useState } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseSpringCarouselOptions {
   itemCount: number;
@@ -34,7 +35,7 @@ export function useSpringCarousel(options: UseSpringCarouselOptions) {
       });
 
       setCurrentIndex(clampedIndex);
-      if (onIndexChange) {
+      if (isTruthy(onIndexChange)) {
         onIndexChange(clampedIndex);
       }
     },
@@ -73,7 +74,7 @@ export function useSpringCarousel(options: UseSpringCarouselOptions) {
             { translateX: itemIndex * slideWidth },
             { scale },
             { perspective: 1000 },
-            { rotateY: `${rotateY}deg` },
+            { rotateY: `${String(rotateY ?? '')}deg` },
           ],
           opacity,
         };

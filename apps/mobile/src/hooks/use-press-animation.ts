@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics'
 import { useCallback } from 'react'
 import type { AnimatedStyle } from 'react-native-reanimated'
 import { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 const SPRING_CONFIG = {
   damping: 15,
@@ -39,11 +40,11 @@ export function usePressAnimation(options: UsePressAnimationOptions = {}): UsePr
   const scale = useSharedValue(1)
 
   const handlePress = useCallback((): void => {
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(hapticStyle)
     }
 
-    if (enableBounce) {
+    if (isTruthy(enableBounce)) {
       scale.value = withSequence(
         withSpring(scaleAmount, SPRING_CONFIG),
         withSpring(1, SPRING_CONFIG)

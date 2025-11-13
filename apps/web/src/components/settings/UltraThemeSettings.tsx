@@ -204,8 +204,8 @@ function ThemeCard({ preset, index, isActive, onPreview, onSelect }: ThemeCardPr
         >
           <AnimatedView style={elastic.animatedStyle}>
             <div
-              onMouseEnter={() => onPreview(preset.id)}
-              onClick={() => onSelect(preset.id)}
+              onMouseEnter={() => { onPreview(preset.id); }}
+              onClick={() => { onSelect(preset.id); }}
               className={`
                 relative bg-card border-2 rounded-2xl p-6 cursor-pointer
                 transition-all duration-300 hover:shadow-2xl

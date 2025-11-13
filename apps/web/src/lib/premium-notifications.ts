@@ -39,10 +39,10 @@ export async function createMatchNotification(
   return createPremiumNotification({
     type: 'match',
     title: `New Match! 🎉`,
-    message: `${yourPetName} matched with ${matchedPetName}!`,
+    message: `${String(yourPetName ?? '')} matched with ${String(matchedPetName ?? '')}!`,
     priority: 'high',
     actionLabel: 'View Match',
-    actionUrl: `/matches/${matchId}`,
+    actionUrl: `/matches/${String(matchId ?? '')}`,
     ...(avatarUrl ? { avatarUrl } : {}),
     metadata: {
       petName: matchedPetName,
@@ -64,7 +64,7 @@ export async function createMessageNotification(
     message: messagePreview,
     priority: 'normal',
     actionLabel: 'Reply',
-    actionUrl: `/chat/${roomId}`,
+    actionUrl: `/chat/${String(roomId ?? '')}`,
     ...(avatarUrl ? { avatarUrl } : {}),
     metadata: {
       userName: senderName,
@@ -171,7 +171,7 @@ export async function createAchievementNotification(
   return createPremiumNotification({
     type: 'achievement',
     title: `Achievement Unlocked! 🏆`,
-    message: `You earned "${achievementName}" - ${description}`,
+    message: `You earned "${String(achievementName ?? '')}" - ${String(description ?? '')}`,
     priority: 'high',
     actionLabel: 'View Achievements',
     ...(imageUrl ? { imageUrl } : {}),
@@ -281,8 +281,8 @@ export async function createGroupedNotifications(
   const notifications = items.map((item, index) => ({
     id: generateULID(),
     type,
-    title: `${item.name} ${baseMessage}`,
-    message: `Check out what ${item.name} shared`,
+    title: `${String(item.name ?? '')} ${String(baseMessage ?? '')}`,
+    message: `Check out what ${String(item.name ?? '')} shared`,
     timestamp: Date.now() - (items.length - index) * 1000,
     read: false,
     archived: false,

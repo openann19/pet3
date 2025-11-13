@@ -32,7 +32,7 @@ export function PetRatings({ trustProfile, ratings = [], compact = false }: PetR
     );
   };
 
-  if (compact) {
+  if (isTruthy(compact)) {
     return (
       <div className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-1">
@@ -194,7 +194,7 @@ export function PetRatings({ trustProfile, ratings = [], compact = false }: PetR
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setShowAllReviews(true)}
+                  onClick={() => { setShowAllReviews(true); }}
                 >
                   Show All {ratings.length} Reviews
                 </Button>
@@ -203,7 +203,7 @@ export function PetRatings({ trustProfile, ratings = [], compact = false }: PetR
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setShowAllReviews(false)}
+                  onClick={() => { setShowAllReviews(false); }}
                 >
                   Show Less
                 </Button>

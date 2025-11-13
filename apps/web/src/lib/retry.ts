@@ -39,7 +39,7 @@ export async function retry<T>(fn: () => Promise<T>, options: RetryOptions): Pro
 
       const currentDelay = exponentialBackoff ? delay * Math.pow(2, attempt - 1) : delay;
 
-      logger.warn(`Attempt ${attempt}/${attempts} failed, retrying in ${currentDelay}ms`, {
+      logger.warn(`Attempt ${String(attempt ?? '')}/${String(attempts ?? '')} failed, retrying in ${String(currentDelay ?? '')}ms`, {
         error: lastError.message,
         attempt,
         delay: currentDelay,

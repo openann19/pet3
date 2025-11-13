@@ -72,7 +72,7 @@ class VerificationApiImpl {
       }
 
       const response = await APIClient.post<UpdateVerificationStatusResponse>(
-        `/verification/update-status?requestId=${requestId}`,
+        `/verification/update-status?requestId=${String(requestId ?? '')}`,
         request
       );
       return response.data.request;

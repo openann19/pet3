@@ -74,7 +74,7 @@ function initializeExecutionEnvironment(): void {
   if (typeof globalContext.localStorage === 'undefined') {
     const backingStore = new Map<string, string>();
     const polyfill: Storage = {
-      clear: () => backingStore.clear(),
+      clear: () => { backingStore.clear(); },
       getItem: (key: string) => (backingStore.has(key) ? backingStore.get(key)! : null),
       key: (index: number) => Array.from(backingStore.keys())[index] ?? null,
       removeItem: (key: string) => {
@@ -94,7 +94,7 @@ function initializeExecutionEnvironment(): void {
   if (typeof globalContext.sessionStorage === 'undefined') {
     const backingStore = new Map<string, string>();
     const polyfill: Storage = {
-      clear: () => backingStore.clear(),
+      clear: () => { backingStore.clear(); },
       getItem: (key: string) => (backingStore.has(key) ? backingStore.get(key)! : null),
       key: (index: number) => Array.from(backingStore.keys())[index] ?? null,
       removeItem: (key: string) => {
@@ -342,7 +342,7 @@ export async function runWalkthrough(): Promise<WalkthroughResult> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${String(process.argv[1] ?? '')}`) {
   runWalkthrough()
     .then((result) => {
       if (result.success) {

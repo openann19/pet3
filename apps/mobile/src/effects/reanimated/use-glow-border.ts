@@ -14,6 +14,7 @@ import {
 } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseGlowBorderOptions {
   color?: string
@@ -39,7 +40,7 @@ export function useGlowBorder(options: UseGlowBorderOptions = {}): UseGlowBorder
   const progress = useSharedValue(0)
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       progress.value = withRepeat(
         withSequence(
           withTiming(1, { duration: speed, easing: Easing.inOut(Easing.ease) }),

@@ -95,7 +95,7 @@ class ChatApiImpl {
   async addReaction(messageId: string, request: AddReactionRequest): Promise<Message> {
     try {
       const response = await APIClient.post<Message>(
-        `/api/v1/chat/messages/${messageId}/reactions`,
+        `/api/v1/chat/messages/${String(messageId ?? '')}/reactions`,
         request
       );
       return response.data;

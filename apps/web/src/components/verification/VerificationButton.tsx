@@ -129,7 +129,7 @@ export function VerificationButton({
   return (
     <>
       <Button
-        onClick={() => setShowDialog(true)}
+        onClick={() => { setShowDialog(true); }}
         variant={status === 'verified' ? 'outline' : 'default'}
         size="sm"
         className={cn('gap-2', config.color, className)}

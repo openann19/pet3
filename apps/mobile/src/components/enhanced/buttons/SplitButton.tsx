@@ -18,6 +18,7 @@ import * as Haptics from 'expo-haptics'
 import { usePressBounce } from '@petspark/motion'
 import { PremiumButton } from '../PremiumButton'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedView = Animated.View
@@ -81,11 +82,11 @@ export function SplitButton({
   }, [disabled, mainAction])
 
   const handleMenuToggle = useCallback(() => {
-    if (disabled) return
+    if (isTruthy(disabled)) return
     const newState = !isMenuOpen
     setIsMenuOpen(newState)
 
-    if (newState) {
+    if (isTruthy(newState)) {
       dividerOpacity.value = withTiming(0.3, { duration: 200 })
       menuOpacity.value = withTiming(1, { duration: 200 })
       menuTranslateY.value = reducedMotion.value
@@ -163,7 +164,7 @@ export function SplitButton({
             {secondaryActions.map((action, index) => (
               <Pressable
                 key={index}
-                onPress={() => handleSecondaryAction(action)}
+                onPress={() => { handleSecondaryAction(action); }}
                 disabled={action.disabled}
                 style={({ pressed }) => [
                   styles.menuItem,

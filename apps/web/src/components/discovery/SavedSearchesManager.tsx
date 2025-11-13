@@ -219,7 +219,7 @@ export default function SavedSearchesManager({
       }
 
       const newSearch: SavedSearch = {
-        id: `search-${Date.now()}`,
+        id: `search-${String(Date.now() ?? '')}`,
         name: searchName.trim(),
         icon: '🔍',
         preferences: currentPreferences,
@@ -447,7 +447,7 @@ export default function SavedSearchesManager({
             <CardDescription>
               {sortedSearches.length === 0
                 ? 'No saved searches yet'
-                : `${sortedSearches.length} saved search${sortedSearches.length !== 1 ? 'es' : ''}`}
+                : `${String(sortedSearches.length ?? '')} saved search${String(sortedSearches.length !== 1 ? 'es' : '' ?? '')}`}
             </CardDescription>
           </CardHeader>
           <CardContent>

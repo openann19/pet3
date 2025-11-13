@@ -23,6 +23,95 @@ import { toast } from 'sonner';
 
 const logger = createLogger('CommentsSheet');
 
+function EmptyCommentsView({ t }: { t: ReturnType<typeof useApp>['t'] }) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+  const scale = useSharedValue(1)
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.1, { duration: 1000 }),
+        withTiming(1, { duration: 1000 })
+      ),
+      -1,
+      false
+    )
+  }, [scale])
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  })) as AnimatedStyle
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="text-center py-16"
+    >
+      <AnimatedView
+        style={pulseStyle}
+        className="text-6xl mb-4"
+      >
+        💬
+      </AnimatedView>
+      <h3 className="text-lg font-semibold text-foreground mb-2">
+        {t.community?.noComments || 'No comments yet'}
+      </h3>
+      <p className="text-sm text-muted-foreground">
+        {t.community?.beFirst || 'Be the first to share your thoughts!'}
+      </p>
+    </AnimatedView>
+  )
+}
+
+function CommentListItem({
+  comment,
+  index,
+  onReply,
+  isAuthor,
+  replies,
+  postAuthor
+}: {
+  comment: Comment
+  index: number
+  onReply: (comment: Comment) => void
+  isAuthor: boolean
+  replies: Comment[]
+  postAuthor: string
+}) {
+  const entry = useEntryAnimation({
+    initialY: 20,
+    initialOpacity: 0,
+    delay: index * 50
+  })
+
+  return (
+    <AnimatedView style={entry.animatedStyle}>
+      <CommentItem 
+        comment={comment}
+        onReply={onReply}
+        isAuthor={isAuthor}
+      />
+      
+      {replies.length > 0 && (
+        <div className="ml-12 mt-4 space-y-4 pl-4 border-l-2 border-border/50">
+          {replies.map(reply => {
+            const replyId = reply._id ?? reply.id
+            return (
+              <CommentItem
+                key={replyId}
+                comment={reply}
+                onReply={onReply}
+                isReply
+                isAuthor={reply.authorName === postAuthor}
+              />
+            )
+          })}
+        </div>
+      )}
+    </AnimatedView>
+  )
+}
+
 interface CommentsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -148,7 +237,7 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onOpenChange(false)}
+              onClick={() => { onOpenChange(false); }}
               className="rounded-full"
             >
               <X size={24} />
@@ -244,16 +333,24 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
                     {t.common?.cancel || 'Cancel'}
                   </Button>
                 </div>
-              </MotionView>
-            )}
-          </Presence>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelReply}
+                  className="h-7 text-xs"
+                >
+                  {t.common?.cancel || 'Cancel'}
+                </Button>
+              </div>
+            </AnimatedView>
+          )}
 
           <div className="px-6 py-4">
             <div className="flex gap-3 items-end">
               <Textarea
                 ref={textareaRef}
                 value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
+                onChange={(e) => { setCommentText(e.target.value); }}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   replyingTo
@@ -282,13 +379,7 @@ export function CommentsSheet({ open, onOpenChange, postId, postAuthor }: Commen
               </Button>
             </div>
             {commentText.length > 0 && (
-              <MotionView
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-muted-foreground mt-2 text-right"
-              >
-                {commentText.length}/500
-              </MotionView>
+              <CharacterCount count={commentText.length} />
             )}
           </div>
         </div>
@@ -361,6 +452,49 @@ interface CommentItemProps {
   isAuthor?: boolean;
 }
 
+function RotatingIcon() {
+  const rotate = useSharedValue(0)
+
+  useEffect(() => {
+    rotate.value = withRepeat(
+      withTiming(360, { duration: 1000 }),
+      -1,
+      false
+    )
+  }, [rotate])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${String(rotate.value)}deg` }]
+  })) as AnimatedStyle
+
+  return (
+    <AnimatedView style={animatedStyle}>
+      <PaperPlaneRight size={20} weight="bold" />
+    </AnimatedView>
+  )
+}
+
+function CharacterCount({ count }: { count: number }) {
+  const opacity = useSharedValue(0)
+
+  useEffect(() => {
+    opacity.value = withTiming(1, timingConfigs.fast)
+  }, [opacity])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value
+  })) as AnimatedStyle
+
+  return (
+    <AnimatedView
+      style={animatedStyle}
+      className="text-xs text-muted-foreground mt-2 text-right"
+    >
+      {count}/500
+    </AnimatedView>
+  )
+}
+
 function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: CommentItemProps) {
   const { t } = useApp();
   const [isLiked, setIsLiked] = useState(false);
@@ -416,10 +550,10 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
                 size={16}
                 weight={isLiked ? 'fill' : 'regular'}
                 className={`transition-colors ${
-                  isLiked ? 'text-red-500' : 'text-muted-foreground group-hover/like:text-red-500'
+                  String(isLiked ? 'text-red-500' : 'text-muted-foreground group-hover/like:text-red-500')
                 }`}
               />
-            </MotionView>
+            </AnimatedView>
             {likesCount > 0 && (
               <span className="text-xs font-medium text-muted-foreground">{likesCount}</span>
             )}
@@ -427,7 +561,7 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
 
           {!isReply && (
             <button
-              onClick={() => onReply(comment)}
+              onClick={() => { onReply(comment); }}
               className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               {t.community?.reply || 'Reply'}

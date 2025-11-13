@@ -94,7 +94,7 @@ export function NotificationProvider({
 
   const showNotification = useCallback(
     (notification: Omit<Notification, 'id'>): void => {
-      const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const id = `notification-${String(Date.now() ?? '')}-${String(Math.random().toString(36).substr(2, 9) ?? '')}`
       const newNotification: Notification = {
         ...notification,
         id,

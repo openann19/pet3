@@ -205,6 +205,13 @@ export {
   type UseThreadHighlightReturn,
 } from './use-thread-highlight'
 
+// Ultra Enhanced Animations
+export { useUltraCardReveal } from './use-ultra-card-reveal'
+export { useMorphShape } from './use-morph-shape'
+export { use3DFlipCard } from './use-3d-flip-card'
+export { useSpringCarousel } from './use-spring-carousel'
+export { useWaveAnimation, useMultiWave } from './use-wave-animation'
+
 // Re-export commonly used Reanimated primitives
 export {
   useSharedValue,

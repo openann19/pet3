@@ -61,7 +61,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 interface ChatWindowProps {
@@ -604,7 +604,7 @@ export default function ChatWindow({
                   <AnimatedView style={typingTextStyle}>
                     {typingUsers.length === 1
                       ? `${typingUsers[0]?.userName ?? 'Someone'} is typing`
-                      : `${typingUsers.length} people are typing`}
+                      : `${String(typingUsers.length ?? '')} people are typing`}
                   </AnimatedView>
                   <AnimatedView style={typingDotsStyle}>...</AnimatedView>
                 </AnimatedView>
@@ -868,7 +868,7 @@ export default function ChatWindow({
                     <Sparkle size={16} weight="fill" className="text-primary" />
                     Quick Templates
                   </h4>
-                  <Button variant="ghost" size="sm" onClick={() => setShowTemplates(false)}>
+                  <Button variant="ghost" size="sm" onClick={() => { setShowTemplates(false); }}>
                     <X size={16} />
                   </Button>
                 </div>
@@ -903,7 +903,7 @@ export default function ChatWindow({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowTemplates(!showTemplates)}
+                onClick={() => { setShowTemplates(!showTemplates); }}
                 className="shrink-0"
                 aria-label={showTemplates ? 'Close message templates' : 'Open message templates'}
                 aria-expanded={showTemplates}
@@ -955,7 +955,7 @@ export default function ChatWindow({
                             onMouseLeave={stickerButtonHover.handleLeave}
                             title={sticker.label}
                             role="button"
-                            aria-label={`Send ${sticker.label} sticker`}
+                            aria-label={`Send ${String(sticker.label ?? '')} sticker`}
                             tabIndex={0}
                           >
                             {sticker.emoji}
@@ -969,7 +969,7 @@ export default function ChatWindow({
                           <AnimatedView
                             key={emoji}
                             style={[emojiButtonTap.animatedStyle, emojiButtonHover.animatedStyle]}
-                            onClick={() => handleSendMessage(emoji, 'text')}
+                            onClick={() => { handleSendMessage(emoji, 'text'); }}
                             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
@@ -980,7 +980,7 @@ export default function ChatWindow({
                             onMouseEnter={emojiButtonHover.handleEnter}
                             onMouseLeave={emojiButtonHover.handleLeave}
                             role="button"
-                            aria-label={`Send ${emoji} emoji`}
+                            aria-label={`Send ${String(emoji ?? '')} emoji`}
                             tabIndex={0}
                           >
                             {emoji}
@@ -997,7 +997,7 @@ export default function ChatWindow({
                   id="chat-input"
                   ref={inputRef}
                   value={inputValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
+                  onChange={(e) => { handleInputChange(e.target.value); }}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -1025,7 +1025,7 @@ export default function ChatWindow({
 
               <AnimatedView style={[sendButtonHover.animatedStyle, sendButtonTap.animatedStyle]}>
                 <Button
-                  onClick={() => handleSendMessage(inputValue, 'text')}
+                  onClick={() => { handleSendMessage(inputValue, 'text'); }}
                   disabled={!inputValue.trim()}
                   size="icon"
                   className="shrink-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all disabled:opacity-50"

@@ -21,6 +21,7 @@ import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-mo
 import { triggerHaptic } from '../core/haptic-manager'
 import { logEffectStart, logEffectEnd } from '../core/telemetry'
 import { randomRange } from '../core/seeded-rng'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Spring configuration for air-cushion effect
@@ -92,7 +93,7 @@ export function useReceiveAirCushion(
     })
 
     // Scale animation (0.98 → 1.0)
-    if (isReducedMotion) {
+    if (isTruthy(isReducedMotion)) {
       // Instant scale for reduced motion
       scale.value = withTiming(1.0, {
         duration: getReducedMotionDuration(SCALE_DURATION_MIN, true),
@@ -116,12 +117,12 @@ export function useReceiveAirCushion(
     })
 
     // Haptic feedback (only on mentions)
-    if (isMention) {
+    if (isTruthy(isMention)) {
       triggerHaptic('light')
     }
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete()
       }, scaleDuration)

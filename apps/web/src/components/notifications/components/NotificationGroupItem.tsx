@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Archive } from '@phosphor-icons/react';
@@ -139,7 +139,7 @@ export function NotificationGroupItem({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 rounded-full"
-                      onClick={() => onMarkAsRead(group.id)}
+                      onClick={() => { onMarkAsRead(group.id); }}
                     >
                       <Check size={16} />
                     </Button>
@@ -149,7 +149,7 @@ export function NotificationGroupItem({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-full"
-                    onClick={() => onArchive(group.id)}
+                    onClick={() => { onArchive(group.id); }}
                   >
                     <Archive size={16} />
                   </Button>

@@ -24,7 +24,7 @@ const API_BASE_URL =
   (import.meta.env['VITE_API_URL'] as string | undefined) || 'https://api.petspark.app';
 
 async function fetchMatches(): Promise<Match[]> {
-  const response = await fetch(`${API_BASE_URL}/api/matches`, {
+  const response = await fetch(`${String(API_BASE_URL ?? '')}/api/matches`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -46,7 +46,7 @@ export function useMatch(matchId: string): UseQueryResult<Match> {
   return useQuery({
     queryKey: queryKeys.matches.detail(matchId),
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}`, {
+      const response = await fetch(`${String(API_BASE_URL ?? '')}/api/matches/${String(matchId ?? '')}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -65,7 +65,7 @@ export interface DismissMatchInput {
 }
 
 async function dismissMatch(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/matches/${id}/dismiss`, {
+  const res = await fetch(`${String(API_BASE_URL ?? '')}/api/matches/${String(id ?? '')}/dismiss`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });

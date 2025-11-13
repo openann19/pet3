@@ -28,6 +28,40 @@ import { createLogger } from '@mobile/utils/logger'
 
 const logger = createLogger('ChatScreen')
 
+import { ChatList, type Message } from '@mobile/components/chat'
+import HoloBackgroundNative from '@mobile/components/chrome/HoloBackground.native'
+import { useReduceMotion } from '@mobile/effects/chat/ui'
+import {
+  ReactionBurst,
+  ShimmerOverlay,
+  TypingIndicator,
+} from '@mobile/effects/chat/ui/all-in-chat-effects'
+import { colors } from '@mobile/theme/colors'
+import { createLogger } from '@mobile/utils/logger'
+
+const logger = createLogger('ChatScreen')
+
+type DraftMessage = Message & {
+  readonly status: 'sending' | 'sent' | 'delivered' | 'read'
+}
+
+const INITIAL_MESSAGES: DraftMessage[] = [
+  {
+    id: '1',
+    content: 'Welcome to your premium chat experience!',
+    senderId: 'system',
+    timestamp: Date.now() - 60_000,
+    status: 'delivered',
+  },
+  {
+    id: '2',
+    content: 'Swipe on me to reply ✨',
+    senderId: 'friend',
+    timestamp: Date.now() - 45_000,
+    status: 'read',
+  },
+]
+
 export function ChatScreen(): React.ReactElement {
   const [messages] = useState<Message[]>([])
   const user = useUserStore((state) => state.user)
@@ -130,8 +164,8 @@ export function ChatScreen(): React.ReactElement {
   }, [callManager])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <HoloBackgroundNative intensity={0.6} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <HoloBackgroundNative intensity={0.5} />
       <View style={styles.chatContainer}>
         {/* Chat Header with Call Button */}
         <View style={styles.header}>
@@ -190,6 +224,33 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
+    paddingHorizontal: 8,
+  },
+  typingOverlay: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    alignSelf: 'flex-start',
+  },
+  composerShim: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  reactionOverlay: {
+    position: 'absolute',
+    top: '40%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  statusTick: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',

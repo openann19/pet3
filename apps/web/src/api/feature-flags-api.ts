@@ -65,7 +65,7 @@ class FeatureFlagsApiImpl {
       };
 
       const response = await APIClient.patch<{ flag: FeatureFlag }>(
-        `/feature-flags/${flagKey}`,
+        `/feature-flags/${String(flagKey ?? '')}`,
         request
       );
       return response.data.flag;

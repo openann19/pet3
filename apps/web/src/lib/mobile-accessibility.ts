@@ -238,7 +238,7 @@ class AccessibilityManager {
 
       if (!first || !last) return;
 
-      if (e.shiftKey) {
+      if (isTruthy(e.shiftKey)) {
         if (document.activeElement === first) {
           e.preventDefault();
           last.focus();

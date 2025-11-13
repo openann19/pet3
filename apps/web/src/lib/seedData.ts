@@ -127,7 +127,7 @@ Return ONLY valid JSON in this exact structure:
         location: pet.location,
         ownerId: currentUser?.id ?? `owner-${idx}`,
         ownerName: pet.ownerName,
-        ownerAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${pet.ownerName}`,
+        ownerAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${String(pet.ownerName ?? '')}`,
         verified: Boolean(pet.verified),
         createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
         trustProfile,

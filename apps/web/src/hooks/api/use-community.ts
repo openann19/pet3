@@ -122,8 +122,7 @@ export function useComments(postId: string | null | undefined): UseQueryResult<C
 export function useAddComment(): UseMutationResult<
   Comment,
   unknown,
-  { postId: string; data: AddCommentData },
-  unknown
+  { postId: string; data: AddCommentData }
 > {
   const queryClient = useQueryClient();
 
@@ -147,8 +146,7 @@ export function useAddComment(): UseMutationResult<
 export function useReactToPost(): UseMutationResult<
   { success: boolean },
   unknown,
-  { postId: string; emoji: string },
-  unknown
+  { postId: string; emoji: string }
 > {
   const queryClient = useQueryClient();
 

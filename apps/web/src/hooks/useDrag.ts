@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface DragPosition {
   x: number;
@@ -46,7 +47,7 @@ export function useDrag<T extends HTMLElement = HTMLDivElement>(
     const clampPosition = (pos: DragPosition): DragPosition => {
       let { x, y } = pos;
 
-      if (bounds) {
+      if (isTruthy(bounds)) {
         if (bounds.left !== undefined) x = Math.max(x, bounds.left);
         if (bounds.right !== undefined) x = Math.min(x, bounds.right);
         if (bounds.top !== undefined) y = Math.max(y, bounds.top);

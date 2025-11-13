@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { springConfigs } from '@/effects/reanimated/transitions';
@@ -113,7 +113,7 @@ export function useSentimentMoodEngine(
       return {
         sentiment: 'positive',
         intensity,
-        color: `rgba(34, 197, 94, ${0.15 * intensity})`,
+        color: `rgba(34, 197, 94, ${String(0.15 * intensity)})`,
         gradient: [
           `rgba(34, 197, 94, ${0.2 * intensity})`,
           `rgba(16, 185, 129, ${0.15 * intensity})`,
@@ -125,7 +125,7 @@ export function useSentimentMoodEngine(
       return {
         sentiment: 'negative',
         intensity,
-        color: `rgba(239, 68, 68, ${0.15 * intensity})`,
+        color: `rgba(239, 68, 68, ${String(0.15 * intensity)})`,
         gradient: [
           `rgba(239, 68, 68, ${0.2 * intensity})`,
           `rgba(220, 38, 38, ${0.15 * intensity})`,

@@ -60,7 +60,7 @@ function VoiceAttachment({ attachment }: VoiceAttachmentProps): React.JSX.Elemen
   const formatDuration = useCallback((seconds = 0): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+    return `${String(mins ?? '')}:${String(secs.toString().padStart(2, '0') ?? '')}`
   }, [])
 
   const togglePlayback = useCallback(() => {
@@ -119,7 +119,7 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
     void (async () => {
       try {
         const supported = await Linking.canOpenURL(attachment.url)
-        if (supported) {
+        if (isTruthy(supported)) {
           await Linking.openURL(attachment.url)
         }
       } catch {
@@ -195,9 +195,9 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
   }))
 
   const formatFileSize = useCallback((bytes = 0): string => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    if (bytes < 1024) return `${String(bytes ?? '')} B`
+    if (bytes < 1024 * 1024) return `${String((bytes / 1024).toFixed(1) ?? '')} KB`
+    return `${String((bytes / (1024 * 1024)).toFixed(1) ?? '')} MB`
   }, [])
 
   const handlePressIn = useCallback(() => {
@@ -212,7 +212,7 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
     void (async () => {
       try {
         const supported = await Linking.canOpenURL(attachment.url)
-        if (supported) {
+        if (isTruthy(supported)) {
           await Linking.openURL(attachment.url)
         }
       } catch {

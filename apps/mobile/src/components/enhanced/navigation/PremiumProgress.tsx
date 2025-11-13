@@ -8,6 +8,7 @@ import Animated, {
   withRepeat,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 export interface PremiumProgressProps {
   value?: number
@@ -44,7 +45,7 @@ export function PremiumProgress({
     const springConfig = reducedMotion.value ? { duration: 200 } : { stiffness: 400, damping: 30 }
     const timingConfig = { duration: 300 }
 
-    if (animated) {
+    if (isTruthy(animated)) {
       progressWidth.value = withSpring(percentage, springConfig)
     } else {
       progressWidth.value = withTiming(percentage, timingConfig)
@@ -58,7 +59,7 @@ export function PremiumProgress({
   }, [variant, shimmerX])
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
+    width: `${progressWidth.value}%` as `${number}%`,
   }))
 
   const shimmerStyle = useAnimatedStyle(() => ({

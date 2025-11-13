@@ -233,7 +233,7 @@ export function UltraAnimationShowcase() {
           <Button
             onClick={() => {
               setShowDemo(false);
-              setTimeout(() => setShowDemo(true), 100);
+              setTimeout(() => { setShowDemo(true); }, 100);
             }}
             className="px-8 py-4 text-xl bg-white text-black hover:bg-gray-100"
           >

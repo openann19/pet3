@@ -15,6 +15,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
+import { isTruthy } from '@petspark/shared';
 
 export interface RippleEffectProps {
   color?: string

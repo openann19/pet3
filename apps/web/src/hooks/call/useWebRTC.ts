@@ -223,7 +223,7 @@ export function useWebRTC(options: UseWebRTCOptions) {
         signalingClientRef.current = signalingClient;
 
         // Create offer if caller
-        if (isCaller) {
+        if (isTruthy(isCaller)) {
           try {
             const offer = await peerConnection.createOffer();
             signalingClient.sendOffer(offer, remoteUserId, callId);

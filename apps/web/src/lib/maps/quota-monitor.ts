@@ -125,13 +125,13 @@ export function getQuotaReport(): string {
 Map Quota Report
 ================
 Geocoding:
-  Total Requests: ${geocodingReport.totalRequests}
-  Average Latency: ${geocodingReport.averageLatency.toFixed(2)}ms
-  Error Rate: ${(geocodingReport.errorRate * 100).toFixed(2)}%
+  Total Requests: ${String(geocodingReport.totalRequests ?? '')}
+  Average Latency: ${String(geocodingReport.averageLatency.toFixed(2) ?? '')}ms
+  Error Rate: ${String((geocodingReport.errorRate * 100).toFixed(2) ?? '')}%
 
 Tiles:
-  Current: ${tilesRequestCount}
-  Last Reset: ${new Date(lastResetTime).toISOString()}
+  Current: ${String(tilesRequestCount ?? '')}
+  Last Reset: ${String(new Date(lastResetTime).toISOString() ?? '')}
 
 Recent Geocoding Metrics:
 ${geocodingReport.recentMetrics

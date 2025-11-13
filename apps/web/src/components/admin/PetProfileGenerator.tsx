@@ -129,7 +129,7 @@ JSON format:
 
       setPets((currentPets) => [...(currentPets || []), ...newPets]);
 
-      toast.success(`Successfully generated and added ${newPetsAdded} new pet profiles!`, {
+      toast.success(`Successfully generated and added ${String(newPetsAdded ?? '')} new pet profiles!`, {
         duration: 5000,
       });
 

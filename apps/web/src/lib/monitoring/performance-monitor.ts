@@ -153,7 +153,7 @@ class PerformanceMonitorImpl {
 
         entries.forEach((entry) => {
           this.recordMetric({
-            name: `user_timing.${entry.name}`,
+            name: `user_timing.${String(entry.name ?? '')}`,
             value: entry.duration || entry.startTime,
             unit: 'ms',
             timestamp: Date.now(),
@@ -292,7 +292,7 @@ class PerformanceMonitorImpl {
 
     // Send to Sentry
     sentryConfig.addBreadcrumb({
-      message: `Performance: ${metric.name}`,
+      message: `Performance: ${String(metric.name ?? '')}`,
       category: 'performance',
       level: 'info',
       data: {

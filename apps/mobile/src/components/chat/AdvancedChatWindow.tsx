@@ -15,7 +15,7 @@ function useKV<T>(_key: string, initial: T): [T, React.Dispatch<React.SetStateAc
   return useState<T>(initial)
 }
 const haptics = { trigger: (_: string) => {} }
-const toast = { success: (_: string) => {}, error: (_: string) => {}, info: (_: string) => {} }
+const toast = { success: (_: string) => {}, error: (_: string) => {}, info: (_: string) => {}, warning: (_: string) => {} }
 
 // Types
 export interface ChatRoom {
@@ -60,7 +60,7 @@ export default function AdvancedChatWindow({
   const scrollRef = useRef<ScrollView>(null)
 
   useEffect(() => {
-    if (scrollRef.current) {
+    if (isTruthy(scrollRef.current)) {
       scrollRef.current.scrollToEnd({ animated: true })
     }
   }, [messages])
@@ -69,7 +69,7 @@ export default function AdvancedChatWindow({
     if (!content.trim()) return
     haptics.trigger('light')
     const newMessage: ChatMessage = {
-      id: `${Date.now()}`,
+      id: String(Date.now() ?? ''),
       roomId: room.id,
       senderId: currentUserId,
       senderName: currentUserName,

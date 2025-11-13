@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { TypingUser } from '@/lib/chat-types'
 import type { RealtimeClient } from '@/lib/realtime'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseTypingManagerOptions {
   roomId: string
@@ -129,7 +130,7 @@ export function useTypingManager({
 
   const handleMessageSend = useCallback((): void => {
     stopTyping()
-    if (debounceTimeoutRef.current) {
+    if (isTruthy(debounceTimeoutRef.current)) {
       clearTimeout(debounceTimeoutRef.current)
       debounceTimeoutRef.current = undefined
     }
@@ -197,10 +198,10 @@ export function useTypingManager({
 
   useEffect(() => {
     return () => {
-      if (typingTimeoutRef.current) {
+      if (isTruthy(typingTimeoutRef.current)) {
         clearTimeout(typingTimeoutRef.current)
       }
-      if (debounceTimeoutRef.current) {
+      if (isTruthy(debounceTimeoutRef.current)) {
         clearTimeout(debounceTimeoutRef.current)
       }
       setIsTyping(prevIsTyping => {

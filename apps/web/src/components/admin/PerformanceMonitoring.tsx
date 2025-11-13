@@ -72,14 +72,14 @@ export default function PerformanceMonitoring() {
     return [
       {
         label: 'Page Load Time',
-        value: `${pageLoadTime.toFixed(0)}ms`,
+        value: `${String(pageLoadTime.toFixed(0) ?? '')}ms`,
         change: -12,
         status: pageLoadTime < 2000 ? 'good' : pageLoadTime < 4000 ? 'warning' : 'critical',
         icon: <Clock size={20} weight="fill" />,
       },
       {
         label: 'API Response Time',
-        value: `${apiResponseTime.toFixed(0)}ms`,
+        value: `${String(apiResponseTime.toFixed(0) ?? '')}ms`,
         change: 5,
         status: apiResponseTime < 300 ? 'good' : apiResponseTime < 1000 ? 'warning' : 'critical',
         icon: <Database size={20} weight="fill" />,
@@ -99,7 +99,7 @@ export default function PerformanceMonitoring() {
       },
       {
         label: 'Memory Usage',
-        value: `${memoryUsage.toFixed(1)} MB`,
+        value: `${String(memoryUsage.toFixed(1) ?? '')} MB`,
         change: 8,
         status: memoryUsage < 100 ? 'good' : memoryUsage < 200 ? 'warning' : 'critical',
         icon: <ChartLine size={20} weight="fill" />,

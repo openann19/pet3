@@ -207,7 +207,7 @@ export function useGroupCall(
   };
 
   const endGroupCall = () => {
-    if (activeGroupCall) {
+    if (isTruthy(activeGroupCall)) {
       const duration = activeGroupCall.call.startTime
         ? Math.floor(
             (new Date().getTime() - new Date(activeGroupCall.call.startTime).getTime()) / 1000

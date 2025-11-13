@@ -256,11 +256,11 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                       >
                         <Card
                           className={`p-4 mb-3 cursor-pointer transition-all hover:shadow-lg ${
-                            selectedPlace?.id === place.id
-                              ? 'ring-2 ring-primary bg-primary/5'
-                              : 'hover:bg-accent/5'
+                            String(selectedPlace?.id === place.id
+                                                                  ? 'ring-2 ring-primary bg-primary/5'
+                                                                  : 'hover:bg-accent/5' ?? '')
                           }`}
-                          onClick={() => handleSelectPlace(place)}
+                          onClick={() => { handleSelectPlace(place); }}
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted flex items-center justify-center flex-shrink-0 border">
@@ -363,7 +363,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                         <Button
                           variant={selectedPlace?.id === place.id ? 'default' : 'outline'}
                           size="sm"
-                          onClick={() => handleSelectPlace(place)}
+                          onClick={() => { handleSelectPlace(place); }}
                           className="gap-2"
                         >
                           {getPlaceIcon(place.type)}

@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
+import { isTruthy } from '@petspark/shared';
 
 export interface ChatErrorBoundaryProps {
   children: React.ReactNode
@@ -28,8 +29,8 @@ class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, State> {
   }
 
   override render(): React.ReactNode {
-    if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback
+    if (isTruthy(this.state.hasError)) {
+      if (isTruthy(this.props.fallback)) return this.props.fallback
       return (
         <View style={{ padding: 16 }}>
           <Text style={{ fontSize: 12, opacity: 0.7 }}>Something went wrong. UI recovered.</Text>

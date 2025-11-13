@@ -105,24 +105,24 @@ export function EnhancedButton({
     if (disabled || loading) return
 
     try {
-      if (hapticFeedback) {
+      if (isTruthy(hapticFeedback)) {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
       }
 
       pressBounce.onPressIn()
 
-      if (onPress) {
+      if (isTruthy(onPress)) {
         const result = onPress()
 
         if (isPromise(result)) {
           await result
 
-          if (successAnimation) {
+          if (isTruthy(successAnimation)) {
             successScale.value = withSequence(
               withSpring(1.1, springConfigs.bouncy),
               withSpring(1, springConfigs.smooth)
             )
-            if (hapticFeedback) {
+            if (isTruthy(hapticFeedback)) {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
             }
           }
@@ -136,7 +136,7 @@ export function EnhancedButton({
         withTiming(5, { duration: 50 }),
         withTiming(0, { duration: 50 })
       )
-      if (hapticFeedback) {
+      if (isTruthy(hapticFeedback)) {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
       }
     } finally {

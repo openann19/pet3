@@ -135,7 +135,7 @@ export default function BackendDemo() {
     }
   };
 
-  if (authLoading) {
+  if (isTruthy(authLoading)) {
     return (
       <div className="flex items-center justify-center p-12">
         <ArrowsClockwise className="animate-spin" size={32} />
@@ -266,7 +266,7 @@ export default function BackendDemo() {
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => { setTitle(e.target.value); }}
                 placeholder="Enter a title..."
                 disabled={!isAuthenticated}
               />
@@ -276,7 +276,7 @@ export default function BackendDemo() {
               <Input
                 id="content"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => { setContent(e.target.value); }}
                 placeholder="Enter some content..."
                 disabled={!isAuthenticated}
               />

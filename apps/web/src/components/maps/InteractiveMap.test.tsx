@@ -9,7 +9,7 @@ vi.mock('react-leaflet', () => ({
   ),
   TileLayer: () => <div data-testid="tile-layer" />,
   Marker: ({ position }: { position: [number, number] }) => (
-    <div data-testid={`marker-${position[0]}-${position[1]}`} />
+    <div data-testid={`marker-${String(position[0] ?? '')}-${String(position[1] ?? '')}`} />
   ),
   Popup: ({ children }: { children: React.ReactNode }) => <div data-testid="popup">{children}</div>,
   useMap: () => ({

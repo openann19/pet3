@@ -9,6 +9,7 @@ import {
 import * as Haptics from 'expo-haptics'
 import { springConfigs, timingConfigs } from './transitions'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseHoverAnimationOptions {
   scale?: number
@@ -37,7 +38,7 @@ export function useHoverAnimation(options: UseHoverAnimationOptions = {}): UseHo
 
   const handlePressIn = useCallback(() => {
     if (!enabled) return
-    if (hapticFeedback) {
+    if (isTruthy(hapticFeedback)) {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
     isPressed.value = 1

@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
  * Generate a unique message ID
  */
 export function generateMessageId(): string {
-  return `msg_${Date.now()}_${uuidv4().slice(0, 8)}`
+  return `msg_${String(Date.now() ?? '')}_${String(uuidv4().slice(0, 8) ?? '')}`
 }
 
 /**

@@ -47,10 +47,10 @@ export const KeychainAccessibility = {
 
 export type KeychainAccessibilityType =
   | typeof KeychainAccessibility.WHEN_UNLOCKED
-  | typeof KeychainAccessibility.AFTER_FIRST_UNLOCK
-  | typeof KeychainAccessibility.WHEN_UNLOCKED_THIS_DEVICE_ONLY
-  | typeof KeychainAccessibility.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY
-  | typeof KeychainAccessibility.WHEN_PASSCODE_SET_THIS_DEVICE_ONLY
+   
+   
+   
+   
 
 export interface SecureStorageOptions {
   keychainAccessible?: KeychainAccessibilityType
@@ -87,7 +87,7 @@ function validateKey(key: string): void {
   }
 
   if (key.length > MAX_KEY_LENGTH) {
-    throw createError('INVALID_KEY', `Key exceeds maximum length of ${MAX_KEY_LENGTH}`, { key })
+    throw createError('INVALID_KEY', `Key exceeds maximum length of ${String(MAX_KEY_LENGTH ?? '')}`, { key })
   }
 
   // Ensure key uses safe characters (alphanumeric, underscore, dash, dot)
@@ -134,7 +134,7 @@ function validateValue(value: string): void {
 
   const sizeBytes = getByteLength(value)
   if (sizeBytes > MAX_VALUE_SIZE) {
-    throw createError('SIZE_EXCEEDED', `Value exceeds maximum size of ${MAX_VALUE_SIZE} bytes`, {
+    throw createError('SIZE_EXCEEDED', `Value exceeds maximum size of ${String(MAX_VALUE_SIZE ?? '')} bytes`, {
       sizeBytes,
     })
   }
@@ -144,7 +144,7 @@ function validateValue(value: string): void {
  * Create normalized key with prefix
  */
 function normalizeKey(key: string): string {
-  return key.startsWith(KEY_PREFIX) ? key : `${KEY_PREFIX}${key}`
+  return key.startsWith(KEY_PREFIX) ? key : `${String(KEY_PREFIX ?? '')}${String(key ?? '')}`
 }
 
 /**

@@ -79,7 +79,7 @@ export const WithoutCloseButton: Story = {
             <DialogDescription>You must read this message before continuing.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setOpen(false)}>I Understand</Button>
+            <Button onClick={() => { setOpen(false); }}>I Understand</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -128,7 +128,7 @@ export const WithForm: Story = {
               <input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => { setName(e.target.value); }}
                 className="border rounded-md px-3 py-2"
                 placeholder="Enter your name"
               />
@@ -138,7 +138,7 @@ export const WithForm: Story = {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={() => setOpen(false)}>Create</Button>
+            <Button onClick={() => { setOpen(false); }}>Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

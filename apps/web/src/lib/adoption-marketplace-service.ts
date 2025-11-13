@@ -30,7 +30,7 @@ class AdoptionMarketplaceService {
         age: data.petAge,
         gender: data.petGender,
         size: data.petSize === 'tiny' ? 'small' : data.petSize,
-        location: `${data.locationCity}, ${data.locationCountry}`,
+        location: `${String(data.locationCity ?? '')}, ${String(data.locationCountry ?? '')}`,
         shelterId: data.ownerId,
         shelterName: data.ownerName,
         status: 'pending',
@@ -130,7 +130,7 @@ class AdoptionMarketplaceService {
         listings = listings.filter((l: AdoptionListing) => l.featured);
       }
 
-      if (filters?.sortBy) {
+      if (isTruthy(filters?.sortBy)) {
         switch (filters.sortBy) {
           case 'recent':
             listings.sort(

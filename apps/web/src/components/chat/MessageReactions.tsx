@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { MessageReaction } from '@/lib/chat-types';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { haptics } from '@/lib/haptics';
@@ -102,7 +102,7 @@ export default function MessageReactions({
             count={reactionList.length}
             userReacted={userReacted}
             reactions={reactionList}
-            onClick={() => handleReactionClick(emoji)}
+            onClick={() => { handleReactionClick(emoji); }}
           />
         );
       })}
@@ -184,7 +184,7 @@ function ReactionButton({
       <PopoverContent className="w-48 glass-strong p-2">
         <div className="space-y-2">
           {reactions.map((reaction, idx) => (
-            <div key={`${reaction.userId ?? idx}-${idx}`} className="flex items-center gap-2">
+            <div key={`${reaction.userId ?? idx}-${String(idx ?? '')}`} className="flex items-center gap-2">
               <Avatar className="w-6 h-6">
                 <AvatarImage src={reaction.userAvatar} alt={reaction.userName ?? 'User'} />
                 <AvatarFallback className="text-[10px]">
@@ -219,7 +219,7 @@ function AddReactionButton({
   const pickerOpacity = useSharedValue(0);
 
   const bounce = useBounceOnTap({
-    onPress: () => onTogglePicker(!showPicker),
+    onPress: () => { onTogglePicker(!showPicker); },
     hapticFeedback: true,
     scale: 0.95,
   });

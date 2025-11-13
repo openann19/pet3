@@ -10,7 +10,7 @@ import {
   interpolate,
   Extrapolation,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect } from 'react';
 
 export interface UseAiReplyAnimationOptions {
@@ -64,7 +64,7 @@ export function useAiReplyAnimation(
       return;
     }
 
-    if (showShimmer) {
+    if (isTruthy(showShimmer)) {
       shimmerProgress.value = withRepeat(
         withTiming(1, {
           duration: shimmerSpeed,
@@ -75,7 +75,7 @@ export function useAiReplyAnimation(
       );
     }
 
-    if (showGlow) {
+    if (isTruthy(showGlow)) {
       glowOpacity.value = withRepeat(
         withSequence(
           withTiming(glowIntensity, {
@@ -92,7 +92,7 @@ export function useAiReplyAnimation(
       );
     }
 
-    if (showSparkles) {
+    if (isTruthy(showSparkles)) {
       sparkleOpacity.value = withRepeat(
         withSequence(
           withTiming(1, {

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { MonitorPlay, Check } from '@phosphor-icons/react';
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -100,9 +100,9 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
       <Button
         variant={isSelected ? 'default' : 'outline'}
         className={`w-full h-auto py-4 px-4 justify-between ${
-          isSelected
-            ? 'bg-gradient-to-r from-primary to-accent border-primary/50'
-            : 'hover:bg-muted/50'
+          String(isSelected
+                        ? 'bg-gradient-to-r from-primary to-accent border-primary/50'
+                        : 'hover:bg-muted/50' ?? '')
         }`}
         onClick={handleClick}
       >

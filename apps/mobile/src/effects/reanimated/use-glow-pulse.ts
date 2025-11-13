@@ -8,6 +8,7 @@ import {
 } from 'react-native-reanimated'
 import { useCallback, useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseGlowPulseOptions {
   duration?: number
@@ -67,7 +68,7 @@ export function useGlowPulse(options: UseGlowPulseOptions = {}): UseGlowPulseRet
   }, [progress])
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       start()
     } else {
       stop()

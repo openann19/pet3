@@ -81,7 +81,7 @@ export function PreferencesUpdateExample() {
   const handleUpdatePreferences = async () => {
     const ownerId = 'user123';
 
-    if (clearDistance) {
+    if (isTruthy(clearDistance)) {
       // Explicitly clear maxDistance
       await matchingAPI.updatePreferences(ownerId, {
         maxDistanceKm: undefined, // Clear the field
@@ -102,7 +102,7 @@ export function PreferencesUpdateExample() {
           id="maxDistance"
           type="number"
           value={maxDistance ?? ''}
-          onChange={(e) => setMaxDistance(e.target.value ? Number(e.target.value) : null)}
+          onChange={(e) => { setMaxDistance(e.target.value ? Number(e.target.value) : null); }}
         />
       </div>
       <div>
@@ -110,7 +110,7 @@ export function PreferencesUpdateExample() {
           <input
             type="checkbox"
             checked={clearDistance}
-            onChange={(e) => setClearDistance(e.target.checked)}
+            onChange={(e) => { setClearDistance(e.target.checked); }}
           />
           Clear distance
         </Label>

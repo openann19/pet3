@@ -178,7 +178,7 @@ class APIClient {
   }
 
   private updateCircuitBreaker(success: boolean): void {
-    if (success) {
+    if (isTruthy(success)) {
       if (this.circuitBreaker.state === 'half-open') {
         // Reset on success in half-open state
         this.circuitBreaker.state = 'closed'
@@ -226,8 +226,8 @@ class APIClient {
     const token = await getAuthToken()
     const headers: Record<string, string> = {}
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
+    if (isTruthy(token)) {
+      headers['Authorization'] = `Bearer ${String(token ?? '')}`
     }
 
     return headers
@@ -268,8 +268,8 @@ class APIClient {
   }
 
   private getCacheKey(endpoint: string, options: RequestOptions): string {
-    if (options.cacheKey) return options.cacheKey
-    return `api:${endpoint}:${JSON.stringify(options.body ?? {})}`
+    if (isTruthy(options.cacheKey)) return options.cacheKey
+    return `api:${String(endpoint ?? '')}:${JSON.stringify(options.body ?? {})}`
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -283,7 +283,7 @@ class APIClient {
       ...fetchOptions
     } = options
 
-    const url = `${this.baseUrl}${endpoint}`
+    const url = `${String(this.baseUrl ?? '')}${String(endpoint ?? '')}`
     const method = fetchOptions.method ?? 'GET'
     const isGet = method === 'GET'
 
@@ -300,7 +300,7 @@ class APIClient {
     }
 
     // Request deduplication
-    const dedupeKey = `${method}:${endpoint}:${JSON.stringify(fetchOptions.body ?? {})}`
+    const dedupeKey = `${String(method ?? '')}:${String(endpoint ?? '')}:${JSON.stringify(fetchOptions.body ?? {})}`
     const cachedRequest = this.requestCache.get(dedupeKey)
     if (cachedRequest && Date.now() - cachedRequest.timestamp < 1000) {
       return cachedRequest.promise as Promise<T>
@@ -322,7 +322,7 @@ class APIClient {
     }
 
     // Convert fetchOptions.headers to Record<string, string>
-    if (fetchOptions.headers) {
+    if (isTruthy(fetchOptions.headers)) {
       if (fetchOptions.headers instanceof Headers) {
         fetchOptions.headers.forEach((value: string, key: string) => {
           headers[key] = value
@@ -343,7 +343,7 @@ class APIClient {
       Object.assign(headers, authHeaders)
     }
 
-    if (etag) {
+    if (isTruthy(etag)) {
       headers['If-None-Match'] = etag
     }
 
@@ -397,7 +397,7 @@ class APIClient {
 
     for (let attempt = 0; attempt <= config.retries; attempt++) {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), config.timeout)
+      const timeoutId = setTimeout(() => { controller.abort(); }, config.timeout)
 
       try {
         const response = await fetch(url, {
@@ -434,11 +434,11 @@ class APIClient {
 
         if (!response.ok) {
           const errorType = this.classifyError(null, response.status)
-          let errorMessage = `API request failed: ${response.status} ${response.statusText}`
+          let errorMessage = `API request failed: ${String(response.status ?? '')} ${String(response.statusText ?? '')}`
 
           try {
             const errorData = await response.json()
-            if (errorData.message) {
+            if (isTruthy(errorData.message)) {
               errorMessage = errorData.message
             }
           } catch {
@@ -548,6 +548,10 @@ class APIClient {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' })
   }
 
+  getBaseUrl(): string {
+    return this.baseUrl
+  }
+
   // Reset circuit breaker (useful for testing or manual recovery)
   resetCircuitBreaker(): void {
     this.circuitBreaker = {
@@ -565,7 +569,7 @@ class APIClient {
 
   // Cleanup
   destroy(): void {
-    if (this.cacheCleanupInterval) {
+    if (isTruthy(this.cacheCleanupInterval)) {
       clearInterval(this.cacheCleanupInterval)
       this.cacheCleanupInterval = null
     }
@@ -596,10 +600,10 @@ export const matchingApi = {
     }
 
     const query = params.toString()
-    const endpoint = `/matching/available${query ? `?${query}` : ''}`
+    const endpoint = `/matching/available${String(query ? `?${String(query ?? '')}` : '' ?? '')}`
 
     const result = await apiClient.get<MatchingApiResponse>(endpoint, {
-      cacheKey: `matching:available:${query}`,
+      cacheKey: `matching:available:${String(query ?? '')}`,
       skipCache: false,
     })
     return result

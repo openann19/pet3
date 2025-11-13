@@ -72,7 +72,7 @@ export function logEffectStart(
   effect: EffectName,
   metadata: Partial<EffectEventMetadata> = {}
 ): string {
-  const effectId = `${effect}-${Date.now()}-${random().toString(36).substring(2, 9)}`
+  const effectId = `${String(effect ?? '')}-${String(Date.now() ?? '')}-${String(random().toString(36).substring(2, 9) ?? '')}`
   const startedAt = Date.now()
 
   const activeEffect: ActiveEffect = {
@@ -226,7 +226,7 @@ export function logEffectError(
   // Track error
   telemetry.trackError(error, {
     screen: 'chat',
-    action: `effect_${activeEffect.effect}`,
+    action: `effect_${String(activeEffect.effect ?? '')}`,
     payload: finalMetadata,
   })
 

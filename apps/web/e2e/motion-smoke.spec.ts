@@ -6,6 +6,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import logger from '@/core/logger';
 
 test.describe('AdvancedChatWindow Performance', () => {
   test('should maintain 60fps with <3% dropped frames during message storm', async ({ page }) => {
@@ -68,7 +69,7 @@ test.describe('AdvancedChatWindow Performance', () => {
       const sendButton = page.locator(sendButtonSelector).first();
 
       if (await input.isVisible()) {
-        await input.fill(`Test message ${i}`);
+        await input.fill(`Test message ${String(i ?? '')}`);
         if (await sendButton.isVisible()) {
           await sendButton.click();
         }
@@ -113,7 +114,7 @@ test.describe('AdvancedChatWindow Performance', () => {
     expect(metrics.averageFrameTime).toBeLessThan(20); // Average < 20ms (60fps)
     expect(metrics.maxFrameTime).toBeLessThan(100); // No single frame > 100ms
 
-    console.log('Performance Metrics:', {
+    logger.info('Performance Metrics:', {
       frameCount: metrics.frameCount,
       droppedFrames: metrics.droppedFrames,
       droppedFramePercentage: droppedFramePercentage.toFixed(2) + '%',

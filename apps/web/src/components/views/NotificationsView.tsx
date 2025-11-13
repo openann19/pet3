@@ -28,6 +28,136 @@ import { toast } from 'sonner';
 
 const logger = createLogger('NotificationsView');
 
+function getNotificationIcon(type: CommunityNotification['type']) {
+  switch (type) {
+    case 'like':
+      return Heart
+    case 'comment':
+    case 'reply':
+      return ChatCircle
+    case 'follow':
+      return UserPlus
+    case 'mention':
+      return At
+    case 'moderation':
+      return CheckCircle
+    default:
+      return Bell
+  }
+}
+
+function getNotificationMessage(notification: CommunityNotification): string {
+  switch (notification.type) {
+    case 'like':
+      return `${String(notification.actorName ?? '')} liked your post`
+    case 'comment':
+      return `${String(notification.actorName ?? '')} commented on your post`
+    case 'reply':
+      return `${String(notification.actorName ?? '')} replied to your comment`
+    case 'follow':
+      return `${String(notification.actorName ?? '')} started following you`
+    case 'mention':
+      return `${String(notification.actorName ?? '')} mentioned you`
+    case 'moderation':
+      return notification.content ?? 'Your content was reviewed'
+    default:
+      return notification.content ?? 'New notification'
+  }
+}
+
+function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
+  const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
+
+  return (
+    <AnimatedView
+      style={entry.animatedStyle}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+        <Bell size={48} className="text-muted-foreground" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">
+        {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+      </h2>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        {filter === 'unread' 
+          ? 'You\'re all caught up!'
+          : 'When you get notifications, they\'ll appear here'}
+      </p>
+    </AnimatedView>
+  )
+}
+
+function _NotificationItemView({
+  notification,
+  index,
+  onNotificationClick
+}: {
+  notification: CommunityNotification
+  index: number
+  onNotificationClick: (notification: CommunityNotification) => void
+}) {
+  const opacity = useSharedValue(0)
+  const translateX = useSharedValue(-20)
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      opacity.value = withSpring(1, springConfigs.smooth)
+      translateX.value = withSpring(0, springConfigs.smooth)
+    }, index * 30)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [index, opacity, translateX])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: `${String(translateX.value)}px` }]
+  })) as AnimatedStyle
+
+  const Icon = getNotificationIcon(notification.type)
+  const message = getNotificationMessage(notification)
+
+  return (
+    <AnimatedView
+      style={animatedStyle}
+      onClick={() => {
+        onNotificationClick(notification)
+      }}
+      className={`
+        flex gap-3 p-3 rounded-lg cursor-pointer transition-colors
+        ${String(notification.read 
+          ? 'hover:bg-muted/50' 
+          : 'bg-primary/5 hover:bg-primary/10 border border-primary/20')
+        }
+      `}
+    >
+      <Avatar
+        {...(notification.actorAvatar && { src: notification.actorAvatar })}
+        className="w-12 h-12"
+      >
+        <Icon size={20} />
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <p className="text-sm font-medium line-clamp-2">
+              {message}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+            </p>
+          </div>
+          {!notification.read && (
+            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
+          )}
+        </div>
+      </div>
+    </AnimatedView>
+  )
+}
+
 interface NotificationsViewProps {
   onBack?: () => void;
   onPostClick?: (postId: string) => void;

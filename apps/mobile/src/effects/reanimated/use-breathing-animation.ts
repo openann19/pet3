@@ -14,6 +14,7 @@ import {
 } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import type { AnimatedStyle } from './animated-view'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseBreathingAnimationOptions {
   minScale?: number
@@ -48,7 +49,7 @@ export function useBreathingAnimation(
   }[easing]
 
   useEffect(() => {
-    if (enabled) {
+    if (isTruthy(enabled)) {
       progress.value = withRepeat(
         withSequence(
           withTiming(1, { duration, easing: easingFunction }),

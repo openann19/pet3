@@ -91,7 +91,7 @@ export function PresenceAvatar({
   }, [reduced, status, dur, rot])
 
   const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rot.value}deg` }],
+    transform: [{ rotate: `${String(rot.value ?? '')}deg` }],
     opacity: status === 'offline' ? 0 : 1,
   }))
 

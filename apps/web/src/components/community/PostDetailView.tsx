@@ -195,9 +195,9 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
     haptics.impact('light');
 
     try {
-      if (navigator.share) {
+      if (isTruthy(navigator.share)) {
         await navigator.share({
-          title: `Post by ${post.authorName}`,
+          title: `Post by ${String(post.authorName ?? '')}`,
           ...(post.text ? { text: post.text } : {}),
           url: window.location.href,
         });
@@ -281,7 +281,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => { onOpenChange(false); }}
                   className="rounded-full"
                   aria-label="Close post details"
                 >
@@ -291,7 +291,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowReportDialog(true)}
+                  onClick={() => { setShowReportDialog(true); }}
                   className="rounded-full"
                   aria-label="Report post"
                 >
@@ -341,7 +341,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                           >
                             <img
                               src={url}
-                              alt={`Post media ${index + 1}`}
+                              alt={`Post media ${String(index + 1 ?? '')}`}
                               className="w-full h-full object-cover"
                             />
                           </button>
@@ -491,7 +491,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                 <div className="flex gap-2">
                   <Textarea
                     value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
+                    onChange={(e) => { setCommentText(e.target.value); }}
                     placeholder="Add a comment..."
                     rows={2}
                     className="resize-none"
@@ -533,7 +533,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
           onOpenChange={setShowReportDialog}
           resourceType="post"
           resourceId={post.id}
-          resourceName={`Post by ${post.authorName}`}
+          resourceName={`Post by ${String(post.authorName ?? '')}`}
           onReported={() => {
             toast.success('Report submitted. Thank you for helping keep our community safe.');
           }}

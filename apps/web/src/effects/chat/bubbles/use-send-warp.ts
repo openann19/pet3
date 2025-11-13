@@ -16,7 +16,7 @@ import {
   useSharedValue,
   withTiming,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { triggerHaptic } from '../core/haptic-manager';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { logEffectEnd, logEffectStart } from '../core/telemetry';
@@ -152,7 +152,7 @@ export function useSendWarp(options: UseSendWarpOptions = {}): UseSendWarpReturn
     }
 
     // Call onComplete after animation
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, slideDuration);
@@ -160,7 +160,7 @@ export function useSendWarp(options: UseSendWarpOptions = {}): UseSendWarpReturn
 
     // Log effect end
     setTimeout(() => {
-      if (effectIdRef.current) {
+      if (isTruthy(effectIdRef.current)) {
         logEffectEnd(effectIdRef.current, {
           durationMs: slideDuration,
           success: true,

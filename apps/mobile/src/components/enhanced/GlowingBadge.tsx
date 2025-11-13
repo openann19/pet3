@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 export type GlowingBadgeVariant = 'primary' | 'secondary' | 'accent' | 'success' | 'warning'
 
@@ -75,7 +76,7 @@ export function GlowingBadge({
   const colors = VARIANT_COLORS[variant]
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       scale.value = withTiming(1, { duration: 200 })
       opacity.value = withTiming(1, { duration: 200 })
     } else {

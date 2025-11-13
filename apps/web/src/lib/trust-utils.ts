@@ -4,9 +4,9 @@ export function generateTrustBadges(petId: string, verified: boolean): TrustBadg
   const badges: TrustBadge[] = [];
   const now = new Date().toISOString();
 
-  if (verified) {
+  if (isTruthy(verified)) {
     badges.push({
-      id: `${petId}-verified`,
+      id: `${String(petId ?? '')}-verified`,
       type: 'verified_owner',
       label: 'Verified Owner',
       description: 'Owner identity has been verified through official documentation',
@@ -68,7 +68,7 @@ export function generateTrustBadges(petId: string, verified: boolean): TrustBadg
   selectedBadges.forEach((badge) => {
     badges.push({
       ...badge,
-      id: `${petId}-${badge.type}`,
+      id: `${String(petId ?? '')}-${String(badge.type ?? '')}`,
       earnedAt: now,
     });
   });
@@ -127,11 +127,11 @@ export function generateRatings(petId: string, count = 5): Rating[] {
     }
 
     ratings.push({
-      id: `rating-${petId}-${i}`,
+      id: `rating-${String(petId ?? '')}-${String(i ?? '')}`,
       petId,
-      reviewerId: `reviewer-${i}`,
+      reviewerId: `reviewer-${String(i ?? '')}`,
       reviewerName,
-      reviewerAvatar: `https://i.pravatar.cc/150?img=${(i % 70) + 1}`,
+      reviewerAvatar: `https://i.pravatar.cc/150?img=${String((i % 70) + 1 ?? '')}`,
       rating,
       comment,
       helpful: Math.floor(Math.random() * 15),

@@ -74,9 +74,9 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
               as="button"
               onClick={() => onSelectRoom(room)}
               className={`w-full text-left p-4 rounded-2xl transition-all relative overflow-hidden ${
-                selectedRoomId === room.id
-                  ? 'glass-strong shadow-lg scale-[1.02] border border-primary/30'
-                  : 'glass-effect hover:glass-strong hover:scale-[1.01]'
+                String(selectedRoomId === room.id
+                                    ? 'glass-strong shadow-lg scale-[1.02] border border-primary/30'
+                                    : 'glass-effect hover:glass-strong hover:scale-[1.01]' ?? '')
               }`}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}

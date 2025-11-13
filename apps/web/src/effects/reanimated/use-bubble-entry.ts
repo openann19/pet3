@@ -6,7 +6,7 @@ import {
   withSpring,
   withDelay,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useEffect, useCallback } from 'react';
 import { springConfigs } from '@/effects/reanimated/transitions';
 
@@ -20,6 +20,7 @@ export interface UseBubbleEntryOptions {
   isNew?: boolean;
 }
 
+// Legacy compatibility interface
 export interface UseBubbleEntryReturn {
   opacity: SharedValue<number>;
   translateY: SharedValue<number>;

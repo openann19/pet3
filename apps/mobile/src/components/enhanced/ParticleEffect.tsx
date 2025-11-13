@@ -75,7 +75,7 @@ export function ParticleEffect({
       setParticles([])
     }, 2500)
 
-    return () => clearTimeout(timeout)
+    return () => { clearTimeout(timeout); }
   }, [triggerKey, count, colors, reducedMotion])
 
   if (reducedMotion.value || particles.length === 0) {

@@ -5,7 +5,7 @@
  */
 
 import { memo, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { Check, Trash, Archive } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
@@ -119,7 +119,7 @@ function NotificationItemComponent({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-full"
-                  onClick={() => onMarkAsRead(notification.id)}
+                  onClick={() => { onMarkAsRead(notification.id); }}
                 >
                   <Check size={16} />
                 </Button>
@@ -129,7 +129,7 @@ function NotificationItemComponent({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-full"
-                onClick={() => onArchive(notification.id)}
+                onClick={() => { onArchive(notification.id); }}
               >
                 <Archive size={16} />
               </Button>
@@ -138,7 +138,7 @@ function NotificationItemComponent({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-full text-destructive"
-                onClick={() => onDelete(notification.id)}
+                onClick={() => { onDelete(notification.id); }}
               >
                 <Trash size={16} />
               </Button>

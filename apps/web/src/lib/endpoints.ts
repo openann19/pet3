@@ -27,9 +27,9 @@ export const ENDPOINTS = {
   ADOPTION: {
     LISTINGS: '/adoption/listings',
     CREATE_LISTING: '/adoption/listings',
-    GET_LISTING: (id: string) => `/adoption/listings/${id}`,
-    UPDATE_LISTING: (id: string) => `/adoption/listings/${id}`,
-    DELETE_LISTING: (id: string) => `/adoption/listings/${id}`,
+    GET_LISTING: (id: string) => `/adoption/listings/${String(id ?? '')}`,
+    UPDATE_LISTING: (id: string) => `/adoption/listings/${String(id ?? '')}`,
+    DELETE_LISTING: (id: string) => `/adoption/listings/${String(id ?? '')}`,
     APPLY: '/adoption/applications',
     APPLICATIONS: '/adoption/applications',
     UPDATE_APPLICATION: (id: string) => `/adoption/applications/${id}`,
@@ -50,7 +50,7 @@ export const ENDPOINTS = {
     CREATE_INTENT: '/payments/create-intent',
     CONFIRM_PAYMENT: '/payments/confirm',
     SUBSCRIPTIONS: '/payments/subscriptions',
-    CANCEL_SUBSCRIPTION: (id: string) => `/payments/subscriptions/${id}`,
+    CANCEL_SUBSCRIPTION: (id: string) => `/payments/subscriptions/${String(id ?? '')}`,
     ENTITLEMENTS: '/payments/entitlements',
     UPDATE_ENTITLEMENTS: '/payments/entitlements',
     SUBSCRIPTION: '/payments/subscription',
@@ -78,7 +78,7 @@ export const ENDPOINTS = {
   // Notifications
   NOTIFICATIONS: {
     LIST: '/notifications',
-    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    MARK_READ: (id: string) => `/notifications/${String(id ?? '')}/read`,
     MARK_ALL_READ: '/notifications/read-all',
     SETTINGS: '/notifications/settings',
     GEOFENCE: '/notifications/geofence',
@@ -88,7 +88,7 @@ export const ENDPOINTS = {
   // Community
   COMMUNITY: {
     POSTS: '/community/posts',
-    POST: (id: string) => `/community/posts/${id}`,
+    POST: (id: string) => `/community/posts/${String(id ?? '')}`,
     CREATE_POST: '/community/posts',
     LIKE_POST: (id: string) => `/community/posts/${id}/like`,
     COMMENT: (postId: string) => `/community/posts/${postId}/comments`,
@@ -100,8 +100,8 @@ export const ENDPOINTS = {
   ADMIN: {
     DASHBOARD: '/admin/dashboard',
     USERS: '/admin/users',
-    USER: (id: string) => `/admin/users/${id}`,
-    RESET_PASSWORD: (userId: string) => `/admin/users/${userId}/reset-password`,
+    USER: (id: string) => `/admin/users/${String(id ?? '')}`,
+    RESET_PASSWORD: (userId: string) => `/admin/users/${String(userId ?? '')}/reset-password`,
     MODERATION_QUEUE: '/admin/moderation',
     ANALYTICS: '/admin/analytics',
     SETTINGS: '/admin/settings',
@@ -139,7 +139,7 @@ export const ENDPOINTS = {
     UNBLOCK: (blockerPetId: string, blockedPetId: string) =>
       `/blocking/unblock/${blockerPetId}/${blockedPetId}`,
     UNBLOCK_USER: (blockerUserId: string, blockedUserId: string) =>
-      `/blocking/unblock-user/${blockerUserId}/${blockedUserId}`,
+      `/blocking/unblock-user/${String(blockerUserId ?? '')}/${String(blockedUserId ?? '')}`,
     STATUS: (blockerPetId: string, blockedPetId: string) =>
       `/blocking/status/${blockerPetId}/${blockedPetId}`,
     BLOCKED_PETS: (petId: string) => `/blocking/pets/${petId}/blocked`,
@@ -150,9 +150,9 @@ export const ENDPOINTS = {
   LOST_FOUND: {
     CREATE_ALERT: '/alerts/lost',
     QUERY_ALERTS: '/alerts/lost',
-    GET_ALERT: (id: string) => `/alerts/lost/${id}`,
-    UPDATE_STATUS: (id: string) => `/alerts/lost/${id}/status`,
-    INCREMENT_VIEW: (id: string) => `/alerts/lost/${id}/increment-view`,
+    GET_ALERT: (id: string) => `/alerts/lost/${String(id ?? '')}`,
+    UPDATE_STATUS: (id: string) => `/alerts/lost/${String(id ?? '')}/status`,
+    INCREMENT_VIEW: (id: string) => `/alerts/lost/${String(id ?? '')}/increment-view`,
     CREATE_SIGHTING: '/alerts/sightings',
     GET_SIGHTINGS: '/alerts/sightings',
   },
@@ -181,7 +181,7 @@ export const ENDPOINTS = {
   // Photos & Moderation
   PHOTOS: {
     LIST: '/photos',
-    GET: (id: string) => `/photos/${id}`,
+    GET: (id: string) => `/photos/${String(id ?? '')}`,
     CREATE: '/photos',
     CHECK_DUPLICATE: '/photos/check-duplicate',
     BY_STATUS: '/photos',

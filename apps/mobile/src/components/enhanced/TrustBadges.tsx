@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 export interface TrustBadgesProps {
   badges: Array<{
@@ -112,7 +113,7 @@ function BadgeAnimated({
         scale.value = withSpring(1, { stiffness: 500, damping: 30 })
         opacity.value = withSpring(1, { stiffness: 500, damping: 30 })
       }, delay)
-    } else if (animated) {
+    } else if (isTruthy(animated)) {
       scale.value = withTiming(1, { duration: 200 })
       opacity.value = withTiming(1, { duration: 200 })
     }

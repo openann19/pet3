@@ -39,7 +39,7 @@ vi.mock('@/lib/image-upload', () => ({
 vi.mock('@/lib/video-compression', () => ({
   VideoCompressor: {
     compress: vi.fn(),
-    formatFileSize: vi.fn((size) => `${size}MB`),
+    formatFileSize: vi.fn((size) => `${String(size ?? '')}MB`),
   },
 }));
 

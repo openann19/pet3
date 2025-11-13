@@ -8,7 +8,7 @@ import {
   withSpring,
   runOnUI,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useCallback } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 
@@ -50,7 +50,7 @@ export function useUndoSendAnimation(
       withTiming(0, timingConfigs.smooth)
     );
 
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, 400);

@@ -8,8 +8,9 @@ import {
   useAnimatedStyle,
   withDecay,
   cancelAnimation,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useCallback, useState, useRef } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface UseKineticScrollOptions {
   damping?: number;
@@ -51,7 +52,7 @@ export function useKineticScroll(options: UseKineticScrollOptions = {}) {
 
       offset.value += deltaY;
 
-      if (clamp) {
+      if (isTruthy(clamp)) {
         offset.value = Math.max(clamp[0], Math.min(clamp[1], offset.value));
       }
 

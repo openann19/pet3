@@ -54,7 +54,7 @@ export default function HighlightViewer({
     onClose();
   };
 
-  if (showStoryViewer) {
+  if (isTruthy(showStoryViewer)) {
     return (
       <StoryViewer
         stories={highlight.stories}
@@ -62,7 +62,7 @@ export default function HighlightViewer({
         currentUserId={currentUserId}
         currentUserName={currentUserName}
         {...(currentUserAvatar !== undefined ? { currentUserAvatar } : {})}
-        onClose={() => setShowStoryViewer(false)}
+        onClose={() => { setShowStoryViewer(false); }}
       />
     );
   }
@@ -125,7 +125,7 @@ export default function HighlightViewer({
               <MotionView
                 as="button"
                 key={story.id}
-                onClick={() => handleStoryClick(index)}
+                onClick={() => { handleStoryClick(index); }}
                 className="aspect-[9/16] rounded-2xl overflow-hidden relative group"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -135,7 +135,7 @@ export default function HighlightViewer({
               >
                 <img
                   src={story.thumbnailUrl || story.mediaUrl}
-                  alt={story.caption || `Story ${index + 1}`}
+                  alt={story.caption || `Story ${String(index + 1 ?? '')}`}
                   className="w-full h-full object-cover"
                 />
 

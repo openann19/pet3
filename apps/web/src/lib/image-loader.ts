@@ -78,7 +78,7 @@ class ImageLoader {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (isTruthy(entry.isIntersecting)) {
             this.preload(src)
               .then((loadedImg) => {
                 img.src = loadedImg.src;

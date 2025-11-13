@@ -18,6 +18,7 @@ interface TypingUser {
   userAvatar?: string
 }
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
@@ -35,7 +36,7 @@ function TypingDot({ index, reducedMotion }: TypingDotProps): JSX.Element {
   const translateY = useSharedValue(0)
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       opacity.value = 0.6
       translateY.value = 0
       return
@@ -79,7 +80,7 @@ export default function TypingIndicator({ users }: TypingIndicatorProps): JSX.El
   const containerTranslateY = useSharedValue(-5)
 
   useEffect(() => {
-    if (reducedMotion.value) {
+    if (isTruthy(reducedMotion.value)) {
       containerOpacity.value = 1
       containerTranslateY.value = 0
       return
@@ -99,15 +100,15 @@ export default function TypingIndicator({ users }: TypingIndicatorProps): JSX.El
   const typingText = useMemo(() => {
     if (users.length === 1) {
       const userName = users[0]?.userName?.trim()
-      return `${userName || 'Someone'} is typing`
+      return `${String((userName ?? '') || 'Someone')} is typing`
     }
     if (users.length === 2) {
       const userName1 = users[0]?.userName?.trim()
       const userName2 = users[1]?.userName?.trim()
-      return `${userName1 || 'Someone'} and ${userName2 || 'Someone'} are typing`
+      return `${String((userName1 ?? '') || 'Someone')} and ${String((userName2 ?? '') || 'Someone')} are typing`
     }
     const firstName = users[0]?.userName?.trim()
-    return `${firstName || 'Someone'} and ${users.length - 1} others are typing`
+    return `${String((firstName ?? '') || 'Someone')} and ${String(users.length - 1)} others are typing`
   }, [users])
 
   const renderAvatar = useCallback((user: TypingUser, index: number) => {

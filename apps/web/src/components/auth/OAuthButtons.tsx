@@ -107,7 +107,7 @@ export default function OAuthButtons({
             onAppleSignIn();
           }
         }
-      } else if (onAppleSignIn) {
+      } else if (isTruthy(onAppleSignIn)) {
         // Fallback to redirect
         window.location.href = '/api/v1/auth/oauth/apple/authorize';
       }

@@ -21,7 +21,7 @@ import {
   withSequence,
   withTiming,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { logEffectStart, logEffectEnd } from '../core/telemetry';
@@ -135,7 +135,7 @@ export function useAuroraRing(options: UseAuroraRingOptions = {}): UseAuroraRing
     });
     effectIdRef.current = effectId;
 
-    if (isReducedMotion) {
+    if (isTruthy(isReducedMotion)) {
       // Static ring for reduced motion
       ringOpacity.value = withTiming(0.6, { duration: 200 });
       ringScale.value = withTiming(1.1, { duration: 200 });

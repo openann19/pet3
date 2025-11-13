@@ -5,6 +5,7 @@
 
 import { useRef, useEffect } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface DoubleTapHandlers {
   onDoubleTap?: () => void;
@@ -35,7 +36,7 @@ export function useDoubleTap<T extends HTMLElement = HTMLDivElement>(
       const timeSinceLastTap = now - lastTapTime.current;
 
       // Clear pending single tap
-      if (singleTapTimer.current) {
+      if (isTruthy(singleTapTimer.current)) {
         clearTimeout(singleTapTimer.current);
         singleTapTimer.current = undefined;
       }
@@ -71,7 +72,7 @@ export function useDoubleTap<T extends HTMLElement = HTMLDivElement>(
     element.addEventListener('click', handleClick);
 
     return () => {
-      if (singleTapTimer.current) {
+      if (isTruthy(singleTapTimer.current)) {
         clearTimeout(singleTapTimer.current);
       }
       element.removeEventListener('touchend', handleTouchEnd);

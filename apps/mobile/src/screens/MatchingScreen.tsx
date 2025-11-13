@@ -9,6 +9,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { ApiResponse } from '../types/api'
 import type { Match } from '../types/pet'
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export function MatchingScreen(): React.JSX.Element {
   const [showMatch, setShowMatch] = useState(false)
@@ -55,7 +56,7 @@ export function MatchingScreen(): React.JSX.Element {
     setMatchPetNames(['', ''])
   }, [])
 
-  if (isLoading) {
+  if (isTruthy(isLoading)) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContainer}>
@@ -66,7 +67,7 @@ export function MatchingScreen(): React.JSX.Element {
     )
   }
 
-  if (error) {
+  if (isTruthy(error)) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContainer}>

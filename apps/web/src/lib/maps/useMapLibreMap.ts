@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Map as MapInstance, Marker as MarkerInstance, MapMouseEvent } from 'maplibre-gl';
 import type { Location } from '@/lib/maps/types';
 import { getMapStyleUrl } from './provider-config';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface MapMarker {
   id: string;
@@ -80,7 +81,7 @@ export function useMapLibreMap({
     (async () => {
       try {
         const lib = await loadMapLibre();
-        if (cancelled) return;
+        if (isTruthy(cancelled)) return;
         runtimeLibRef.current = lib;
         const map = new lib.Map({
           container,
@@ -92,13 +93,13 @@ export function useMapLibreMap({
         });
 
         map.on('load', () => {
-          if (cancelled) return;
+          if (isTruthy(cancelled)) return;
           setIsLoading(false);
           setError(null);
         });
 
         map.on('error', (e) => {
-          if (cancelled) return;
+          if (isTruthy(cancelled)) return;
           const err = e.error instanceof Error ? e.error : new Error(String(e.error));
           setError(err);
           setIsLoading(false);
@@ -106,7 +107,7 @@ export function useMapLibreMap({
 
         mapRef.current = map;
       } catch (err) {
-        if (cancelled) return;
+        if (isTruthy(cancelled)) return;
         const errorObj = err instanceof Error ? err : new Error(String(err));
         setError(errorObj);
         setIsLoading(false);
@@ -117,7 +118,7 @@ export function useMapLibreMap({
       cancelled = true;
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
-      if (mapRef.current) {
+      if (isTruthy(mapRef.current)) {
         mapRef.current.remove();
         mapRef.current = null;
       }
@@ -147,7 +148,7 @@ export function useMapLibreMap({
       clusters.forEach((cluster) => {
         const el = document.createElement('div');
         el.className = 'cluster-marker';
-        el.innerHTML = cluster.count > 1 ? `<div>${cluster.count}</div>` : '';
+        el.innerHTML = cluster.count > 1 ? `<div>${String(cluster.count ?? '')}</div>` : '';
         el.style.width = cluster.count > 1 ? '40px' : '30px';
         el.style.height = cluster.count > 1 ? '40px' : '30px';
         el.style.borderRadius = '50%';
@@ -246,7 +247,7 @@ export function useMapLibreMap({
       };
 
       scheduleUpdate(() => {
-        if (pendingRegion) {
+        if (isTruthy(pendingRegion)) {
           pendingRegion = null; // Throttled noop placeholder for potential future state sync
         }
         idleCallbackId = null;

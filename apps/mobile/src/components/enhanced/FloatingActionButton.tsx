@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { AccessibilityInfo } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
@@ -63,7 +64,7 @@ export function FloatingActionButton({
 
   // Entry animation
   useEffect(() => {
-    if (reducedMotion) {
+    if (isTruthy(reducedMotion)) {
       scale.value = withTiming(1, { duration: 200 })
       rotate.value = withTiming(0, { duration: 200 })
     } else {
@@ -75,7 +76,7 @@ export function FloatingActionButton({
 
   // Expanded state
   useEffect(() => {
-    if (expanded) {
+    if (isTruthy(expanded)) {
       iconRotate.value = withSpring(45, SPRING_CONFIG)
       labelOpacity.value = withTiming(1, { duration: 200 })
       labelWidth.value = withTiming(1, { duration: 200 })
@@ -88,7 +89,7 @@ export function FloatingActionButton({
 
   // Shimmer effect
   useEffect(() => {
-    if (reducedMotion) return
+    if (isTruthy(reducedMotion)) return
 
     shimmerX.value = withRepeat(
       withSequence(
@@ -111,7 +112,7 @@ export function FloatingActionButton({
 
   const iconContainerStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ rotate: `${iconRotate.value}deg` }],
+      transform: [{ rotate: `${String(iconRotate.value ?? '')}deg` }],
       width: 56,
       height: 56,
     }
@@ -126,7 +127,7 @@ export function FloatingActionButton({
 
   const shimmerStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: `${shimmerX.value}%` }],
+      transform: [{ translateX: `${shimmerX.value}%` as `${number}%` }],
     }
   })
 
@@ -138,12 +139,12 @@ export function FloatingActionButton({
   }, [onClick])
 
   const handlePressIn = useCallback(() => {
-    if (reducedMotion) return
+    if (isTruthy(reducedMotion)) return
     pressScale.value = withSpring(0.95, SPRING_CONFIG)
   }, [pressScale, reducedMotion])
 
   const handlePressOut = useCallback(() => {
-    if (reducedMotion) return
+    if (isTruthy(reducedMotion)) return
     pressScale.value = withSpring(1, SPRING_CONFIG)
   }, [pressScale, reducedMotion])
 

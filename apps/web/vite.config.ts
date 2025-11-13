@@ -7,6 +7,8 @@ import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import type { PluginOption, UserConfig } from 'vite';
+import { isTruthy, isDefined } from '@/core/guards';
+import { securityHeadersPlugin } from './vite-plugin-security-headers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = process.env['PROJECT_ROOT'] ?? __dirname;
@@ -440,7 +442,7 @@ const resolveWorkspacePackagePlugin = (): PluginOption => {
       // Resolve sub-imports like @petspark/shared/rng
       if (id.startsWith('@petspark/shared/')) {
         const subPath = id.replace('@petspark/shared/', '');
-        return path.resolve(sharedPackagePath, `${subPath}.ts`);
+        return path.resolve(sharedPackagePath, `${String(subPath ?? '')}.ts`);
       }
       // Handle relative imports from within the shared package
       // When importer is from shared package, resolve relative imports to .ts files
@@ -459,7 +461,7 @@ const resolveWorkspacePackagePlugin = (): PluginOption => {
 
           // If no extension, try .ts first
           if (!path.extname(resolved)) {
-            const withTs = `${resolved}.ts`;
+            const withTs = `${String(resolved ?? '')}.ts`;
             if (existsSync(withTs)) {
               return withTs;
             }
@@ -491,6 +493,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
     transformJSXInJSPlugin(),
     handleJSXImportAnalysisPlugin(),
     tailwindcss(),
+    securityHeadersPlugin(),
     nodePolyfills({
       include: ['util', 'assert', 'process', 'stream', 'events', 'buffer', 'crypto'],
       globals: {
@@ -508,7 +511,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
   ]);
 
   for (const plugin of optionalPlugins) {
-    if (plugin) {
+    if (isTruthy(plugin)) {
       plugins.push(plugin);
     }
   }

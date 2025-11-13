@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils';
 import { MotionView } from '@petspark/motion';
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
 import React from 'react';
 import type { ReactNode } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export type CardVariant =
   | 'glass'
@@ -67,14 +68,14 @@ export default function AdvancedCard({
 
   // Hover animation
   const handleMouseEnter = React.useCallback(() => {
-    if (enableHover) {
+    if (isTruthy(enableHover)) {
       hoverScale.value = withTiming(1.02, { duration: 200 });
       hoverY.value = withTiming(-4, { duration: 200 });
     }
   }, [enableHover]);
 
   const handleMouseLeave = React.useCallback(() => {
-    if (enableHover) {
+    if (isTruthy(enableHover)) {
       hoverScale.value = withTiming(1, { duration: 200 });
       hoverY.value = withTiming(0, { duration: 200 });
     }

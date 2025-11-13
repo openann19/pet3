@@ -154,7 +154,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.put<UpdateEntitlementsResponse>(
-        `${ENDPOINTS.PAYMENTS.UPDATE_ENTITLEMENTS}?userId=${userId}`,
+        `${String(ENDPOINTS.PAYMENTS.UPDATE_ENTITLEMENTS ?? '')}?userId=${String(userId ?? '')}`,
         request
       );
       return response.data.entitlements;
@@ -200,7 +200,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.post<CreateSubscriptionResponse>(
-        `${ENDPOINTS.PAYMENTS.CREATE_SUBSCRIPTION}?userId=${userId}`,
+        `${String(ENDPOINTS.PAYMENTS.CREATE_SUBSCRIPTION ?? '')}?userId=${String(userId ?? '')}`,
         request
       );
       return response.data.subscription;
@@ -250,7 +250,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.post<AddConsumableResponse>(
-        `${ENDPOINTS.PAYMENTS.CONSUMABLES}?userId=${userId}`,
+        `${String(ENDPOINTS.PAYMENTS.CONSUMABLES ?? '')}?userId=${String(userId ?? '')}`,
         request
       );
       return response.data.entitlements;
@@ -277,7 +277,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.post<RedeemConsumableResponse>(
-        `${ENDPOINTS.PAYMENTS.CONSUMABLES}/redeem?userId=${userId}`,
+        `${String(ENDPOINTS.PAYMENTS.CONSUMABLES ?? '')}/redeem?userId=${String(userId ?? '')}`,
         request
       );
       return response.data;
@@ -321,7 +321,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.post<CreateBillingIssueResponse>(
-        `/payments/billing-issue?userId=${userId}`,
+        `/payments/billing-issue?userId=${String(userId ?? '')}`,
         request
       );
       return response.data.issue;
@@ -434,7 +434,7 @@ class PaymentsApiImpl {
       };
 
       const response = await APIClient.post<IncrementUsageResponse>(
-        `/payments/usage-counter/increment?userId=${userId}`,
+        `/payments/usage-counter/increment?userId=${String(userId ?? '')}`,
         request
       );
       return response.data;

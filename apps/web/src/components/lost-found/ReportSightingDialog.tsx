@@ -157,7 +157,7 @@ export function ReportSightingDialog({
                     id="sightingDate"
                     type="date"
                     value={sightingDate}
-                    onChange={(e) => setSightingDate(e.target.value)}
+                    onChange={(e) => { setSightingDate(e.target.value); }}
                     max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
@@ -170,7 +170,7 @@ export function ReportSightingDialog({
                     id="sightingTime"
                     type="time"
                     value={sightingTime}
-                    onChange={(e) => setSightingTime(e.target.value)}
+                    onChange={(e) => { setSightingTime(e.target.value); }}
                   />
                 </div>
               </div>
@@ -181,7 +181,7 @@ export function ReportSightingDialog({
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => setShowMapPicker(true)}
+                  onClick={() => { setShowMapPicker(true); }}
                 >
                   <MapPin size={16} className="mr-2" />
                   {selectedLocation ? 'Update Location' : 'Pick Location on Map'}
@@ -198,7 +198,7 @@ export function ReportSightingDialog({
                 <select
                   id="radiusM"
                   value={radiusM}
-                  onChange={(e) => setRadiusM(parseInt(e.target.value))}
+                  onChange={(e) => { setRadiusM(parseInt(e.target.value)); }}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
                   <option value={100}>100 m</option>
@@ -214,7 +214,7 @@ export function ReportSightingDialog({
                 <Textarea
                   id="description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => { setDescription(e.target.value); }}
                   placeholder="Describe what you saw, the pet's condition, any distinctive features..."
                   rows={4}
                 />
@@ -225,7 +225,7 @@ export function ReportSightingDialog({
                 <Input
                   id="contactInfo"
                   value={contactInfo}
-                  onChange={(e) => setContactInfo(e.target.value)}
+                  onChange={(e) => { setContactInfo(e.target.value); }}
                   placeholder="Email or phone number"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -258,7 +258,7 @@ export function ReportSightingDialog({
       {showMapPicker && (
         <MapLocationPicker
           onSelect={handleLocationSelect}
-          onClose={() => setShowMapPicker(false)}
+          onClose={() => { setShowMapPicker(false); }}
           {...(selectedLocation ? { initialLocation: selectedLocation } : {})}
         />
       )}

@@ -118,8 +118,7 @@ export function useCommunityPost(
 export function useCreatePost(): UseMutationResult<
   CommunityPost,
   unknown,
-  { title: string; content: string; category: string; images?: string[] },
-  unknown
+  { title: string; content: string; category: string; images?: string[] }
 > {
   const queryClient = useQueryClient()
 
@@ -144,8 +143,7 @@ export function useCreatePost(): UseMutationResult<
 export function useLikePost(): UseMutationResult<
   { liked: boolean; likesCount: number },
   unknown,
-  { postId: string },
-  unknown
+  { postId: string }
 > {
   const queryClient = useQueryClient()
 
@@ -168,8 +166,7 @@ export function useLikePost(): UseMutationResult<
 export function useAddComment(): UseMutationResult<
   CommunityComment,
   unknown,
-  { postId: string; content: string },
-  unknown
+  { postId: string; content: string }
 > {
   const queryClient = useQueryClient()
 

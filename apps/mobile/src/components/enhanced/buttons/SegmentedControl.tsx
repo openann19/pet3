@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedView = Animated.View
@@ -77,7 +78,7 @@ export function SegmentedControl({
         runOnUI(() => {
           'worklet'
           const measurements = measure(button)
-          if (measurements) {
+          if (isTruthy(measurements)) {
             indicatorPosition.value = reducedMotion.value
               ? withTiming(measurements.pageX, { duration: 200 })
               : withSpring(measurements.pageX, SPRING_CONFIG)
@@ -111,7 +112,7 @@ export function SegmentedControl({
 
   const handleOptionPress = useCallback(
     (optionValue: string) => {
-      if (multiSelect) {
+      if (isTruthy(multiSelect)) {
         const newValues = selectedValues.includes(optionValue)
           ? selectedValues.filter(v => v !== optionValue)
           : [...selectedValues, optionValue]

@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 export function generateCorrelationId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+  return `${String(Date.now() ?? '')}-${String(Math.random().toString(36).substring(2, 11) ?? '')}`
 }
 
 export function generateULID(): string {
@@ -16,5 +16,5 @@ export function generateULID(): string {
       .toString(16)
       .padStart(2, '0')
   ).join('')
-  return `${timestamp.toString(36)}${randomness}`.toUpperCase()
+  return `${String(timestamp.toString(36) ?? '')}${String(randomness ?? '')}`.toUpperCase()
 }

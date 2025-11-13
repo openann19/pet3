@@ -154,8 +154,7 @@ export function useAdoptionProcess(
 export function useSubmitApplication(): UseMutationResult<
   AdoptionApplication,
   unknown,
-  { petId: string; answers: Record<string, unknown> },
-  unknown
+  { petId: string; answers: Record<string, unknown> }
 > {
   const queryClient = useQueryClient()
 
@@ -182,8 +181,7 @@ export function useSubmitApplication(): UseMutationResult<
 export function useUpdateApplicationStatus(): UseMutationResult<
   { success: boolean },
   unknown,
-  { applicationId: string; status: string; notes?: string },
-  unknown
+  { applicationId: string; status: string; notes?: string }
 > {
   const queryClient = useQueryClient()
 
@@ -206,8 +204,7 @@ export function useUpdateApplicationStatus(): UseMutationResult<
 export function useScheduleMeeting(): UseMutationResult<
   { success: boolean; meetingId: string },
   unknown,
-  { applicationId: string; dateTime: string; location: string },
-  unknown
+  { applicationId: string; dateTime: string; location: string }
 > {
   const queryClient = useQueryClient()
 

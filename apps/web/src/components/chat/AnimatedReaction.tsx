@@ -24,7 +24,7 @@ export function AnimatedReaction({
   const animatedStyle = rawAnimatedStyle as AnimatedStyle;
 
   const handleAnimationComplete = (): void => {
-    if (onAnimationComplete) {
+    if (isTruthy(onAnimationComplete)) {
       setTimeout(() => {
         onAnimationComplete();
       }, 800);

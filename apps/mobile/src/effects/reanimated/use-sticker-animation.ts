@@ -190,7 +190,7 @@ export function useStickerAnimation(
     return {
       transform: [
         { scale: scale.value },
-        { rotate: `${rotation.value}deg` },
+        { rotate: `${String(rotation.value ?? '')}deg` },
         { translateX: translateX.value },
         { translateY: translateY.value },
       ],

@@ -23,6 +23,40 @@ const logger = createLogger('LostFoundView');
 type ViewMode = 'browse' | 'mine';
 type FilterTab = 'all' | 'active' | 'found' | 'favorites';
 
+// Animated alert card component
+function AnimatedAlertCard({
+  alert,
+  index,
+  onSelect,
+  onReportSighting,
+  isFavorited,
+  onToggleFavorite,
+}: {
+  alert: LostAlert
+  index: number
+  onSelect: (alert: LostAlert) => void
+  onReportSighting: (alert: LostAlert) => void
+  isFavorited: boolean
+  onToggleFavorite: (alertId: string) => void
+}) {
+  const cardEntry = useEntryAnimation({ 
+    initialY: 20, 
+    delay: index * 50 
+  })
+
+  return (
+    <AnimatedView style={cardEntry.animatedStyle}>
+      <LostAlertCard
+        alert={alert}
+        onSelect={onSelect}
+        onReportSighting={onReportSighting}
+        isFavorited={isFavorited}
+        onToggleFavorite={onToggleFavorite}
+      />
+    </AnimatedView>
+  )
+}
+
 export default function LostFoundView() {
   const { t } = useApp();
   const [viewMode, setViewMode] = useState<ViewMode>('browse');
@@ -39,7 +73,7 @@ export default function LostFoundView() {
 
   const getUserLocation = useCallback(async () => {
     try {
-      if (navigator.geolocation) {
+      if (isTruthy(navigator.geolocation)) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             setUserLocation({
@@ -160,6 +194,14 @@ export default function LostFoundView() {
 
   const activeCount = alerts.filter((a) => a.status === 'active').length;
   const foundCount = alerts.filter((a) => a.status === 'found').length;
+
+  // Animation hooks - must be at top level
+  const filteredAlertsList = filteredAlerts()
+  const isEmpty = filteredAlertsList.length === 0
+  const emptyPresence = useAnimatePresence({ isVisible: isEmpty })
+  const gridPresence = useAnimatePresence({ isVisible: !isEmpty })
+  const emptyEntry = useEntryAnimation({ initialY: 20 })
+  const gridEntry = useEntryAnimation({ initialOpacity: 0 })
 
   return (
     <PageTransitionWrapper key="lost-found-view" direction="up">

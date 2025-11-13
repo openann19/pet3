@@ -118,13 +118,13 @@ export default function StoryFilterSelector({
                 key={category.id}
                 variant={selectedCategory === category.id ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleCategorySelect(category.id)}
+                onClick={() => { handleCategorySelect(category.id); }}
                 className={cn(
                   'whitespace-nowrap',
                   selectedCategory === category.id && 'bg-linear-to-r from-primary to-accent'
                 )}
                 aria-pressed={selectedCategory === category.id}
-                aria-label={`Filter category: ${category.name}`}
+                aria-label={`Filter category: ${String(category.name ?? '')}`}
               >
                 <span className="mr-1.5" aria-hidden="true">
                   {category.icon}
@@ -172,8 +172,8 @@ export default function StoryFilterSelector({
                   duration: 0.2,
                   delay: index * 0.03,
                 }}
-                onClick={() => handleFilterSelect(filter)}
-                aria-label={`Select filter: ${filter.name}`}
+                onClick={() => { handleFilterSelect(filter); }}
+                aria-label={`Select filter: ${String(filter.name ?? '')}`}
                 aria-pressed={selectedFilter.id === filter.id}
                 className={cn(
                   'relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 bg-muted',
@@ -188,7 +188,7 @@ export default function StoryFilterSelector({
                   <img
                     ref={handleImageRef(filter.id)}
                     src={mediaPreview}
-                    alt={`Preview with ${filter.name} filter`}
+                    alt={`Preview with ${String(filter.name ?? '')} filter`}
                     className="w-full h-full object-cover"
                     style={{ filter: filter.cssFilter }}
                     loading="lazy"

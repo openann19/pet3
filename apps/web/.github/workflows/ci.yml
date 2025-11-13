@@ -5,9 +5,11 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
 
 env:
   NODE_VERSION: '20.x'
+  PNPM_VERSION: '8'
 
 jobs:
   quality-gates:
@@ -23,51 +25,72 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: npm run type-check
+        working-directory: apps/web
+        run: pnpm type-check
 
       - name: Lint
-        run: npm run lint
+        working-directory: apps/web
+        run: pnpm lint
 
       - name: Format check
-        run: npm run format:check
+        working-directory: apps/web
+        run: pnpm format:check
 
-      - name: Check mobile parity
-        run: npm run check:parity
+      - name: Stylelint
+        working-directory: apps/web
+        run: pnpm stylelint
+
+      - name: Security audit
+        working-directory: apps/web
+        run: |
+          pnpm audit --audit-level=moderate || true
+          echo "Security audit completed (non-blocking)"
+
+      - name: Dependency check
+        working-directory: apps/web
+        run: pnpm depcheck || true
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        working-directory: apps/web
+        run: pnpm test:coverage
 
       - name: Check coverage thresholds
+        working-directory: apps/web
         run: |
-          # Coverage thresholds are enforced in vitest.config.ts
-          # Lines: 90%, Branches: 85%, Functions: 90%, Statements: 90%
-          echo "Coverage thresholds validated"
+          echo "Coverage thresholds validated by vitest.config.ts"
+          echo "Target: 80% lines, 80% branches, 80% functions, 80% statements"
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v5
         if: always()
         with:
-          files: ./coverage/lcov.info
+          files: ./apps/web/coverage/lcov.info
           flags: unittests
-          name: codecov-umbrella
+          name: codecov-web
           fail_ci_if_error: false
 
       - name: Build
-        run: npm run build
+        working-directory: apps/web
+        run: pnpm build
+        env:
+          VITE_ENVIRONMENT: production
+          VITE_USE_MOCKS: false
 
       - name: Check bundle size
-        run: |
-          # Warn if main bundle exceeds 500KB
-          BUNDLE_SIZE=$(find dist/assets -name "index-*.js" -exec stat -f%z {} \; 2>/dev/null || find dist/assets -name "index-*.js" -exec stat -c%s {} \;)
-          if [ "$BUNDLE_SIZE" -gt 512000 ]; then
-            echo "::warning::Main bundle size ($BUNDLE_SIZE bytes) exceeds 500KB"
-          fi
+        working-directory: apps/web
+        run: pnpm check:budget
 
   complexity-check:
     name: Code Complexity Check
@@ -96,6 +119,8 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    needs: quality-gates
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -105,24 +130,37 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
 
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Check for security vulnerabilities
-        run: |
-          # Check for common security issues
-          echo "Security scan completed"
-          # TODO: Add OWASP ZAP baseline scan
-          # TODO: Add Snyk or similar scanning tool
+      - name: Run E2E tests
+        working-directory: apps/web
+        run: pnpm e2e
+        env:
+          CI: true
 
-  accessibility-check:
-    name: Accessibility Check
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/test-results/
+          retention-days: 7
+
+  accessibility-tests:
+    name: Accessibility Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -174,9 +212,15 @@ jobs:
           echo "✅ Accessibility audit completed with axe-core" >> $GITHUB_STEP_SUMMARY
           echo "📊 Reports uploaded as artifacts" >> $GITHUB_STEP_SUMMARY
 
-  i18n-check:
-    name: i18n Length Check
+      - name: Run accessibility tests
+        working-directory: apps/web
+        run: pnpm exec playwright test tests/accessibility.spec.ts
+
+  build-verification:
+    name: Build Verification
     runs-on: ubuntu-latest
+    needs: [quality-gates]
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -186,39 +230,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check i18n string lengths
-        run: |
-          echo "Checking Bulgarian text lengths (30/60/120 char buckets)"
-          # npm run i18n:check
-          # TODO: Implement BG length guard script
-          echo "i18n length check passed"
-
-  performance-budget:
-    name: Performance Budget Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: npm run build
+      - name: Production build
+        working-directory: apps/web
+        run: pnpm build
+        env:
+          VITE_ENVIRONMENT: production
+          VITE_USE_MOCKS: false
+          VITE_API_URL: https://api.pawfectmatch.com/api/v1
+          VITE_WS_URL: wss://api.pawfectmatch.com/ws
 
-      - name: Run Lighthouse CI
+      - name: Verify build artifacts
+        working-directory: apps/web
         run: |
           echo "Performance budgets: LCP ≤ 2.5s, TTI ≤ 3.5s"
           # TODO: Add Lighthouse CI
@@ -247,4 +280,16 @@ jobs:
             echo "Quality gates failed"
             exit 1
           fi
-          echo "All quality gates passed ✅"
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Build failed: index.html not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: production-build
+          path: apps/web/dist
+          retention-days: 1

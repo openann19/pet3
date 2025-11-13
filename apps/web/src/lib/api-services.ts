@@ -69,7 +69,7 @@ export const chatAPI = {
   async getMessages(chatRoomId: string, cursor?: string) {
     const query = cursor ? `?cursor=${cursor}` : '';
     return validatedAPI.get(
-      `/api/v1/chat/${chatRoomId}/messages${query}`,
+      `/api/v1/chat/${String(chatRoomId ?? '')}/messages${String(query ?? '')}`,
       paginatedResponseSchema(messageSchema)
     );
   },
@@ -83,7 +83,7 @@ export const chatAPI = {
 
   async markAsRead(chatRoomId: string, messageId: string) {
     return validatedAPI.patch(
-      `/api/v1/chat/${chatRoomId}/messages/${messageId}/read`,
+      `/api/v1/chat/${String(chatRoomId ?? '')}/messages/${String(messageId ?? '')}/read`,
       z.object({ success: z.boolean() }),
       {}
     );
@@ -124,14 +124,14 @@ export const notificationAPI = {
   async list(params?: { read?: boolean; type?: string }) {
     const query = new URLSearchParams(params as Record<string, string>);
     return validatedAPI.get(
-      `/api/v1/notifications?${query}`,
+      `/api/v1/notifications?${String(query ?? '')}`,
       paginatedResponseSchema(notificationSchema)
     );
   },
 
   async markAsRead(notificationId: string) {
     return validatedAPI.patch(
-      `/api/v1/notifications/${notificationId}/read`,
+      `/api/v1/notifications/${String(notificationId ?? '')}/read`,
       z.object({ success: z.boolean() }),
       {}
     );
@@ -150,7 +150,7 @@ export const adoptionAPI = {
   async listProfiles(filters?: Record<string, unknown>) {
     const query = new URLSearchParams(filters as Record<string, string>);
     return validatedAPI.get(
-      `/api/v1/adoption?${query}`,
+      `/api/v1/adoption?${String(query ?? '')}`,
       paginatedResponseSchema(adoptionProfileSchema)
     );
   },
@@ -175,7 +175,7 @@ export const communityAPI = {
   async getFeed(options?: { mode?: string; lat?: number; lng?: number }) {
     const query = new URLSearchParams(options as Record<string, string>);
     return validatedAPI.get(
-      `/api/v1/community/feed?${query}`,
+      `/api/v1/community/feed?${String(query ?? '')}`,
       paginatedResponseSchema(communityPostSchema)
     );
   },
@@ -204,7 +204,7 @@ export const communityAPI = {
 
   async reactToPost(postId: string, emoji: string) {
     return validatedAPI.post(
-      `/api/v1/community/posts/${postId}/reactions`,
+      `/api/v1/community/posts/${String(postId ?? '')}/reactions`,
       z.object({ success: z.boolean() }),
       { emoji }
     );
@@ -226,7 +226,7 @@ export const mediaAPI = {
 
   async deletePhoto(photoId: string) {
     return validatedAPI.delete(
-      `/api/v1/media/photos/${photoId}`,
+      `/api/v1/media/photos/${String(photoId ?? '')}`,
       z.object({ success: z.boolean() })
     );
   },
@@ -262,6 +262,35 @@ export const kycAPI = {
 };
 
 export const adminAPI = {
+  async getChatReports(filters?: { status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed'; limit?: number; cursor?: string }) {
+    const params = new URLSearchParams()
+    if (filters?.status) params.set('status', filters.status)
+    if (filters?.limit) params.set('limit', String(filters.limit))
+    if (filters?.cursor) params.set('cursor', filters.cursor)
+
+    const query = params.toString()
+
+    return validatedAPI.get(
+      `/api/v1/admin/chat/reports${query ? `?${query}` : ''}`,
+      z.object({
+        items: z.array(messageReportSchema),
+        total: z.number(),
+        nextCursor: z.string().optional(),
+      })
+    )
+  },
+
+  async reviewChatReport(reportId: string, payload: { action: 'warning' | 'mute' | 'suspend' | 'no_action'; reviewerId: string; notes?: string }) {
+    return validatedAPI.post(
+      `/api/v1/admin/chat/reports/${String(reportId ?? '')}/review`,
+      z.object({
+        report: messageReportSchema,
+        success: z.boolean(),
+      }),
+      payload
+    )
+  },
+
   async getModerationQueue() {
     return validatedAPI.get(
       '/api/v1/admin/moderation/queue',
@@ -275,7 +304,7 @@ export const adminAPI = {
 
   async moderatePhoto(photoId: string, action: string, reason?: string) {
     return validatedAPI.post(
-      `/api/v1/admin/moderation/photos/${photoId}`,
+      `/api/v1/admin/moderation/photos/${String(photoId ?? '')}`,
       z.object({ success: z.boolean() }),
       { action, reason }
     );
@@ -300,7 +329,7 @@ export const adminAPI = {
 
   async getAnalytics(timeRange: string) {
     return validatedAPI.get(
-      `/api/v1/admin/analytics?range=${timeRange}`,
+      `/api/v1/admin/analytics?range=${String(timeRange ?? '')}`,
       z.object({
         users: z.number(),
         pets: z.number(),

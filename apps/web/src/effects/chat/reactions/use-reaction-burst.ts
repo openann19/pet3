@@ -19,7 +19,7 @@ import {
   withSpring,
   withTiming,
   type SharedValue,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { triggerHaptic } from '../core/haptic-manager';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { logEffectEnd, logEffectStart } from '../core/telemetry';
@@ -241,7 +241,7 @@ export function useReactionBurst(options: UseReactionBurstOptions = {}): UseReac
     }
 
     // Call onComplete
-    if (onComplete) {
+    if (isTruthy(onComplete)) {
       setTimeout(() => {
         onComplete();
       }, burstDuration);

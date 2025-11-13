@@ -105,10 +105,69 @@ class Analytics {
         logger.error('Failed to clear analytics data', errorObj);
       }
     }
+
+    // Queue event for batch sending
+    this.eventQueue.push({
+      eventName,
+      properties,
+      timestamp: Date.now()
+    })
+
+    // Flush immediately if queue is getting large
+    if (this.eventQueue.length >= 10) {
+      this.flushEvents().catch((error) => {
+        logger.error('Failed to flush analytics events', error instanceof Error ? error : new Error(String(error)))
+      })
+    }
+  }
+
+  /**
+   * Flush queued events to backend
+   */
+  private async flushEvents(): Promise<void> {
+    if (this.eventQueue.length === 0) return
+
+    const events = [...this.eventQueue]
+    this.eventQueue = []
+
+    try {
+      // Send events to backend analytics endpoint
+      await APIClient.post('/analytics/events', {
+        events,
+        timestamp: Date.now()
+      })
+      logger.debug('Analytics events flushed', { count: events.length })
+    } catch (error) {
+      // Re-queue events on failure (up to a limit)
+      if (this.eventQueue.length < 100) {
+        this.eventQueue.unshift(...events)
+      }
+      logger.error('Failed to send analytics events', error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  /**
+   * Flush events immediately (called on page unload)
+   */
+  async flush(): Promise<void> {
+    if (this.flushInterval !== null && typeof window !== 'undefined') {
+      window.clearInterval(this.flushInterval)
+      this.flushInterval = null
+    }
+    await this.flushEvents()
   }
 }
 
 export const analytics = new Analytics();
+
+// Flush events on page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    analytics.flush().catch(() => {
+      // Ignore errors during unload
+    })
+  })
+}
 
 declare global {
   interface Window {

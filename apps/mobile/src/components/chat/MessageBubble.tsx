@@ -11,16 +11,9 @@
  */
 
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { GestureDetector } from 'react-native-gesture-handler'
-import Animated, { Layout, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated'
-import { useReceiveAirCushion } from '../../effects/chat/bubbles/use-receive-air-cushion'
-import { useSendWarp } from '../../effects/chat/bubbles/use-send-warp'
-import { useSwipeReplyElastic } from '../../effects/chat/gestures/use-swipe-reply-elastic'
-import { useReactionBurst } from '../../effects/chat/reactions/use-reaction-burst'
-import { RibbonFX } from '../../effects/chat/shaders'
-import { AdditiveBloom } from '../../effects/chat/shaders/additive-bloom'
-import { useStatusTicks } from '../../effects/chat/status/use-status-ticks'
+import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import Animated, { Layout } from 'react-native-reanimated'
+import { SwipeToReply, DeliveryTicks, ShimmerOverlay } from '@/effects/chat'
 import { createLogger } from '../../utils/logger'
 
 const logger = createLogger('MessageBubble')
@@ -46,23 +39,18 @@ export interface MessageBubbleProps {
   message: Message
   currentUserId: string
   onReact?: (messageId: string) => void
-  onReply?: (messageId: string) => void
   onLongPress?: (messageId: string) => void
-
-  bubbleWidth?: number // Width of the bubble for positioning effects
-  bubbleHeight?: number // Height of the bubble for positioning effects
 }
 
 /**
  * MessageBubble component
+ * Refactored to use ultra-streamlined all-in-chat-effects
  */
 export function MessageBubble({
   message,
   currentUserId,
   onReact,
   onLongPress,
-  bubbleWidth: propBubbleWidth,
-  bubbleHeight: propBubbleHeight,
 }: MessageBubbleProps): React.ReactElement {
   const isOwn = message.senderId === currentUserId
 
@@ -164,63 +152,29 @@ export function MessageBubble({
     onLongPress?.(message.id)
   }
 
-  // Status tick animated styles
-  const tick1Style = useAnimatedStyle(() => ({
-    opacity: statusTicks.tick1Fill.value,
-  }))
-
-  const tick2Style = useAnimatedStyle(() => ({
-    opacity: statusTicks.tick2Fill.value,
-  }))
+  const handleLongPress = (): void => {
+    onLongPress?.(message.id)
+    onReact?.(message.id)
+  }
 
   return (
-    <GestureDetector gesture={swipeReply.gesture}>
+    <SwipeToReply onReply={handleReply}>
       <Animated.View
         style={[
           styles.container,
           isOwn ? styles.ownContainer : styles.otherContainer,
-          isOwn ? sendWarp.animatedStyle : receiveAir.animatedStyle,
         ]}
         layout={Layout.springify()}
       >
-        {/* AdditiveBloom glow trail for send effect */}
-        {isOwn && (
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <AdditiveBloom
-              width={bubbleWidth}
-              height={bubbleHeight}
-              centerX={sendWarp.bloomCenterX}
-              centerY={sendWarp.bloomCenterY}
-              radius={sendWarp.bloomRadius}
-              intensity={sendWarp.bloomIntensity}
-              color={[0.3, 0.75, 1]}
-            />
-          </View>
-        )}
-
-        {/* RibbonFX for swipe-to-reply */}
-        {showRibbon && (
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <RibbonFX
-              width={bubbleWidth}
-              height={bubbleHeight}
-              p0={swipeReply.ribbonP0}
-              p1={swipeReply.ribbonP1}
-              thickness={swipeReply.ribbonThickness}
-              glow={swipeReply.ribbonGlow}
-              progress={swipeReply.ribbonProgress}
-              color={[0.2, 0.8, 1.0]}
-              alpha={swipeReply.ribbonAlpha}
-            />
-          </View>
-        )}
-
         <TouchableOpacity
           onLongPress={handleLongPress}
           onLayout={handleLayout}
           activeOpacity={0.8}
           style={[styles.bubble, isOwn ? styles.ownBubble : styles.otherBubble]}
         >
+          {/* ShimmerOverlay for loading state */}
+          {isLoading && <ShimmerOverlay width={bubbleWidth} />}
+          
           <Text style={[styles.text, isOwn ? styles.ownText : styles.otherText]}>
             {message.content}
           </Text>
@@ -240,7 +194,7 @@ export function MessageBubble({
           )}
         </TouchableOpacity>
       </Animated.View>
-    </GestureDetector>
+    </SwipeToReply>
   )
 }
 
@@ -276,17 +230,5 @@ const styles = StyleSheet.create({
   },
   otherText: {
     color: '#111827',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    justifyContent: 'flex-end',
-  },
-  tick: {
-    marginLeft: 4,
-  },
-  tickText: {
-    fontSize: 12,
   },
 })

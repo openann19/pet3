@@ -1,4 +1,5 @@
 import type { Location } from './types';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 export interface DeepLinkParams {
   type: 'match' | 'chat' | 'place' | 'lost-found';
@@ -17,7 +18,7 @@ export function generateAppDeepLink(params: DeepLinkParams): string {
     }),
   });
 
-  return `${baseUrl}?${queryParams.toString()}`;
+  return `${String(baseUrl ?? '')}?${String(queryParams.toString() ?? '')}`;
 }
 
 export function generateMapDeepLink(
@@ -32,9 +33,9 @@ export function generateMapDeepLink(
   const labelParam = label ? encodeURIComponent(label) : '';
 
   return {
-    appleMaps: `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,
-    googleMaps: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}${labelParam ? `&destination_place_id=${labelParam}` : ''}`,
-    universal: `geo:${lat},${lng}${labelParam ? `?q=${labelParam}` : ''}`,
+    appleMaps: `maps://maps.apple.com/?daddr=${String(lat ?? '')},${String(lng ?? '')}&dirflg=d`,
+    googleMaps: `https://www.google.com/maps/dir/?api=1&destination=${String(lat ?? '')},${String(lng ?? '')}${String(labelParam ? `&destination_place_id=${String(labelParam ?? '')}` : '' ?? '')}`,
+    universal: `geo:${String(lat ?? '')},${String(lng ?? '')}${String(labelParam ? `?q=${String(labelParam ?? '')}` : '' ?? '')}`,
   };
 }
 
@@ -45,7 +46,7 @@ export function openInMaps(location: Location, label?: string): void {
   const isIOS = /iphone|ipad|ipod/.test(userAgent);
   const isAndroid = userAgent.includes('android');
 
-  if (isIOS) {
+  if (isTruthy(isIOS)) {
     const link = document.createElement('a');
     link.href = links.appleMaps;
     link.click();
@@ -56,7 +57,7 @@ export function openInMaps(location: Location, label?: string): void {
       universalLink.target = '_blank';
       universalLink.click();
     }, 1000);
-  } else if (isAndroid) {
+  } else if (isTruthy(isAndroid)) {
     const link = document.createElement('a');
     link.href = links.googleMaps;
     link.target = '_blank';

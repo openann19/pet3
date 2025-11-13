@@ -5,7 +5,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import React from 'react';
 import type { ReactNode } from 'react';
 import { createLogger } from '@/lib/logger';
@@ -48,8 +48,8 @@ export function EnhancedCard({ children, className = '', delay = 0 }: EnhancedCa
   }));
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <AnimatedView
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={className}
@@ -110,8 +110,8 @@ export function FloatingActionButton({
   }));
 
   return (
-    <MotionView
-      animatedStyle={animatedStyle}
+    <AnimatedView
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -178,13 +178,13 @@ export function PulseIndicator({ color = 'bg-primary', size = 'md' }: PulseIndic
 
   return (
     <div className="relative inline-flex">
-      <MotionView
-        animatedStyle={animatedStyle1}
-        className={`${sizeClasses[size]} ${color} rounded-full`}
+      <AnimatedView
+        style={animatedStyle1}
+        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={animatedStyle2}
-        className={`absolute inset-0 ${color} rounded-full opacity-30`}
+      <AnimatedView
+        style={animatedStyle2}
+        className={`absolute inset-0 ${String(color ?? '')} rounded-full opacity-30`}
       />
     </div>
   );
@@ -239,12 +239,11 @@ export function Shimmer({ children, className = '' }: ShimmerProps) {
   }));
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden ${String(className ?? '')}`}>
       {children}
-      <MotionView
-        animatedStyle={animatedStyle}
+      <AnimatedView
+        style={[animatedStyle, { pointerEvents: 'none' }]}
         className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
-        style={{ pointerEvents: 'none' }}
       />
     </div>
   );
@@ -338,17 +337,17 @@ export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsPr
 
   return (
     <div className="flex items-center justify-center gap-1.5">
-      <MotionView
-        animatedStyle={dot1Style}
-        className={`${sizeClasses[size]} ${color} rounded-full`}
+      <AnimatedView
+        style={dot1Style}
+        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={dot2Style}
-        className={`${sizeClasses[size]} ${color} rounded-full`}
+      <AnimatedView
+        style={dot2Style}
+        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
-      <MotionView
-        animatedStyle={dot3Style}
-        className={`${sizeClasses[size]} ${color} rounded-full`}
+      <AnimatedView
+        style={dot3Style}
+        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
       />
     </div>
   );
@@ -380,13 +379,12 @@ export function GlowingBorder({
   }));
 
   return (
-    <div className={`relative ${className}`}>
-      <MotionView
-        animatedStyle={animatedStyle}
+    <div className={`relative ${String(className ?? '')}`}>
+      <AnimatedView
+        style={[animatedStyle, { filter: 'blur(4px)' }]}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`absolute -inset-[1px] bg-linear-to-r from-${glowColor} via-accent to-${glowColor} rounded-inherit`}
-        style={{ filter: 'blur(4px)' }}
+        className={`absolute -inset-[1px] bg-linear-to-r from-${String(glowColor ?? '')} via-accent to-${String(glowColor ?? '')} rounded-inherit`}
       />
       <div className="relative bg-card rounded-inherit">{children}</div>
     </div>

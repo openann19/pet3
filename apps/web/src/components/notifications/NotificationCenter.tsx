@@ -138,6 +138,33 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     { value: 'story', label: 'Stories', icon: Camera },
   ];
 
+  // Animation hooks
+  const bellRotate = useSharedValue(0)
+  const bellScale = useSharedValue(1)
+  const bellStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${bellRotate.value}deg` },
+      { scale: bellScale.value },
+    ],
+  }))
+
+  useEffect(() => {
+    bellRotate.value = withSequence(
+      withTiming(-10, { duration: 125 }),
+      withTiming(10, { duration: 125 }),
+      withTiming(-10, { duration: 125 }),
+      withTiming(0, { duration: 125 })
+    )
+    bellScale.value = withSequence(
+      withTiming(1.1, { duration: 250 }),
+      withTiming(1, { duration: 250 })
+    )
+  }, [bellRotate, bellScale])
+
+  const isEmpty = filteredNotifications.length === 0
+  const emptyPresence = useAnimatePresence({ isVisible: isEmpty })
+  const listPresence = useAnimatePresence({ isVisible: !isEmpty })
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-xl p-0 overflow-hidden">
@@ -156,7 +183,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                   }}
                 >
                   <BellRinging size={28} weight="fill" className="text-primary" />
-                </MotionView>
+                </AnimatedView>
                 <div>
                   <SheetTitle className="text-xl">Notifications</SheetTitle>
                   {unreadCount > 0 && (
@@ -305,11 +332,11 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                           getIcon={getNotificationIcon}
                           getPriorityStyles={getPriorityStyles}
                         />
-                      </MotionView>
-                    ))}
-                  </div>
-                )}
-              </Presence>
+                      </AnimatedView>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>
@@ -329,6 +356,63 @@ interface NotificationItemProps {
   getPriorityStyles: (priority: AppNotification['priority']) => string;
 }
 
+// Empty state component
+function EmptyState({ 
+  filter, 
+  presence 
+}: { 
+  filter: 'all' | 'unread'
+  presence: ReturnType<typeof useAnimatePresence>
+}) {
+  const emptyEntry = useEntryAnimation({ initialScale: 0.9 })
+  const bellRotate = useSharedValue(0)
+  const bellScale = useSharedValue(1)
+  const bellStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${bellRotate.value}deg` },
+      { scale: bellScale.value },
+    ],
+  }))
+
+  useEffect(() => {
+    bellRotate.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 500 }),
+        withTiming(10, { duration: 500 }),
+        withTiming(-10, { duration: 500 }),
+        withTiming(0, { duration: 500 })
+      ),
+      -1,
+      false
+    )
+    bellScale.value = withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 1000 }),
+        withTiming(1, { duration: 1000 })
+      ),
+      -1,
+      true
+    )
+  }, [bellRotate, bellScale])
+
+  return (
+    <AnimatedView
+      className="flex flex-col items-center justify-center py-16 px-4"
+      style={[presence.animatedStyle, emptyEntry.animatedStyle]}
+    >
+      <AnimatedView style={bellStyle}>
+        <Bell size={64} weight="thin" className="text-muted-foreground/40" />
+      </AnimatedView>
+      <p className="text-muted-foreground mt-4 text-center">
+        {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+      </p>
+      <p className="text-sm text-muted-foreground/60 mt-1 text-center">
+        We'll notify you when something important happens
+      </p>
+    </AnimatedView>
+  )
+}
+
 function NotificationItem({
   notification,
   onMarkAsRead,
@@ -339,19 +423,25 @@ function NotificationItem({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <MotionView
+    <AnimatedView
       className={cn(
         'relative rounded-xl overflow-hidden transition-all',
         !notification.read && 'bg-primary/5',
         getPriorityStyles(notification.priority)
       )}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      whileHover={{ scale: 1.01 }}
+      style={itemHover.animatedStyle}
+      onMouseEnter={() => {
+        setIsHovered(true)
+        itemHover.handleEnter()
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false)
+        itemHover.handleLeave()
+      }}
     >
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <MotionView
+          <AnimatedView
             className={cn(
               'shrink-0 w-12 h-12 rounded-xl flex items-center justify-center',
               notification.priority === 'urgent' && 'bg-destructive/10',
@@ -368,7 +458,7 @@ function NotificationItem({
             }}
           >
             {getIcon(notification.type, notification.priority)}
-          </MotionView>
+          </AnimatedView>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -394,11 +484,7 @@ function NotificationItem({
               </div>
 
               {!notification.read && (
-                <MotionView
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="shrink-0 w-2 h-2 rounded-full bg-primary mt-1"
-                />
+                <UnreadDot />
               )}
             </div>
 
@@ -478,7 +564,7 @@ function NotificationItem({
       </div>
 
       {notification.priority === 'urgent' && !notification.read && (
-        <MotionView
+        <AnimatedView
           className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-destructive via-accent to-destructive"
           animate={{
             opacity: [0.5, 1, 0.5],

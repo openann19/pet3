@@ -9,7 +9,7 @@ import {
   withSequence,
   withTiming,
   Easing,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import { springConfigs, timingConfigs } from './transitions';
 import type { AnimatedStyle } from './animated-view';
 
@@ -190,7 +190,7 @@ export function useStickerAnimation(
     return {
       transform: [
         { scale: scale.value },
-        { rotate: `${rotation.value}deg` },
+        { rotate: `${String(rotation.value ?? '')}deg` },
         { translateX: translateX.value },
         { translateY: translateY.value },
       ],

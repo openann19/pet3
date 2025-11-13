@@ -26,7 +26,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 interface CallInterfaceProps {
@@ -147,12 +147,12 @@ export default function CallInterface({
     <AnimatedView
       style={containerStyle}
       className={`fixed inset-0 z-50 flex items-center justify-center ${
-        isFullscreen ? 'bg-black' : 'bg-black/90 backdrop-blur-xl p-4'
+        String(isFullscreen ? 'bg-black' : 'bg-black/90 backdrop-blur-xl p-4' ?? '')
       }`}
     >
       <div
         className={`relative w-full ${
-          isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]'
+          String(isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]' ?? '')
         } bg-gradient-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
       >
         {isVideoCall && session.remoteParticipant.isVideoEnabled ? (
@@ -366,7 +366,7 @@ function CallInfoView({
   const statusOpacity = useSharedValue(1);
 
   useEffect(() => {
-    if (isActive) {
+    if (isTruthy(isActive)) {
       statusScale.value = withRepeat(
         withSequence(withTiming(1.2, { duration: 1000 }), withTiming(1, { duration: 1000 })),
         -1,
@@ -497,9 +497,9 @@ function CallControlsView({
             }}
             size="icon"
             className={`w-14 h-14 rounded-full shadow-xl ${
-              isMuted
-                ? 'bg-red-500 hover:bg-red-600'
-                : 'glass-strong backdrop-blur-2xl hover:bg-white/20'
+              String(isMuted
+                                ? 'bg-red-500 hover:bg-red-600'
+                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
             }`}
           >
             {isMuted ? (
@@ -519,9 +519,9 @@ function CallControlsView({
               }}
               size="icon"
               className={`w-14 h-14 rounded-full shadow-xl ${
-                !isVideoEnabled
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'glass-strong backdrop-blur-2xl hover:bg-white/20'
+                String(!isVideoEnabled
+                                    ? 'bg-red-500 hover:bg-red-600'
+                                    : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
               }`}
             >
               {isVideoEnabled ? (
@@ -554,9 +554,9 @@ function CallControlsView({
             }}
             size="icon"
             className={`w-14 h-14 rounded-full shadow-xl ${
-              !isSpeakerOn
-                ? 'bg-yellow-500 hover:bg-yellow-600'
-                : 'glass-strong backdrop-blur-2xl hover:bg-white/20'
+              String(!isSpeakerOn
+                                ? 'bg-yellow-500 hover:bg-yellow-600'
+                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
             }`}
           >
             {isSpeakerOn ? (

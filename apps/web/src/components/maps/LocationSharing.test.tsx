@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LocationBubble, LocationPicker } from './LocationSharing';
 import type { Location } from '@/lib/maps/types';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }: { children: React.ReactNode }) => (
@@ -36,7 +37,7 @@ describe('LocationSharing', () => {
       const handleTap = vi.fn();
       const { container } = render(<LocationBubble location={mockLocation} onTap={handleTap} />);
       const bubble = container.querySelector('.cursor-pointer');
-      if (bubble) {
+      if (isTruthy(bubble)) {
         (bubble as HTMLElement).click();
       }
       expect(handleTap).toHaveBeenCalled();

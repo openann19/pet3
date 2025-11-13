@@ -15,6 +15,20 @@ interface SignupCredentials extends LoginCredentials {
   displayName: string;
 }
 
+const logger = createLogger('AuthService')
+
+class AuthError extends Error {
+  code: string
+  timestamp: string
+
+  constructor(code: string, message: string) {
+    super(message)
+    this.name = 'AuthError'
+    this.code = code
+    this.timestamp = new Date().toISOString()
+  }
+}
+
 export class AuthService {
   private currentUser: User | null = null;
   private accessToken: string | null = null;
@@ -143,6 +157,16 @@ export class AuthService {
           timestamp: new Date().toISOString(),
         };
       }
+
+      // Hash new password
+      const { hash, salt } = await hashPassword(newPassword)
+
+      // Update user password
+      await this.updateUser({
+        passwordHash: hash,
+        passwordSalt: salt
+      })
+      return
     }
 
     // Hash new password

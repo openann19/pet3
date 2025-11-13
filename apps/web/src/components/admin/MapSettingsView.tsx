@@ -392,7 +392,7 @@ export default function MapSettingsView() {
                     max={100}
                     value={mapSettings?.DEFAULT_RADIUS_KM ?? 10}
                     onChange={(e) =>
-                      handleSettingChange('DEFAULT_RADIUS_KM', parseInt(e.target.value))
+                      { handleSettingChange('DEFAULT_RADIUS_KM', parseInt(e.target.value)); }
                     }
                   />
                 </div>
@@ -483,7 +483,7 @@ export default function MapSettingsView() {
                 description="Enable playdate location suggestions and meeting points"
                 checked={mapSettings?.ENABLE_PLAYDATE_PLANNING ?? true}
                 onCheckedChange={(checked: boolean) =>
-                  handleSettingChange('ENABLE_PLAYDATE_PLANNING', checked)
+                  { handleSettingChange('ENABLE_PLAYDATE_PLANNING', checked); }
                 }
               />
 
@@ -505,7 +505,7 @@ export default function MapSettingsView() {
                 description="Automatically center the map on user's location when loaded"
                 checked={mapSettings?.AUTO_CENTER_ON_LOCATION ?? true}
                 onCheckedChange={(checked: boolean) =>
-                  handleSettingChange('AUTO_CENTER_ON_LOCATION', checked)
+                  { handleSettingChange('AUTO_CENTER_ON_LOCATION', checked); }
                 }
               />
 
@@ -623,7 +623,7 @@ export default function MapSettingsView() {
                           placeholder="e.g., dog-park"
                           value={newCategory.id}
                           onChange={(e) =>
-                            setNewCategory((prev) => ({ ...prev, id: e.target.value }))
+                            { setNewCategory((prev) => ({ ...prev, id: e.target.value })); }
                           }
                         />
                       </div>
@@ -633,7 +633,7 @@ export default function MapSettingsView() {
                           placeholder="e.g., Dog Parks"
                           value={newCategory.name}
                           onChange={(e) =>
-                            setNewCategory((prev) => ({ ...prev, name: e.target.value }))
+                            { setNewCategory((prev) => ({ ...prev, name: e.target.value })); }
                           }
                         />
                       </div>
@@ -645,7 +645,7 @@ export default function MapSettingsView() {
                           placeholder="🐕"
                           value={newCategory.icon}
                           onChange={(e) =>
-                            setNewCategory((prev) => ({ ...prev, icon: e.target.value }))
+                            { setNewCategory((prev) => ({ ...prev, icon: e.target.value })); }
                           }
                         />
                       </div>
@@ -656,7 +656,7 @@ export default function MapSettingsView() {
                             type="color"
                             value={newCategory.color}
                             onChange={(e) =>
-                              setNewCategory((prev) => ({ ...prev, color: e.target.value }))
+                              { setNewCategory((prev) => ({ ...prev, color: e.target.value })); }
                             }
                             className="w-20"
                           />
@@ -664,7 +664,7 @@ export default function MapSettingsView() {
                             type="text"
                             value={newCategory.color}
                             onChange={(e) =>
-                              setNewCategory((prev) => ({ ...prev, color: e.target.value }))
+                              { setNewCategory((prev) => ({ ...prev, color: e.target.value })); }
                             }
                             className="flex-1"
                           />
@@ -672,7 +672,7 @@ export default function MapSettingsView() {
                       </div>
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={() => setIsAddingCategory(false)}>
+                      <Button variant="outline" onClick={() => { setIsAddingCategory(false); }}>
                         Cancel
                       </Button>
                       <Button onClick={handleAddCategory}>Add Category</Button>
@@ -693,7 +693,7 @@ export default function MapSettingsView() {
                               <Input
                                 value={editingCategory.name}
                                 onChange={(e) =>
-                                  setEditingCategory({ ...editingCategory, name: e.target.value })
+                                  { setEditingCategory({ ...editingCategory, name: e.target.value }); }
                                 }
                               />
                             </div>
@@ -702,7 +702,7 @@ export default function MapSettingsView() {
                               <Input
                                 value={editingCategory.icon}
                                 onChange={(e) =>
-                                  setEditingCategory({ ...editingCategory, icon: e.target.value })
+                                  { setEditingCategory({ ...editingCategory, icon: e.target.value }); }
                                 }
                               />
                             </div>
@@ -714,7 +714,7 @@ export default function MapSettingsView() {
                                 type="color"
                                 value={editingCategory.color}
                                 onChange={(e) =>
-                                  setEditingCategory({ ...editingCategory, color: e.target.value })
+                                  { setEditingCategory({ ...editingCategory, color: e.target.value }); }
                                 }
                                 className="w-20"
                               />
@@ -722,17 +722,17 @@ export default function MapSettingsView() {
                                 type="text"
                                 value={editingCategory.color}
                                 onChange={(e) =>
-                                  setEditingCategory({ ...editingCategory, color: e.target.value })
+                                  { setEditingCategory({ ...editingCategory, color: e.target.value }); }
                                 }
                                 className="flex-1"
                               />
                             </div>
                           </div>
                           <div className="flex gap-2 justify-end">
-                            <Button variant="outline" onClick={() => setEditingCategory(null)}>
+                            <Button variant="outline" onClick={() => { setEditingCategory(null); }}>
                               Cancel
                             </Button>
-                            <Button onClick={() => handleUpdateCategory(editingCategory)}>
+                            <Button onClick={() => { handleUpdateCategory(editingCategory); }}>
                               Save
                             </Button>
                           </div>
@@ -742,7 +742,7 @@ export default function MapSettingsView() {
                           <div className="flex items-center gap-4">
                             <div
                               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                              style={{ backgroundColor: `${category.color}20` }}
+                              style={{ backgroundColor: `${String(category.color ?? '')}20` }}
                             >
                               {category.icon}
                             </div>

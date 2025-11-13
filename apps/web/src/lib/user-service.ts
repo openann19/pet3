@@ -3,6 +3,7 @@
  *
  * Replaces window.spark.user() functionality.
  * Manages current user authentication and profile.
+ * Uses backend API for user data with local caching.
  */
 
 import { log } from './logger';
@@ -50,7 +51,7 @@ class UserService {
   }
 
   /**
-   * Load user from storage
+   * Load user from backend API or storage (if mocks enabled)
    */
   private async loadUser(): Promise<User | null> {
     try {
@@ -89,11 +90,35 @@ class UserService {
   }
 
   /**
+   * Cache user locally
+   */
+  private async cacheUser(user: User): Promise<void> {
+    try {
+      await storage.set('current-user-id', user.id)
+      await storage.set(`user:${String(user.id ?? '')}`, user)
+      
+      const allUsers = await storage.get<User[]>('all-users') || []
+      const existingIndex = allUsers.findIndex(u => u.id === user.id)
+      
+      if (existingIndex >= 0) {
+        allUsers[existingIndex] = user
+      } else {
+        allUsers.push(user)
+      }
+      
+      await storage.set('all-users', allUsers)
+      await storage.set('is-authenticated', !user.isGuest)
+    } catch (error) {
+      logger.warn('Failed to cache user', { error: error instanceof Error ? error.message : String(error) })
+    }
+  }
+
+  /**
    * Create a guest user object
    */
   private createGuestUser(): User {
     return {
-      id: `guest-${Date.now()}`,
+      id: `guest-${String(Date.now() ?? '')}`,
       login: null,
       avatarUrl: null,
       email: null,
@@ -137,7 +162,7 @@ class UserService {
   }
 
   /**
-   * Get user by ID
+   * Get user by ID from backend API
    */
   async getUserById(userId: string): Promise<User | null> {
     try {

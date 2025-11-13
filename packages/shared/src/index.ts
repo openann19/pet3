@@ -8,6 +8,9 @@ export * from './types/admin'
 export * from './types/optional-with-undef'
 export * from './utils/stories-utils'
 export * from './storage/StorageAdapter'
+export * from './guards'
+
+// Export chat types - these are the canonical chat domain types
 export * from './chat'
 export * from './gdpr'
 

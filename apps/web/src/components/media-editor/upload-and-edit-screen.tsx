@@ -6,7 +6,7 @@ import type { ImageOperation, MediaInput, VideoOperation } from '@/core/types/me
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { createLogger } from '@/lib/logger';
 import React, { useCallback, useState } from 'react';
-import Animated, { useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useSharedValue, withTiming } from '@petspark/motion';
 import { DropZoneWeb } from './drop-zone-web';
 import { MediaEditor } from './MediaEditor';
 import { VideoTrimmer } from './video-trimmer';
@@ -178,7 +178,7 @@ interface VideoPreviewProps {
 }
 
 function VideoPreview({ uri }: VideoPreviewProps): React.ReactElement {
-  if (isWeb) {
+  if (isTruthy(isWeb)) {
     return (
       <video
         src={uri}

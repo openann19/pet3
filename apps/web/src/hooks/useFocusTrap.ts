@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Hook for trapping focus within a container (useful for modals and dialogs)
@@ -48,7 +49,7 @@ export function useFocusTrap(containerRef: RefObject<HTMLElement>, enabled = tru
         return;
       }
 
-      if (event.shiftKey) {
+      if (isTruthy(event.shiftKey)) {
         // Shift + Tab
         if (document.activeElement === firstElement) {
           event.preventDefault();

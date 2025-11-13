@@ -115,11 +115,11 @@ export function LostFoundManagement() {
                 {alerts.map((alert) => (
                   <button
                     key={alert.id}
-                    onClick={() => setSelectedAlert(alert)}
+                    onClick={() => { setSelectedAlert(alert); }}
                     className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      selectedAlert?.id === alert.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                      String(selectedAlert?.id === alert.id
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border hover:border-primary/50' ?? '')
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -133,7 +133,7 @@ export function LostFoundManagement() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold">{alert.petSummary.name}</h4>
-                          <div className={`w-2 h-2 rounded-full ${getStatusColor(alert.status)}`} />
+                          <div className={`w-2 h-2 rounded-full ${String(getStatusColor(alert.status) ?? '')}`} />
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {alert.petSummary.species} • {alert.petSummary.breed}
@@ -188,7 +188,7 @@ export function LostFoundManagement() {
                         <img
                           key={index}
                           src={photo}
-                          alt={`${selectedAlert.petSummary.name} ${index + 1}`}
+                          alt={`${String(selectedAlert.petSummary.name ?? '')} ${String(index + 1 ?? '')}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}

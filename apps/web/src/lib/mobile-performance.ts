@@ -305,12 +305,12 @@ export class PerformanceMonitor {
     return `
 Performance Report
 ==================
-Cold Start: ${metrics.coldStartTime !== null ? `${metrics.coldStartTime}ms` : 'Not measured'}
-Average FPS: ${metrics.averageFPS !== null ? metrics.averageFPS : 'Not measured'}
-95th Percentile Frame Time: ${metrics.frameTime95th !== null ? `${metrics.frameTime95th}ms` : 'Not measured'}
-Peak Memory: ${metrics.peakMemoryMB !== null ? `${metrics.peakMemoryMB}MB` : 'Not measured'}
-Crash-Free Rate: ${(crashFreeRate * 100).toFixed(2)}% (${metrics.crashFreeSessions}/${metrics.totalSessions} sessions)
-Errors: ${metrics.errorCount}
+Cold Start: ${String(metrics.coldStartTime !== null ? `${String(metrics.coldStartTime ?? '')}ms` : 'Not measured' ?? '')}
+Average FPS: ${String(metrics.averageFPS !== null ? metrics.averageFPS : 'Not measured' ?? '')}
+95th Percentile Frame Time: ${String(metrics.frameTime95th !== null ? `${String(metrics.frameTime95th ?? '')}ms` : 'Not measured' ?? '')}
+Peak Memory: ${String(metrics.peakMemoryMB !== null ? `${String(metrics.peakMemoryMB ?? '')}MB` : 'Not measured' ?? '')}
+Crash-Free Rate: ${String((crashFreeRate * 100).toFixed(2) ?? '')}% (${String(metrics.crashFreeSessions ?? '')}/${String(metrics.totalSessions ?? '')} sessions)
+Errors: ${String(metrics.errorCount ?? '')}
 
 Budget Status: ${budgetCheck.passed ? 'PASSED' : 'FAILED'}
 ${budgetCheck.violations.length > 0 ? budgetCheck.violations.map((v) => `  - ${v}`).join('\n') : '  No violations'}

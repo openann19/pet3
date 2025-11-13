@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { View, Image, StyleSheet, type ImageStyle, type ViewStyle } from 'react-native'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import { isTruthy } from '@petspark/shared';
 
 export interface ProgressiveImageProps {
   src: string
@@ -50,7 +51,7 @@ export function ProgressiveImage({
   }, [src, onLoad, onError])
 
   useEffect(() => {
-    if (priority) {
+    if (isTruthy(priority)) {
       loadImage()
       return
     }
@@ -59,7 +60,7 @@ export function ProgressiveImage({
   }, [src, priority, loadImage])
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isTruthy(isLoaded)) {
       const duration = reducedMotion.value ? 200 : 300
       placeholderOpacity.value = withTiming(0, { duration })
       imageOpacity.value = withTiming(1, { duration })
@@ -93,9 +94,9 @@ export function ProgressiveImage({
         <Image
           source={{ uri: currentSrc }}
           style={[styles.image, imageStyle]}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={() => { setIsLoaded(true); }}
           onError={() => {
-            const err = new Error(`Failed to load image: ${src}`)
+            const err = new Error(`Failed to load image: ${String(src ?? '')}`)
             setError(true)
             onError?.(err)
           }}

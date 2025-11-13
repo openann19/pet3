@@ -22,6 +22,7 @@ import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { forwardGeocode } from '@/lib/maps/geocoding';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 interface VenuePickerProps {
   open: boolean;
@@ -53,7 +54,7 @@ export default function VenuePicker({
   const [selectedVenue, setSelectedVenue] = useState<Place | null>(null);
 
   useEffect(() => {
-    if (open) {
+    if (isTruthy(open)) {
       getCurrentLocation()
         .then((location) => {
           try {
@@ -84,7 +85,7 @@ export default function VenuePicker({
     if (!userLocation) return;
 
     try {
-      const query = searchQuery || (selectedCategory ? `${selectedCategory} pet` : 'pet friendly');
+      const query = searchQuery || (selectedCategory ? `${String(selectedCategory ?? '')} pet` : 'pet friendly');
       const results = await forwardGeocode(query, 'en', userLocation);
 
       const places: Place[] = results.map((result) => ({
@@ -136,13 +137,13 @@ export default function VenuePicker({
   };
 
   const handleGetDirections = (venue: Place): void => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.location.lat},${venue.location.lng}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${String(venue.location.lat ?? '')},${String(venue.location.lng ?? '')}`;
     window.open(url, '_blank');
   };
 
   const mapCenter = useMemo((): Location => {
-    if (selectedVenue) return selectedVenue.location;
-    if (matchLocation) return matchLocation;
+    if (isTruthy(selectedVenue)) return selectedVenue.location;
+    if (isTruthy(matchLocation)) return matchLocation;
     return userLocation || { lat: 40.7128, lng: -74.006 };
   }, [selectedVenue, matchLocation, userLocation]);
 
@@ -161,7 +162,7 @@ export default function VenuePicker({
               <Input
                 placeholder={t.map?.searchPlaceholder || 'Search places...'}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="flex-1"
               />
@@ -238,7 +239,7 @@ export default function VenuePicker({
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => handleGetDirections(selectedVenue)}
+                  onClick={() => { handleGetDirections(selectedVenue); }}
                 >
                   <NavigationArrow size={18} className="mr-2" />
                   {t.map?.openInMaps || 'Open in Maps'}

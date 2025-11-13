@@ -3,7 +3,6 @@
  * Location: apps/mobile/src/components/enhanced/DetailedPetAnalytics.tsx
  */
 
-import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 
 type TrustBadge = {
@@ -182,7 +181,7 @@ export function DetailedPetAnalytics({
       <View style={styles.card}>
         <Text style={styles.cardTitle}>About {pet.name}</Text>
         <Text style={styles.aboutText}>
-          {[pet.breed, pet.age ? `${pet.age} yrs` : undefined, pet.gender]
+          {[pet.breed, pet.age ? `${String(pet.age ?? '')} yrs` : undefined, pet.gender]
             .filter(Boolean)
             .join(' • ') || 'Details unavailable'}
         </Text>
@@ -213,7 +212,7 @@ function ProgressBar({ value, height = 10 }: ProgressBarProps): React.JSX.Elemen
   const clamped = Math.max(0, Math.min(100, value))
   return (
     <View style={[styles.progressTrack, { height }]}>
-      <View style={[styles.progressFill, { width: `${clamped}%` }]} />
+      <View style={[styles.progressFill, { width: `${String(clamped ?? '')}%` }]} />
     </View>
   )
 }

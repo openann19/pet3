@@ -9,7 +9,7 @@ import {
   withRepeat,
   withSequence,
   withDelay,
-} from 'react-native-reanimated';
+} from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Heart, Sparkle } from '@phosphor-icons/react';
 
@@ -109,7 +109,7 @@ export default function MatchCelebration({
   const sparkle2Rotate = useSharedValue(0);
 
   useEffect(() => {
-    if (show) {
+    if (isTruthy(show)) {
       // Start animations
       containerOpacity.value = withSpring(1, { damping: 20, stiffness: 300 });
       backdropOpacity.value = withSpring(1, { damping: 20, stiffness: 300 });

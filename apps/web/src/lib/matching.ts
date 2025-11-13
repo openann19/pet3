@@ -110,23 +110,23 @@ export async function generateMatchReasoning(userPet: Pet, otherPet: Pet): Promi
 
   const prompt = buildLLMPrompt`You are a pet compatibility expert. Generate 2-3 short, engaging reasons (max 10 words each) why these two pets would be great companions.
 
-Pet 1: ${userPet.name}
-- Breed: ${userPet.breed}
-- Age: ${userPet.age} years
-- Size: ${userPet.size}
-- Personality: ${userPet.personality.join(', ')}
-- Interests: ${userPet.interests.join(', ')}
-- Looking for: ${userPet.lookingFor.join(', ')}
+Pet 1: ${String(userPet.name ?? '')}
+- Breed: ${String(userPet.breed ?? '')}
+- Age: ${String(userPet.age ?? '')} years
+- Size: ${String(userPet.size ?? '')}
+- Personality: ${String(userPet.personality.join(', ') ?? '')}
+- Interests: ${String(userPet.interests.join(', ') ?? '')}
+- Looking for: ${String(userPet.lookingFor.join(', ') ?? '')}
 
-Pet 2: ${otherPet.name}
-- Breed: ${otherPet.breed}
-- Age: ${otherPet.age} years
-- Size: ${otherPet.size}
-- Personality: ${otherPet.personality.join(', ')}
-- Interests: ${otherPet.interests.join(', ')}
-- Looking for: ${otherPet.lookingFor.join(', ')}
+Pet 2: ${String(otherPet.name ?? '')}
+- Breed: ${String(otherPet.breed ?? '')}
+- Age: ${String(otherPet.age ?? '')} years
+- Size: ${String(otherPet.size ?? '')}
+- Personality: ${String(otherPet.personality.join(', ') ?? '')}
+- Interests: ${String(otherPet.interests.join(', ') ?? '')}
+- Looking for: ${String(otherPet.lookingFor.join(', ') ?? '')}
 
-Compatibility Score: ${compatibility}%
+Compatibility Score: ${String(compatibility ?? '')}%
 
 Focus on:
 - Shared interests and activities they could enjoy together
