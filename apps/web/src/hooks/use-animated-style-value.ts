@@ -84,3 +84,6 @@ export function useAnimatedStyleValue(animatedStyle: AnimatedStyle): CSSProperti
   return style;
 }
 
+// Re-export AnimatedView for convenience
+export { AnimatedView } from '@/effects/reanimated/animated-view';
+

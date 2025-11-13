@@ -1,3 +1,4 @@
+import { isTruthy } from '@/core/guards';
 import { useState } from 'react';
 import { Star, ThumbsUp, User } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

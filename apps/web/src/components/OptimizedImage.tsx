@@ -1,3 +1,4 @@
+import { isTruthy } from '@/core/guards';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { supportsWebP, supportsAVIF } from '@/lib/image-loader';
