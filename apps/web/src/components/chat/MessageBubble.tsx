@@ -316,15 +316,15 @@ function MessageBubble({
     } else {
       void animate(reactionsPickerOpacity, 0, {
         duration: timingConfigs.fast.duration ?? 0.15,
-        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+        ease: timingConfigs.fast.ease ?? 'easeOut',
       });
       void animate(reactionsPickerScale, 0.9, {
         duration: timingConfigs.fast.duration ?? 0.15,
-        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+        ease: timingConfigs.fast.ease ?? 'easeOut',
       });
       void animate(reactionsPickerTranslateY, 10, {
         duration: timingConfigs.fast.duration ?? 0.15,
-        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+        ease: timingConfigs.fast.ease ?? 'easeOut',
       });
     }
   }, [showReactions, reactionsPickerOpacity, reactionsPickerScale, reactionsPickerTranslateY]);

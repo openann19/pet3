@@ -561,7 +561,7 @@ export default function ChatWindow({
       <AnnounceTyping userName={typingUser} multipleUsers={multipleTypingUsers} />
 
       {incomingCallPresence.shouldRender && incomingCall && room.matchedPetName && (
-        <motion.div style={incomingCallPresence.animatedStyle as React.CSSProperties}>
+        <motion.div style={incomingCallPresence.animatedStyle as import('framer-motion').MotionStyle}>
           <IncomingCallNotification
             call={incomingCall}
             callerName={room.matchedPetName ?? ''}
@@ -573,7 +573,7 @@ export default function ChatWindow({
       )}
 
       {activeCallPresence.shouldRender && activeCall && (
-        <motion.div style={activeCallPresence.animatedStyle as React.CSSProperties}>
+        <motion.div style={activeCallPresence.animatedStyle as import('framer-motion').MotionStyle}>
           <CallInterface
             session={activeCall}
             onEndCall={endCall}

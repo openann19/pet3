@@ -322,8 +322,8 @@ export default function AdvancedChatWindow({
             ? messageManagement.messages.length - previousBadgeCount
             : 0
         }
-        animatedStyle={scrollFab.animatedStyle}
-        badgeAnimatedStyle={scrollFab.badgeAnimatedStyle}
+        animatedStyle={scrollFab.animatedStyle as import('framer-motion').MotionStyle}
+        badgeAnimatedStyle={scrollFab.badgeAnimatedStyle as import('framer-motion').MotionStyle}
         onClick={() => {
           messageManagement.scrollToBottom();
           setScrollFabVisible(false);

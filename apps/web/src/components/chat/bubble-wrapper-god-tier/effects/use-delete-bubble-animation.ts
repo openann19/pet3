@@ -214,15 +214,7 @@ export function useDeleteBubbleAnimation(
       height,
       rotate: rotation,
       overflow: 'hidden',
-    } as {
-      opacity: MotionValue<number>;
-      scale: MotionValue<number>;
-      y: MotionValue<number>;
-      x: MotionValue<number>;
-      height: MotionValue<number>;
-      rotate: MotionValue<number>;
-      overflow: 'hidden';
-    } & Record<string, unknown>,
+    } as import('framer-motion').MotionStyle,
     triggerDelete,
     reset,
   };
