@@ -23,6 +23,11 @@ export interface UseGlowBorderReturn {
   boxShadow: MotionValue<string>;
   filter: MotionValue<string>;
   opacity: MotionValue<number>;
+  animatedStyle: {
+    boxShadow: MotionValue<string>;
+    filter: MotionValue<string>;
+    opacity: MotionValue<number>;
+  };
 }
 
 export function useGlowBorder(options: UseGlowBorderOptions = {}): UseGlowBorderReturn {
@@ -82,5 +87,10 @@ export function useGlowBorder(options: UseGlowBorderOptions = {}): UseGlowBorder
     boxShadow,
     filter,
     opacity: shadowOpacity,
+    animatedStyle: {
+      boxShadow,
+      filter,
+      opacity: shadowOpacity,
+    },
   };
 }

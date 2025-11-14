@@ -44,5 +44,6 @@ export function useRippleEffect(options: UseRippleEffectOptions = {}) {
     ripples,
     addRipple,
     color,
+    animatedStyle: { color, opacity },
   };
 }

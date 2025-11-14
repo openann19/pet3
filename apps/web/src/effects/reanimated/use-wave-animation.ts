@@ -19,6 +19,10 @@ export interface UseWaveAnimationReturn {
   translateX: MotionValue<number> | undefined;
   translateY: MotionValue<number> | undefined;
   progress: MotionValue<number>;
+  animatedStyle: {
+    x?: MotionValue<number>;
+    y?: MotionValue<number>;
+  };
 }
 
 export function useWaveAnimation(options: UseWaveAnimationOptions = {}): UseWaveAnimationReturn {
@@ -47,9 +51,9 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}): UseWave
       return () => {
         animation.stop();
       };
-    } else {
-      progress.set(0);
     }
+    progress.set(0);
+    return undefined;
   }, [enabled, speed, prefersReducedMotion, progress]);
 
   // Calculate wave value using useTransform
@@ -66,6 +70,10 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}): UseWave
     translateX,
     translateY,
     progress,
+    animatedStyle: {
+      x: translateX,
+      y: translateY,
+    },
   };
 }
 
@@ -93,9 +101,9 @@ export function useMultiWave(waveCount = 3): UseMultiWaveReturn {
       return () => {
         animation.stop();
       };
-    } else {
-      progress.set(0);
     }
+    progress.set(0);
+    return undefined;
   }, [prefersReducedMotion, progress]);
 
   const createWaveMotionValues = (waveIndex: number, amplitude = 15) => {

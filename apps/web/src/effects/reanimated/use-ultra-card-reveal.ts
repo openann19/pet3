@@ -26,6 +26,13 @@ export interface UseUltraCardRevealReturn {
   rotateY: MotionValue<number>;
   translateZ: MotionValue<number>;
   perspective: number;
+  animatedStyle: {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+    rotateX: MotionValue<number>;
+    rotateY: MotionValue<number>;
+    translateZ: MotionValue<number>;
+  };
 }
 
 export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}): UseUltraCardRevealReturn {
@@ -114,5 +121,12 @@ export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}): Use
     rotateY,
     translateZ,
     perspective,
+    animatedStyle: {
+      opacity,
+      scale,
+      rotateX,
+      rotateY,
+      translateZ,
+    },
   };
 }

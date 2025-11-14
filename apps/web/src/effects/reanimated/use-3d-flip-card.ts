@@ -23,6 +23,14 @@ export interface Use3DFlipCardReturn {
   perspective: number;
   flip: () => void;
   isFlipped: boolean;
+  frontAnimatedStyle: {
+    rotateY: MotionValue<number>;
+    opacity: MotionValue<number>;
+  };
+  backAnimatedStyle: {
+    rotateY: MotionValue<number>;
+    opacity: MotionValue<number>;
+  };
 }
 
 export function use3DFlipCard(options: Use3DFlipCardOptions = {}): Use3DFlipCardReturn {
@@ -64,5 +72,13 @@ export function use3DFlipCard(options: Use3DFlipCardOptions = {}): Use3DFlipCard
     perspective,
     flip,
     isFlipped,
+    frontAnimatedStyle: {
+      rotateY,
+      opacity: frontOpacity,
+    },
+    backAnimatedStyle: {
+      rotateY: backRotateY,
+      opacity: backOpacity,
+    },
   };
 }
