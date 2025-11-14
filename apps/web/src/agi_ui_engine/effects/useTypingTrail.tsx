@@ -52,7 +52,7 @@ export function useTypingTrail(): UseTypingTrailReturn {
       ),
       -1,
       true
-    );
+    ).target;
   }, [trailOpacity, visual.enableShimmer, animation.showTrails]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -60,11 +60,13 @@ export function useTypingTrail(): UseTypingTrailReturn {
       return {};
     }
 
+    const opacityVal = typeof trailOpacity.value === 'number' ? trailOpacity.value : (typeof trailOpacity.value.target === 'number' ? trailOpacity.value.target : 0);
+    const translateXVal = (opacityVal - 0.5) * 4;
     return {
-      opacity: trailOpacity.value,
+      opacity: opacityVal,
       transform: [
         {
-          translateX: (trailOpacity.value - 0.5) * 4,
+          translateX: translateXVal,
         },
       ],
     };

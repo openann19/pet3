@@ -353,7 +353,7 @@ export default function PlaydateScheduler({
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-125">
-                  <Presence>
+                  <Presence visible={showCreateForm}>
                     {showCreateForm && (
                       <MotionView
                         initial={{ opacity: 0, height: 0 }}

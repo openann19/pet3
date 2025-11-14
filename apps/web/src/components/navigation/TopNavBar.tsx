@@ -239,7 +239,7 @@ export default function TopNavBar({
               />
             </div>
             <h1 className={cn(
-              getTypographyClasses('subtitle'),
+              getTypographyClasses('h2'),
               'bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent'
             )}>
               {t.app?.title || 'PawfectMatch'}
@@ -442,7 +442,7 @@ function NavButton({
           <span 
             className={cn(
               'absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-destructive flex items-center justify-center text-destructive-foreground',
-              getTypographyClasses('badge'),
+              getTypographyClasses('caption'),
               getSpacingClassesFromConfig({ paddingX: 'xs' })
             )}
             aria-label={`${badge} ${badge === 1 ? 'notification' : 'notifications'}`}

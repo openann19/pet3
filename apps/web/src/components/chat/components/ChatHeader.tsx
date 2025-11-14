@@ -1,10 +1,10 @@
 /**
-import { motion } from 'framer-motion';
  * Chat Header Component
  *
  * Header section with user info and actions
  */
 
+import { motion } from 'framer-motion';
 import { ArrowLeft, DotsThree } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,9 @@ export function ChatHeader({
 
   return (
     <motion.div
-      style={animation.animatedStyle}
+      initial="hidden"
+      animate="visible"
+      variants={animation.variants}
       className="glass-strong border-b border-white/20 p-4 shadow-xl backdrop-blur-2xl"
     >
       <div className="flex items-center gap-3">

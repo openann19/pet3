@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
+import { isTruthy } from '@/core/guards';
 import { springConfigs, timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface UsePullToRefreshOptions {
@@ -21,13 +21,13 @@ export interface UsePullToRefreshOptions {
 }
 
 export interface UsePullToRefreshReturn {
-  pullDistance: ReturnType<typeof useSharedValue<number>>;
-  pullOpacity: ReturnType<typeof useSharedValue<number>>;
-  pullRotation: ReturnType<typeof useSharedValue<number>>;
-  pullScale: ReturnType<typeof useSharedValue<number>>;
+  pullDistance: MotionValue<number>;
+  pullOpacity: MotionValue<number>;
+  pullRotation: MotionValue<number>;
+  pullScale: MotionValue<number>;
   isRefreshing: boolean;
-  animatedStyle: AnimatedStyle;
-  indicatorStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
+  indicatorStyle: CSSProperties;
   handleTouchStart: (e: globalThis.TouchEvent) => void;
   handleTouchMove: (e: globalThis.TouchEvent) => void;
   handleTouchEnd: () => void;
@@ -40,15 +40,39 @@ export function usePullToRefresh({
   enabled = true,
 }: UsePullToRefreshOptions): UsePullToRefreshReturn {
   const reducedMotion = useReducedMotion();
-  const pullDistance = useSharedValue(0);
+  const pullDistance = useMotionValue(0);
   const isRefreshing = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startY = useRef(0);
   const isPulling = useRef(false);
 
-  const pullOpacity = useSharedValue(0);
-  const pullRotation = useSharedValue(0);
-  const pullScale = useSharedValue(0.5);
+  const pullOpacity = useMotionValue(0);
+  const pullRotation = useMotionValue(0);
+  const pullScale = useMotionValue(0.5);
+
+  // Use useTransform for interpolation
+  const pullOpacityTransformed = useTransform(pullDistance, [0, threshold], [0, 1]);
+  const pullRotationTransformed = useTransform(pullDistance, [0, threshold], [0, 360]);
+  const pullScaleTransformed = useTransform(pullDistance, [0, threshold], [0.5, 1]);
+
+  // Sync transformed values to motion values for style computation
+  useEffect(() => {
+    const unsubscribeOpacity = pullOpacityTransformed.on('change', (val) => {
+      pullOpacity.set(val);
+    });
+    const unsubscribeRotation = pullRotationTransformed.on('change', (val) => {
+      pullRotation.set(val);
+    });
+    const unsubscribeScale = pullScaleTransformed.on('change', (val) => {
+      pullScale.set(val);
+    });
+
+    return () => {
+      unsubscribeOpacity();
+      unsubscribeRotation();
+      unsubscribeScale();
+    };
+  }, [pullOpacityTransformed, pullRotationTransformed, pullScaleTransformed, pullOpacity, pullRotation, pullScale]);
 
   const handleTouchStart = useCallback(
     (e: globalThis.TouchEvent): void => {
@@ -70,24 +94,18 @@ export function usePullToRefresh({
       const diff = currentY - startY.current;
 
       if (diff > 0 && diff < maxDistance) {
-        pullDistance.value = diff;
-
-        // Calculate derived values
-        pullOpacity.value = interpolate(diff, [0, threshold], [0, 1], Extrapolation.CLAMP);
-
-        pullRotation.value = interpolate(diff, [0, threshold], [0, 360], Extrapolation.CLAMP);
-
-        pullScale.value = interpolate(diff, [0, threshold], [0.5, 1], Extrapolation.CLAMP);
+        pullDistance.set(diff);
+        // Transformed values will update automatically via useTransform
       }
     },
-    [enabled, maxDistance, threshold, pullDistance, pullOpacity, pullRotation, pullScale]
+    [enabled, maxDistance, pullDistance]
   );
 
   const handleTouchEnd = useCallback(async (): Promise<void> => {
     if (!enabled || !isPulling.current) return;
     isPulling.current = false;
 
-    const distance = pullDistance.value;
+    const distance = pullDistance.get();
 
     if (distance > threshold && !isRefreshing.current) {
       isRefreshing.current = true;
@@ -100,13 +118,22 @@ export function usePullToRefresh({
     }
 
     // Animate back to zero
-    pullDistance.value = withSpring(0, springConfigs.smooth);
-    pullOpacity.value = withTiming(0, timingConfigs.fast);
-    pullRotation.value = withSpring(0, springConfigs.smooth);
-    pullScale.value = withSpring(0.5, springConfigs.smooth);
+    void animate(pullDistance, 0, {
+      ...springConfigs.smooth,
+    });
+    void animate(pullOpacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(pullRotation, 0, {
+      ...springConfigs.smooth,
+    });
+    void animate(pullScale, 0.5, {
+      ...springConfigs.smooth,
+    });
   }, [enabled, threshold, pullDistance, pullOpacity, pullRotation, pullScale, onRefresh]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     if (isTruthy(reducedMotion)) {
       return {
         transform: [{ translateY: 0 }],
@@ -115,12 +142,12 @@ export function usePullToRefresh({
     }
 
     return {
-      transform: [{ translateY: pullDistance.value }],
-      opacity: pullOpacity.value,
+      transform: [{ translateY: pullDistance.get() }],
+      opacity: pullOpacity.get(),
     };
-  }) as AnimatedStyle;
+  });
 
-  const indicatorStyle = useAnimatedStyle(() => {
+  const indicatorStyle = useMotionStyle(() => {
     if (isTruthy(reducedMotion)) {
       return {
         transform: [{ rotate: '0deg' }, { scale: 0.5 }],
@@ -128,9 +155,9 @@ export function usePullToRefresh({
     }
 
     return {
-      transform: [{ rotate: `${pullRotation.value}deg` }, { scale: pullScale.value }],
+      transform: [{ rotate: `${pullRotation.get()}deg` }, { scale: pullScale.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     pullDistance,

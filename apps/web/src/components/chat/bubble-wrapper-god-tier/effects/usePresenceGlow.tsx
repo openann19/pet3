@@ -1,18 +1,9 @@
 import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-} from '@petspark/motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import type { ReactNode } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -35,44 +26,40 @@ export function PresenceGlow({
   pulseDuration = DEFAULT_PULSE_DURATION,
 }: PresenceGlowProps): React.JSX.Element {
     const _uiConfig = useUIConfig();
-    const glowOpacity = useSharedValue(0);
+    const glowOpacity = useMotionValue(0);
 
   useEffect(() => {
     if (isTruthy(isActive)) {
-      glowOpacity.value = withRepeat(
-        withSequence(
-          withTiming(intensity, {
-            duration: pulseDuration / 2,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(intensity * 0.5, {
-            duration: pulseDuration / 2,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        -1,
-        false
-      );
+      animate(glowOpacity, [intensity, intensity * 0.5], {
+        repeat: Infinity,
+        duration: pulseDuration / 1000,
+        ease: 'easeInOut',
+        times: [0, 1],
+      });
     } else {
-      glowOpacity.value = withTiming(0, timingConfigs.fast);
+      animate(glowOpacity, 0, {
+        duration: (timingConfigs.fast.duration ?? 0.15) / 1000,
+        ease: 'easeOut',
+      });
     }
   }, [isActive, intensity, pulseDuration, glowOpacity]);
 
-  const glowStyle = useAnimatedStyle(() => {
-    return {
-      opacity: glowOpacity.value,
-      boxShadow: isActive
-        ? `0 0 ${10 + glowOpacity.value * 10}px rgba(59, 130, 246, ${glowOpacity.value * 0.8})`
-        : 'none',
-    };
-  });
+  const blurRadius = useTransform(glowOpacity, (opacity) => 10 + opacity * 10);
+  const shadowOpacity = useTransform(glowOpacity, (opacity) => opacity * 0.8);
+  const boxShadow = useTransform(
+    [blurRadius, shadowOpacity],
+    ([blur, shadow]) => `0 0 ${blur}px rgba(59, 130, 246, ${shadow})`
+  );
 
   return (
     <div className={className} style={{ position: 'relative' }}>
       {children}
       {isActive && (
         <motion.div
-          style={glowStyle}
+          style={{
+            opacity: glowOpacity,
+            boxShadow,
+          }}
           className="absolute inset-0 rounded-full pointer-events-none -z-10"
         >
           <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-md" />

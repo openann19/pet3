@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isTruthy } from '@/core/guards';
 import { useStorage } from '@/hooks/use-storage';
 import { motion, MotionView } from '@petspark/motion';
 import { Plus, Check } from '@phosphor-icons/react';

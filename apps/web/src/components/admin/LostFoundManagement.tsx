@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +13,7 @@ import type { LostAlert } from '@/lib/lost-found-types';
 import { logger } from '@/lib/logger';
 
 export function LostFoundManagement() {
+  const prefersReducedMotion = useReducedMotion();
   const [alerts, setAlerts] = useState<LostAlert[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<LostAlert | null>(null);
 
@@ -113,14 +116,25 @@ export function LostFoundManagement() {
             <ScrollArea className="h-150">
               <div className="space-y-3">
                 {alerts.map((alert) => (
-                  <button
+                  <motion.button
                     key={alert.id}
                     onClick={() => { setSelectedAlert(alert); }}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      String(selectedAlert?.id === alert.id
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-border hover:border-primary/50' ?? '')
+                    className={`w-full text-left p-4 rounded-lg border-2 ${
+                      selectedAlert?.id === alert.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border'
                     }`}
+                    whileHover={selectedAlert?.id !== alert.id && !prefersReducedMotion ? {
+                      borderColor: 'var(--primary)',
+                      transition: {
+                        duration: 0.2,
+                        ease: 'easeInOut',
+                      },
+                    } : undefined}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : 0.2,
+                      ease: 'easeInOut',
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       {alert.photos[0] && (
@@ -147,7 +161,7 @@ export function LostFoundManagement() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </ScrollArea>
@@ -188,7 +202,7 @@ export function LostFoundManagement() {
                         <img
                           key={index}
                           src={photo}
-                          alt={`${String(selectedAlert.petSummary.name ?? '')} ${String(index + 1 ?? '')}`}
+                          alt={`${String(selectedAlert.petSummary.name ?? '')} ${String(index + 1)}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}

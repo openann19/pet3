@@ -1,6 +1,6 @@
-import { colors } from '@mobile/theme/colors'
+import { colors } from '../theme/colors'
 import { Typography, Dimens } from '@petspark/shared';
-import { elevation } from '@mobile/theme/tokens';
+import { elevation } from '../theme/tokens';
 
 const { spacing, radius } = Dimens;
 const { scale: typography } = Typography;
@@ -30,8 +30,7 @@ export const FeatureCard = memo(({ title, subtitle, children }: FeatureCardProps
       <Text
         style={styles.title}
         accessible={true}
-        accessibilityRole="header"
-        accessibilityLevel={3}
+        accessibilityRole="text"
       >
         {title}
       </Text>
@@ -64,7 +63,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: StyleSheet.hairlineWidth ?? 0.5,
     borderColor: colors.border,
     ...elevation.raised,
   },

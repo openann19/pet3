@@ -1,9 +1,9 @@
 /**
-import { motion } from 'framer-motion';
  * Ultra Animation Showcase
  * Interactive demo of all enhanced animation capabilities
  */
 
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   use3DFlipCard,
@@ -17,8 +17,30 @@ import {
   useUltraCardReveal,
   useWaveAnimation,
 } from '@/effects/reanimated';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useState } from 'react';
+import type { ConfettiParticle } from '@/effects/reanimated/use-confetti-burst';
+
+function ConfettiParticleComponent({ particle }: { particle: ConfettiParticle }) {
+  return (
+    <motion.div
+      style={{
+        x: particle.translateX,
+        y: particle.translateY,
+        rotate: particle.rotate,
+        scale: particle.scale,
+        opacity: particle.opacity,
+        backgroundColor: particle.color,
+        width: particle.size,
+        height: particle.size,
+        left: particle.x,
+        top: particle.y,
+      }}
+      className="absolute rounded-sm pointer-events-none"
+    >
+      <div />
+    </motion.div>
+  );
+}
 
 export function UltraAnimationShowcase() {
   const [showDemo, setShowDemo] = useState(true);
@@ -219,13 +241,10 @@ export function UltraAnimationShowcase() {
             🎉 Celebrate!
           </Button>
           {confetti.particles.map((particle) => (
-            <motion.div
+            <ConfettiParticleComponent
               key={particle.id}
-              style={confetti.createParticleStyle(particle)}
-              className="absolute rounded-sm pointer-events-none"
-            >
-              <div />
-            </motion.div>
+              particle={particle}
+            />
           ))}
         </section>
 

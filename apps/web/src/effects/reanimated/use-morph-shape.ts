@@ -4,13 +4,14 @@
  */
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Easing,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback } from 'react';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseMorphShapeOptions {
   duration?: number;
@@ -21,7 +22,14 @@ export interface UseMorphShapeOptions {
   }[];
 }
 
-export function useMorphShape(options: UseMorphShapeOptions = {}) {
+export interface UseMorphShapeReturn {
+  animatedStyle: CSSProperties;
+  morphTo: (shapeIndex: number) => void;
+  cycleShape: () => void;
+  currentShape: number;
+}
+
+export function useMorphShape(options: UseMorphShapeOptions = {}): UseMorphShapeReturn {
   const {
     duration = 400,
     shapes = [
@@ -31,78 +39,116 @@ export function useMorphShape(options: UseMorphShapeOptions = {}) {
     ],
   } = options;
 
-  const progress = useSharedValue(0);
-  const currentShape = useSharedValue(0);
+  const progress = useMotionValue(0);
+  const currentShape = useMotionValue(0);
 
   const morphTo = useCallback(
     (shapeIndex: number) => {
       if (shapeIndex < 0 || shapeIndex >= shapes.length) return;
 
-      currentShape.value = shapeIndex;
-      progress.value = withTiming(shapeIndex, {
-        duration,
-        easing: Easing.bezier(0.4, 0, 0.2, 1),
+      currentShape.set(shapeIndex);
+      void animate(progress, shapeIndex, {
+        duration: duration / 1000,
+        ease: [0.4, 0, 0.2, 1], // cubic-bezier equivalent
       });
     },
-    [shapes.length, duration]
+    [shapes.length, duration, progress, currentShape]
   );
 
   const cycleShape = useCallback(() => {
-    const nextShape = (currentShape.value + 1) % shapes.length;
+    const nextShape = (Math.floor(currentShape.get()) + 1) % shapes.length;
     morphTo(nextShape);
-  }, [shapes.length, morphTo]);
+  }, [shapes.length, morphTo, currentShape]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const shapeIndex = Math.floor(progress.value);
+  // Create transforms for each border radius corner
+  const topLeft = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
     const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
-    const interpolationProgress = progress.value - shapeIndex;
-
+    const interpolationProgress = value - shapeIndex;
     const currentShapeData = shapes[shapeIndex];
     const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 8;
+    return (
+      (currentShapeData.borderRadius[0] ?? 8) * (1 - interpolationProgress) +
+      (nextShapeData.borderRadius[0] ?? 8) * interpolationProgress
+    );
+  });
 
-    if (!currentShapeData || !nextShapeData) {
-      return {};
-    }
+  const topRight = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
+    const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
+    const interpolationProgress = value - shapeIndex;
+    const currentShapeData = shapes[shapeIndex];
+    const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 8;
+    return (
+      (currentShapeData.borderRadius[1] ?? 8) * (1 - interpolationProgress) +
+      (nextShapeData.borderRadius[1] ?? 8) * interpolationProgress
+    );
+  });
 
-    const topLeft = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.borderRadius[0] ?? 8, nextShapeData.borderRadius[0] ?? 8]
+  const bottomRight = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
+    const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
+    const interpolationProgress = value - shapeIndex;
+    const currentShapeData = shapes[shapeIndex];
+    const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 8;
+    return (
+      (currentShapeData.borderRadius[2] ?? 8) * (1 - interpolationProgress) +
+      (nextShapeData.borderRadius[2] ?? 8) * interpolationProgress
     );
-    const topRight = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.borderRadius[1] ?? 8, nextShapeData.borderRadius[1] ?? 8]
-    );
-    const bottomRight = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.borderRadius[2] ?? 8, nextShapeData.borderRadius[2] ?? 8]
-    );
-    const bottomLeft = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.borderRadius[3] ?? 8, nextShapeData.borderRadius[3] ?? 8]
-    );
+  });
 
-    const scale = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.scale ?? 1, nextShapeData.scale ?? 1]
+  const bottomLeft = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
+    const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
+    const interpolationProgress = value - shapeIndex;
+    const currentShapeData = shapes[shapeIndex];
+    const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 8;
+    return (
+      (currentShapeData.borderRadius[3] ?? 8) * (1 - interpolationProgress) +
+      (nextShapeData.borderRadius[3] ?? 8) * interpolationProgress
     );
+  });
 
-    const rotate = interpolate(
-      interpolationProgress,
-      [0, 1],
-      [currentShapeData.rotate ?? 0, nextShapeData.rotate ?? 0]
+  const scale = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
+    const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
+    const interpolationProgress = value - shapeIndex;
+    const currentShapeData = shapes[shapeIndex];
+    const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 1;
+    return (
+      (currentShapeData.scale ?? 1) * (1 - interpolationProgress) +
+      (nextShapeData.scale ?? 1) * interpolationProgress
     );
+  });
 
+  const rotate = useTransform(progress, (value) => {
+    const shapeIndex = Math.floor(value);
+    const nextShapeIndex = Math.min(shapeIndex + 1, shapes.length - 1);
+    const interpolationProgress = value - shapeIndex;
+    const currentShapeData = shapes[shapeIndex];
+    const nextShapeData = shapes[nextShapeIndex];
+    if (!currentShapeData || !nextShapeData) return 0;
+    return (
+      (currentShapeData.rotate ?? 0) * (1 - interpolationProgress) +
+      (nextShapeData.rotate ?? 0) * interpolationProgress
+    );
+  });
+
+  const animatedStyle = useMotionStyle(() => {
     return {
-      borderTopLeftRadius: topLeft,
-      borderTopRightRadius: topRight,
-      borderBottomRightRadius: bottomRight,
-      borderBottomLeftRadius: bottomLeft,
-      transform: [{ scale }, { rotate: `${String(rotate ?? '')}deg` }],
+      borderTopLeftRadius: topLeft.get(),
+      borderTopRightRadius: topRight.get(),
+      borderBottomRightRadius: bottomRight.get(),
+      borderBottomLeftRadius: bottomLeft.get(),
+      transform: [
+        { scale: scale.get() },
+        { rotate: `${rotate.get()}deg` },
+      ],
     };
   });
 
@@ -110,6 +156,6 @@ export function useMorphShape(options: UseMorphShapeOptions = {}) {
     animatedStyle,
     morphTo,
     cycleShape,
-    currentShape: currentShape.value,
+    currentShape: Math.floor(currentShape.get()),
   };
 }

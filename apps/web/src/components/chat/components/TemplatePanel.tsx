@@ -1,10 +1,10 @@
 /**
-import { motion } from 'framer-motion';
  * Template Panel Component
  *
  * Message template selection panel
  */
 
+import { motion } from 'framer-motion';
 import { X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
@@ -25,7 +25,9 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
 
   return (
     <motion.div
-      style={animation.animatedStyle}
+      initial="hidden"
+      animate="visible"
+      variants={animation.variants}
       className="glass-strong border border-white/20 rounded-xl p-4 space-y-3 backdrop-blur-xl"
     >
       <div className="flex items-center justify-between">

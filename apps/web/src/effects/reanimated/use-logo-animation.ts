@@ -1,40 +1,36 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseLogoAnimationReturn {
-  scale: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  scale: MotionValue<number>;
+  style: CSSProperties;
 }
 
 export function useLogoAnimation(): UseLogoAnimationReturn {
-  const scale = useSharedValue(1);
+  const scale = useMotionValue(1);
 
   useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1250 }),
-        withTiming(1.12, { duration: 1250 }),
-        withTiming(1, { duration: 1250 })
-      ),
-      -1,
-      true
-    );
+    void animate(scale, [1, 1.12, 1], {
+      duration: 3.75, // 1250ms * 3 = 3750ms = 3.75s
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
   }, [scale]);
 
-  const style = useAnimatedStyle(() => {
+  const style = useMotionStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
+      transform: [{ scale: scale.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     scale,
@@ -43,43 +39,37 @@ export function useLogoAnimation(): UseLogoAnimationReturn {
 }
 
 export interface UseLogoGlowReturn {
-  scale: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  scale: MotionValue<number>;
+  opacity: MotionValue<number>;
+  style: CSSProperties;
 }
 
 export function useLogoGlow(): UseLogoGlowReturn {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.7);
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(0.7);
 
   useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(1.5, { duration: 1000 }),
-        withTiming(1, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
+    void animate(scale, [1, 1.5, 1], {
+      duration: 3, // 1000ms * 3 = 3000ms = 3s
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
 
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.7, { duration: 1000 }),
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.7, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
+    void animate(opacity, [0.7, 1, 0.7], {
+      duration: 3,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
   }, [scale, opacity]);
 
-  const style = useAnimatedStyle(() => {
+  const style = useMotionStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
+      transform: [{ scale: scale.get() }],
+      opacity: opacity.get(),
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     scale,

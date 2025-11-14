@@ -1,5 +1,5 @@
 import { PetRatings } from '@/components/PetRatings';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TrustBadges } from '@/components/TrustBadges';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { usePhotoCarousel } from '@/hooks/usePhotoCarousel';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import type { Pet } from '@/lib/types';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const logger = createLogger('PetDetailDialog');
 import {
@@ -27,12 +28,6 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { useEffect } from 'react';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 interface PetDetailDialogProps {
   pet: Pet | null;
@@ -57,53 +52,66 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
     goToPhoto,
   } = usePhotoCarousel({ photos });
 
-  // Animation hooks
-  const dialogOpacity = useSharedValue(0);
-  const dialogScale = useSharedValue(0.95);
-  const dialogY = useSharedValue(20);
-  const photoOpacity = useSharedValue(0);
-  const photoScale = useSharedValue(0.98);
+  const reducedMotion = useReducedMotion();
+  
+  // Animation variants
+  const dialogVariants = {
+    hidden: { 
+      opacity: 0, 
+      scale: 0.95, 
+      y: 20,
+    },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0,
+      transition: {
+        type: 'spring',
+        damping: 20,
+        stiffness: 300,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      y: 20,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
 
-  // Interactive element hooks
-  const closeButtonHover = useHoverLift();
-  const closeButtonTap = useBounceOnTap();
+  const photoVariants = {
+    hidden: { 
+      opacity: 0, 
+      scale: 0.98,
+    },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: {
+        type: 'spring',
+        damping: 20,
+        stiffness: 250,
+      },
+    },
+  };
 
-  // Presence hooks
-  const dialogPresence = useAnimatePresence({ isVisible: open });
-
-  // Initialize dialog animation
-  useEffect(() => {
-    if (open) {
-      dialogOpacity.value = withSpring(1, { damping: 20, stiffness: 300 });
-      dialogScale.value = withSpring(1, { damping: 20, stiffness: 300 });
-      dialogY.value = withSpring(0, { damping: 20, stiffness: 300 });
-    } else {
-      dialogOpacity.value = withTiming(0, { duration: 200 });
-      dialogScale.value = withTiming(0.95, { duration: 200 });
-      dialogY.value = withTiming(20, { duration: 200 });
-    }
-  }, [open, dialogOpacity, dialogScale, dialogY]);
-
-  const dialogStyle = useAnimatedStyle(() => ({
-    opacity: dialogOpacity.value,
-    transform: [{ scale: dialogScale.value }, { translateY: dialogY.value }],
-  })) as AnimatedStyle;
-
-  // Animate photo transition when the current photo index changes
-  useEffect(() => {
-    photoOpacity.value = 0;
-    photoScale.value = 0.98;
-    // small timeout ensures the key change applies before animating in
-    requestAnimationFrame(() => {
-      photoOpacity.value = withSpring(1, { damping: 20, stiffness: 250 });
-      photoScale.value = withSpring(1, { damping: 20, stiffness: 250 });
-    });
-  }, [currentIndex, photoOpacity, photoScale]);
-
-  const photoStyle = useAnimatedStyle(() => ({
-    opacity: photoOpacity.value,
-    transform: [{ scale: photoScale.value }],
-  })) as AnimatedStyle;
+  const closeButtonVariants = {
+    rest: { scale: 1 },
+    hover: { 
+      scale: 1.05,
+      transition: {
+        duration: 0.15,
+      },
+    },
+    tap: { 
+      scale: 0.95,
+      transition: {
+        duration: 0.1,
+      },
+    },
+  };
 
   const sizeMap: Record<string, string> = {
     small: 'Small (< 20 lbs)',
@@ -122,41 +130,54 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
         <DialogDescription className="sr-only">
           {pet.bio ? `Details for ${pet.name}. ${pet.bio}` : `Details for ${pet.name}`}
         </DialogDescription>
-        {open && dialogPresence.shouldRender ? (
-          <motion.div
-            style={[dialogStyle, dialogPresence.animatedStyle]}
-            className="relative bg-card rounded-3xl overflow-hidden shadow-2xl"
-          >
+        <AnimatePresence>
+          {open && (
             <motion.div
-              style={[closeButtonHover.animatedStyle, closeButtonTap.animatedStyle]}
-              onClick={() => {
-                try {
-                  haptics.trigger('light');
-                  onOpenChange(false);
-                } catch (error) {
-                  const err = error instanceof Error ? error : new Error(String(error));
-                  logger.error('PetDetailDialog close button error', err);
-                  // Still close dialog even if haptics fails
-                  onOpenChange(false);
-                }
-              }}
-              onMouseEnter={closeButtonHover.handleEnter}
-              onMouseLeave={closeButtonHover.handleLeave}
-              onMouseDown={closeButtonTap.handlePress}
-              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full glass-strong flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--coral-primary) focus:ring-offset-2"
-              aria-label="Close dialog"
+              variants={reducedMotion ? {} : dialogVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="relative bg-card rounded-3xl overflow-hidden shadow-2xl"
             >
-              <X size={20} className="text-white drop-shadow-lg" weight="bold" />
-            </motion.div>
+              <motion.button
+                variants={reducedMotion ? {} : closeButtonVariants}
+                initial="rest"
+                whileHover="hover"
+                whileTap="tap"
+                onClick={() => {
+                  try {
+                    haptics.trigger('light');
+                    onOpenChange(false);
+                  } catch (error) {
+                    const err = error instanceof Error ? error : new Error(String(error));
+                    logger.error('PetDetailDialog close button error', err);
+                    // Still close dialog even if haptics fails
+                    onOpenChange(false);
+                  }
+                }}
+                className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full glass-strong flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Close dialog"
+              >
+                <X size={20} className="text-white drop-shadow-lg" weight="bold" />
+              </motion.button>
 
-            <div className="relative h-100 bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
-              <motion.div key={currentIndex} style={photoStyle} className="w-full h-full">
-                <img
-                  src={currentPhoto}
-                  alt={`${pet.name} photo ${currentIndex + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
+              <div className="relative h-100 bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={currentIndex}
+                    variants={reducedMotion ? {} : photoVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="w-full h-full"
+                  >
+                    <img
+                      src={currentPhoto}
+                      alt={`${pet.name} photo ${currentIndex + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
               <motion.div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
 
@@ -171,7 +192,13 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                         logger.error('PetDetailDialog prevPhoto error', err);
                       }
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl z-30"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{
+                      duration: 0.15,
+                      ease: 'easeInOut',
+                    }}
                   >
                     <CaretLeft size={24} weight="bold" className="text-white drop-shadow-lg" />
                   </motion.div>
@@ -184,7 +211,13 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
                         logger.error('PetDetailDialog nextPhoto error', err);
                       }
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 glass-strong rounded-full flex items-center justify-center shadow-2xl border border-white/30 backdrop-blur-xl z-30"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{
+                      duration: 0.15,
+                      ease: 'easeInOut',
+                    }}
                   >
                     <CaretRight size={24} weight="bold" className="text-white drop-shadow-lg" />
                   </motion.div>
@@ -454,7 +487,8 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
               </div>
             </div>
           </motion.div>
-        ) : null}
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );

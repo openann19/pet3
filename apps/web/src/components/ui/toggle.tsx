@@ -1,11 +1,15 @@
 import type { ComponentProps } from 'react';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
+import { buttonPressVariants } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useMotionTokens } from '@/hooks/useMotionTokens';
 
 const toggleVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap",
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap",
   {
     variants: {
       variant: {
@@ -26,12 +30,46 @@ const toggleVariants = cva(
   }
 );
 
+export interface ToggleProps extends ComponentProps<typeof TogglePrimitive.Root>, VariantProps<typeof toggleVariants> {
+  enableAnimations?: boolean;
+}
+
 function Toggle({
   className,
   variant,
   size,
+  enableAnimations = true,
   ...props
-}: ComponentProps<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>) {
+}: ToggleProps) {
+  const reducedMotion = useReducedMotion();
+  const tokens = useMotionTokens();
+  const shouldAnimate = enableAnimations && !reducedMotion;
+
+  const motionProps = shouldAnimate
+    ? {
+        variants: buttonPressVariants,
+        initial: "rest",
+        whileHover: "hover",
+        whileTap: "tap",
+        whileFocus: "hover",
+        transition: {
+          ...tokens.spring.smooth,
+          duration: tokens.durations.fast,
+        },
+      }
+    : {};
+
+  if (shouldAnimate) {
+    return (
+      <TogglePrimitive.Root asChild data-slot="toggle" {...props}>
+        <motion.button
+          className={cn(toggleVariants({ variant, size, className }))}
+          {...motionProps}
+        />
+      </TogglePrimitive.Root>
+    );
+  }
+
   return (
     <TogglePrimitive.Root
       data-slot="toggle"

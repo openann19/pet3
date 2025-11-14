@@ -3,12 +3,7 @@
  * Bouncy, elastic scale effect with overshoot for delightful interactions
  */
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useCallback } from 'react';
 
 export interface UseElasticScaleOptions {
@@ -22,37 +17,30 @@ export interface UseElasticScaleOptions {
 export function useElasticScale(options: UseElasticScaleOptions = {}) {
   const { scaleUp = 1.15, scaleDown = 0.95, damping = 12, stiffness = 200, mass = 0.8 } = options;
 
-  const scale = useSharedValue(1);
+  const scale = useMotionValue(1);
 
   const handlePressIn = useCallback(() => {
-    scale.value = withSpring(scaleDown, {
+    animate(scale, scaleDown, {
+      type: 'spring',
       damping,
       stiffness: stiffness * 1.5,
       mass: mass * 0.8,
     });
-  }, [scaleDown, damping, stiffness, mass]);
+  }, [scaleDown, damping, stiffness, mass, scale]);
 
   const handlePressOut = useCallback(() => {
-    scale.value = withSequence(
-      withSpring(scaleUp, {
-        damping: damping * 0.6,
-        stiffness: stiffness * 1.2,
-        mass,
-      }),
-      withSpring(1, {
-        damping,
-        stiffness,
-        mass,
-      })
-    );
-  }, [scaleUp, damping, stiffness, mass]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+    animate(scale, [scaleUp, 1], {
+      type: 'spring',
+      damping: damping * 0.6,
+      stiffness: stiffness * 1.2,
+      mass,
+      times: [0, 1],
+    });
+  }, [scaleUp, damping, stiffness, mass, scale]);
 
   return {
-    animatedStyle,
+    animatedStyle: { scale },
+    scale,
     handlePressIn,
     handlePressOut,
   };

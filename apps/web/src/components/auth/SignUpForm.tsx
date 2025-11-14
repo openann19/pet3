@@ -22,12 +22,12 @@ import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('SignUpForm')
 
-type SignUpFormProps = {
+interface SignUpFormProps {
   onSuccess: () => void
   onSwitchToSignIn: () => void
 }
 
-type SignUpData = {
+interface SignUpData {
   name: string
   email: string
   password: string
@@ -176,7 +176,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-5">
         <div className="space-y-1">
           <Label htmlFor="name" className="block text-sm font-medium mb-1">
             {t.auth?.name || 'Full Name'}

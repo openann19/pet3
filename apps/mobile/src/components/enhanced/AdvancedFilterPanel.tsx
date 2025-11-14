@@ -81,7 +81,7 @@ export function AdvancedFilterPanel({
           )}
         </View>
         {onClose && (
-          <Pressable onPress={onClose} style={styles.closeButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <Pressable onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
         )}
@@ -152,10 +152,10 @@ export function AdvancedFilterPanel({
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable onPress={handleReset} style={styles.resetButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <Pressable onPress={handleReset} style={styles.resetButton}>
           <Text style={styles.resetText}>Reset</Text>
         </Pressable>
-        <Pressable onPress={handleApply} style={styles.applyButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <Pressable onPress={handleApply} style={styles.applyButton}>
           <Text style={styles.applyText}>Apply</Text>
         </Pressable>
       </View>

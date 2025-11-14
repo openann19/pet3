@@ -59,7 +59,7 @@ export function useBubbleGlow(options: UseBubbleGlowOptions = {}): UseBubbleGlow
       ),
       -1,
       true
-    );
+    ).target;
   }, [glowIntensity, enabled, visual.enableGlow, intensity]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -67,8 +67,9 @@ export function useBubbleGlow(options: UseBubbleGlowOptions = {}): UseBubbleGlow
       return {};
     }
 
-    const shadowRadius = glowIntensity.value * 20;
-    const shadowOpacity = glowIntensity.value * 0.6;
+    const intensityVal = typeof glowIntensity.value === 'number' ? glowIntensity.value : glowIntensity.value.target;
+    const shadowRadius = intensityVal * 20;
+    const shadowOpacity = intensityVal * 0.6;
 
     return {
       shadowColor: color,

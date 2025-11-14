@@ -1,19 +1,16 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  withDelay,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect, useCallback } from 'react';
 import type { MessageStatus } from '@/lib/chat-types';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseReceiptTransitionOptions {
   status: MessageStatus;
@@ -22,11 +19,11 @@ export interface UseReceiptTransitionOptions {
 }
 
 export interface UseReceiptTransitionReturn {
-  opacity: SharedValue<number>;
-  scale: SharedValue<number>;
-  colorIntensity: SharedValue<number>;
-  iconRotation: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  colorIntensity: MotionValue<number>;
+  iconRotation: MotionValue<number>;
+  animatedStyle: CSSProperties;
   animateStatusChange: (newStatus: MessageStatus) => void;
 }
 
@@ -45,42 +42,76 @@ export function useReceiptTransition(
 ): UseReceiptTransitionReturn {
   const { status, previousStatus, pulseDuration = DEFAULT_PULSE_DURATION } = options;
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
-  const colorIntensity = useSharedValue(status === 'read' || status === 'delivered' ? 1 : 0);
-  const iconRotation = useSharedValue(0);
+  const opacity = useMotionValue(1);
+  const scale = useMotionValue(1);
+  const colorIntensity = useMotionValue(status === 'read' || status === 'delivered' ? 1 : 0);
+  const iconRotation = useMotionValue(0);
+
+  // Use useTransform for color interpolation
+  const baseColor = STATUS_COLORS.sent;
+  const targetColor = STATUS_COLORS[status] ?? STATUS_COLORS.sending;
+  
+  const baseR = parseInt(/rgba?\((\d+)/.exec(baseColor)?.[1] ?? '156', 10);
+  const targetR = parseInt(/rgba?\((\d+)/.exec(targetColor)?.[1] ?? '156', 10);
+  const baseG = parseInt(/rgba?\(\d+, (\d+)/.exec(baseColor)?.[1] ?? '163', 10);
+  const targetG = parseInt(/rgba?\(\d+, (\d+)/.exec(targetColor)?.[1] ?? '163', 10);
+  const baseB = parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(baseColor)?.[1] ?? '175', 10);
+  const targetB = parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(targetColor)?.[1] ?? '175', 10);
+
+  const r = useTransform(colorIntensity, [0, 1], [baseR, targetR]);
+  const g = useTransform(colorIntensity, [0, 1], [baseG, targetG]);
+  const b = useTransform(colorIntensity, [0, 1], [baseB, targetB]);
 
   const animateStatusChange = useCallback(
     (newStatus: MessageStatus) => {
-      opacity.value = withSequence(
-        withTiming(0.6, { duration: pulseDuration / 3 }),
-        withTiming(1, { duration: pulseDuration / 3 })
-      );
+      // Animate opacity
+      void animate(opacity, [0.6, 1], {
+        duration: (pulseDuration / 3) / 1000,
+        times: [0, 1],
+      });
 
-      scale.value = withSequence(
-        withSpring(1.3, {
-          damping: 10,
-          stiffness: 400,
-        }),
-        withSpring(1, springConfigs.bouncy)
-      );
+      // Animate scale
+      void animate(scale, [1.3, 1], {
+        type: 'spring',
+        damping: 10,
+        stiffness: 400,
+      }).then(() => {
+        void animate(scale, 1, {
+          ...springConfigs.bouncy,
+        });
+      });
 
-      iconRotation.value = withSequence(
-        withTiming(-10, { duration: pulseDuration / 4 }),
-        withSpring(0, springConfigs.bouncy)
-      );
+      // Animate icon rotation
+      void animate(iconRotation, [-10, 0], {
+        duration: (pulseDuration / 4) / 1000,
+        times: [0, 1],
+      }).then(() => {
+        void animate(iconRotation, 0, {
+          ...springConfigs.bouncy,
+        });
+      });
 
       if (newStatus === 'read' && previousStatus === 'delivered') {
-        colorIntensity.value = withSequence(
-          withTiming(0, { duration: 100 }),
-          withDelay(50, withTiming(1, { duration: pulseDuration / 2 }))
-        );
+        void animate(colorIntensity, [0, 1], {
+          duration: (pulseDuration / 2) / 1000,
+          delay: 0.15,
+          times: [0, 1],
+        });
       } else if (newStatus === 'delivered') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        void animate(colorIntensity, 1, {
+          duration: timingConfigs.smooth.duration,
+          ease: timingConfigs.smooth.ease as string,
+        });
       } else if (newStatus === 'read') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        void animate(colorIntensity, 1, {
+          duration: timingConfigs.smooth.duration,
+          ease: timingConfigs.smooth.ease as string,
+        });
       } else if (newStatus === 'sent' || newStatus === 'sending') {
-        colorIntensity.value = withTiming(0, timingConfigs.fast);
+        void animate(colorIntensity, 0, {
+          duration: timingConfigs.fast.duration,
+          ease: timingConfigs.fast.ease as string,
+        });
       }
     },
     [opacity, scale, colorIntensity, iconRotation, previousStatus, pulseDuration]
@@ -91,49 +122,27 @@ export function useReceiptTransition(
       animateStatusChange(status);
     } else {
       if (status === 'read' || status === 'delivered') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        void animate(colorIntensity, 1, {
+          duration: timingConfigs.smooth.duration,
+          ease: timingConfigs.smooth.ease as string,
+        });
       } else {
-        colorIntensity.value = withTiming(0, timingConfigs.fast);
+        void animate(colorIntensity, 0, {
+          duration: timingConfigs.fast.duration,
+          ease: timingConfigs.fast.ease as string,
+        });
       }
     }
   }, [status, previousStatus, colorIntensity, animateStatusChange]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const baseColor = STATUS_COLORS.sent;
-    const targetColor = STATUS_COLORS[status] ?? STATUS_COLORS.sending;
-
-    const r = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\((\d+)/.exec(baseColor)?.[1] ?? '156', 10),
-        parseInt(/rgba?\((\d+)/.exec(targetColor)?.[1] ?? '156', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-    const g = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\(\d+, (\d+)/.exec(baseColor)?.[1] ?? '163', 10),
-        parseInt(/rgba?\(\d+, (\d+)/.exec(targetColor)?.[1] ?? '163', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-    const b = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(baseColor)?.[1] ?? '175', 10),
-        parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(targetColor)?.[1] ?? '175', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-
+  const animatedStyle = useMotionStyle(() => {
     return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }, { rotate: `${iconRotation.value}deg` }],
-      color: `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`,
+      opacity: opacity.get(),
+      transform: [
+        { scale: scale.get() },
+        { rotate: `${iconRotation.get()}deg` },
+      ],
+      color: `rgb(${Math.round(r.get())}, ${Math.round(g.get())}, ${Math.round(b.get())})`,
     };
   });
 

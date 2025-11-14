@@ -47,3 +47,24 @@ export function errorHandler(
     },
   });
 }
+
+/**
+ * Async handler wrapper to catch errors in async route handlers
+ */
+export function asyncHandler<
+  TReq = unknown,
+  TRes = unknown,
+  TNext = unknown
+>(
+  fn: (req: TReq, res: TRes, next: TNext) => Promise<unknown>
+): (req: TReq, res: TRes, next: TNext) => Promise<void> {
+  return async (req: TReq, res: TRes, next: TNext): Promise<void> => {
+    try {
+      await fn(req, res, next);
+    } catch (error) {
+      if (typeof next === 'function') {
+        (next as (err: unknown) => void)(error);
+      }
+    }
+  };
+}

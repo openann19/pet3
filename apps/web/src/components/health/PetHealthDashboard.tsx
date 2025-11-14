@@ -2,13 +2,11 @@
 import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { useMotionValue, animate } from 'framer-motion';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +57,14 @@ function VaccinationItem({ vaccination, index }: VaccinationItemProps): JSX.Elem
   return (
     <motion.div
       style={staggeredAnimation.itemStyle}
-      className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+      className="flex items-start gap-3 p-4 rounded-lg border bg-card"
+      whileHover={{
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      }}
+      transition={{
+        duration: 0.2,
+        ease: 'easeInOut',
+      }}
     >
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
         <Syringe size={20} className="text-primary" />
@@ -94,7 +99,14 @@ function HealthRecordItem({ record, index }: HealthRecordItemProps): JSX.Element
   return (
     <motion.div
       style={staggeredAnimation.itemStyle}
-      className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+      className="p-4 rounded-lg border bg-card"
+      whileHover={{
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      }}
+      transition={{
+        duration: 0.2,
+        ease: 'easeInOut',
+      }}
     >
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold">{record.title}</h4>
@@ -132,9 +144,16 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
   return (
     <motion.div
       style={staggeredAnimation.itemStyle}
-      className={`flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow ${
+      className={`flex items-start gap-3 p-4 rounded-lg border bg-card ${
         String(reminder.completed ? 'opacity-50' : '' ?? '')
       }`}
+      whileHover={{
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      }}
+      transition={{
+        duration: 0.2,
+        ease: 'easeInOut',
+      }}
     >
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -420,21 +439,18 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
     );
   }, [reminders]);
 
-  const backdropOpacity = useSharedValue(0);
+  const backdropOpacity = useMotionValue(0);
 
   useEffect(() => {
-    backdropOpacity.value = withTiming(1, timingConfigs.smooth);
+    void animate(backdropOpacity, 1, {
+      duration: timingConfigs.smooth.duration ? timingConfigs.smooth.duration / 1000 : 0.3,
+      ease: timingConfigs.smooth.easing ?? 'easeOut',
+    });
   }, [backdropOpacity]);
-
-  const backdropStyle = useAnimatedStyle(() => {
-    return {
-      opacity: backdropOpacity.value,
-    };
-  }) as AnimatedStyle;
 
   return (
     <motion.div
-      style={backdropStyle}
+      style={{ opacity: backdropOpacity }}
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
     >
       <motion.div style={modalAnimation.style} className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -448,7 +464,11 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
               <p className="text-sm text-muted-foreground">{pet.name}'s health records</p>
             </div>
           </div>
-          <motion.div style={closeButtonAnimation.animatedStyle}>
+          <motion.div
+            initial="rest"
+            whileTap="tap"
+            variants={closeButtonAnimation.variants}
+          >
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>

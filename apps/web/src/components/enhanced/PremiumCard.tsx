@@ -71,11 +71,10 @@ export function PremiumCard({
       whileHover={hover ? 'hover' : undefined}
       variants={cardVariants}
       className={cn(
-        'rounded-xl transition-all duration-300',
+        'rounded-xl',
         getSpacingClassesFromConfig({ padding: 'xl' }),
         styleVariants[variant],
-        hover && 'cursor-pointer hover-lift-premium',
-        glow && 'animate-glow-ring',
+        hover && 'cursor-pointer',
         className
       )}
       {...props}

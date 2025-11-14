@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
+import { useCallback, useState } from 'react';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { springConfigs, timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseHoverAnimationOptions {
   scale?: number;
@@ -12,7 +12,8 @@ export interface UseHoverAnimationOptions {
 }
 
 export interface UseHoverAnimationReturn {
-  animatedStyle: AnimatedStyle;
+  animatedStyle: { scale: MotionValue<number> };
+  scale: MotionValue<number>;
   handleMouseEnter: () => void;
   handleMouseLeave: () => void;
   handleMouseDown: () => void;
@@ -26,43 +27,53 @@ export function useHoverAnimation(options: UseHoverAnimationOptions = {}): UseHo
     enabled = true,
   } = options;
 
-  const scale = useSharedValue(1);
-  const isHovered = useSharedValue(0);
-  const isPressed = useSharedValue(0);
+  const scale = useMotionValue(1);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
     if (!enabled) return;
-    isHovered.value = 1;
-    scale.value = withSpring(hoverScale, springConfigs.smooth);
-  }, [enabled, hoverScale, isHovered, scale]);
+    setIsHovered(true);
+    animate(scale, hoverScale, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [enabled, hoverScale, scale]);
 
   const handleMouseLeave = useCallback(() => {
     if (!enabled) return;
-    isHovered.value = 0;
-    scale.value = withSpring(1, springConfigs.smooth);
-  }, [enabled, isHovered, scale]);
+    setIsHovered(false);
+    animate(scale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [enabled, scale]);
 
   const handleMouseDown = useCallback(() => {
     if (!enabled) return;
-    isPressed.value = 1;
-    scale.value = withTiming(0.98, { duration: duration / 2 });
-  }, [enabled, duration, isPressed, scale]);
+    setIsPressed(true);
+    animate(scale, 0.98, {
+      duration: duration / 1000 / 2,
+      ease: 'easeOut',
+    });
+  }, [enabled, duration, scale]);
 
   const handleMouseUp = useCallback(() => {
     if (!enabled) return;
-    isPressed.value = 0;
-    const targetScale = isHovered.value === 1 ? hoverScale : 1;
-    scale.value = withSpring(targetScale, springConfigs.smooth);
-  }, [enabled, hoverScale, isHovered, isPressed, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  }) as AnimatedStyle;
+    setIsPressed(false);
+    const targetScale = isHovered ? hoverScale : 1;
+    animate(scale, targetScale, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+  }, [enabled, hoverScale, isHovered, scale]);
 
   return {
-    animatedStyle,
+    animatedStyle: { scale },
+    scale,
     handleMouseEnter,
     handleMouseLeave,
     handleMouseDown,

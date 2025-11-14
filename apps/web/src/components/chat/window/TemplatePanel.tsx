@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { Button } from '@/components/ui/button';
 import { MESSAGE_TEMPLATES } from '@/lib/chat-types';
@@ -20,7 +20,12 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
   const animation = useEntryAnimation({ initialY: -10, delay: 0 });
 
   return (
-    <motion.div style={animation.animatedStyle} className="glass-effect p-3 rounded-xl space-y-2">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={animation.variants}
+      className="glass-effect p-3 rounded-xl space-y-2"
+    >
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold">Message Templates</h4>
         <Button
@@ -49,10 +54,11 @@ interface TemplateButtonProps {
 
 function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX.Element {
   const hover = useHoverAnimation({ scale: 1.02 });
+  const hoverStyle = useAnimatedStyleValue(hover.animatedStyle);
 
   return (
     <motion.div
-      style={hover.animatedStyle}
+      style={hoverStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
       onMouseDown={hover.handleMouseDown}

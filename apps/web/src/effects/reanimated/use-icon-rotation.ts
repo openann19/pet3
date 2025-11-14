@@ -1,8 +1,8 @@
 'use client';
 
-import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseIconRotationOptions {
   enabled?: boolean;
@@ -12,31 +12,33 @@ export interface UseIconRotationOptions {
 }
 
 export interface UseIconRotationReturn {
-  rotation: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  rotation: MotionValue<number>;
+  style: CSSProperties;
 }
 
 export function useIconRotation(options: UseIconRotationOptions = {}): UseIconRotationReturn {
   const { enabled = false, targetRotation = 360, duration = 500, enablePulse = false } = options;
 
-  const rotationValue = useSharedValue(0);
+  const rotationValue = useMotionValue(0);
 
   useEffect(() => {
     if (enabled) {
-      rotationValue.value = withTiming(targetRotation, { duration });
+      animate(rotationValue, targetRotation, {
+        duration: duration / 1000,
+        ease: 'easeInOut',
+      });
     } else {
-      rotationValue.value = withTiming(0, { duration });
+      animate(rotationValue, 0, {
+        duration: duration / 1000,
+        ease: 'easeInOut',
+      });
     }
   }, [enabled, duration, targetRotation, rotationValue, enablePulse]);
 
-  const style = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotationValue.value}deg` }],
-    };
-  }) as AnimatedStyle;
-
   return {
     rotation: rotationValue,
-    style,
+    style: {
+      transform: `rotate(${rotationValue.get()}deg)`,
+    },
   };
 }

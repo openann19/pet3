@@ -2,6 +2,7 @@
  * Reduced Motion Detection (Web + RN) — SSR-safe, worklet-friendly
  */
 
+import { isTruthy } from '@/core/guards';
 import { useEffect, useState } from 'react';
 
 import { useSharedValue, type SharedValue } from '@petspark/motion';

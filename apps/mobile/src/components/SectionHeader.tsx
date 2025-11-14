@@ -1,4 +1,4 @@
-import { colors } from '@mobile/theme/colors'
+import { colors } from '../theme/colors'
 import { Typography, Dimens } from '@petspark/shared';
 
 const { spacing } = Dimens;
@@ -21,14 +21,13 @@ export const SectionHeader = memo(({ title, description }: SectionHeaderProps): 
     <View
       style={styles.container}
       accessible={true}
-      accessibilityRole="header"
+      accessibilityRole="none"
       accessibilityLabel={accessibilityLabel}
     >
       <Text
         style={styles.title}
         accessible={true}
-        accessibilityRole="header"
-        accessibilityLevel={2}
+        accessibilityRole="text"
       >
         {title}
       </Text>

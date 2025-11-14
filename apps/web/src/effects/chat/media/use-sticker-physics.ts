@@ -19,6 +19,7 @@ import {
   withSequence,
   withTiming,
 } from '@petspark/motion';
+import { isTruthy } from '@/core/guards';
 import { createLogger } from '@/lib/logger';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { randomRange } from '../core/seeded-rng';

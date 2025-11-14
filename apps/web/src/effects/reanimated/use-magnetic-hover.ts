@@ -3,9 +3,10 @@
  * Elements follow cursor with smooth spring physics and magnetic attraction
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useState, useCallback } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@/core/guards';
+import type { CSSProperties } from 'react';
 
 export interface UseMagneticHoverOptions {
   strength?: number;
@@ -24,22 +25,38 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
     enabled = true,
   } = options;
 
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translateX = useMotionValue(0);
+  const translateY = useMotionValue(0);
+  const scale = useMotionValue(1);
   const [elementRect, setElementRect] = useState<DOMRect | null>(null);
 
   const handleMouseEnter = useCallback(() => {
     if (!enabled) return;
-    scale.value = withSpring(1.05, { damping, stiffness });
-  }, [enabled, damping, stiffness]);
+    animate(scale, 1.05, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+  }, [enabled, damping, stiffness, scale]);
 
   const handleMouseLeave = useCallback(() => {
     if (!enabled) return;
-    translateX.value = withSpring(0, { damping, stiffness });
-    translateY.value = withSpring(0, { damping, stiffness });
-    scale.value = withSpring(1, { damping, stiffness });
-  }, [enabled, damping, stiffness]);
+    animate(translateX, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+    animate(translateY, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+    animate(scale, 1, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+  }, [enabled, damping, stiffness, translateX, translateY, scale]);
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
@@ -58,8 +75,16 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
         const normalizedX = Math.max(-maxDistance, Math.min(maxDistance, deltaX * strength));
         const normalizedY = Math.max(-maxDistance, Math.min(maxDistance, deltaY * strength));
 
-        translateX.value = withSpring(normalizedX, { damping, stiffness });
-        translateY.value = withSpring(normalizedY, { damping, stiffness });
+        animate(translateX, normalizedX, {
+          type: 'spring',
+          damping,
+          stiffness,
+        });
+        animate(translateY, normalizedY, {
+          type: 'spring',
+          damping,
+          stiffness,
+        });
       }
     },
     [enabled, elementRect, strength, maxDistance, damping, stiffness]
@@ -71,16 +96,15 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
     }
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-  }));
-
   return {
-    animatedStyle,
+    animatedStyle: {
+      x: translateX,
+      y: translateY,
+      scale,
+    },
+    translateX,
+    translateY,
+    scale,
     handleMouseEnter,
     handleMouseLeave,
     handleMouseMove,

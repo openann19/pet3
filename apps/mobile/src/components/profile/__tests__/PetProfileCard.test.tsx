@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react-native'
 import { PetProfileCard } from '../PetProfileCard'
-import type { PetProfile } from '@pet/domain/pet-model'
+import type { PetProfile, Intent, LocationData } from '@pet/domain/pet-model'
 
 // Mock react-native-reanimated
 vi.mock('react-native-reanimated', () => ({
@@ -24,17 +24,49 @@ describe('PetProfileCard', () => {
     ownerId: 'owner1',
     name: 'Fluffy',
     species: 'dog',
+    breedId: 'breed1',
     breedName: 'Golden Retriever',
+    sex: 'male',
+    neuterStatus: 'neutered',
     ageMonths: 36,
     lifeStage: 'adult',
+    size: 'large',
+    weightKg: 30,
+    health: {
+      vaccinationsUpToDate: true,
+      specialNeeds: [],
+      aggressionFlags: false,
+      biteHistory: false,
+      attackHistory: false,
+    },
+    temperament: {
+      energyLevel: 5,
+      friendliness: 5,
+      playfulness: 5,
+      calmness: 5,
+      independence: 3,
+      traits: [],
+    },
+    socialization: {
+      comfortWithDogs: 5,
+      comfortWithCats: 3,
+      comfortWithKids: 5,
+      comfortWithStrangers: 4,
+    },
     intents: ['adoption', 'playdate'],
-    kycVerified: true,
-    vetVerified: false,
     location: {
+      geohash: 'abc123',
+      roundedLat: 37.7749,
+      roundedLng: -122.4194,
       city: 'San Francisco',
       country: 'USA',
+      timezone: 'America/Los_Angeles',
     },
-    photos: ['/photo1.jpg'],
+    media: [{ id: 'media1', url: '/photo1.jpg', status: 'approved' }],
+    blocklist: [],
+    isActive: true,
+    kycVerified: true,
+    vetVerified: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   }
@@ -95,7 +127,7 @@ describe('PetProfileCard', () => {
   })
 
   it('should handle missing intents', () => {
-    const petWithoutIntents = { ...mockPet, intents: undefined as unknown as string[] }
+    const petWithoutIntents = { ...mockPet, intents: [] }
     render(<PetProfileCard pet={petWithoutIntents} />)
 
     expect(screen.getByText('Intents')).toBeDefined()

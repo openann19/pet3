@@ -240,6 +240,21 @@ export type {
   SpringConfigRange,
 } from './shared-transitions'
 
+// Framer Motion variants
+export {
+  modalVariants,
+  backdropVariants,
+  slideUpVariants,
+  slideDownVariants,
+  fadeVariants,
+  scaleVariants,
+  staggerContainerVariants,
+  staggerItemVariants,
+  getVariantsWithReducedMotion,
+  useVariantsWithReducedMotion,
+  transitions,
+} from './variants'
+
 // Platform-specific exports
 // On web, Framer Motion is the primary animation library
 // On native, React Native Reanimated is used

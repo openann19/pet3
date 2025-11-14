@@ -1,16 +1,16 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect, useCallback } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { getColorToken, getColorTokenWithOpacity } from '@/core/tokens';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export type SenderType = 'user' | 'bot' | 'system';
 export type MessageType = 'ai-answer' | 'error' | 'system-alert' | 'default';
@@ -23,10 +23,10 @@ export interface UseBubbleThemeOptions {
 }
 
 export interface UseBubbleThemeReturn {
-  gradientIntensity: SharedValue<number>;
-  shadowIntensity: SharedValue<number>;
-  colorIntensity: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  gradientIntensity: MotionValue<number>;
+  shadowIntensity: MotionValue<number>;
+  colorIntensity: MotionValue<number>;
+  animatedStyle: CSSProperties;
   updateTheme: (newTheme: ChatTheme) => void;
 }
 
@@ -84,18 +84,27 @@ export function useBubbleTheme(options: UseBubbleThemeOptions = {}): UseBubbleTh
     theme = DEFAULT_THEME,
   } = options;
 
-  const gradientIntensity = useSharedValue(1);
-  const shadowIntensity = useSharedValue(1);
-  const colorIntensity = useSharedValue(1);
+  const gradientIntensity = useMotionValue(1);
+  const shadowIntensity = useMotionValue(1);
+  const colorIntensity = useMotionValue(1);
 
   useEffect(() => {
     const senderIntensity = SENDER_INTENSITY[senderType];
     const messageIntensity = MESSAGE_INTENSITY[messageType];
     const targetIntensity = senderIntensity * messageIntensity;
 
-    gradientIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
-    shadowIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
-    colorIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
+    void animate(gradientIntensity, targetIntensity, {
+      duration: timingConfigs.smooth.duration,
+      ease: timingConfigs.smooth.ease as string,
+    });
+    void animate(shadowIntensity, targetIntensity, {
+      duration: timingConfigs.smooth.duration,
+      ease: timingConfigs.smooth.ease as string,
+    });
+    void animate(colorIntensity, targetIntensity, {
+      duration: timingConfigs.smooth.duration,
+      ease: timingConfigs.smooth.ease as string,
+    });
   }, [senderType, messageType, gradientIntensity, shadowIntensity, colorIntensity]);
 
   const updateTheme = useCallback(
@@ -104,19 +113,29 @@ export function useBubbleTheme(options: UseBubbleThemeOptions = {}): UseBubbleTh
       const messageIntensity = MESSAGE_INTENSITY[messageType];
       const targetIntensity = senderIntensity * messageIntensity;
 
-      gradientIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
-      shadowIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
-      colorIntensity.value = withTiming(targetIntensity, timingConfigs.smooth);
+      void animate(gradientIntensity, targetIntensity, {
+        duration: timingConfigs.smooth.duration,
+        ease: timingConfigs.smooth.ease as string,
+      });
+      void animate(shadowIntensity, targetIntensity, {
+        duration: timingConfigs.smooth.duration,
+        ease: timingConfigs.smooth.ease as string,
+      });
+      void animate(colorIntensity, targetIntensity, {
+        duration: timingConfigs.smooth.duration,
+        ease: timingConfigs.smooth.ease as string,
+      });
     },
     [senderType, gradientIntensity, shadowIntensity, colorIntensity]
   );
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const themeColor = getThemeColors(theme);
-    const intensity = colorIntensity.value;
+  // Use useTransform for interpolation
+  const shadowBlur = useTransform(shadowIntensity, [0, 1], [0, 20]);
+  const shadowOpacity = useTransform(shadowIntensity, [0, 1], [0, 0.3]);
 
-    const shadowBlur = interpolate(shadowIntensity.value, [0, 1], [0, 20], Extrapolation.CLAMP);
-    const shadowOpacity = interpolate(shadowIntensity.value, [0, 1], [0, 0.3], Extrapolation.CLAMP);
+  const animatedStyle = useMotionStyle(() => {
+    const themeColor = getThemeColors(theme);
+    const intensity = colorIntensity.get();
 
     const primaryR = parseInt(/rgba?\((\d+)/.exec(themeColor.primary)?.[1] ?? '59', 10);
     const primaryG = parseInt(/rgba?\(\d+, (\d+)/.exec(themeColor.primary)?.[1] ?? '130', 10);
@@ -134,7 +153,7 @@ export function useBubbleTheme(options: UseBubbleThemeOptions = {}): UseBubbleTh
         rgba(${primaryR}, ${primaryG}, ${primaryB}, ${intensity}) 0%,
         rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${intensity * 0.8}) 100%
       )`,
-      boxShadow: `0 4px ${shadowBlur}px ${shadowOpacity}px ${themeColor.shadow}`,
+      boxShadow: `0 4px ${shadowBlur.get()}px ${shadowOpacity.get()}px ${themeColor.shadow}`,
     };
   });
 

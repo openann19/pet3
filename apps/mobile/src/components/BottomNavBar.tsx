@@ -43,7 +43,7 @@ export function BottomNavBar({ active, items, onChange }: BottomNavBarProps): Re
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safe} accessibilityRole="tablist">
-      <Animated.View style={Object.assign({}, styles.container, navBarAnimation.navStyle)}>
+      <Animated.View style={[styles.container, navBarAnimation.navStyle]}>
         {/* Glow background effect */}
         <View style={styles.glowBackground} />
 
@@ -246,7 +246,7 @@ function TabItem({ item, selected, onPress }: TabItemProps): React.ReactElement 
       >
         {/* Glow effect for active item */}
         {selected && (
-          <Animated.View style={Object.assign({}, styles.iconGlow, glowAnimatedStyle)} />
+          <Animated.View style={[styles.iconGlow, glowAnimatedStyle]} />
         )}
 
         {/* Icon */}
@@ -265,12 +265,12 @@ function TabItem({ item, selected, onPress }: TabItemProps): React.ReactElement 
 
         {/* Active indicator */}
         <Animated.View
-          style={Object.assign({}, styles.activeIndicator, animation.indicatorStyle)}
+          style={[styles.activeIndicator, animation.indicatorStyle]}
         />
 
         {/* Badge */}
         {item.badge && item.badge > 0 && (
-          <Animated.View style={Object.assign({}, styles.badge, badgeAnimatedStyle)}>
+          <Animated.View style={[styles.badge, badgeAnimatedStyle]}>
             <Text style={styles.badgeText}>{item.badge > 9 ? '9+' : String(item.badge)}</Text>
           </Animated.View>
         )}

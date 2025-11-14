@@ -9,6 +9,7 @@ import { isTruthy } from '@/core/guards';
 import { useApp } from '@/contexts/AppContext';
 import { useAnimatedStyleValue, type AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal';
 import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt';
@@ -48,7 +49,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { memo, useEffect, useRef, useState, useMemo } from 'react';
-import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { AnimatedAIWrapper, BubbleWrapperGodTier } from './bubble-wrapper-god-tier';
 import { useHapticFeedback } from './bubble-wrapper-god-tier/effects/useHapticFeedback';
 import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/useParticleBurstOnEvent';
@@ -58,6 +59,28 @@ import { UndoDeleteChip } from './UndoDeleteChip';
 import { MessagePeek } from './MessagePeek';
 import { SmartImage } from '@/components/media/SmartImage';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { extractNumberValue } from '@/effects/reanimated';
+import { useMotionStyle } from '@/effects/reanimated/use-motion-style';
+
+// Helper to get value from either MotionValue or SharedValue
+function getMotionValue(value: { get?: () => number; value?: number | { target: number } } | number, defaultValue: number): number {
+  if (typeof value === 'number') return value;
+  if (value && typeof value === 'object') {
+    if ('get' in value && typeof value.get === 'function') {
+      return value.get();
+    }
+    if ('value' in value) {
+      const val = value.value;
+      if (typeof val === 'number') {
+        return val;
+      }
+      if (val && typeof val === 'object' && 'target' in val) {
+        return (val as { target: number }).target;
+      }
+    }
+  }
+  return defaultValue;
+}
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
 
@@ -95,6 +118,8 @@ const REACTIONS: { type: ReactionType; icon: typeof Heart; label: string }[] = [
 ];
 
 function MessageBubble({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _prefersReducedMotion = useReducedMotion(),
   message,
   isOwn,
   isClusterStart,
@@ -129,7 +154,6 @@ function MessageBubble({
   const [showPeek, setShowPeek] = useState(false);
   const [peekPosition, setPeekPosition] = useState<{ x: number; y: number } | undefined>();
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const bubbleContentRef = useRef<HTMLDivElement>(null);
   const previousStatusRef = useRef<Message['status'] | undefined>(previousStatus);
 
   // Create stable message reference for accessibility
@@ -137,7 +161,7 @@ function MessageBubble({
     return getStableMessageReference(
       message.id,
       message.createdAt,
-      message.senderName || 'Unknown',
+      message.senderName ?? 'Unknown',
       message.content,
       true // use relative timestamp
     );
@@ -146,8 +170,8 @@ function MessageBubble({
   // Ensure focus appearance on bubble container
   useEffect(() => {
     if (bubbleRef.current) {
-      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]') as HTMLElement;
-      if (bubbleElement) {
+      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]');
+      if (bubbleElement instanceof HTMLElement) {
         bubbleElement.setAttribute('id', stableReference.stableId);
         bubbleElement.setAttribute('tabIndex', '0');
         bubbleElement.setAttribute('role', 'article');
@@ -241,11 +265,11 @@ function MessageBubble({
     barCount: 20,
   });
 
-  const contextMenuOpacity = useSharedValue(0);
-  const contextMenuScale = useSharedValue(0.95);
-  const reactionsPickerOpacity = useSharedValue(0);
-  const reactionsPickerScale = useSharedValue(0.9);
-  const reactionsPickerTranslateY = useSharedValue(10);
+  const contextMenuOpacity = useMotionValue(0);
+  const contextMenuScale = useMotionValue(0.95);
+  const reactionsPickerOpacity = useMotionValue(0);
+  const reactionsPickerScale = useMotionValue(0.9);
+  const reactionsPickerTranslateY = useMotionValue(10);
 
   const formatTime = (timestamp: string): string => {
     const date = new Date(timestamp);
@@ -254,23 +278,58 @@ function MessageBubble({
 
   useEffect(() => {
     if (showContextMenu) {
-      contextMenuOpacity.value = withSpring(1, springConfigs.smooth);
-      contextMenuScale.value = withSpring(1, springConfigs.smooth);
+      void animate(contextMenuOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping ?? 25,
+        stiffness: springConfigs.smooth.stiffness ?? 400,
+      });
+      void animate(contextMenuScale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping ?? 25,
+        stiffness: springConfigs.smooth.stiffness ?? 400,
+      });
     } else {
-      contextMenuOpacity.value = withTiming(0, timingConfigs.fast);
-      contextMenuScale.value = withTiming(0.95, timingConfigs.fast);
+      void animate(contextMenuOpacity, 0, {
+        duration: timingConfigs.fast.duration ?? 0.15,
+        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+      });
+      void animate(contextMenuScale, 0.95, {
+        duration: timingConfigs.fast.duration ?? 0.15,
+        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+      });
     }
   }, [showContextMenu, contextMenuOpacity, contextMenuScale]);
 
   useEffect(() => {
     if (showReactions) {
-      reactionsPickerOpacity.value = withSpring(1, springConfigs.smooth);
-      reactionsPickerScale.value = withSpring(1, springConfigs.bouncy);
-      reactionsPickerTranslateY.value = withSpring(0, springConfigs.smooth);
+      void animate(reactionsPickerOpacity, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping ?? 25,
+        stiffness: springConfigs.smooth.stiffness ?? 400,
+      });
+      void animate(reactionsPickerScale, 1, {
+        type: 'spring',
+        damping: springConfigs.bouncy.damping ?? 15,
+        stiffness: springConfigs.bouncy.stiffness ?? 500,
+      });
+      void animate(reactionsPickerTranslateY, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping ?? 25,
+        stiffness: springConfigs.smooth.stiffness ?? 400,
+      });
     } else {
-      reactionsPickerOpacity.value = withTiming(0, timingConfigs.fast);
-      reactionsPickerScale.value = withTiming(0.9, timingConfigs.fast);
-      reactionsPickerTranslateY.value = withTiming(10, timingConfigs.fast);
+      void animate(reactionsPickerOpacity, 0, {
+        duration: timingConfigs.fast.duration ?? 0.15,
+        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+      });
+      void animate(reactionsPickerScale, 0.9, {
+        duration: timingConfigs.fast.duration ?? 0.15,
+        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+      });
+      void animate(reactionsPickerTranslateY, 10, {
+        duration: timingConfigs.fast.duration ?? 0.15,
+        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
+      });
     }
   }, [showReactions, reactionsPickerOpacity, reactionsPickerScale, reactionsPickerTranslateY]);
 
@@ -472,19 +531,19 @@ function MessageBubble({
     );
   };
 
-  const contextMenuStyle = useAnimatedStyle(() => {
+  const contextMenuStyle = useMotionStyle(() => {
     return {
-      opacity: contextMenuOpacity.value,
-      transform: [{ scale: contextMenuScale.value }],
+      opacity: contextMenuOpacity.get(),
+      transform: [{ scale: contextMenuScale.get() }],
     };
   });
 
-  const reactionsPickerStyle = useAnimatedStyle(() => {
+  const reactionsPickerStyle = useMotionStyle(() => {
     return {
-      opacity: reactionsPickerOpacity.value,
+      opacity: reactionsPickerOpacity.get(),
       transform: [
-        { scale: reactionsPickerScale.value },
-        { translateY: reactionsPickerTranslateY.value },
+        { scale: reactionsPickerScale.get() },
+        { translateY: reactionsPickerTranslateY.get() },
       ],
     };
   });
@@ -504,85 +563,104 @@ function MessageBubble({
     hapticFeedback: true,
   });
 
-  const combinedAnimatedStyle = useAnimatedStyle(() => {
+  // Use motion values directly for delete animation (migrated to Framer Motion)
+  const combinedAnimatedStyle = useMotionStyle(() => {
     if (isTruthy(isDeleting)) {
+      // Use deleteAnimation.animatedStyle directly (returns motion values)
+      // This will be converted to CSS by useMotionStyle, but ideally should use motion.div style prop
       return {
-        opacity: deleteAnimation.opacity.value,
-        transform: [
-          { scale: deleteAnimation.scale.value },
-          { translateY: deleteAnimation.translateY.value },
-          { translateX: deleteAnimation.translateX.value },
-          { rotate: `${deleteAnimation.rotation.value}deg` },
-        ],
-        height: deleteAnimation.height.value,
-        overflow: 'hidden' as const,
-      } as ReturnType<typeof useAnimatedStyle>;
+        opacity: deleteAnimation.opacity.get(),
+        scale: deleteAnimation.scale.get(),
+        y: deleteAnimation.translateY.get(),
+        x: deleteAnimation.translateX.get(),
+        rotate: deleteAnimation.rotation.get(),
+        height: deleteAnimation.height.get(),
+      };
     }
 
+    const baseOpacityVal = getMotionValue(baseOpacity, 1);
+    const dropOpacityVal = getMotionValue(dropEffect.opacity, 1);
+    const bubbleOpacityVal = getMotionValue(bubbleVariant.opacity, 1);
+    const undoOpacityVal = getMotionValue(undoAnimation.opacity, 1);
+    const baseTranslateYVal = getMotionValue(baseTranslateY, 0);
+    const dropTranslateYVal = getMotionValue(dropEffect.translateY, 0);
+    const bubbleTranslateYVal = getMotionValue(bubbleVariant.translateY, 0);
+    const baseScaleVal = getMotionValue(baseScale, 1);
+    const dropScaleVal = getMotionValue(dropEffect.scale, 1);
+    const bubbleScaleVal = getMotionValue(bubbleVariant.scale, 1);
+    const undoScaleVal = getMotionValue(undoAnimation.scale, 1);
+    const undoTranslateXVal = getMotionValue(undoAnimation.translateX, 0);
+    const tiltYVal = getMotionValue(hoverTilt.tiltY, 0);
+    const tiltXVal = getMotionValue(hoverTilt.tiltX, 0);
+    const liftVal = getMotionValue(hoverTilt.lift, 0);
+
     return {
-      opacity:
-        baseOpacity.value *
-        dropEffect.opacity.value *
-        bubbleVariant.opacity.value *
-        undoAnimation.opacity.value,
+      opacity: baseOpacityVal * dropOpacityVal * bubbleOpacityVal * undoOpacityVal,
       transform: [
         {
-          translateY:
-            baseTranslateY.value + dropEffect.translateY.value + bubbleVariant.translateY.value,
+          translateY: baseTranslateYVal + dropTranslateYVal + bubbleTranslateYVal,
         },
         {
-          scale:
-            baseScale.value *
-            dropEffect.scale.value *
-            bubbleVariant.scale.value *
-            undoAnimation.scale.value,
+          scale: baseScaleVal * dropScaleVal * bubbleScaleVal * undoScaleVal,
         },
-        { translateX: undoAnimation.translateX.value },
-        { rotateX: `${hoverTilt.tiltY.value}deg` },
-        { rotateY: `${-hoverTilt.tiltX.value}deg` },
-        { translateZ: `${hoverTilt.lift.value}px` },
+        { translateX: undoTranslateXVal },
+        { rotateX: `${tiltYVal}deg` },
+        { rotateY: `${-tiltXVal}deg` },
+        { translateZ: `${liftVal}px` },
       ],
-    } as ReturnType<typeof useAnimatedStyle>;
+    };
   });
 
-  const combinedGlowStyle = useAnimatedStyle(() => {
+  const combinedGlowStyle = useMotionStyle(() => {
+    const baseGlowVal = getMotionValue(baseGlowOpacity, 0);
+    const dropGlowVal = getMotionValue(dropEffect.glowOpacity, 0);
+    const bubbleGlowVal = getMotionValue(bubbleVariant.glowOpacity, 0);
+    const tiltGlowVal = getMotionValue(hoverTilt.glowOpacity, 0);
+    const baseGlowScaleVal = getMotionValue(baseGlowScale, 1);
+    const liftVal = getMotionValue(hoverTilt.lift, 0);
+    
     return {
       opacity: Math.max(
-        baseGlowOpacity.value,
-        dropEffect.glowOpacity.value,
-        bubbleVariant.glowOpacity.value,
-        hoverTilt.glowOpacity.value
+        baseGlowVal,
+        dropGlowVal,
+        bubbleGlowVal,
+        tiltGlowVal
       ),
       transform: [
-        { scale: baseGlowScale.value },
-        { translateZ: `${hoverTilt.lift.value * 1.5}px` },
+        { scale: baseGlowScaleVal },
+        { translateZ: `${liftVal * 1.5}px` },
       ],
-    } as ReturnType<typeof useAnimatedStyle>;
+    };
   });
 
-  const combinedBackgroundStyle = useAnimatedStyle(() => {
-    const highlightOpacity = smartHighlight.backgroundOpacity.value;
+  const combinedBackgroundStyle = useMotionStyle(() => {
+    const highlightOpacityVal = getMotionValue(smartHighlight.backgroundOpacity, 0);
+    const baseBackgroundOpacityVal = getMotionValue(baseBackgroundOpacity, 0);
 
-    if (highlightOpacity > 0) {
+    if (highlightOpacityVal > 0) {
       return {
         backgroundColor: 'rgba(255, 215, 0, 0.3)',
-        opacity: Math.max(baseBackgroundOpacity.value, highlightOpacity),
+        opacity: Math.max(baseBackgroundOpacityVal, highlightOpacityVal),
       };
     }
 
     return {
       backgroundColor: 'transparent',
-      opacity: baseBackgroundOpacity.value,
+      opacity: baseBackgroundOpacityVal,
     };
   });
 
-  // Convert animated styles to CSS
+  // Convert animated styles to CSS (for compatibility during migration)
+  // TODO: Migrate to use motion.div with style props directly
   const statusStyleValue = useAnimatedStyleValue(deliveryTransition.animatedStyle as AnimatedStyle);
-  const contextMenuStyleValue = useAnimatedStyleValue(contextMenuStyle);
-  const reactionsPickerStyleValue = useAnimatedStyleValue(reactionsPickerStyle);
-  const combinedAnimatedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
-  const combinedGlowStyleValue = useAnimatedStyleValue(combinedGlowStyle);
-  const combinedBackgroundStyleValue = useAnimatedStyleValue(combinedBackgroundStyle);
+  const contextMenuStyleValue = useAnimatedStyleValue(contextMenuStyle as AnimatedStyle);
+  const reactionsPickerStyleValue = useAnimatedStyleValue(reactionsPickerStyle as AnimatedStyle);
+  const combinedAnimatedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle as AnimatedStyle);
+  const combinedGlowStyleValue = useAnimatedStyleValue(combinedGlowStyle as AnimatedStyle);
+  const combinedBackgroundStyleValue = useAnimatedStyleValue(combinedBackgroundStyle as AnimatedStyle);
+  
+  // For delete animation, use motion values directly when possible
+  const deleteAnimatedStyle = isDeleting ? deleteAnimation.animatedStyle : undefined;
 
   if (isDeleting && roomType === 'group' && !isOwn) {
     return (
@@ -614,7 +692,7 @@ function MessageBubble({
         }}
       >
         <motion.div
-          style={combinedAnimatedStyleValue}
+          style={isDeleting && deleteAnimatedStyle ? deleteAnimatedStyle : combinedAnimatedStyleValue}
           className={cn(
             'relative group px-3 py-2 rounded-2xl shadow-sm max-w-[78%]',
             'text-sm leading-relaxed wrap-break-word',
@@ -761,8 +839,8 @@ function MessageBubble({
           )}
 
           {message.type === 'location' && message.metadata?.location && (
-            <button
-              className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+            <motion.button
+              className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg"
               onClick={() => {
                 const location = message.metadata?.location;
                 if (location) {
@@ -770,13 +848,19 @@ function MessageBubble({
                   window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
                 }
               }}
+              whileHover={{ backgroundColor: 'var(--muted)' }}
+              whileTap={{ scale: 0.98 }}
+              transition={{
+                duration: 0.15,
+                ease: 'easeInOut',
+              }}
             >
               <MapPin size={16} />
               <span className="text-xs">
-                {message.metadata.location.address ||
+                {message.metadata.location.address ??
                   `${message.metadata.location.lat}, ${message.metadata.location.lng}`}
               </span>
-            </button>
+            </motion.button>
           )}
 
           {message.type === 'sticker' && <div className="text-5xl p-2">{message.content}</div>}
@@ -816,11 +900,11 @@ function MessageBubble({
                 const groupedReactions = message.reactions.reduce(
                   (acc, reaction) => {
                     const emoji = reaction.emoji;
-                    if (!acc[emoji]) {
+                    if (!(emoji in acc)) {
                       acc[emoji] = [];
                     }
                     const emojiArray = acc[emoji];
-                    if (emojiArray) {
+                    if (Array.isArray(emojiArray)) {
                       emojiArray.push(reaction);
                     }
                     return acc;
@@ -944,14 +1028,20 @@ function MessageBubble({
             )}
           >
             {REACTIONS.map(({ type, label }) => (
-              <button
+              <motion.button
                 key={type}
                 onClick={() => { handleReact(type); }}
-                className="p-2 hover:bg-muted rounded-full transition-colors"
+                className="p-2 rounded-full"
                 aria-label={label}
+                whileHover={{ backgroundColor: 'var(--muted)' }}
+                whileTap={{ scale: 0.9 }}
+                transition={{
+                  duration: 0.15,
+                  ease: 'easeInOut',
+                }}
               >
                 <span className="text-xl">{type}</span>
-              </button>
+              </motion.button>
             ))}
           </motion.div>
         )}
@@ -983,8 +1073,8 @@ function MessageBubble({
         <MessagePeek
           message={{
             content: message.content,
-            senderName: isOwn ? message.senderName || 'You' : message.senderName || 'User',
-            timestamp: message.timestamp || message.createdAt,
+            senderName: isOwn ? (message.senderName ?? 'You') : (message.senderName ?? 'User'),
+            timestamp: message.timestamp ?? message.createdAt,
             type: message.type,
           }}
           visible={showPeek}

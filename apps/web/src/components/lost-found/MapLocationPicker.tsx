@@ -14,6 +14,7 @@ import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { isTruthy } from '@/core/guards';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, MapPin, Check, Crosshair } from '@phosphor-icons/react';

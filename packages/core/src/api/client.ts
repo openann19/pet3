@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
 
 /**
  * Unified API Client
@@ -150,8 +150,9 @@ export class UnifiedAPIClient {
     }
 
     // If already refreshing, wait for that promise
-    if (isTruthy(this.refreshTokenPromise)) {
-      return this.refreshTokenPromise
+    const existingPromise = this.refreshTokenPromise
+    if (isTruthy(existingPromise)) {
+      return existingPromise
     }
 
     this.refreshTokenPromise = this.config.auth
@@ -177,9 +178,19 @@ export class UnifiedAPIClient {
   ): Promise<Response> {
     const headers = new Headers(this.config.defaultHeaders)
     if (isTruthy(options.headers)) {
-      Object.entries(options.headers).forEach(([key, value]) => {
-        headers.set(key, String(value))
-      })
+      if (options.headers instanceof Headers) {
+        options.headers.forEach((value, key) => {
+          headers.set(key, value)
+        })
+      } else if (Array.isArray(options.headers)) {
+        options.headers.forEach(([key, value]) => {
+          headers.set(key, String(value))
+        })
+      } else {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          headers.set(key, String(value))
+        })
+      }
     }
 
     if (options.skipAuth !== true && this.config.auth !== undefined) {

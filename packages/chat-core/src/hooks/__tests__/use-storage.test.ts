@@ -108,13 +108,13 @@ describe('useStorage', () => {
       const { result } = renderHook(() => useStorage('test-key', 0))
 
       act(() => {
-        result.current[1](prev => prev + 1)
+        result.current[1]((prev: number) => prev + 1)
       })
 
       expect(result.current[0]).toBe(1)
 
       act(() => {
-        result.current[1](prev => prev + 5)
+        result.current[1]((prev: number) => prev + 5)
       })
 
       expect(result.current[0]).toBe(6)
@@ -148,7 +148,7 @@ describe('useStorage', () => {
       const { result } = renderHook(() => useStorage('test-key', { count: 0 }))
 
       act(() => {
-        result.current[1](prev => ({ ...prev, count: prev.count + 1 }))
+        result.current[1]((prev: { count: number }) => ({ ...prev, count: prev.count + 1 }))
       })
 
       expect(result.current[0]).toEqual({ count: 1 })
@@ -194,7 +194,7 @@ describe('useStorage', () => {
       mockStorage.setItem('key-2', JSON.stringify('value-2'))
 
       const { result, rerender } = renderHook(
-        ({ key }) => useStorage(key, 'default'),
+        ({ key }: { key: string }) => useStorage(key, 'default'),
         {
           initialProps: { key: 'key-1' },
         }
@@ -211,7 +211,7 @@ describe('useStorage', () => {
       mockStorage.setItem('key-1', JSON.stringify('value-1'))
 
       const { result, rerender } = renderHook(
-        ({ key }) => useStorage(key, 'default'),
+        ({ key }: { key: string }) => useStorage(key, 'default'),
         {
           initialProps: { key: 'key-1' },
         }
@@ -333,7 +333,7 @@ describe('useStorage', () => {
 
     it('should update default value ref when it changes', () => {
       const { result, rerender } = renderHook(
-        ({ defaultValue }) => useStorage('test-key', defaultValue),
+        ({ defaultValue }: { defaultValue: string }) => useStorage('test-key', defaultValue),
         {
           initialProps: { defaultValue: 'default-1' },
         }

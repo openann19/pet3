@@ -1,9 +1,12 @@
 import type { ComponentProps } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { getAriaAlertAttributes } from '@/lib/accessibility';
+import { alertVariants as motionAlertVariants } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const alertVariants = cva(
   cn(
@@ -28,22 +31,46 @@ const alertVariants = cva(
   }
 );
 
+export interface AlertProps extends ComponentProps<'div'>, VariantProps<typeof alertVariants> {
+  enableAnimations?: boolean;
+}
+
 function Alert({
   className,
   variant,
+  enableAnimations = true,
   ...props
-}: ComponentProps<'div'> & VariantProps<typeof alertVariants>) {
+}: AlertProps) {
   const alertRole = variant === 'destructive' ? 'alert' : 'status';
   const ariaAttrs = getAriaAlertAttributes({
     role: alertRole,
     live: variant === 'destructive' ? 'assertive' : 'polite',
     atomic: true,
   });
+  const reducedMotion = useReducedMotion();
+  const shouldAnimate = enableAnimations && !reducedMotion;
+
+  const baseClassName = cn(alertVariants({ variant }), className);
+
+  if (shouldAnimate) {
+    return (
+      <motion.div
+        data-slot="alert"
+        className={baseClassName}
+        variants={motionAlertVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        {...ariaAttrs}
+        {...props}
+      />
+    );
+  }
 
   return (
     <div
       data-slot="alert"
-      className={cn(alertVariants({ variant }), className)}
+      className={baseClassName}
       {...ariaAttrs}
       {...props}
     />
@@ -56,7 +83,7 @@ function AlertTitle({ className, ...props }: ComponentProps<'div'>) {
       data-slot="alert-title"
       className={cn(
         'col-start-2 line-clamp-1 min-h-4',
-        getTypographyClasses('subtitle'),
+        getTypographyClasses('body-sm'),
         className
       )}
       {...props}

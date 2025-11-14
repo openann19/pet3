@@ -225,17 +225,15 @@ export function MatchingConfigPanel() {
                   <span className="text-sm text-muted-foreground">{value}%</span>
                 </div>
                 <Slider
-                  id={key}
                   min={range.min}
                   max={range.max}
                   step={1}
-                  value={[value]}
-                  onValueChange={([val]) => {
-                    if (val !== undefined && typeof val === 'number') {
-                      handleWeightChange(key as keyof typeof config.weights, val);
-                    }
+                  value={value}
+                  onValueChange={(val: number) => {
+                    handleWeightChange(key as keyof typeof config.weights, val);
                   }}
                   className="w-full"
+                  aria-label={`Adjust ${key.replace(/([A-Z])/g, ' $1').trim()} weight`}
                 />
               </div>
             );

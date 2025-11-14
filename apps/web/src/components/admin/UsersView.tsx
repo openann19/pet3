@@ -1,5 +1,6 @@
 import { adminApi } from '@/api/admin-api';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
+import { useEntryAnimation } from '@/effects/reanimated';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { badgeVariants } from '@/components/ui/badge';
 import { Badge } from '@/components/ui/badge';
@@ -269,7 +270,13 @@ export default function UsersView() {
             })
             
             return (
-              <motion.div key={user.id} style={entry.animatedStyle}>
+              <motion.div
+                key={user.id}
+                initial="hidden"
+                animate="visible"
+                variants={entry.variants}
+                style={{ opacity: entry.opacity, y: entry.translateY, scale: entry.scale } as MotionStyle}
+              >
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">

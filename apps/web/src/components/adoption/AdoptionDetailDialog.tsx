@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';

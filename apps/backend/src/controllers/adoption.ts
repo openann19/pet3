@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import type { Response } from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import { asyncHandler } from '../middleware/error-handler.js';
@@ -63,7 +63,7 @@ export const getListings = asyncHandler(async (req: AuthenticatedRequest, res: R
   ]);
 
   res.json({
-    data: listings.map((listing) => ({
+    data: listings.map((listing: (typeof listings)[number]) => ({
       id: listing.id,
       petId: listing.petId,
       ownerId: listing.ownerId,
@@ -435,7 +435,7 @@ export const getApplications = asyncHandler(async (req: AuthenticatedRequest, re
   });
 
   res.json({
-    data: applications.map((app) => ({
+    data: applications.map((app: (typeof applications)[number]) => ({
       id: app.id,
       listingId: app.listingId,
       applicantId: app.applicantId,

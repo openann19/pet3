@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { isTruthy } from '@/core/guards';
 import { useStorage } from '@/hooks/use-storage';
 import { haptics } from '@/lib/haptics';
 import type { StoryHighlight } from '@/lib/stories-types';

@@ -12,7 +12,7 @@ import { StyleSheet, View } from 'react-native'
 import { Canvas, Circle, Group } from '@shopify/react-native-skia'
 import { useSharedValue, withTiming, useDerivedValue } from 'react-native-reanimated'
 import { Skia } from '@shopify/react-native-skia'
-import { motion } from '@petspark/motion'
+import { motionTokens } from '@petspark/motion'
 import { useReducedMotionSV } from '@mobile/effects/core/use-reduced-motion-sv'
 
 interface Particle {
@@ -42,7 +42,7 @@ export function SkiaParticles({
 }: SkiaParticlesProps): React.JSX.Element | null {
   const progress = useSharedValue(0)
   const reducedMotion = useReducedMotionSV()
-  const actualDuration = reducedMotion.value ? motion.durations.fast : duration
+  const actualDuration = reducedMotion.value ? motionTokens.durations.fast : duration
 
   const particles = useMemo<Particle[]>(() => {
     if (reducedMotion.value) {

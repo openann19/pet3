@@ -1,9 +1,9 @@
 'use client';
 
-import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 import { springConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseSidebarAnimationOptions {
   isOpen: boolean;
@@ -14,8 +14,10 @@ export interface UseSidebarAnimationOptions {
 
 export interface UseSidebarAnimationReturn {
   width: number;
-  widthStyle: AnimatedStyle;
-  opacityStyle: AnimatedStyle;
+  widthStyle: CSSProperties;
+  opacityStyle: CSSProperties;
+  widthValue: MotionValue<number>;
+  opacity: MotionValue<number>;
 }
 
 /**
@@ -27,32 +29,34 @@ export function useSidebarAnimation(
 ): UseSidebarAnimationReturn {
   const { isOpen, openWidth = 280, closedWidth = 80, enableOpacity = true } = options;
 
-  const width = useSharedValue(isOpen ? openWidth : closedWidth);
-  const opacity = useSharedValue(isOpen ? 1 : 0);
+  const widthValue = useMotionValue(isOpen ? openWidth : closedWidth);
+  const opacity = useMotionValue(isOpen ? 1 : 0);
 
   useEffect(() => {
-    width.value = withSpring(isOpen ? openWidth : closedWidth, springConfigs.smooth);
+    animate(widthValue, isOpen ? openWidth : closedWidth, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
 
     if (enableOpacity) {
-      opacity.value = withSpring(isOpen ? 1 : 0, springConfigs.smooth);
+      animate(opacity, isOpen ? 1 : 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
     }
-  }, [isOpen, openWidth, closedWidth, enableOpacity, width, opacity]);
-
-  const widthStyle = useAnimatedStyle(() => {
-    return {
-      width: width.value,
-    };
-  }) as AnimatedStyle;
-
-  const opacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+  }, [isOpen, openWidth, closedWidth, enableOpacity, widthValue, opacity]);
 
   return {
     width: isOpen ? openWidth : closedWidth,
-    widthStyle,
-    opacityStyle,
+    widthStyle: {
+      width: widthValue.get(),
+    },
+    opacityStyle: {
+      opacity: opacity.get(),
+    },
+    widthValue,
+    opacity,
   };
 }

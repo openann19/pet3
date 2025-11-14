@@ -2,6 +2,7 @@ import type { ComponentProps, ComponentType, CSSProperties, ReactNode } from 're
 import { createContext, useContext, useId, useMemo } from 'react';
 import * as RechartsPrimitive from 'recharts';
 
+import { isTruthy } from '@/core/guards';
 import { cn } from '@/lib/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }

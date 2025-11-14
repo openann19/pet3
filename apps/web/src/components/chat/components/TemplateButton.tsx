@@ -1,13 +1,13 @@
 /**
-import { motion } from 'framer-motion';
  * Template Button Component
  *
  * Individual template button in the template panel
  */
 
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import type { MessageTemplate } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -19,9 +19,10 @@ export interface TemplateButtonProps {
 export function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX.Element {
     const _uiConfig = useUIConfig();
     const hover = useHoverAnimation({ scale: 1.02 });
+    const hoverStyle = useAnimatedStyleValue(hover.animatedStyle);
 
   return (
-    <motion.div style={hover.animatedStyle}>
+    <motion.div style={hoverStyle}>
       <Button
         variant="outline"
         className="w-full justify-start text-left h-auto py-2 px-3"

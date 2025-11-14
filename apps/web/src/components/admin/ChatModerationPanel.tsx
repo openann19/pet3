@@ -229,7 +229,8 @@ export default function ChatModerationPanel() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-sm"
           onClick={() => setSelectedReport(null)}
         >
-          <Card className="max-w-2xl w-full p-6" onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => { e.stopPropagation(); }}>
+            <Card className="max-w-2xl w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">Report Details</h3>
               <Button
@@ -285,6 +286,7 @@ export default function ChatModerationPanel() {
               </div>
             </div>
           </Card>
+          </div>
         </MotionView>
       )}
     </div>

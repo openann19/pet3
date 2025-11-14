@@ -143,19 +143,26 @@ export function PremiumModal({
           )}
 
           {showCloseButton && (
-            <button
+            <motion.button
               onClick={() => { handleOpenChange(false); }}
               className={cn(
-                'absolute top-4 right-4 rounded-md opacity-70 hover:opacity-100 transition-opacity',
+                'absolute top-4 right-4 rounded-md',
                 getSpacingClassesFromConfig({ padding: 'xs' }),
                 accessibilityClasses.focusVisible,
                 accessibilityClasses.minTouch
               )}
               aria-label="Close dialog"
               type="button"
+              initial={{ opacity: 0.7 }}
+              whileHover={{ opacity: 1 }}
+              whileTap={{ opacity: 0.9 }}
+              transition={{
+                duration: prefersReducedMotion ? 0 : 0.15,
+                ease: 'easeInOut',
+              }}
             >
               <X size={16} aria-hidden="true" />
-            </button>
+            </motion.button>
           )}
         </motion.div>
       </DialogContent>

@@ -1,15 +1,10 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  runOnUI,
-  runOnJS,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
@@ -24,13 +19,20 @@ export interface UseDeleteBubbleAnimationOptions {
 }
 
 export interface UseDeleteBubbleAnimationReturn {
-  opacity: SharedValue<number>;
-  scale: SharedValue<number>;
-  translateY: SharedValue<number>;
-  translateX: SharedValue<number>;
-  height: SharedValue<number>;
-  rotation: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  translateY: MotionValue<number>;
+  translateX: MotionValue<number>;
+  height: MotionValue<number>;
+  rotation: MotionValue<number>;
+  animatedStyle: {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+    y: MotionValue<number>;
+    x: MotionValue<number>;
+    rotate: MotionValue<number>;
+    height: MotionValue<number>;
+  };
   triggerDelete: () => void;
   reset: () => void;
 }
@@ -48,113 +50,138 @@ export function useDeleteBubbleAnimation(
     duration = DEFAULT_DURATION,
   } = options;
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
-  const translateX = useSharedValue(0);
-  const height = useSharedValue(60);
-  const rotation = useSharedValue(0);
+  const opacity = useMotionValue(1);
+  const scale = useMotionValue(1);
+  const translateY = useMotionValue(0);
+  const translateX = useMotionValue(0);
+  const height = useMotionValue(60);
+  const rotation = useMotionValue(0);
 
   const triggerDelete = useCallback(() => {
     if (hapticFeedback) {
       haptics.impact(context === 'admin-delete' ? 'heavy' : 'medium');
     }
 
-    runOnUI(() => {
-      switch (context) {
-        case 'self-delete': {
-          scale.value = withSequence(
-            withSpring(1.1, springConfigs.snappy),
-            withTiming(0, { ...timingConfigs.smooth, duration })
-          );
-          translateY.value = withTiming(-40, {
-            ...timingConfigs.smooth,
-            duration,
-          });
-          opacity.value = withTiming(0, {
-            ...timingConfigs.smooth,
-            duration,
-          });
-          height.value = withTiming(0, { duration }, (finished) => {
-            if (finished && onFinish) {
-              runOnJS(onFinish)();
-            }
-          });
-          break;
-        }
+    const durationSeconds = duration / 1000;
 
-        case 'admin-delete': {
-          scale.value = withSequence(
-            withSpring(1.15, { ...springConfigs.bouncy, damping: 12 }),
-            withTiming(0.8, { duration: duration * 0.3 }),
-            withTiming(0, { duration: duration * 0.7 })
-          );
-          translateX.value = withSequence(
-            withSpring(10, springConfigs.bouncy),
-            withSpring(-10, springConfigs.bouncy),
-            withTiming(0, { duration: duration * 0.5 })
-          );
-          translateY.value = withTiming(0, { duration: duration * 0.5 });
-          opacity.value = withSequence(
-            withTiming(0.7, { duration: duration * 0.2 }),
-            withTiming(0, { duration: duration * 0.8 })
-          );
-          height.value = withTiming(0, { duration }, (finished) => {
-            if (finished && onFinish) {
-              runOnJS(onFinish)();
-            }
-          });
-          rotation.value = withSequence(
-            withSpring(5, springConfigs.bouncy),
-            withSpring(-5, springConfigs.bouncy),
-            withTiming(0, { duration: duration * 0.5 })
-          );
-          break;
-        }
-
-        case 'emoji-media': {
-          scale.value = withSequence(
-            withSpring(1.2, springConfigs.bouncy),
-            withTiming(0, { duration: duration * 0.6 })
-          );
-          opacity.value = withSequence(
-            withTiming(0.8, { duration: duration * 0.2 }),
-            withTiming(0, { duration: duration * 0.8 })
-          );
-          height.value = withTiming(0, { duration }, (finished) => {
-            if (finished && onFinish) {
-              runOnJS(onFinish)();
-            }
-          });
-          rotation.value = withTiming(Math.random() > 0.5 ? 15 : -15, { duration });
-          break;
-        }
-
-        case 'group-chat': {
-          scale.value = withTiming(0.95, { duration: duration * 0.3 });
-          opacity.value = withSequence(
-            withTiming(0.5, { duration: duration * 0.3 }),
-            withTiming(0, { duration: duration * 0.7 })
-          );
-          height.value = withTiming(0, { duration }, (finished) => {
-            if (finished && onFinish) {
-              runOnJS(onFinish)();
-            }
-          });
-          break;
-        }
-
-        default: {
-          scale.value = withTiming(0, { duration });
-          opacity.value = withTiming(0, { duration });
-          height.value = withTiming(0, { duration }, (finished) => {
-            if (finished && onFinish) {
-              runOnJS(onFinish)();
-            }
-          });
-        }
+    switch (context) {
+      case 'self-delete': {
+        void animate(scale, [1.1, 0], {
+          duration: durationSeconds,
+          times: [0, 1],
+          ease: 'easeInOut',
+        });
+        void animate(translateY, -40, {
+          duration: durationSeconds,
+          ease: timingConfigs.smooth.ease as string,
+        });
+        void animate(opacity, 0, {
+          duration: durationSeconds,
+          ease: timingConfigs.smooth.ease as string,
+        });
+        void animate(height, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        }).then(() => {
+          onFinish?.();
+        });
+        break;
       }
-    })();
+
+      case 'admin-delete': {
+        void animate(scale, [1.15, 0.8, 0], {
+          duration: durationSeconds,
+          times: [0, 0.3, 1],
+          ease: 'easeInOut',
+        });
+        void animate(translateX, [10, -10, 0], {
+          duration: durationSeconds,
+          times: [0, 0.5, 1],
+          ease: 'easeInOut',
+        });
+        void animate(translateY, 0, {
+          duration: durationSeconds * 0.5,
+          ease: 'easeInOut',
+        });
+        void animate(opacity, [0.7, 0], {
+          duration: durationSeconds,
+          times: [0, 1],
+          ease: 'easeInOut',
+        });
+        void animate(height, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        }).then(() => {
+          onFinish?.();
+        });
+        void animate(rotation, [5, -5, 0], {
+          duration: durationSeconds,
+          times: [0, 0.5, 1],
+          ease: 'easeInOut',
+        });
+        break;
+      }
+
+      case 'emoji-media': {
+        void animate(scale, [1.2, 0], {
+          duration: durationSeconds,
+          times: [0, 1],
+          ease: 'easeInOut',
+        });
+        void animate(opacity, [0.8, 0], {
+          duration: durationSeconds,
+          times: [0, 1],
+          ease: 'easeInOut',
+        });
+        void animate(height, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        }).then(() => {
+          onFinish?.();
+        });
+        void animate(rotation, Math.random() > 0.5 ? 15 : -15, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        });
+        break;
+      }
+
+      case 'group-chat': {
+        void animate(scale, 0.95, {
+          duration: durationSeconds * 0.3,
+          ease: 'easeInOut',
+        });
+        void animate(opacity, [0.5, 0], {
+          duration: durationSeconds,
+          times: [0, 1],
+          ease: 'easeInOut',
+        });
+        void animate(height, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        }).then(() => {
+          onFinish?.();
+        });
+        break;
+      }
+
+      default: {
+        void animate(scale, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        });
+        void animate(opacity, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        });
+        void animate(height, 0, {
+          duration: durationSeconds,
+          ease: 'easeInOut',
+        }).then(() => {
+          onFinish?.();
+        });
+      }
+    }
   }, [
     context,
     duration,
@@ -169,29 +196,22 @@ export function useDeleteBubbleAnimation(
   ]);
 
   const reset = useCallback(() => {
-    runOnUI(() => {
-      opacity.value = 1;
-      scale.value = 1;
-      translateY.value = 0;
-      translateX.value = 0;
-      height.value = 60;
-      rotation.value = 0;
-    })();
+    opacity.set(1);
+    scale.set(1);
+    translateY.set(0);
+    translateX.set(0);
+    height.set(60);
+    rotation.set(0);
   }, [opacity, scale, translateY, translateX, height, rotation]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [
-        { scale: scale.value },
-        { translateY: translateY.value },
-        { translateX: translateX.value },
-        { rotate: `${rotation.value}deg` },
-      ],
-      height: height.value,
-      overflow: 'hidden' as const,
-    };
-  });
+  const animatedStyle = {
+    opacity,
+    scale,
+    y: translateY,
+    x: translateX,
+    rotate: rotation,
+    height,
+  };
 
   return {
     opacity,
@@ -200,7 +220,14 @@ export function useDeleteBubbleAnimation(
     translateX,
     height,
     rotation,
-    animatedStyle,
+    animatedStyle: {
+      opacity,
+      scale,
+      y: translateY,
+      x: translateX,
+      rotate: rotation,
+      height,
+    },
     triggerDelete,
     reset,
   };

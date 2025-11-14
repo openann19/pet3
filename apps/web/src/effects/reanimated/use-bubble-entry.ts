@@ -1,14 +1,14 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withDelay,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect, useCallback } from 'react';
 import { springConfigs } from '@/effects/reanimated/transitions';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export type BubbleDirection = 'incoming' | 'outgoing';
 
@@ -22,11 +22,11 @@ export interface UseBubbleEntryOptions {
 
 // Legacy compatibility interface
 export interface UseBubbleEntryReturn {
-  opacity: SharedValue<number>;
-  translateY: SharedValue<number>;
-  translateX: SharedValue<number>;
-  scale: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  opacity: MotionValue<number>;
+  translateY: MotionValue<number>;
+  translateX: MotionValue<number>;
+  scale: MotionValue<number>;
+  animatedStyle: CSSProperties;
   trigger: () => void;
 }
 
@@ -45,42 +45,52 @@ export function useBubbleEntry(options: UseBubbleEntryOptions = {}): UseBubbleEn
     isNew = DEFAULT_IS_NEW,
   } = options;
 
-  const opacity = useSharedValue(isNew && enabled ? 0 : 1);
-  const translateY = useSharedValue(isNew && enabled ? 20 : 0);
-  const translateX = useSharedValue(isNew && enabled ? (direction === 'incoming' ? -30 : 30) : 0);
-  const scale = useSharedValue(isNew && enabled ? 0.95 : 1);
+  const opacity = useMotionValue(isNew && enabled ? 0 : 1);
+  const translateY = useMotionValue(isNew && enabled ? 20 : 0);
+  const translateX = useMotionValue(isNew && enabled ? (direction === 'incoming' ? -30 : 30) : 0);
+  const scale = useMotionValue(isNew && enabled ? 0.95 : 1);
 
   const trigger = useCallback(() => {
     if (!enabled || !isNew) {
       return;
     }
 
-    const delay = index * staggerDelay;
+    const delay = (index * staggerDelay) / 1000; // Convert ms to seconds
 
-    opacity.value = withDelay(delay, withSpring(1, springConfigs.smooth));
+    void animate(opacity, 1, {
+      delay,
+      ...springConfigs.smooth,
+    });
 
-    translateY.value = withDelay(delay, withSpring(0, springConfigs.smooth));
+    void animate(translateY, 0, {
+      delay,
+      ...springConfigs.smooth,
+    });
 
     if (direction === 'incoming') {
-      translateX.value = withDelay(
+      void animate(translateX, 0, {
         delay,
-        withSpring(0, {
-          damping: 25,
-          stiffness: 400,
-          mass: 0.8,
-        })
-      );
-      scale.value = withDelay(
+        type: 'spring',
+        damping: 25,
+        stiffness: 400,
+        mass: 0.8,
+      });
+      void animate(scale, 1, {
         delay,
-        withSpring(1, {
-          damping: 20,
-          stiffness: 500,
-          mass: 0.9,
-        })
-      );
+        type: 'spring',
+        damping: 20,
+        stiffness: 500,
+        mass: 0.9,
+      });
     } else {
-      translateX.value = withDelay(delay, withSpring(0, springConfigs.smooth));
-      scale.value = withDelay(delay, withSpring(1, springConfigs.bouncy));
+      void animate(translateX, 0, {
+        delay,
+        ...springConfigs.smooth,
+      });
+      void animate(scale, 1, {
+        delay,
+        ...springConfigs.bouncy,
+      });
     }
   }, [enabled, isNew, index, staggerDelay, direction, opacity, translateY, translateX, scale]);
 
@@ -90,13 +100,13 @@ export function useBubbleEntry(options: UseBubbleEntryOptions = {}): UseBubbleEn
     }
   }, [enabled, isNew, trigger]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     return {
-      opacity: opacity.value,
+      opacity: opacity.get(),
       transform: [
-        { translateY: translateY.value },
-        { translateX: translateX.value },
-        { scale: scale.value },
+        { translateY: translateY.get() },
+        { translateX: translateX.get() },
+        { scale: scale.get() },
       ],
     };
   });

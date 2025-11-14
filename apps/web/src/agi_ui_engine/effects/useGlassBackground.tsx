@@ -43,7 +43,7 @@ export function useGlassBackground(
     blurIntensity.value = withTiming(intensity, {
       duration: 500,
       easing: Easing.out(Easing.ease),
-    });
+    }).target;
   }, [enabled, visual.enableBlur, blurIntensity, intensity]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -51,12 +51,16 @@ export function useGlassBackground(
       return {};
     }
 
+    const blurVal = typeof blurIntensity.value === 'number' ? blurIntensity.value : (typeof blurIntensity.value.target === 'number' ? blurIntensity.value.target : 0);
+    const blurPx = blurVal * 20;
+    const bgOpacity = 0.1 * blurVal;
+    const borderOpacity = 0.2 * blurVal;
     return {
-      backdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
-      WebkitBackdropFilter: `blur(${String(blurIntensity.value * 20)}px)`,
-      backgroundColor: `rgba(255, 255, 255, ${String(0.1 * blurIntensity.value)})`,
+      backdropFilter: `blur(${blurPx}px)`,
+      WebkitBackdropFilter: `blur(${blurPx}px)`,
+      backgroundColor: `rgba(255, 255, 255, ${bgOpacity})`,
       borderWidth: 1,
-      borderColor: `rgba(255, 255, 255, ${0.2 * blurIntensity.value})`,
+      borderColor: `rgba(255, 255, 255, ${borderOpacity})`,
     };
   }) as AnimatedStyle;
 

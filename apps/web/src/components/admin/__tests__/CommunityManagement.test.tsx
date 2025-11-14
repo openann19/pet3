@@ -26,7 +26,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 vi.mock('@/components/community/PostCard', () => ({
   PostCard: ({ post }: { post: { _id?: string; id?: string; content: string } }) => (
-    <div data-testid={`post-${String(post._id || post.id ?? '')}`}>{post.content}</div>
+    <div data-testid={`post-${String(post._id ?? post.id ?? '')}`}>{post.content}</div>
   ),
 }));
 vi.mock('@/effects/reanimated/animated-view', () => ({

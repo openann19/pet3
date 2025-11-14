@@ -399,7 +399,7 @@ export default function ChatWindow({
             newMessage.senderAvatar = currentUserAvatar;
           }
 
-          setMessages((current: ChatMessage[]) => [...(current || []), newMessage]);
+          setMessages((current: ChatMessage[]) => [...(current ?? []), newMessage]);
           setIsRecording(false);
 
           toast.success('Voice message sent!', {
@@ -507,7 +507,7 @@ export default function ChatWindow({
       const petId = room.matchedPetId;
       const petName = room.matchedPetName;
       if (petId && petName) {
-        void initiateCall(petId, petName, room.matchedPetPhoto || undefined, 'voice').catch(
+        void initiateCall(petId, petName, room.matchedPetPhoto ?? undefined, 'voice').catch(
           (error) => {
             const err = error instanceof Error ? error : new Error('Failed to start voice call');
             logger.error('ChatWindowNew handleVoiceCall error', err, { petId, petName });
@@ -532,7 +532,7 @@ export default function ChatWindow({
       const petId = room.matchedPetId;
       const petName = room.matchedPetName;
       if (petId && petName) {
-        void initiateCall(petId, petName, room.matchedPetPhoto || undefined, 'video').catch(
+        void initiateCall(petId, petName, room.matchedPetPhoto ?? undefined, 'video').catch(
           (error) => {
             const err = error instanceof Error ? error : new Error('Failed to start video call');
             logger.error('ChatWindowNew handleVideoCall error', err, { petId, petName });
@@ -568,8 +568,8 @@ export default function ChatWindow({
             call={incomingCall}
             callerName={room.matchedPetName ?? ''}
             {...(room.matchedPetPhoto ? { callerAvatar: room.matchedPetPhoto } : {})}
-            onAccept={answerCall}
-            onDecline={declineCall}
+            onAccept={() => { void answerCall(); }}
+            onDecline={() => { void declineCall(); }}
           />
         </motion.div>
       )}
@@ -608,16 +608,16 @@ export default function ChatWindow({
 
             <Avatar className="w-10 h-10 ring-2 ring-white/30">
               <AvatarImage
-                src={room.matchedPetPhoto || undefined}
-                alt={room.matchedPetName || undefined}
+                src={room.matchedPetPhoto ?? undefined}
+                alt={room.matchedPetName ?? undefined}
               />
               <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
-                {room.matchedPetName?.[0] || '?'}
+                {room.matchedPetName?.[0] ?? '?'}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1">
-              <h2 className="font-bold text-foreground">{room.matchedPetName || 'Unknown'}</h2>
+              <h2 className="font-bold text-foreground">{room.matchedPetName ?? 'Unknown'}</h2>
               {typingUsers.length > 0 && (
                 <motion.div
                   style={{
@@ -632,7 +632,7 @@ export default function ChatWindow({
                   >
                     {typingUsers.length === 1
                       ? `${typingUsers[0]?.userName ?? 'Someone'} is typing`
-                      : `${String(typingUsers.length ?? '')} people are typing`}
+                      : `${typingUsers.length} people are typing`}
                   </motion.div>
                   <motion.div
                     style={{
@@ -693,12 +693,14 @@ export default function ChatWindow({
 
         {useVirtualizedList ? (
           <VirtualMessageList
-            messages={messages || []}
+            messages={messages ?? []}
             currentUserId={currentUserId}
             currentUserName={currentUserName}
             typingUsers={typingUsers}
             onReaction={handleReaction}
-            onTranslate={() => { }}
+            onTranslate={() => {
+              // Translation feature not implemented
+            }}
           />
         ) : (
           <>
@@ -722,11 +724,11 @@ export default function ChatWindow({
                         {!isCurrentUser && (
                           <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                             <AvatarImage
-                              src={message.senderAvatar || undefined}
-                              alt={message.senderName || undefined}
+                              src={message.senderAvatar ?? undefined}
+                              alt={message.senderName ?? undefined}
                             />
                             <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
-                              {message.senderName?.[0] || '?'}
+                              {message.senderName?.[0] ?? '?'}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -808,7 +810,9 @@ export default function ChatWindow({
                                   style={{
                                     scale: reactionButtonTap.scale,
                                   }}
-                                  onClick={() => { }}
+                                  onClick={() => {
+                                    // Reaction popover trigger handled by PopoverTrigger
+                                  }}
                                   className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                   onMouseEnter={reactionButtonHover.handleEnter}
                                   onMouseLeave={reactionButtonHover.handleLeave}
@@ -894,7 +898,7 @@ export default function ChatWindow({
               >
                 <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                   <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
-                    {typingUsers[0]?.userName?.[0] || '?'}
+                    {typingUsers[0]?.userName?.[0] ?? '?'}
                   </AvatarFallback>
                 </Avatar>
                 <WebBubbleWrapper showTyping isIncoming>

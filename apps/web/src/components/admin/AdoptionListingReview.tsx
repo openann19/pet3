@@ -56,7 +56,10 @@ function ListingItem({ listing, isSelected, onSelect, animation }: ListingItemPr
 
   return (
     <motion.div
-      style={animation.animatedStyle}
+      style={{
+        scale: animation.scale,
+      }}
+      variants={animation.variants}
       onClick={handleClick}
       className={`w-full text-left p-4 rounded-lg border-2 transition-all cursor-pointer ${
         isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
@@ -241,7 +244,7 @@ export function AdoptionListingReview() {
                         <img
                           key={index}
                           src={photo}
-                          alt={`${String(selectedListing.petName ?? '')} ${String(index + 1 ?? '')}`}
+                          alt={`${selectedListing.petName ?? ''} ${String(index + 1)}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}

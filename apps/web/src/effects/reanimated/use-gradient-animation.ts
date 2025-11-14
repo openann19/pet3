@@ -1,14 +1,13 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseGradientAnimationOptions {
   type?: 'scale' | 'rotate' | 'translate' | 'combined';
@@ -21,12 +20,12 @@ export interface UseGradientAnimationOptions {
 }
 
 export interface UseGradientAnimationReturn {
-  scale: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  x: ReturnType<typeof useSharedValue<number>>;
-  y: ReturnType<typeof useSharedValue<number>>;
-  rotation: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  scale: MotionValue<number>;
+  opacity: MotionValue<number>;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  rotation: MotionValue<number>;
+  style: CSSProperties;
 }
 
 export function useGradientAnimation(
@@ -42,63 +41,51 @@ export function useGradientAnimation(
     rotationRange = [0, 360],
   } = options;
 
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(opacityRange[0]);
-  const x = useSharedValue(0);
-  const y = useSharedValue(0);
-  const rotation = useSharedValue(0);
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(opacityRange[0]);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotation = useMotionValue(0);
 
   useEffect(() => {
     if (type === 'scale' || type === 'combined') {
-      scale.value = withRepeat(
-        withSequence(
-          withTiming(scaleRange[0], { duration: duration * 1000 * 0.33 }),
-          withTiming(scaleRange[1], { duration: duration * 1000 * 0.33 }),
-          withTiming(scaleRange[0], { duration: duration * 1000 * 0.34 })
-        ),
-        -1,
-        false
-      );
+      void animate(scale, [scaleRange[0], scaleRange[1], scaleRange[0]], {
+        duration: duration,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        times: [0, 0.33, 0.66, 1],
+      });
     }
 
     if (type === 'translate' || type === 'combined') {
-      opacity.value = withRepeat(
-        withSequence(
-          withTiming(opacityRange[0], { duration: duration * 1000 * 0.33 }),
-          withTiming(opacityRange[1], { duration: duration * 1000 * 0.33 }),
-          withTiming(opacityRange[0], { duration: duration * 1000 * 0.34 })
-        ),
-        -1,
-        false
-      );
+      void animate(opacity, [opacityRange[0], opacityRange[1], opacityRange[0]], {
+        duration: duration,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        times: [0, 0.33, 0.66, 1],
+      });
 
-      x.value = withRepeat(
-        withSequence(
-          withTiming(translateRange.x[0], { duration: duration * 1000 * 0.33 }),
-          withTiming(translateRange.x[1], { duration: duration * 1000 * 0.33 }),
-          withTiming(translateRange.x[0], { duration: duration * 1000 * 0.34 })
-        ),
-        -1,
-        false
-      );
+      void animate(x, [translateRange.x[0], translateRange.x[1], translateRange.x[0]], {
+        duration: duration,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        times: [0, 0.33, 0.66, 1],
+      });
 
-      y.value = withRepeat(
-        withSequence(
-          withTiming(translateRange.y[0], { duration: duration * 1000 * 0.33 }),
-          withTiming(translateRange.y[1], { duration: duration * 1000 * 0.33 }),
-          withTiming(translateRange.y[0], { duration: duration * 1000 * 0.34 })
-        ),
-        -1,
-        false
-      );
+      void animate(y, [translateRange.y[0], translateRange.y[1], translateRange.y[0]], {
+        duration: duration,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        times: [0, 0.33, 0.66, 1],
+      });
     }
 
     if (type === 'rotate' || type === 'combined') {
-      rotation.value = withRepeat(
-        withTiming(rotationRange[1], { duration: duration * 1000 }),
-        -1,
-        false
-      );
+      void animate(rotation, rotationRange[1], {
+        duration: duration,
+        ease: 'linear',
+        repeat: Infinity,
+      });
     }
   }, [
     type,
@@ -115,27 +102,27 @@ export function useGradientAnimation(
     rotation,
   ]);
 
-  const style = useAnimatedStyle(() => {
-    const transforms: Record<string, number>[] = [];
+  const style = useMotionStyle(() => {
+    const transforms: Array<Record<string, number | string>> = [];
 
     if (type === 'scale' || type === 'combined') {
-      transforms.push({ scale: scale.value });
+      transforms.push({ scale: scale.get() });
     }
 
     if (type === 'translate' || type === 'combined') {
-      transforms.push({ translateX: x.value });
-      transforms.push({ translateY: y.value });
+      transforms.push({ translateX: x.get() });
+      transforms.push({ translateY: y.get() });
     }
 
     if (type === 'rotate' || type === 'combined') {
-      transforms.push({ rotate: rotation.value });
+      transforms.push({ rotate: `${rotation.get()}deg` });
     }
 
     return {
       transform: transforms,
-      opacity: opacity.value,
+      opacity: opacity.get(),
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     scale,

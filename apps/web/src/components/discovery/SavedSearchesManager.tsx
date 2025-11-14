@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useCallback, useMemo, useState } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -23,10 +23,10 @@ import type { DiscoveryPreferences } from '@/components/DiscoveryFilters';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
-import { useExpandCollapse } from '@/effects/reanimated/use-expand-collapse';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motionDurations, springConfigs } from '@/effects/framer-motion/variants';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 
@@ -74,15 +74,26 @@ function SearchItem({
   const pinBounce = useBounceOnTap({ scale: 0.9, duration: 120 });
   const editBounce = useBounceOnTap({ scale: 0.9, duration: 120 });
   const deleteBounce = useBounceOnTap({ scale: 0.9, duration: 120 });
+  const prefersReducedMotion = useReducedMotion();
 
   const isEditing = editingId === search.id;
 
   return (
     <motion.div
       style={itemAnimation.animatedStyle}
-      className="group p-4 rounded-lg border bg-card hover:shadow-md transition-all"
+      className="group p-4 rounded-lg border bg-card"
       onMouseEnter={itemHover.handleEnter}
       onMouseLeave={itemHover.handleLeave}
+      whileHover={!prefersReducedMotion ? {
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      } : undefined}
+      transition={{
+        duration: prefersReducedMotion ? 0 : 0.2,
+        ease: 'easeInOut',
+      }}
+      onHoverStart={() => {
+        // Trigger opacity change for child elements on hover
+      }}
     >
       {isEditing ? (
         <div className="space-y-3">
@@ -93,7 +104,11 @@ function SearchItem({
             autoFocus
           />
           <div className="flex gap-2">
-            <motion.div style={itemBounce.animatedStyle}>
+            <motion.div
+              initial="rest"
+              whileTap="tap"
+              variants={itemBounce.variants}
+            >
               <Button
                 size="sm"
                 onClick={() => {
@@ -126,8 +141,21 @@ function SearchItem({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <motion.div style={pinBounce.animatedStyle}>
+            <motion.div
+              className="flex items-center gap-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0 }}
+              whileHover={!prefersReducedMotion ? { opacity: 1 } : undefined}
+              transition={{
+                duration: prefersReducedMotion ? 0 : 0.15,
+                ease: 'easeInOut',
+              }}
+            >
+              <motion.div
+                initial="rest"
+                whileTap="tap"
+                variants={pinBounce.variants}
+              >
                 <Button
                   size="icon"
                   variant="ghost"
@@ -144,7 +172,11 @@ function SearchItem({
                   />
                 </Button>
               </motion.div>
-              <motion.div style={editBounce.animatedStyle}>
+              <motion.div
+                initial="rest"
+                whileTap="tap"
+                variants={editBounce.variants}
+              >
                 <Button
                   size="icon"
                   variant="ghost"
@@ -157,7 +189,11 @@ function SearchItem({
                   <Pencil size={16} />
                 </Button>
               </motion.div>
-              <motion.div style={deleteBounce.animatedStyle}>
+              <motion.div
+                initial="rest"
+                whileTap="tap"
+                variants={deleteBounce.variants}
+              >
                 <Button
                   size="icon"
                   variant="ghost"
@@ -170,7 +206,7 @@ function SearchItem({
                   <Trash size={16} />
                 </Button>
               </motion.div>
-            </div>
+            </motion.div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -179,7 +215,11 @@ function SearchItem({
                 `Used ${search.useCount} time${search.useCount !== 1 ? 's' : ''}`}
               {search.lastUsed && ` • Last: ${new Date(search.lastUsed).toLocaleDateString()}`}
             </div>
-            <motion.div style={applyBounce.animatedStyle}>
+            <motion.div
+              initial="rest"
+              whileTap="tap"
+              variants={applyBounce.variants}
+            >
               <Button
                 size="sm"
                 onClick={() => {
@@ -208,8 +248,7 @@ export default function SavedSearchesManager({
   const [searchName, setSearchName] = useState('');
 
   const modalAnimation = useModalAnimation({ isVisible: true, duration: 300 });
-  const saveFormExpand = useExpandCollapse({ isExpanded: showSaveForm, duration: 300 });
-  const saveButtonBounce = useBounceOnTap({ scale: 0.95, duration: 150 });
+  const prefersReducedMotion = useReducedMotion();
   const cardHover = useHoverLift({ scale: 1.02 });
 
   const handleSaveCurrentSearch = useCallback((): void => {
@@ -406,35 +445,53 @@ export default function SavedSearchesManager({
             </div>
           </CardHeader>
           <CardContent>
-            {showSaveForm && (
-              <motion.div style={saveFormExpand.heightStyle} className="mb-4 overflow-hidden">
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Label htmlFor="search-name" className="sr-only">
-                      Search Name
-                    </Label>
-                    <Input
-                      id="search-name"
-                      placeholder="e.g., Active dogs under 5"
-                      value={searchName}
-                      onChange={(e) => setSearchName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          saveButtonBounce.handlePress();
-                          handleSaveCurrentSearch();
+            <AnimatePresence>
+              {showSaveForm && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : {
+                          height: { duration: motionDurations.smooth, ease: 'easeInOut' },
+                          opacity: { duration: motionDurations.normal },
                         }
-                      }}
-                    />
+                  }
+                  className="mb-4 overflow-hidden"
+                >
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="search-name" className="sr-only">
+                        Search Name
+                      </Label>
+                      <Input
+                        id="search-name"
+                        placeholder="e.g., Active dogs under 5"
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveCurrentSearch();
+                          }
+                        }}
+                      />
+                    </div>
+                    <motion.div
+                      whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                      transition={springConfigs.smooth}
+                    >
+                      <Button onClick={handleSaveCurrentSearch}>
+                        <FloppyDisk size={16} className="mr-2" aria-hidden="true" />
+                        Save
+                      </Button>
+                    </motion.div>
                   </div>
-                  <motion.div style={saveButtonBounce.animatedStyle}>
-                    <Button onClick={handleSaveCurrentSearch}>
-                      <FloppyDisk size={16} className="mr-2" />
-                      Save
-                    </Button>
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="text-sm text-muted-foreground">
               {getPreferencesSummary(currentPreferences)}

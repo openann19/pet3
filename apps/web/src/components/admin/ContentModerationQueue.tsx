@@ -1,5 +1,6 @@
 import { communityAPI } from '@/api/community-api';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
+import { useAnimatePresence, useEntryAnimation } from '@/effects/reanimated';
 import { liveStreamingAPI } from '@/api/live-streaming-api';
 import { lostFoundAPI } from '@/api/lost-found-api';
 import { Badge } from '@/components/ui/badge';
@@ -406,7 +407,7 @@ export function ContentModerationQueue() {
     if (!presence.shouldRender) return null
     
     return (
-      <motion.div style={presence.animatedStyle} className="text-center py-12">
+      <motion.div style={presence.animatedStyle as MotionStyle} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
       </motion.div>
@@ -422,7 +423,12 @@ export function ContentModerationQueue() {
     })
     
     return (
-      <motion.div style={entry.animatedStyle}>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={entry.variants}
+        style={{ opacity: entry.opacity, y: entry.translateY, scale: entry.scale }}
+      >
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { setSelectedItem(item); }}

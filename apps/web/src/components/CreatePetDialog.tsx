@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import {
   X,
@@ -14,19 +14,14 @@ import {
   Check,
   Sparkle,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+  useMotionValue,
+  animate,
+} from 'framer-motion';
+import { useMotionStyle } from '@/effects/reanimated/use-motion-style';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -293,49 +288,86 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
   const [lookingFor, setLookingFor] = useState<string[]>([]);
 
   // Animation hooks for step transitions
-  const stepOpacity = useSharedValue(1);
-  const stepX = useSharedValue(0);
+  const stepOpacity = useMotionValue(1);
+  const stepX = useMotionValue(0);
 
   // Animation hooks for interactive elements
   const petTypeButtonHover = useHoverLift();
   const petTypeButtonTap = useBounceOnTap();
 
   // Animation for emoji rotation
-  const emojiRotation = useSharedValue(0);
+  const emojiRotation = useMotionValue(0);
 
   useEffect(() => {
-    emojiRotation.value = withRepeat(
-      withSequence(
-        withTiming(10, { duration: 1000 }),
-        withTiming(-10, { duration: 1000 }),
-        withTiming(0, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
+    void animate(emojiRotation, [10, -10, 0], {
+      duration: 3, // 1000ms * 3 = 3000ms = 3s
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
   }, [emojiRotation]);
 
-  const emojiStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${emojiRotation.value}deg` }],
-  })) as AnimatedStyle;
+  const emojiStyle = useMotionStyle(() => {
+    return {
+      transform: [{ rotate: `${emojiRotation.get()}deg` }],
+    };
+  });
 
   // Static animated style for pet type selection indicator (used in render)
-  const petTypeIndicatorStyle = useAnimatedStyle(() => ({
+  const petTypeIndicatorStyle = useMotionStyle(() => ({
     transform: [{ scale: 1 }],
-  })) as AnimatedStyle;
+  }));
 
-  // Presence hooks for conditional rendering
-  const photoPresence = useAnimatePresence({ isVisible: !!photo });
-  const completeStepPresence = useAnimatePresence({ isVisible: currentStep !== 'complete' });
+  const prefersReducedMotion = useReducedMotion();
+  const photoVariants = prefersReducedMotion
+    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
+    : {
+        hidden: { opacity: 0 },
+        visible: { 
+          opacity: 1,
+          transition: { duration: 0.3, ease: 'easeOut' },
+        },
+      };
+  
+  const stepVariants = prefersReducedMotion
+    ? { hidden: { opacity: 1, scale: 1 }, visible: { opacity: 1, scale: 1 } }
+    : {
+        hidden: { opacity: 0, scale: 0.95 },
+        visible: { 
+          opacity: 1, 
+          scale: 1,
+          transition: { 
+            type: 'spring',
+            damping: 25,
+            stiffness: 300,
+          },
+        },
+      };
 
   useEffect(() => {
     // Animate step transitions
-    stepOpacity.value = withSpring(0, { damping: 20, stiffness: 300 });
-    stepX.value = withSpring(-20, { damping: 20, stiffness: 300 });
+    void animate(stepOpacity, 0, {
+      type: 'spring',
+      damping: 20,
+      stiffness: 300,
+    });
+    void animate(stepX, -20, {
+      type: 'spring',
+      damping: 20,
+      stiffness: 300,
+    });
 
     const timeoutId = setTimeout(() => {
-      stepOpacity.value = withSpring(1, { damping: 20, stiffness: 300 });
-      stepX.value = withSpring(0, { damping: 20, stiffness: 300 });
+      void animate(stepOpacity, 1, {
+        type: 'spring',
+        damping: 20,
+        stiffness: 300,
+      });
+      void animate(stepX, 0, {
+        type: 'spring',
+        damping: 20,
+        stiffness: 300,
+      });
     }, 50);
 
     return () => {
@@ -343,13 +375,13 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
     };
   }, [currentStep, stepOpacity, stepX]);
 
-  const stepStyle = useAnimatedStyle(() => ({
-    opacity: stepOpacity.value,
-    transform: [{ translateX: stepX.value }],
-  })) as AnimatedStyle;
+  const stepStyle = useMotionStyle(() => ({
+    opacity: stepOpacity.get(),
+    transform: [{ translateX: stepX.get() }],
+  }));
 
   // Progress bar animation
-  const progressWidth = useSharedValue(0);
+  const progressWidth = useMotionValue(0);
 
   // Calculate step progress
   const stepProgress = useCallback(() => {
@@ -366,12 +398,17 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
   }, [currentStep]);
 
   useEffect(() => {
-    progressWidth.value = withTiming(stepProgress(), { duration: 300 });
+    void animate(progressWidth, stepProgress(), {
+      duration: 0.3,
+      ease: 'easeOut',
+    });
   }, [currentStep, stepProgress, progressWidth]);
 
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
-  })) as AnimatedStyle;
+  const progressStyle = useMotionStyle(() => {
+    return {
+      width: `${progressWidth.get()}%`,
+    };
+  });
 
   useEffect(() => {
     if (editingPet) {
@@ -542,11 +579,16 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
     resetForm();
   };
 
+  const stepStyleValue = stepStyle;
+  const petTypeIndicatorStyleValue = petTypeIndicatorStyle;
+  const emojiStyleValue = emojiStyle;
+  const progressStyleValue = progressStyle;
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 'type':
         return (
-          <motion.div key="type" style={stepStyle} className="space-y-6">
+          <motion.div key="type" style={stepStyleValue} className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">What type of pet do you have?</h3>
               <p className="text-muted-foreground">
@@ -559,19 +601,40 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 return (
                   <motion.div
                     key={type.value}
-                    style={petTypeButtonTap.animatedStyle}
+                    style={{ scale: petTypeButtonTap.scale } as import('framer-motion').MotionStyle}
+                    variants={petTypeButtonTap.variants}
+                    initial="rest"
+                    animate="rest"
                     onClick={() => {
+                      petTypeButtonTap.handlePress();
                       setPetType(type.value);
                       setTimeout(() => handleNext(), 400);
                     }}
-                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${petType === type.value
+                    className={`relative p-6 rounded-2xl border-2 cursor-pointer ${petType === type.value
                       ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
-                      : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
+                      : 'border-border bg-card'
                       }`}
+                    whileHover={petType !== type.value && !prefersReducedMotion ? {
+                      borderColor: 'var(--primary)',
+                      backgroundColor: 'var(--card)',
+                      transition: {
+                        duration: 0.2,
+                        ease: 'easeInOut',
+                      },
+                    } : undefined}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : 0.2,
+                      ease: 'easeInOut',
+                    }}
                     onMouseEnter={petTypeButtonHover.handleEnter}
                     onMouseLeave={petTypeButtonHover.handleLeave}
                   >
-                    <motion.div style={petTypeButtonHover.animatedStyle}>
+                    <motion.div
+                      style={{ scale: petTypeButtonHover.scale, y: petTypeButtonHover.translateY } as import('framer-motion').MotionStyle}
+                      variants={petTypeButtonHover.variants}
+                      initial="rest"
+                      animate="rest"
+                    >
                       <div className="flex flex-col items-center gap-3">
                         <span className="text-4xl">{type.emoji}</span>
                         <Icon size={32} weight="duotone" className="text-primary" />
@@ -580,7 +643,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     </motion.div>
                     {petType === type.value && (
                       <motion.div
-                        style={petTypeIndicatorStyle}
+                        style={petTypeIndicatorStyleValue}
                         className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1"
                       >
                         <Check size={16} weight="bold" />
@@ -596,7 +659,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
       case 'template': {
         const templates = getTemplatesByType(petType);
         return (
-          <motion.div key="template" style={stepStyle} className="space-y-6">
+          <motion.div key="template" style={stepStyleValue} className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Choose a profile template</h3>
               <p className="text-muted-foreground">
@@ -607,15 +670,28 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               {templates.map((template) => (
                 <motion.div
                   key={template.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => {
                     applyTemplate(template);
                     setTimeout(() => handleNext(), 300);
                   }}
-                  className={`relative p-4 rounded-xl border-2 text-left transition-all duration-300 ${selectedTemplate?.id === template.id
+                  className={`relative p-4 rounded-xl border-2 text-left ${selectedTemplate?.id === template.id
                     ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
-                    : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
+                    : 'border-border bg-card'
                     }`}
+                  whileHover={selectedTemplate?.id !== template.id && !prefersReducedMotion ? {
+                    borderColor: 'var(--primary)',
+                    backgroundColor: 'var(--card)',
+                    transition: {
+                      duration: 0.2,
+                      ease: 'easeInOut',
+                    },
+                  } : undefined}
+                  transition={{
+                    duration: prefersReducedMotion ? 0 : 0.2,
+                    ease: 'easeInOut',
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-3xl shrink-0">{template.emoji}</span>
@@ -673,7 +749,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   id="name"
                   value={name}
                   onChange={(e) => { setName(e.target.value); }}
-                  placeholder={`e.g., ${String(petType === 'dog' ? 'Max' : petType === 'cat' ? 'Whiskers' : petType === 'bird' ? 'Charlie' : petType === 'rabbit' ? 'Fluffy' : petType === 'fish' ? 'Bubbles' : 'Buddy' ?? '')}`}
+                  placeholder={`e.g., ${petType === 'dog' ? 'Max' : petType === 'cat' ? 'Whiskers' : petType === 'bird' ? 'Charlie' : petType === 'rabbit' ? 'Fluffy' : petType === 'fish' ? 'Bubbles' : 'Buddy'}`}
                   className="mt-1"
                   autoFocus
                 />
@@ -684,7 +760,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   id="breed"
                   value={breed}
                   onChange={(e) => { setBreed(e.target.value); }}
-                  placeholder={`e.g., ${String(petType === 'dog' ? 'Golden Retriever' : petType === 'cat' ? 'Maine Coon' : petType === 'bird' ? 'Parakeet' : petType === 'rabbit' ? 'Holland Lop' : petType === 'fish' ? 'Betta' : 'Mixed' ?? '')}`}
+                  placeholder={`e.g., ${petType === 'dog' ? 'Golden Retriever' : petType === 'cat' ? 'Maine Coon' : petType === 'bird' ? 'Parakeet' : petType === 'rabbit' ? 'Holland Lop' : petType === 'fish' ? 'Betta' : 'Mixed'}`}
                   className="mt-1"
                 />
               </div>
@@ -810,14 +886,19 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 placeholder="https://images.unsplash.com/photo-..."
                 className="mt-1"
               />
-              {photoPresence.shouldRender && photo && (
-                <motion.div
-                  style={photoPresence.animatedStyle}
-                  className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
-                >
-                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
-                </motion.div>
-              )}
+              <AnimatePresence>
+                {photo && (
+                  <motion.div
+                    variants={photoVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
+                  >
+                    <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div>
               <Label htmlFor="bio">Bio (optional)</Label>
@@ -825,7 +906,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 id="bio"
                 value={bio}
                 onChange={(e) => { setBio(e.target.value); }}
-                placeholder={`Tell us what makes ${String(name || 'your pet' ?? '')} special...`}
+                placeholder={`Tell us what makes ${name || 'your pet'} special...`}
                 rows={3}
                 className="mt-1"
               />
@@ -955,7 +1036,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
-            <motion.div style={emojiStyle}>🐾</motion.div>
+            <motion.div style={emojiStyleValue}>🐾</motion.div>
             {editingPet ? 'Edit Pet Profile' : 'Create Pet Profile'}
           </DialogTitle>
           <DialogDescription>
@@ -968,15 +1049,23 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-6">
           <motion.div
             className="h-full bg-linear-to-r from-primary to-accent"
-            style={progressStyle}
+            style={progressStyleValue}
           />
         </div>
 
-        {completeStepPresence.shouldRender && currentStep !== 'complete' && (
-          <motion.div style={completeStepPresence.animatedStyle}>
-            {renderStepContent()}
-          </motion.div>
-        )}
+        <AnimatePresence mode="wait">
+          {currentStep !== 'complete' && (
+            <motion.div
+              key={currentStep}
+              variants={stepVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {renderStepContent()}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex gap-3 pt-6 mt-6 border-t">
           {currentStep !== 'type' && currentStep !== 'complete' && (

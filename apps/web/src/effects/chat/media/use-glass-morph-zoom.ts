@@ -223,14 +223,18 @@ export function useGlassMorphZoom(
 
   const animatedStyle = useAnimatedStyle(() => {
     // Chromatic aberration effect (subtle)
-    const aberrationOffset = blurOpacity.value * 0.5 // 0-0.5px offset
-    const filter = visual.enableGlow && bloomIntensity.value > 0
-      ? `blur(${aberrationOffset}px) brightness(${1 + bloomIntensity.value * 0.1})`
+    const blurVal = typeof blurOpacity.value === 'number' ? blurOpacity.value : (blurOpacity.value?.target ?? 0);
+    const bloomVal = typeof bloomIntensity.value === 'number' ? bloomIntensity.value : (bloomIntensity.value?.target ?? 0);
+    const scaleVal = typeof scale.value === 'number' ? scale.value : (scale.value?.target ?? 1);
+    const aberrationOffset = blurVal * 0.5 // 0-0.5px offset
+    const filter = visual.enableGlow && bloomVal > 0
+      ? `blur(${aberrationOffset}px) brightness(${1 + bloomVal * 0.1})`
       : `blur(${aberrationOffset}px)`
 
+    const opacityVal = typeof opacity.value === 'number' ? opacity.value : (opacity.value?.target ?? 1);
     return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
+      transform: [{ scale: scaleVal }],
+      opacity: opacityVal,
       filter,
     }
   })

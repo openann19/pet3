@@ -2,14 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseAnimatePresenceOptions {
   isVisible: boolean;
@@ -23,11 +20,16 @@ export interface UseAnimatePresenceOptions {
 }
 
 export interface UseAnimatePresenceReturn {
-  opacity: SharedValue<number>;
-  scale: SharedValue<number>;
-  translateX: SharedValue<number>;
-  translateY: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  translateX: MotionValue<number>;
+  translateY: MotionValue<number>;
+  animatedStyle: {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+    x: MotionValue<number>;
+    y: MotionValue<number>;
+  };
   shouldRender: boolean;
 }
 
@@ -43,10 +45,10 @@ export function useAnimatePresence(options: UseAnimatePresenceOptions): UseAnima
     enabled = true,
   } = options;
 
-  const opacity = useSharedValue(initial && isVisible ? 1 : 0);
-  const scale = useSharedValue(initial && isVisible ? 1 : 0.95);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(initial && isVisible ? 0 : -20);
+  const opacity = useMotionValue(initial && isVisible ? 1 : 0);
+  const scale = useMotionValue(initial && isVisible ? 1 : 0.95);
+  const translateX = useMotionValue(0);
+  const translateY = useMotionValue(initial && isVisible ? 0 : -20);
   const [shouldRender, setShouldRender] = useState(initial && isVisible);
   const exitTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
@@ -59,77 +61,125 @@ export function useAnimatePresence(options: UseAnimatePresenceOptions): UseAnima
     if (isVisible) {
       setShouldRender(true);
 
-      const enterConfig = {
-        duration: enterDuration,
-        easing: timingConfigs.smooth.easing,
-      };
+      const enterDurationSeconds = enterDuration / 1000;
 
       switch (enterTransition) {
         case 'fade':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.smooth);
-          translateY.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.smooth);
+          void animate(translateY, 0, springConfigs.smooth);
           break;
         case 'scale':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.bouncy);
-          translateY.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.bouncy);
+          void animate(translateY, 0, springConfigs.smooth);
           break;
         case 'slideUp':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.smooth);
-          translateY.value = withSpring(0, springConfigs.smooth);
-          translateX.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.smooth);
+          void animate(translateY, 0, springConfigs.smooth);
+          void animate(translateX, 0, springConfigs.smooth);
           break;
         case 'slideDown':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.smooth);
-          translateY.value = withSpring(0, springConfigs.smooth);
-          translateX.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.smooth);
+          void animate(translateY, 0, springConfigs.smooth);
+          void animate(translateX, 0, springConfigs.smooth);
           break;
         case 'slideLeft':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.smooth);
-          translateX.value = withSpring(0, springConfigs.smooth);
-          translateY.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.smooth);
+          void animate(translateX, 0, springConfigs.smooth);
+          void animate(translateY, 0, springConfigs.smooth);
           break;
         case 'slideRight':
-          opacity.value = withTiming(1, enterConfig);
-          scale.value = withSpring(1, springConfigs.smooth);
-          translateX.value = withSpring(0, springConfigs.smooth);
-          translateY.value = withSpring(0, springConfigs.smooth);
+          void animate(opacity, 1, {
+            duration: enterDurationSeconds,
+            ease: timingConfigs.smooth.ease as string,
+          });
+          void animate(scale, 1, springConfigs.smooth);
+          void animate(translateX, 0, springConfigs.smooth);
+          void animate(translateY, 0, springConfigs.smooth);
           break;
       }
     } else {
-      const exitConfig = {
-        duration: exitDuration,
-        easing: timingConfigs.fast.easing,
-      };
+      const exitDurationSeconds = exitDuration / 1000;
 
       switch (exitTransition) {
         case 'fade':
-          opacity.value = withTiming(0, exitConfig);
-          scale.value = withTiming(0.95, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(scale, 0.95, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
         case 'scale':
-          opacity.value = withTiming(0, exitConfig);
-          scale.value = withTiming(0.8, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(scale, 0.8, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
         case 'slideUp':
-          opacity.value = withTiming(0, exitConfig);
-          translateY.value = withTiming(-20, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(translateY, -20, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
         case 'slideDown':
-          opacity.value = withTiming(0, exitConfig);
-          translateY.value = withTiming(20, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(translateY, 20, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
         case 'slideLeft':
-          opacity.value = withTiming(0, exitConfig);
-          translateX.value = withTiming(-20, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(translateX, -20, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
         case 'slideRight':
-          opacity.value = withTiming(0, exitConfig);
-          translateX.value = withTiming(20, exitConfig);
+          void animate(opacity, 0, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
+          void animate(translateX, 20, {
+            duration: exitDurationSeconds,
+            ease: timingConfigs.fast.ease as string,
+          });
           break;
       }
 
@@ -162,31 +212,17 @@ export function useAnimatePresence(options: UseAnimatePresenceOptions): UseAnima
     translateY,
   ]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const transforms: Record<string, number | string>[] = [];
-
-    if (translateX.value !== 0) {
-      transforms.push({ translateX: translateX.value });
-    }
-    if (translateY.value !== 0) {
-      transforms.push({ translateY: translateY.value });
-    }
-    if (scale.value !== 1) {
-      transforms.push({ scale: scale.value });
-    }
-
-    return {
-      opacity: opacity.value,
-      transform: transforms.length > 0 ? transforms : undefined,
-    };
-  }) as AnimatedStyle;
-
   return {
     opacity,
     scale,
     translateX,
     translateY,
-    animatedStyle,
+    animatedStyle: {
+      opacity,
+      scale,
+      x: translateX,
+      y: translateY,
+    },
     shouldRender,
   };
 }

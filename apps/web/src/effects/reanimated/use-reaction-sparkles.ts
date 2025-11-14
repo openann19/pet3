@@ -1,15 +1,10 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withRepeat,
-  withTiming,
-  withDelay,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback, useState, useEffect } from 'react';
 import { haptics } from '@/lib/haptics';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
@@ -18,6 +13,8 @@ import {
   type ParticleData,
   type ParticleConfig,
 } from './particle-engine';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export type ReactionType = '❤️' | '😂' | '👍' | '👎' | '🔥' | '🙏' | '⭐';
 
@@ -29,11 +26,11 @@ export interface UseReactionSparklesOptions {
 }
 
 export interface UseReactionSparklesReturn {
-  emojiScale: SharedValue<number>;
-  emojiOpacity: SharedValue<number>;
-  pulseScale: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
-  pulseStyle: ReturnType<typeof useAnimatedStyle>;
+  emojiScale: MotionValue<number>;
+  emojiOpacity: MotionValue<number>;
+  pulseScale: MotionValue<number>;
+  animatedStyle: CSSProperties;
+  pulseStyle: CSSProperties;
   particles: ParticleData[];
   animate: (emoji: ReactionType, x?: number, y?: number) => void;
   startPulse: () => void;
@@ -65,9 +62,9 @@ export function useReactionSparkles(
     enablePulse = DEFAULT_ENABLE_PULSE,
   } = options;
 
-  const emojiScale = useSharedValue(0);
-  const emojiOpacity = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
+  const emojiScale = useMotionValue(0);
+  const emojiOpacity = useMotionValue(0);
+  const pulseScale = useMotionValue(1);
   const [particles, setParticles] = useState<ParticleData[]>([]);
   const [isPulsing, setIsPulsing] = useState(false);
 
@@ -92,24 +89,32 @@ export function useReactionSparkles(
         haptics.impact('medium');
       }
 
-      emojiScale.value = withSequence(
-        withSpring(1.2, {
-          damping: 10,
-          stiffness: 400,
-        }),
-        withSpring(1, springConfigs.bouncy)
-      );
+      // Animate scale sequence
+      void animate(emojiScale, 1.2, {
+        type: 'spring',
+        damping: 10,
+        stiffness: 400,
+      }).then(() => {
+        void animate(emojiScale, 1, {
+          ...springConfigs.bouncy,
+        });
+      });
 
-      emojiOpacity.value = withSequence(
-        withTiming(1, timingConfigs.fast),
-        withDelay(400, withTiming(0, timingConfigs.smooth))
-      );
+      // Animate opacity sequence
+      void animate(emojiOpacity, 1, {
+        duration: timingConfigs.fast.duration,
+        ease: timingConfigs.fast.ease as string,
+      }).then(() => {
+        setTimeout(() => {
+          void animate(emojiOpacity, 0, {
+            duration: timingConfigs.smooth.duration,
+            ease: timingConfigs.smooth.ease as string,
+          });
+        }, 400);
+      });
 
       if (enableParticles && x !== undefined && y !== undefined) {
         const config = getParticleConfig(emoji);
-        // Get particle data (no hooks called here)
-        // Note: Particles are data-only, not animated here
-        // Components can use ParticleView or similar to render animated particles
         const newParticles = spawnParticlesData(x, y, config);
 
         setParticles((prev) => [...prev, ...newParticles]);
@@ -137,25 +142,20 @@ export function useReactionSparkles(
     }
 
     setIsPulsing(true);
-    pulseScale.value = withRepeat(
-      withSequence(
-        withTiming(1.1, {
-          duration: 400,
-          easing: (t) => t,
-        }),
-        withTiming(1, {
-          duration: 400,
-          easing: (t) => t,
-        })
-      ),
-      -1,
-      false
-    );
+    void animate(pulseScale, [1, 1.1, 1], {
+      duration: 0.8, // 400ms * 2 = 800ms
+      ease: 'linear',
+      repeat: Infinity,
+      times: [0, 0.5, 1],
+    });
   }, [enablePulse, isPulsing, pulseScale]);
 
   const stopPulse = useCallback(() => {
     setIsPulsing(false);
-    pulseScale.value = withTiming(1, timingConfigs.fast);
+    void animate(pulseScale, 1, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
   }, [pulseScale]);
 
   const clearParticles = useCallback(() => {
@@ -168,16 +168,16 @@ export function useReactionSparkles(
     };
   }, [clearParticles]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     return {
-      transform: [{ scale: emojiScale.value }],
-      opacity: emojiOpacity.value,
+      transform: [{ scale: emojiScale.get() }],
+      opacity: emojiOpacity.get(),
     };
   });
 
-  const pulseStyle = useAnimatedStyle(() => {
+  const pulseStyle = useMotionStyle(() => {
     return {
-      transform: [{ scale: pulseScale.value }],
+      transform: [{ scale: pulseScale.get() }],
     };
   });
 

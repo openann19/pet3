@@ -1,24 +1,16 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withDelay,
-  Easing,
-  type SharedValue,
-} from '@petspark/motion';
+import { motionValue, animate, type MotionValue } from 'framer-motion';
 import { useCallback, useState, useEffect } from 'react';
 import { makeRng } from '@petspark/shared';
 
 export interface ReactionTrailParticle {
   id: string;
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-  scale: SharedValue<number>;
-  opacity: SharedValue<number>;
-  rotation: SharedValue<number>;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  scale: MotionValue<number>;
+  opacity: MotionValue<number>;
+  rotation: MotionValue<number>;
   emoji: string;
   createdAt: number;
 }
@@ -34,7 +26,16 @@ export interface UseReactionTrailReturn {
   particles: ReactionTrailParticle[];
   triggerTrail: (fromX: number, fromY: number, toX: number, toY: number, emoji?: string) => void;
   clearTrail: () => void;
-  getParticleStyle: (particle: ReactionTrailParticle) => ReturnType<typeof useAnimatedStyle>;
+  getParticleStyle: (particle: ReactionTrailParticle) => {
+    position: 'absolute';
+    left: MotionValue<number>;
+    top: MotionValue<number>;
+    scale: MotionValue<number>;
+    rotate: MotionValue<number>;
+    opacity: MotionValue<number>;
+    pointerEvents: 'none';
+    zIndex: number;
+  };
 }
 
 const DEFAULT_ENABLED = true;
@@ -72,80 +73,52 @@ export function useReactionTrail(options: UseReactionTrailOptions = {}): UseReac
 
         const particle: ReactionTrailParticle = {
           id: `${String(Date.now() ?? '')}-${String(i ?? '')}-${String(rng() ?? '')}`,
-          x: useSharedValue(x + offsetX),
-          y: useSharedValue(y + offsetY),
-          scale: useSharedValue(0),
-          opacity: useSharedValue(0),
-          rotation: useSharedValue(0),
+          x: motionValue(x + offsetX),
+          y: motionValue(y + offsetY),
+          scale: motionValue(0),
+          opacity: motionValue(0),
+          rotation: motionValue(0),
           emoji: emojiToUse,
           createdAt: Date.now(),
         };
 
-        const delay = progress * (duration * 0.3);
-        const particleDuration = duration * 0.7;
+        const delay = (progress * (duration * 0.3)) / 1000;
+        const particleDuration = (duration * 0.7) / 1000;
 
-        particle.scale.value = withDelay(
+        animate(particle.scale, [0, 1.2, 0.8, 0], {
           delay,
-          withSequence(
-            withTiming(1.2, {
-              duration: particleDuration * 0.2,
-              easing: Easing.out(Easing.back(1.5)),
-            }),
-            withTiming(0.8, {
-              duration: particleDuration * 0.6,
-              easing: Easing.inOut(Easing.ease),
-            }),
-            withTiming(0, {
-              duration: particleDuration * 0.2,
-              easing: Easing.in(Easing.ease),
-            })
-          )
-        );
+          duration: particleDuration,
+          ease: 'easeInOut',
+          times: [0, 0.2, 0.8, 1],
+        });
 
-        particle.opacity.value = withDelay(
+        animate(particle.opacity, [0, 1, 0.9, 0], {
           delay,
-          withSequence(
-            withTiming(1, {
-              duration: particleDuration * 0.1,
-              easing: Easing.out(Easing.ease),
-            }),
-            withTiming(0.9, {
-              duration: particleDuration * 0.7,
-              easing: Easing.inOut(Easing.ease),
-            }),
-            withTiming(0, {
-              duration: particleDuration * 0.2,
-              easing: Easing.in(Easing.ease),
-            })
-          )
-        );
+          duration: particleDuration,
+          ease: 'easeInOut',
+          times: [0, 0.1, 0.9, 1],
+        });
 
-        particle.rotation.value = withDelay(
+        animate(particle.rotation, rng() * 360, {
           delay,
-          withTiming(rng() * 360, {
-            duration: particleDuration,
-            easing: Easing.linear,
-          })
-        );
+          duration: particleDuration,
+          ease: 'linear',
+        });
 
         const finalX = toX + (rng() - 0.5) * 20;
         const finalY = toY + (rng() - 0.5) * 20;
 
-        particle.x.value = withDelay(
+        animate(particle.x, finalX, {
           delay,
-          withTiming(finalX, {
-            duration: particleDuration,
-            easing: Easing.out(Easing.quad),
-          })
-        );
+          duration: particleDuration,
+          ease: [0.25, 0.1, 0.25, 1],
+        });
 
-        particle.y.value = withDelay(
+        animate(particle.y, finalY, {
           delay,
-          withTiming(finalY, {
-            duration: particleDuration,
-            easing: Easing.out(Easing.quad),
-          })
-        );
+          duration: particleDuration,
+          ease: [0.25, 0.1, 0.25, 1],
+        });
 
         particlesToCreate.push(particle);
       }
@@ -166,18 +139,17 @@ export function useReactionTrail(options: UseReactionTrailOptions = {}): UseReac
   }, []);
 
   const getParticleStyle = useCallback(
-    (particle: ReactionTrailParticle): ReturnType<typeof useAnimatedStyle> => {
-      return useAnimatedStyle(() => {
-        return {
-          position: 'absolute' as const,
-          left: particle.x.value,
-          top: particle.y.value,
-          transform: [{ scale: particle.scale.value }, { rotate: `${particle.rotation.value}deg` }],
-          opacity: particle.opacity.value,
-          pointerEvents: 'none' as const,
-          zIndex: 9999,
-        };
-      });
+    (particle: ReactionTrailParticle) => {
+      return {
+        position: 'absolute' as const,
+        left: particle.x,
+        top: particle.y,
+        scale: particle.scale,
+        rotate: particle.rotation,
+        opacity: particle.opacity,
+        pointerEvents: 'none' as const,
+        zIndex: 9999,
+      };
     },
     []
   );

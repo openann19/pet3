@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useFilters } from '@/hooks/use-filters';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { motionDurations } from '@/effects/framer-motion/variants';
 import { motion } from 'framer-motion';
 import { useUIConfig } from "@/hooks/use-ui-config";
@@ -157,16 +158,13 @@ export function AdvancedFilterPanel({
                   </span>
                 </div>
                 <Slider
-                  value={
-                    [
-                      (localValues[category.id] as number | undefined) ?? category.min ?? 0,
-                    ] as number[]
-                  }
-                  onValueChange={(value) => handleRangeChange(category.id, value)}
+                  value={(localValues[category.id] as number | undefined) ?? category.min ?? 0}
+                  onValueChange={(value) => handleRangeChange(category.id, [value])}
                   min={category.min ?? 0}
                   max={category.max ?? 100}
                   step={category.step ?? 1}
                   className="w-full"
+                  aria-label={`${category.label} range filter`}
                 />
               </div>
             )}
@@ -244,16 +242,26 @@ function FilterOptionButton({
       variants={prefersReducedMotion ? undefined : bounceAnimation.variants}
       initial="rest"
       whileTap={prefersReducedMotion ? undefined : "tap"}
+      whileHover={!prefersReducedMotion && !isSelected ? {
+        borderColor: 'var(--primary)',
+        transition: {
+          duration: 0.2,
+          ease: 'easeInOut',
+        },
+      } : undefined}
+      transition={{
+        duration: prefersReducedMotion ? 0 : 0.2,
+        ease: 'easeInOut',
+      }}
       className={cn(
         'flex items-center rounded-full border-2',
         getMinTouchTargetClasses(),
-        prefersReducedMotion ? '' : 'transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
         getTypographyClasses('caption'),
         getSpacingClassesFromConfig({ gap: 'sm', paddingX: 'lg', paddingY: 'sm' }),
         isSelected
           ? 'bg-(--primary) text-(--primary-foreground) border-(--primary)'
-          : 'bg-(--background) border-(--border) hover:border-(--primary)/50',
+          : 'bg-(--background) border-(--border)',
         className
       )}
     >
@@ -289,25 +297,41 @@ function ToggleSwitch({ label, checked, onChange }: ToggleSwitchProps) {
       role="switch"
       aria-checked={checked}
       aria-label={`${label} toggle`}
-      variants={prefersReducedMotion ? undefined : toggleAnimation.variants}
+      variants={reducedMotion ? undefined : toggleAnimation.variants}
       initial="rest"
-      whileTap={prefersReducedMotion ? undefined : "tap"}
+      whileTap={reducedMotion ? undefined : "tap"}
+      whileHover={!reducedMotion ? {
+        borderColor: 'var(--primary)',
+        transition: {
+          duration: 0.2,
+          ease: 'easeInOut',
+        },
+      } : undefined}
+      transition={{
+        duration: reducedMotion ? 0 : 0.2,
+        ease: 'easeInOut',
+      }}
       className={cn(
         'flex items-center justify-between w-full rounded-lg border-2 border-(--border)',
         getMinTouchTargetClasses(),
-        prefersReducedMotion ? '' : 'transition-all duration-200 hover:border-(--primary)/50',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
         getTypographyClasses('caption'),
         getSpacingClassesFromConfig({ padding: 'md' })
       )}
     >
       <span className="text-(--text-primary)">{label}</span>
-      <div
+      <motion.div
         className={cn(
           'w-11 h-6 rounded-full',
-          reducedMotion ? '' : 'transition-colors duration-200',
           checked ? 'bg-(--primary)' : 'bg-(--surface)'
         )}
+        animate={{
+          backgroundColor: checked ? 'var(--primary)' : 'var(--surface)',
+        }}
+        transition={{
+          duration: reducedMotion ? 0 : 0.2,
+          ease: 'easeInOut',
+        }}
       >
         <motion.div
           animate={{ x: checked ? 20 : 0 }}
@@ -318,7 +342,7 @@ function ToggleSwitch({ label, checked, onChange }: ToggleSwitchProps) {
           className="w-5 h-5 mt-0.5 ml-0.5 rounded-full bg-(--background) shadow-md"
           aria-hidden="true"
         />
-      </div>
+      </motion.div>
     </ButtonComponent>
   );
 }

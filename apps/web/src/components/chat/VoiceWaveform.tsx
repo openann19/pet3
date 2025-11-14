@@ -1,17 +1,17 @@
 /**
-import { motion } from 'framer-motion';
  * Voice Waveform Component
  *
- * Renders animated voice message waveform
+ * Renders animated voice message waveform using Framer Motion
  *
  * Location: apps/web/src/components/chat/VoiceWaveform.tsx
  */
 
+'use client';
+import { motion, useTransform } from 'framer-motion';
 import { useEffect } from 'react';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useVoiceWaveform } from '@/effects/chat/media/use-voice-waveform';
-import { useAnimatedStyle } from '@petspark/motion';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface VoiceWaveformProps {
   waveform?: number[];
@@ -34,41 +34,57 @@ export function VoiceWaveform({
   color = 'var(--color-accent-secondary-9)',
   className,
 }: VoiceWaveformProps) {
-    const _uiConfig = useUIConfig();
-    const { playheadProgress, animatedStyle, canvasRef, drawWaveform } = useVoiceWaveform({
-        enabled: true,
-        waveform,
-        duration,
-        currentTime,
-        isPlaying,
-        width,
-        height,
-        color,
-      });
+  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = useReducedMotion();
+  
+  const { playheadProgress, waveformOpacity, animatedStyle, canvasRef, drawWaveform } = useVoiceWaveform({
+    enabled: true,
+    waveform,
+    duration,
+    currentTime,
+    isPlaying,
+    width,
+    height,
+    color,
+  });
 
   useEffect(() => {
     drawWaveform();
   }, [drawWaveform]);
 
-  const playheadStyle = useAnimatedStyle(() => {
-    return {
-      position: 'absolute',
-      left: `${String(playheadProgress.value * 100 ?? '')}%`,
-      top: 0,
-      bottom: 0,
-      width: 2,
-      backgroundColor: color,
-      opacity: 0.8,
-    };
-  });
+  // Transform progress to percentage for left position
+  const playheadLeft = useTransform(
+    playheadProgress,
+    (progress) => `${progress * 100}%`
+  );
 
   return (
-    <motion.div style={animatedStyle} className={`relative ${className ?? ''}`}>
-      <canvas ref={canvasRef} width={width} height={height} className="w-full h-full" />
+    <motion.div 
+      style={{ opacity: waveformOpacity }}
+      className={`relative ${className ?? ''}`}
+      aria-label="Voice message waveform"
+    >
+      <canvas 
+        ref={canvasRef} 
+        width={width} 
+        height={height} 
+        className="w-full h-full"
+        aria-hidden="true"
+      />
       {isPlaying && (
-        <motion.div style={playheadStyle}>
-          <div />
-        </motion.div>
+        <motion.div
+          style={{
+            position: 'absolute',
+            left: playheadLeft,
+            top: 0,
+            bottom: 0,
+            width: 2,
+            backgroundColor: color,
+            opacity: 0.8,
+          }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 30 }}
+          aria-hidden="true"
+        />
       )}
     </motion.div>
   );

@@ -1,17 +1,14 @@
 'use client';
-import { motion } from 'framer-motion';
-
+import { motion, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { type ReactNode, useCallback } from 'react';
-import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useBubbleTilt } from '@/effects/reanimated/use-bubble-tilt';
-import { useBubbleEntry } from '@/effects/reanimated/use-bubble-entry';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useBubbleTilt } from '@/effects/framer-motion/hooks/use-bubble-tilt';
+import { useBubbleEntry } from '@/effects/framer-motion/hooks/use-bubble-entry';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks/use-entry-animation';
 import { TypingDotsWeb } from './TypingDotsWeb';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { springConfigs } from '@/effects/framer-motion/variants';
 
 export interface WebBubbleWrapperProps {
   children: ReactNode;
@@ -49,23 +46,20 @@ export function WebBubbleWrapper({
   glowOpacity = 0,
   glowIntensity = 0.85,
 }: WebBubbleWrapperProps) {
-    const _uiConfig = useUIConfig();
-    const bubbleTilt = useBubbleTilt({
-        enabled: enable3DTilt,
-        maxTilt: 10,
-      });
+  const _uiConfig = useUIConfig();
+  const prefersReducedMotion = useReducedMotion();
+  
+  const bubbleTilt = useBubbleTilt({
+    enabled: enable3DTilt,
+    maxTilt: 10,
+  });
 
   const bubbleEntry = useBubbleEntry({
     index,
-    staggerDelay: staggerDelay * 1000,
+    staggerDelay,
     direction: isIncoming ? 'incoming' : 'outgoing',
     enabled: true,
     isNew: true,
-  });
-
-  const bubbleHover = useHoverAnimation({
-    scale: 1.02,
-    enabled: enable3DTilt,
   });
 
   const reactionEntry = useEntryAnimation({
@@ -78,9 +72,9 @@ export function WebBubbleWrapper({
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!enable3DTilt) return;
       const rect = e.currentTarget.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left - rect.width / 2;
-      const offsetY = e.clientY - rect.top - rect.height / 2;
-      bubbleTilt.handleMove(offsetX, offsetY, rect.width, rect.height);
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      bubbleTilt.handleMove(x, y, rect.width, rect.height);
     },
     [enable3DTilt, bubbleTilt]
   );
@@ -100,40 +94,11 @@ export function WebBubbleWrapper({
     [onLongPress]
   );
 
-  const containerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: bubbleEntry.opacity.value,
-      transform: [
-        { translateY: bubbleEntry.translateY.value },
-        { translateX: bubbleEntry.translateX.value },
-        { scale: bubbleEntry.scale.value },
-        { rotateX: `${String(bubbleTilt.rotateX.value ?? '')}deg` },
-        { rotateY: `${String(bubbleTilt.rotateY.value ?? '')}deg` },
-      ],
-    };
-  }) as AnimatedStyle;
+  // Combine all motion values for container transform
+  const rotateX = useTransform(bubbleTilt.rotateX, (val) => `${val}deg`);
+  const rotateY = useTransform(bubbleTilt.rotateY, (val) => `${val}deg`);
 
-  const bubbleStyle = bubbleHover.animatedStyle;
-
-  // Glow trail style for send effect
-  const glowStyle = useAnimatedStyle(() => {
-    if (glowOpacity <= 0) {
-      return {};
-    }
-
-    const glowColor = isIncoming ? 'rgba(59, 130, 246, 0.6)' : 'rgba(255, 255, 255, 0.8)';
-
-    return {
-      position: 'absolute',
-      inset: '-4px',
-      borderRadius: 'inherit',
-      background: `radial-gradient(circle, ${String(glowColor ?? '')} 0%, transparent 70%)`,
-      opacity: glowOpacity * glowIntensity,
-      filter: `blur(8px)`,
-      pointerEvents: 'none',
-      zIndex: -1,
-    };
-  }) as AnimatedStyle;
+  const glowColor = isIncoming ? 'rgba(59, 130, 246, 0.6)' : 'rgba(255, 255, 255, 0.8)';
 
   return (
     <motion.div
@@ -141,24 +106,39 @@ export function WebBubbleWrapper({
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      style={containerStyle}
+      variants={bubbleEntry.variants}
+      initial={bubbleEntry.initial}
+      animate={bubbleEntry.animate}
+      style={{
+        rotateX: rotateX,
+        rotateY: rotateY,
+        perspective: '1000px',
+      }}
       className={cn('relative', className)}
     >
       {/* Glow trail effect */}
       {glowOpacity > 0 && (
-        <motion.div style={glowStyle}>
-          <div />
-        </motion.div>
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: '-4px',
+            borderRadius: 'inherit',
+            background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+            opacity: glowOpacity * glowIntensity,
+            filter: 'blur(8px)',
+            pointerEvents: 'none',
+            zIndex: -1,
+          }}
+        />
       )}
 
       <motion.div
-        style={bubbleStyle}
-        onMouseEnter={bubbleHover.handleMouseEnter}
-        onMouseLeave={bubbleHover.handleMouseLeave}
-        onMouseDown={bubbleHover.handleMouseDown}
-        onMouseUp={bubbleHover.handleMouseUp}
+        whileHover={prefersReducedMotion || !enable3DTilt ? {} : { scale: 1.02 }}
+        whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+        transition={springConfigs.smooth}
         className={cn(
           'relative max-w-[85%] rounded-2xl px-4 py-2 shadow-lg transition-all duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           isIncoming
             ? 'bg-neutral-800 text-white self-start rounded-bl-sm'
             : 'bg-blue-600 text-white self-end rounded-br-sm',
@@ -173,7 +153,9 @@ export function WebBubbleWrapper({
       </motion.div>
       {hasReaction && (
         <motion.div
-          style={reactionEntry.animatedStyle}
+          variants={reactionEntry.variants}
+          initial={reactionEntry.initial}
+          animate={reactionEntry.animate}
           className="absolute -bottom-4 -right-2 text-base pointer-events-none"
         >
           {reactionEmoji}

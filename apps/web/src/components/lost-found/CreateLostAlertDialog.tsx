@@ -2,8 +2,7 @@
 import { motion } from 'framer-motion';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useSharedValue, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { useMotionValue, animate } from 'framer-motion';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { timingConfigs } from '@/effects/reanimated/transitions';
@@ -62,7 +61,11 @@ function FeatureBadge({ feature, index, onRemove }: FeatureBadgeProps): JSX.Elem
     <motion.div style={staggeredAnimation.itemStyle}>
       <Badge variant="secondary" className="gap-1">
         {feature}
-        <motion.div style={removeButtonAnimation.animatedStyle}>
+        <motion.div
+          initial="rest"
+          whileTap="tap"
+          variants={removeButtonAnimation.variants}
+        >
           <button onClick={removeButtonAnimation.handlePress} type="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
             <X size={12} />
           </button>
@@ -147,13 +150,19 @@ export function CreateLostAlertDialog({
     hapticFeedback: true,
   });
 
-  const backdropOpacity = useSharedValue(0);
+  const backdropOpacity = useMotionValue(0);
 
   useEffect(() => {
     if (open) {
-      backdropOpacity.value = withTiming(1, timingConfigs.smooth);
+      void animate(backdropOpacity, 1, {
+        duration: timingConfigs.smooth.duration ? timingConfigs.smooth.duration / 1000 : 0.3,
+        ease: timingConfigs.smooth.easing ?? 'easeOut',
+      });
     } else {
-      backdropOpacity.value = withTiming(0, timingConfigs.smooth);
+      void animate(backdropOpacity, 0, {
+        duration: timingConfigs.smooth.duration ? timingConfigs.smooth.duration / 1000 : 0.3,
+        ease: timingConfigs.smooth.easing ?? 'easeOut',
+      });
     }
   }, [open, backdropOpacity]);
 
@@ -339,7 +348,11 @@ export function CreateLostAlertDialog({
                     }}
                     placeholder="e.g., White spot on chest"
                   />
-                  <motion.div style={addFeatureButtonAnimation.animatedStyle}>
+                  <motion.div
+                    initial="rest"
+                    whileTap="tap"
+                    variants={addFeatureButtonAnimation.variants}
+                  >
                     <Button
                       type="button"
                       onClick={addFeatureButtonAnimation.handlePress}
@@ -401,7 +414,11 @@ export function CreateLostAlertDialog({
 
               <div className="space-y-2">
                 <Label>Location on Map</Label>
-                <motion.div style={mapPickerButtonAnimation.animatedStyle}>
+                <motion.div
+                  initial="rest"
+                  whileTap="tap"
+                  variants={mapPickerButtonAnimation.variants}
+                >
                   <Button
                     type="button"
                     variant="outline"
@@ -496,11 +513,18 @@ export function CreateLostAlertDialog({
 
               <div className="space-y-2">
                 <Label>Photos</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                <motion.div
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer"
+                  whileHover={{ borderColor: 'var(--primary)' }}
+                  transition={{
+                    duration: 0.2,
+                    ease: 'easeInOut',
+                  }}
+                >
                   <Upload size={24} className="mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Upload photos of your pet</p>
                   <p className="text-xs text-muted-foreground mt-1">Up to 5 photos, max 5MB each</p>
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -509,7 +533,11 @@ export function CreateLostAlertDialog({
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <motion.div style={submitButtonAnimation.animatedStyle}>
+            <motion.div
+              initial="rest"
+              whileTap="tap"
+              variants={submitButtonAnimation.variants}
+            >
               <Button
                 onClick={submitButtonAnimation.handlePress}
                 disabled={isSubmitting || !isFormValid}

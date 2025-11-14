@@ -1,13 +1,7 @@
 'use client';
 
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useCallback } from 'react';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  type SharedValue,
-} from '@petspark/motion';
 
 export interface UseHoverTapOptions {
   hoverScale?: number;
@@ -18,8 +12,8 @@ export interface UseHoverTapOptions {
 }
 
 export interface UseHoverTapReturn {
-  scale: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
+  scale: MotionValue<number>;
+  animatedStyle: { scale: MotionValue<number> };
   handleMouseEnter: () => void;
   handleMouseLeave: () => void;
   handlePress: () => void;
@@ -43,32 +37,42 @@ export function useHoverTap(options: UseHoverTapOptions = {}): UseHoverTapReturn
     onPress,
   } = options;
 
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  }) as AnimatedStyle;
+  const scale = useMotionValue(1);
 
   const handleMouseEnter = useCallback(() => {
-    scale.value = withSpring(hoverScale, { damping, stiffness });
+    animate(scale, hoverScale, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
   }, [scale, hoverScale, damping, stiffness]);
 
   const handleMouseLeave = useCallback(() => {
-    scale.value = withSpring(1, { damping, stiffness });
+    animate(scale, 1, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
   }, [scale, damping, stiffness]);
 
   const handlePress = useCallback(() => {
-    scale.value = withSpring(tapScale, { damping, stiffness }, () => {
-      scale.value = withSpring(1, { damping, stiffness });
+    animate(scale, tapScale, {
+      type: 'spring',
+      damping,
+      stiffness,
+    }).then(() => {
+      animate(scale, 1, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
     });
     onPress?.();
   }, [scale, tapScale, damping, stiffness, onPress]);
 
   return {
     scale,
-    animatedStyle,
+    animatedStyle: { scale },
     handleMouseEnter,
     handleMouseLeave,
     handlePress,

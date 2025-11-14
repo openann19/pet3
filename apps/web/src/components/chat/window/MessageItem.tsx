@@ -1,12 +1,11 @@
 'use client';
 import { motion } from 'framer-motion';
 
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { useSendWarp } from '@/effects/chat/bubbles/use-send-warp';
 import { useReceiveAirCushion } from '@/effects/chat/bubbles/use-receive-air-cushion';
-import { useAnimatedStyle } from '@petspark/motion';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import { MapPin, Translate as TranslateIcon } from '@phosphor-icons/react';
 import MessageReactions from '../MessageReactions';
 import MessageAttachments from '../MessageAttachments';
@@ -21,7 +20,6 @@ import { Badge } from '@/components/ui/badge';
 import { useEffect, useRef, useMemo } from 'react';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 export interface MessageItemProps {
   message: ChatMessage;
@@ -58,8 +56,8 @@ export function MessageItem({
   const stableReference = useMemo(() => {
     return getStableMessageReference(
       message.id,
-      message.timestamp || message.createdAt,
-      message.senderName || currentUserName || 'Unknown',
+      message.timestamp ?? message.createdAt,
+      message.senderName ?? currentUserName ?? 'Unknown',
       message.content,
       true // use relative timestamp
     );
@@ -68,7 +66,7 @@ export function MessageItem({
   // Ensure focus appearance on bubble
   useEffect(() => {
     if (bubbleRef.current) {
-      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]') as HTMLElement;
+      const bubbleElement = bubbleRef.current.querySelector<HTMLElement>('[class*="rounded-2xl"]')!;
       if (bubbleElement) {
         bubbleElement.setAttribute('id', stableReference.stableId);
         bubbleElement.setAttribute('tabIndex', '0');
@@ -88,16 +86,32 @@ export function MessageItem({
     }
   }, [isCurrentUser, message.status, sendWarp]);
 
-  const combined = useAnimatedStyle(() => {
-    const a = entry.animatedStyle;
-    const b = isCurrentUser ? sendWarp.animatedStyle : receiveAir.animatedStyle;
-    return { ...a, ...b };
-  }) as AnimatedStyle;
+  // Convert reanimated styles to CSS for use with framer-motion
+  const bubbleAnimatedStyle = isCurrentUser ? sendWarp.animatedStyle : receiveAir.animatedStyle;
+  const bubbleStyleValue = useAnimatedStyleValue(bubbleAnimatedStyle);
+  const hoverStyleValue = useAnimatedStyleValue(hover.animatedStyle);
+
+  // Extract numeric values from SharedValue for WebBubbleWrapper
+  // SharedValue<number>.value is always a number at runtime, but TypeScript may not infer it correctly
+  // We use type assertion since we know these are always numbers from useSharedValue(0)
+  const glowOpacity: number = isCurrentUser 
+    ? (sendWarp.glowOpacity.value as unknown as number)
+    : 0;
+  const glowIntensity: number = isCurrentUser
+    ? (sendWarp.bloomIntensity.value as unknown as number)
+    : 0;
 
   return (
     <motion.div
-      style={combined}
-      className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
+      variants={entry.variants}
+      initial="hidden"
+      animate="visible"
+      style={{
+        opacity: entry.opacity,
+        y: entry.translateY,
+        scale: entry.scale,
+      }}
+      className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
       {!isCurrentUser && message.senderAvatar && (
         <PresenceAvatar
@@ -114,12 +128,15 @@ export function MessageItem({
         <WebBubbleWrapper
           isIncoming={!isCurrentUser}
           index={delay / 50}
-          glowOpacity={isCurrentUser ? sendWarp.glowOpacity.value : 0}
-          glowIntensity={isCurrentUser ? sendWarp.bloomIntensity.value : 0}
+          glowOpacity={glowOpacity}
+          glowIntensity={glowIntensity}
           className="relative"
         >
           <motion.div
-            style={hover.animatedStyle}
+            style={{
+              ...bubbleStyleValue,
+              ...hoverStyleValue,
+            }}
             onMouseEnter={hover.handleMouseEnter}
             onMouseLeave={hover.handleMouseLeave}
             className={`relative group ${message.type === 'sticker' ? 'p-0' : 'p-3'} rounded-2xl shadow-lg focus-ring ${isCurrentUser

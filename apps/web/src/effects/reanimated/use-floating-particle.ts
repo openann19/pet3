@@ -1,15 +1,13 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 import { makeRng } from '@petspark/shared';
 
 export interface UseFloatingParticleOptions {
@@ -23,11 +21,11 @@ export interface UseFloatingParticleOptions {
 }
 
 export interface UseFloatingParticleReturn {
-  x: ReturnType<typeof useSharedValue<number>>;
-  y: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  scale: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  style: CSSProperties;
 }
 
 /**
@@ -35,19 +33,21 @@ export interface UseFloatingParticleReturn {
  * Adapts the base hook with web-specific defaults and behaviors
  */
 export function useFloatingParticle(
-  options: WebFloatingParticleOptions = {}
+  options: UseFloatingParticleOptions = {}
 ): UseFloatingParticleReturn {
   const {
+    initialX = 0,
+    initialY = 0,
     width = 1920,
     height = 1080,
     duration = 15,
     opacity = 0.6,
   } = options;
 
-  const x = useSharedValue(initialX);
-  const y = useSharedValue(initialY);
-  const opacityValue = useSharedValue(0);
-  const scale = useSharedValue(0.5);
+  const x = useMotionValue(initialX);
+  const y = useMotionValue(initialY);
+  const opacityValue = useMotionValue(0);
+  const scale = useMotionValue(0.5);
 
   useEffect(() => {
     const seed = Date.now() + initialX + initialY;
@@ -59,59 +59,44 @@ export function useFloatingParticle(
     const randomY2 = rng() * height;
     const randomY3 = rng() * height;
 
-    x.value = withRepeat(
-      withSequence(
-        withTiming(randomX1, timingConfigs.smooth),
-        withTiming(randomX2, timingConfigs.smooth),
-        withTiming(randomX3, timingConfigs.smooth),
-        withTiming(randomX1, timingConfigs.smooth)
-      ),
-      -1,
-      false
-    );
+    // Animate x through sequence of points
+    void animate(x, [randomX1, randomX2, randomX3, randomX1], {
+      duration: duration * timingConfigs.smooth.duration,
+      ease: timingConfigs.smooth.ease as string,
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
 
-    y.value = withRepeat(
-      withSequence(
-        withTiming(randomY1, timingConfigs.smooth),
-        withTiming(randomY2, timingConfigs.smooth),
-        withTiming(randomY3, timingConfigs.smooth),
-        withTiming(randomY1, timingConfigs.smooth)
-      ),
-      -1,
-      false
-    );
+    // Animate y through sequence of points
+    void animate(y, [randomY1, randomY2, randomY3, randomY1], {
+      duration: duration * timingConfigs.smooth.duration,
+      ease: timingConfigs.smooth.ease as string,
+      repeat: Infinity,
+      times: [0, 0.33, 0.66, 1],
+    });
 
-    opacityValue.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 0 }),
-        withTiming(opacity, { duration: duration * 0.2 }),
-        withTiming(opacity * 0.5, { duration: duration * 0.2 }),
-        withTiming(opacity, { duration: duration * 0.2 }),
-        withTiming(0, { duration: duration * 0.4 })
-      ),
-      -1,
-      false
-    );
+    // Animate opacity
+    void animate(opacityValue, [0, opacity, opacity * 0.5, opacity, 0], {
+      duration: duration,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.2, 0.4, 0.6, 1],
+    });
 
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(0.5, { duration: duration * 0.2 }),
-        withTiming(1, { duration: duration * 0.2 }),
-        withTiming(0.8, { duration: duration * 0.2 }),
-        withTiming(1, { duration: duration * 0.2 }),
-        withTiming(0.5, { duration: duration * 0.2 })
-      ),
-      -1,
-      false
-    );
+    // Animate scale
+    void animate(scale, [0.5, 1, 0.8, 1, 0.5], {
+      duration: duration,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.2, 0.4, 0.6, 1],
+    });
   }, [width, height, duration, opacity, initialX, initialY, x, y, opacityValue, scale]);
 
-  const style = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: x.value }, { translateY: y.value }, { scale: scale.value }],
-      opacity: opacityValue.value,
-    };
-  }) as AnimatedStyle;
+  // Return style object - components should use motion.div with style prop for reactive updates
+  const style: CSSProperties = {
+    transform: `translateX(${x.get()}px) translateY(${y.get()}px) scale(${scale.get()})`,
+    opacity: opacityValue.get(),
+  };
 
   return {
     x,

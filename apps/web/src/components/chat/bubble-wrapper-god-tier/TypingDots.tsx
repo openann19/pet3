@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { useTypingIndicator } from './effects/useTypingIndicator';
 import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
@@ -27,11 +27,11 @@ export function TypingDots({
 
   return (
     <motion.div
-      style={containerStyle as AnimatedStyle}
+      style={containerStyle as MotionStyle}
       className={cn('flex items-center gap-1', className)}
     >
       {dotStyles.map((style, index) => (
-        <motion.div key={index} style={style as AnimatedStyle} className="rounded-full">
+        <motion.div key={index} style={style as MotionStyle} className="rounded-full">
           <div style={{ backgroundColor: dotColor }} />
         </motion.div>
       ))}

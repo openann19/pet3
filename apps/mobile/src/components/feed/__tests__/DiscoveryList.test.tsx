@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react-native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React, { type ReactNode } from 'react'
+import { View, type View as ViewType } from 'react-native'
 import { DiscoveryList } from '../DiscoveryList'
 import { useFeedData } from '@mobile/hooks/feed/useFeedData'
 import type { PetProfile } from '@mobile/types/pet'
@@ -17,24 +18,29 @@ vi.mock('@mobile/hooks/feed/useFeedData', () => ({
 }))
 
 // Mock FlashList
-vi.mock('@shopify/flash-list', () => ({
-  FlashList: ({ data, renderItem, keyExtractor }: {
-    data: PetProfile[]
-    renderItem: ({ item }: { item: PetProfile }) => React.ReactElement
-    keyExtractor: (item: PetProfile) => string
-  }) => {
-    const React = require('react')
-    return React.createElement(
-      'View',
-      { testID: 'flash-list' },
-      data.map((item) => (
-        <View key={keyExtractor(item)} testID={`pet-item-${item.id}`}>
-          {renderItem({ item })}
-        </View>
-      ))
-    )
-  },
-}))
+vi.mock('@shopify/flash-list', () => {
+  const React = require('react')
+  const { View } = require('react-native')
+  return {
+    FlashList: ({ data, renderItem, keyExtractor }: {
+      data: PetProfile[]
+      renderItem: ({ item }: { item: PetProfile }) => React.ReactElement
+      keyExtractor: (item: PetProfile) => string
+    }) => {
+      return React.createElement(
+        View,
+        { testID: 'flash-list' },
+        data.map((item) => (
+          React.createElement(
+            View,
+            { key: keyExtractor(item), testID: `pet-item-${item.id}` },
+            renderItem({ item })
+          )
+        ))
+      )
+    },
+  }
+})
 
 // Mock react-native-reanimated
 vi.mock('react-native-reanimated', () => ({

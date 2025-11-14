@@ -186,7 +186,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
                   <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 </TabsList>
                 <TabsContent value="details">
-                  <EnhancedPetDetailView pet={selectedPet} />
+                  <EnhancedPetDetailView pet={selectedPet} onClose={() => setSelectedPet(null)} />
                 </TabsContent>
                 <TabsContent value="compatibility">
                   <CompatibilityBreakdown

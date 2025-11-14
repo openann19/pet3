@@ -3,9 +3,9 @@
  * Hooks that work with Framer Motion on web, providing compatibility with Reanimated patterns
  */
 
-import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion'
+import { useMotionValue, useTransform, animate, type MotionValue, type Transition } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
-import type { Transition, CSSProperties } from 'framer-motion'
+import type { CSSProperties } from 'react'
 import {
   convertSpringToFramer,
   convertTimingToFramer,
@@ -21,11 +21,26 @@ import { convertTransformToStyle } from './useMotionStyle'
  * Wraps MotionValue to provide .value getter/setter
  */
 export interface SharedValue<T> {
-  value: T
+  value: T | (T extends number ? { target: number; transition: Transition; callback?: (finished?: boolean) => void } : never)
   get(): T
-  set(v: T): void
+  set(v: T | (T extends number ? { target: number; transition: Transition; callback?: (finished?: boolean) => void } : never)): void
   // Include other MotionValue methods for full compatibility
   [key: string]: unknown
+}
+
+/**
+ * Type guard to check if a value is a transition object
+ */
+function isTransitionObject(
+  value: unknown
+): value is { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'target' in value &&
+    'transition' in value &&
+    typeof (value as { target: unknown }).target === 'number'
+  )
 }
 
 /**
@@ -47,7 +62,34 @@ export function useSharedValue<T = number>(
       },
       set(target, prop, value) {
         if (prop === 'value') {
-          (target as unknown as MotionValue<number>).set(value as number)
+          // Handle transition objects from withSpring/withTiming
+          if (isTransitionObject(value)) {
+            const motionValue = target as unknown as MotionValue<number>
+            // Handle callback if provided
+            if (value.callback) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              void animate(motionValue, value.target as any, value.transition as any).then(() => {
+                value.callback?.(true)
+              }).catch(() => {
+                value.callback?.(false)
+              })
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              void animate(motionValue, value.target as any, value.transition as any)
+            }
+            return true
+          }
+          // Regular number assignment
+          if (typeof value === 'number') {
+            (target as unknown as MotionValue<number>).set(value)
+            return true
+          }
+          // Fallback: try to set directly
+          try {
+            (target as unknown as MotionValue<number>).set(value as number)
+          } catch {
+            // Ignore type errors for now
+          }
           return true
         }
         return Reflect.set(target, prop, value)
@@ -73,9 +115,11 @@ export function animateWithSpring<T extends number>(
   motionValue: MotionValue<T>,
   target: number,
   config?: ReanimatedSpringConfig
-): Promise<void> {
+): ReturnType<typeof animate> {
   const transition = convertSpringToFramer(config)
-  return animate(motionValue as MotionValue<number>, target, transition)
+  const mv = motionValue as unknown as MotionValue<number>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return animate(mv, target as any, transition as any)
 }
 
 /**
@@ -86,9 +130,11 @@ export function animateWithTiming<T extends number>(
   motionValue: MotionValue<T>,
   target: number,
   config?: ReanimatedTimingConfig
-): Promise<void> {
+): ReturnType<typeof animate> {
   const transition = convertTimingToFramer(config)
-  return animate(motionValue as MotionValue<number>, target, transition)
+  const mv = motionValue as unknown as MotionValue<number>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return animate(mv, target as any, transition as any)
 }
 
 /**
@@ -100,9 +146,10 @@ export function animateWithDelay(
   target: number,
   delay: number,
   transition: Transition
-): Promise<void> {
+): ReturnType<typeof animate> {
   const delayedTransition = withDelayTransition(delay, transition)
-  return animate(motionValue, target, delayedTransition)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return animate(motionValue, target as any, delayedTransition as any)
 }
 
 /**
@@ -115,13 +162,14 @@ export function animateWithRepeat(
   transition: Transition,
   repeat?: number,
   reverse?: boolean
-): Promise<void> {
+): ReturnType<typeof animate> {
   const repeatTransition = withRepeatTransition(
     transition,
     repeat,
     reverse ? 'reverse' : 'loop'
   )
-  return animate(motionValue, target, repeatTransition)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return animate(motionValue, target as any, repeatTransition as any)
 }
 
 /**
@@ -134,7 +182,9 @@ export function useAnimateValue(
 ) {
   useEffect(() => {
     if (motionValue.get() !== target) {
-      animate(motionValue, target, transition ?? { type: 'tween', duration: 0.3 })
+      const defaultTransition = { type: 'tween' as const, duration: 0.3 }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      void animate(motionValue, target as any, (transition ?? defaultTransition) as any)
     }
   }, [motionValue, target, transition])
 }
@@ -156,19 +206,32 @@ export function useDerivedValue<T extends number | string, U>(
  */
 export function useAnimatedStyle(
   styleFactory: () => {
-    opacity?: number | MotionValue<number>
-    transform?: Array<{ [key: string]: number | string | MotionValue<number> }>
+    opacity?: number | MotionValue<number> | { target: number; transition: Transition; callback?: (finished?: boolean) => void }
+    transform?: Array<Record<string, number | string | MotionValue<number> | { target: number; transition: Transition; callback?: (finished?: boolean) => void } | undefined>>
     backgroundColor?: string | number | MotionValue<string | number>
     color?: string | number | MotionValue<string | number>
     width?: number | string | MotionValue<number | string>
     height?: number | string | MotionValue<number | string>
     [key: string]: unknown
-  }
+  } | Record<string, unknown> | CSSProperties
 ): CSSProperties {
   const [style, setStyle] = useState<CSSProperties>(() => {
     try {
       const computed = styleFactory()
-      return convertReanimatedStyleToCSS(computed)
+      // If it's already CSSProperties, return it directly (for nested useAnimatedStyle calls)
+      if (computed && typeof computed === 'object' && !Array.isArray(computed)) {
+        // Check if it's a plain CSSProperties object (has standard CSS properties)
+        if ('opacity' in computed || 'transform' in computed || 'backgroundColor' in computed || 'width' in computed || 'height' in computed) {
+          // Try to convert it, but if it fails, use it as-is
+          try {
+            return convertReanimatedStyleToCSS(computed as Parameters<typeof convertReanimatedStyleToCSS>[0])
+          } catch {
+            return computed as CSSProperties
+          }
+        }
+        return convertReanimatedStyleToCSS(computed as Parameters<typeof convertReanimatedStyleToCSS>[0])
+      }
+      return {}
     } catch {
       return {}
     }
@@ -183,8 +246,22 @@ export function useAnimatedStyle(
       
       try {
         const computed = styleFactory()
-        const newStyle = convertReanimatedStyleToCSS(computed)
-        setStyle(newStyle)
+        // If it's already CSSProperties, return it directly (for nested useAnimatedStyle calls)
+        if (computed && typeof computed === 'object' && !Array.isArray(computed)) {
+          // Check if it's a plain CSSProperties object (has standard CSS properties)
+          if ('opacity' in computed || 'transform' in computed || 'backgroundColor' in computed || 'width' in computed || 'height' in computed) {
+            // Try to convert it, but if it fails, use it as-is
+            try {
+              const newStyle = convertReanimatedStyleToCSS(computed as Parameters<typeof convertReanimatedStyleToCSS>[0])
+              setStyle(newStyle)
+            } catch {
+              setStyle(computed as CSSProperties)
+            }
+          } else {
+            const newStyle = convertReanimatedStyleToCSS(computed as Parameters<typeof convertReanimatedStyleToCSS>[0])
+            setStyle(newStyle)
+          }
+        }
       } catch {
         // Ignore errors
       }
@@ -210,66 +287,109 @@ export function useAnimatedStyle(
  */
 function convertReanimatedStyleToCSS(
   style: {
-    opacity?: number | MotionValue<number>
-    transform?: Array<{ [key: string]: number | string | MotionValue<number> }>
+    opacity?: number | MotionValue<number> | { target: number; transition: Transition; callback?: (finished?: boolean) => void }
+    transform?: Array<{ [key: string]: number | string | MotionValue<number> | { target: number; transition: Transition; callback?: (finished?: boolean) => void } }>
     backgroundColor?: string | number | MotionValue<string | number>
     color?: string | number | MotionValue<string | number>
     width?: number | string | MotionValue<number | string>
     height?: number | string | MotionValue<number | string>
     [key: string]: unknown
-  }
+  } | CSSProperties | Record<string, unknown>
 ): CSSProperties {
   const css: CSSProperties = {}
-
-  if (style.opacity !== undefined) {
-    const value = style.opacity instanceof Object && 'get' in style.opacity 
-      ? (style.opacity as MotionValue<number>).get() 
-      : style.opacity
-    css.opacity = value as number
+  
+  // Type guard to check if style has the expected shape
+  const styleObj = style as Record<string, unknown>
+  
+  // Helper to extract value from motion value or transition object
+  const extractValue = (val: unknown): number | string | undefined => {
+    if (val === undefined || val === null) return undefined
+    // Check if it's a transition object
+    if (isTransitionObject(val)) {
+      return val.target
+    }
+    // Check if it's a MotionValue
+    if (val instanceof Object && 'get' in val && typeof (val as { get?: () => unknown }).get === 'function') {
+      return (val as MotionValue<number>).get() as number
+    }
+    // Regular number or string
+    return val as number | string
   }
 
-  if (style.backgroundColor !== undefined) {
-    const value = style.backgroundColor instanceof Object && 'get' in style.backgroundColor
-      ? (style.backgroundColor as MotionValue<string | number>).get()
-      : style.backgroundColor
+  if (styleObj.opacity !== undefined) {
+    const value = extractValue(styleObj.opacity)
+    if (value !== undefined && typeof value === 'number') {
+      css.opacity = value
+    }
+  }
+
+  if (styleObj.backgroundColor !== undefined) {
+    const value = styleObj.backgroundColor instanceof Object && 'get' in styleObj.backgroundColor
+      ? (styleObj.backgroundColor as MotionValue<string | number>).get()
+      : styleObj.backgroundColor
     css.backgroundColor = String(value)
   }
 
-  if (style.color !== undefined) {
-    const value = style.color instanceof Object && 'get' in style.color
-      ? (style.color as MotionValue<string | number>).get()
-      : style.color
+  if (styleObj.color !== undefined) {
+    const value = styleObj.color instanceof Object && 'get' in styleObj.color
+      ? (styleObj.color as MotionValue<string | number>).get()
+      : styleObj.color
     css.color = String(value)
   }
 
-  if (style.width !== undefined) {
-    const value = style.width instanceof Object && 'get' in style.width
-      ? (style.width as MotionValue<number | string>).get()
-      : style.width
-    css.width = typeof value === 'number' ? `${value}px` : value
+  if (styleObj.width !== undefined) {
+    const value = styleObj.width instanceof Object && 'get' in styleObj.width
+      ? (styleObj.width as MotionValue<number | string>).get()
+      : styleObj.width
+    if (value !== undefined && value !== null) {
+      css.width = typeof value === 'number' ? `${value}px` : String(value)
+    }
   }
 
-  if (style.height !== undefined) {
-    const value = style.height instanceof Object && 'get' in style.height
-      ? (style.height as MotionValue<number | string>).get()
-      : style.height
-    css.height = typeof value === 'number' ? `${value}px` : value
+  if (styleObj.height !== undefined) {
+    const value = styleObj.height instanceof Object && 'get' in styleObj.height
+      ? (styleObj.height as MotionValue<number | string>).get()
+      : styleObj.height
+    if (value !== undefined && value !== null) {
+      css.height = typeof value === 'number' ? `${value}px` : String(value)
+    }
   }
 
-  if (style.transform && Array.isArray(style.transform)) {
-    const processedTransforms = style.transform.map(t => {
-      const processed: { [key: string]: number | string } = {}
-      for (const [key, val] of Object.entries(t)) {
-        if (val instanceof Object && 'get' in val) {
-          processed[key] = (val as MotionValue<number>).get()
-        } else {
-          processed[key] = val as number | string
+  if (styleObj.transform && Array.isArray(styleObj.transform)) {
+    const processedTransforms = styleObj.transform
+      .map(t => {
+        if (!t || typeof t !== 'object') return null
+        const processed: { [key: string]: number | string } = {}
+        for (const [key, val] of Object.entries(t)) {
+          // Skip undefined values
+          if (val === undefined) continue
+          const extracted = extractValue(val)
+          if (extracted !== undefined) {
+            processed[key] = extracted
+          }
+        }
+        return Object.keys(processed).length > 0 ? processed : null
+      })
+      .filter((t): t is { [key: string]: number | string } => t !== null) // Remove null/empty transform objects
+    if (processedTransforms.length > 0) {
+      const transformStyle = convertTransformToStyle(processedTransforms)
+      Object.assign(css, transformStyle)
+    }
+  }
+  
+  // Copy any other CSS properties that might be in the style object
+  for (const [key, val] of Object.entries(styleObj)) {
+    if (!['opacity', 'transform', 'backgroundColor', 'color', 'width', 'height'].includes(key)) {
+      if (val !== undefined && val !== null) {
+        if (val instanceof Object && 'get' in val && typeof (val as { get?: () => unknown }).get === 'function') {
+          // It's a MotionValue, extract the value
+          css[key as keyof CSSProperties] = (val as MotionValue<unknown>).get() as never
+        } else if (!isTransitionObject(val) && (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean')) {
+          // It's a regular CSS value
+          css[key as keyof CSSProperties] = val as never
         }
       }
-      return processed
-    })
-    const transformStyle = convertTransformToStyle(processedTransforms)
-    Object.assign(css, transformStyle)
+    }
   }
 
   return css
@@ -282,7 +402,7 @@ function convertReanimatedStyleToCSS(
 export function withSpring(
   target: number,
   config?: ReanimatedSpringConfig
-): { target: number; transition: Transition } {
+): { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
   return {
     target,
     transition: convertSpringToFramer(config),
@@ -296,10 +416,11 @@ export function withSpring(
 export function withTiming(
   target: number,
   config?: ReanimatedTimingConfig
-): { target: number; transition: Transition } {
+): { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
   return {
     target,
     transition: convertTimingToFramer(config),
+    callback: config?.callback,
   }
 }
 
@@ -308,10 +429,10 @@ export function withTiming(
  * Equivalent to Reanimated's withRepeat
  */
 export function withRepeat(
-  animation: { target: number; transition: Transition },
+  animation: { target: number; transition: Transition; callback?: (finished?: boolean) => void },
   repeat?: number,
   reverse?: boolean
-): { target: number; transition: Transition } {
+): { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
   return {
     target: animation.target,
     transition: withRepeatTransition(
@@ -319,6 +440,7 @@ export function withRepeat(
       repeat,
       reverse ? 'reverse' : 'loop'
     ),
+    callback: animation.callback,
   }
 }
 
@@ -327,8 +449,8 @@ export function withRepeat(
  * Equivalent to Reanimated's withSequence
  */
 export function withSequence(
-  ...animations: Array<{ target: number; transition?: Transition }>
-): { target: number; transition: Transition } {
+  ...animations: Array<{ target: number; transition?: Transition; callback?: (finished?: boolean) => void }>
+): { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
   if (animations.length === 0) {
     return { target: 0, transition: { type: 'tween', duration: 0.3 } }
   }
@@ -341,6 +463,7 @@ export function withSequence(
   return {
     target: last.target,
     transition: last.transition ?? { type: 'tween', duration: 0.3 },
+    callback: last.callback,
   }
 }
 
@@ -350,11 +473,12 @@ export function withSequence(
  */
 export function withDelay(
   delayMs: number,
-  animation: { target: number; transition: Transition }
-): { target: number; transition: Transition } {
+  animation: { target: number; transition: Transition; callback?: (finished?: boolean) => void }
+): { target: number; transition: Transition; callback?: (finished?: boolean) => void } {
   return {
     target: animation.target,
     transition: withDelayTransition(delayMs, animation.transition),
+    callback: animation.callback,
   }
 }
 

@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useSharedValue, type SharedValue } from 'react-native-reanimated'
+import { useMotionValue, type MotionValue } from 'framer-motion'
 
 // Optional RN import (lazy/try-catch for web)
 interface ReactNativeAccessibilityInfo {
@@ -164,32 +164,32 @@ export function useReducedMotion(): boolean {
 }
 
 /**
- * SharedValue version for use in worklets.
+ * MotionValue version for use with Framer Motion.
  * Updates reactively when preference changes and can be used in animated styles.
  *
- * @returns SharedValue<boolean> - true if reduced motion is enabled
+ * @returns MotionValue<boolean> - true if reduced motion is enabled
  *
  * @example
  * ```typescript
  * const reducedMotion = useReducedMotionSV()
  *
- * const animatedStyle = useAnimatedStyle(() => {
- *   if (reducedMotion.value) {
- *     return { opacity: 1 } // Instant, no animation
+ * const opacity = useMotionValue(reducedMotion.get() ? 1 : 0)
+ * useEffect(() => {
+ *   if (!reducedMotion.get()) {
+ *     animate(opacity, 1, { type: 'spring' })
  *   }
- *   return { opacity: withSpring(1) }
- * })
+ * }, [opacity, reducedMotion])
  * ```
  */
-export function useReducedMotionSV(): SharedValue<boolean> {
-  const sv = useSharedValue<boolean>(isReduceMotionEnabled())
+export function useReducedMotionSV(): MotionValue<boolean> {
+  const mv = useMotionValue(isReduceMotionEnabled())
   const reduced = useReducedMotion()
 
   useEffect(() => {
-    sv.value = reduced
-  }, [reduced, sv])
+    mv.set(reduced)
+  }, [reduced, mv])
 
-  return sv
+  return mv
 }
 
 /**

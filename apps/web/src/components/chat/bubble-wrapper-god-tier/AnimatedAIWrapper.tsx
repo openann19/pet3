@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { type ReactNode } from 'react';
 import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
@@ -34,12 +34,12 @@ export function AnimatedAIWrapper({
 
   return (
     <motion.div
-      style={aiAnimation.containerStyle as AnimatedStyle}
+      style={aiAnimation.containerStyle as MotionStyle}
       className={cn('relative', className)}
     >
       {showGlow && (
         <motion.div
-          style={aiAnimation.glowStyle as AnimatedStyle}
+          style={aiAnimation.glowStyle as MotionStyle}
           className="absolute inset-0 rounded-2xl pointer-events-none -z-10"
         >
           <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 blur-xl" />
@@ -48,7 +48,7 @@ export function AnimatedAIWrapper({
 
       {showShimmer && (
         <motion.div
-          style={aiAnimation.shimmerStyle as AnimatedStyle}
+          style={aiAnimation.shimmerStyle as MotionStyle}
           className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
         >
           <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent w-1/3" />
@@ -57,7 +57,7 @@ export function AnimatedAIWrapper({
 
       {showSparkles && (
         <motion.div
-          style={aiAnimation.sparkleStyle as AnimatedStyle}
+          style={aiAnimation.sparkleStyle as MotionStyle}
           className="absolute -top-2 -right-2 pointer-events-none z-10"
         >
           <div className="text-2xl">✨</div>

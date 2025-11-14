@@ -10,15 +10,8 @@ import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useModalAnimation, useGlowPulse, useBounceOnTap } from '@/effects/reanimated';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
+import { useMotionValue, animate } from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 
 const logger = createLogger('IncomingCallNotification');
 
@@ -40,7 +33,7 @@ export default function IncomingCallNotification({
   const modalAnimation = useModalAnimation({ isVisible: true, duration: 300 });
   const glowPulse = useGlowPulse({ duration: 1500, intensity: 0.4, enabled: true });
 
-  const avatarScale = useSharedValue(1);
+  const avatarScale = useMotionValue(1);
 
   const handleAccept = useCallback((): void => {
     try {
@@ -79,18 +72,12 @@ export default function IncomingCallNotification({
   });
 
   useEffect(() => {
-    avatarScale.value = withRepeat(
-      withSequence(withTiming(1.05, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
+    animate(avatarScale, [1, 1.05, 1], {
+      repeat: Infinity,
+      duration: 2,
+      ease: 'easeInOut',
+    });
   }, [avatarScale]);
-
-  const avatarAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: avatarScale.value }],
-    };
-  }) as AnimatedStyle;
 
   const callTypeLabel = useMemo<string>(() => {
     return call.type === 'video' ? 'Incoming video call' : 'Incoming call';
@@ -106,7 +93,10 @@ export default function IncomingCallNotification({
 
   return (
     <motion.div
-      style={modalAnimation.style}
+      style={{ opacity: modalAnimation.opacity, scale: modalAnimation.scale, y: modalAnimation.y }}
+      variants={modalAnimation.variants}
+      initial="hidden"
+      animate="visible"
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
       role="alertdialog"
       aria-labelledby="incoming-call-title"
@@ -118,7 +108,7 @@ export default function IncomingCallNotification({
         className="glass-strong backdrop-blur-2xl rounded-3xl p-6 border border-white/30 shadow-2xl"
       >
         <div className="flex items-center gap-4 mb-6">
-          <motion.div style={avatarAnimatedStyle}>
+          <motion.div style={{ scale: avatarScale }}>
             <Avatar className="w-16 h-16 ring-4 ring-primary/30">
               <AvatarImage src={callerAvatar} alt={callerName} />
               <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-2xl font-bold">
@@ -144,7 +134,13 @@ export default function IncomingCallNotification({
         </div>
 
         <div className="flex gap-3" role="group" aria-label="Call actions">
-          <motion.div style={declineBounce.animatedStyle} className="flex-1">
+          <motion.div
+            style={{ scale: declineBounce.scale }}
+            variants={declineBounce.variants}
+            initial="rest"
+            animate="rest"
+            className="flex-1"
+          >
             <Button
               onClick={declineBounce.handlePress}
               variant="outline"
@@ -156,7 +152,13 @@ export default function IncomingCallNotification({
             </Button>
           </motion.div>
 
-          <motion.div style={acceptBounce.animatedStyle} className="flex-1">
+          <motion.div
+            style={{ scale: acceptBounce.scale }}
+            variants={acceptBounce.variants}
+            initial="rest"
+            animate="rest"
+            className="flex-1"
+          >
             <Button
               onClick={acceptBounce.handlePress}
               className="w-full h-12 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"

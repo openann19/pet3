@@ -5,7 +5,25 @@
 
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
-import { AccessibilityInfo, Platform } from 'react-native'
+import { Platform } from 'react-native'
+
+// AccessibilityInfo may not be available in all React Native versions
+// Use dynamic import with fallback
+let AccessibilityInfo: {
+  isReduceMotionEnabled: () => Promise<boolean>;
+  addEventListener: (event: string, handler: (enabled: boolean) => void) => { remove: () => void };
+} | null = null;
+
+try {
+  // Try to import AccessibilityInfo from react-native
+  const RN = require('react-native');
+  if (RN.AccessibilityInfo) {
+    AccessibilityInfo = RN.AccessibilityInfo;
+  }
+} catch {
+  // AccessibilityInfo not available
+  AccessibilityInfo = null;
+}
 
 import type { ReducedMotionConfig } from './types'
 import { performanceBudgets } from './constants'
@@ -17,9 +35,15 @@ export function useReducedMotion(): SharedValue<boolean> {
   const isReducedMotion = useSharedValue(false)
   
   useEffect(() => {
+    if (!AccessibilityInfo) {
+      // AccessibilityInfo not available, assume reduced motion is disabled
+      isReducedMotion.value = false;
+      return;
+    }
+
     const checkReducedMotion = async () => {
       try {
-        const reducedMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled()
+        const reducedMotionEnabled = await AccessibilityInfo!.isReduceMotionEnabled()
         isReducedMotion.value = reducedMotionEnabled
       } catch (err) {
         // Fail gracefully, assume reduced motion is disabled
@@ -33,7 +57,7 @@ export function useReducedMotion(): SharedValue<boolean> {
     // Subscribe to changes
     const subscription = AccessibilityInfo.addEventListener(
       'reduceMotionChanged',
-      (enabled) => {
+      (enabled: boolean) => {
         isReducedMotion.value = enabled
       }
     )

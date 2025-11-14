@@ -2,6 +2,7 @@
 
 import type { ComponentProps } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 
@@ -18,9 +19,17 @@ function ScrollArea({
     >
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+        asChild
       >
-        {children}
+        <motion.div
+          className="focus-visible:ring-ring/50 size-full rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+          whileFocus={{
+            boxShadow: '0 0 0 3px var(--ring)',
+            transition: { duration: 0.15, ease: 'easeOut' },
+          }}
+        >
+          {children}
+        </motion.div>
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
       <ScrollAreaPrimitive.Corner />

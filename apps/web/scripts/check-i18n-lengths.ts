@@ -46,6 +46,43 @@ function getStatus(length: number): LengthBucket['status'] {
   return 'CRITICAL';
 }
 
+/**
+ * Safely extract translations from an i18n module
+ */
+function safelyExtractTranslations(module: unknown): { en: Record<string, unknown>; bg: Record<string, unknown> } | null {
+  if (!module || typeof module !== 'object') {
+    return null;
+  }
+  
+  // Check if module has default export with translations
+  const defaultExport = (module as { default?: unknown }).default;
+  if (defaultExport && typeof defaultExport === 'object') {
+    const translations = defaultExport as { en?: Record<string, unknown>; bg?: Record<string, unknown> };
+    if (translations.en && translations.bg) {
+      return { en: translations.en, bg: translations.bg };
+    }
+  }
+  
+  // Check if module has named exports
+  if ('en' in module && 'bg' in module) {
+    const en = (module as { en?: Record<string, unknown> }).en;
+    const bg = (module as { bg?: Record<string, unknown> }).bg;
+    if (en && typeof en === 'object' && bg && typeof bg === 'object') {
+      return { en, bg };
+    }
+  }
+  
+  // Check if module has a translations property
+  if ('translations' in module) {
+    const translations = (module as { translations?: { en?: Record<string, unknown>; bg?: Record<string, unknown> } }).translations;
+    if (translations && typeof translations === 'object' && translations.en && translations.bg) {
+      return { en: translations.en, bg: translations.bg };
+    }
+  }
+  
+  return null;
+}
+
 function extractStrings(obj: Record<string, unknown>, prefix = ''): LengthBucket[] {
   const results: LengthBucket[] = [];
 
@@ -160,10 +197,18 @@ async function main(): Promise<void> {
           scriptLogger.warn(
             '⚠️  For accurate results, export translations as JSON or use tsx to run this script.'
           );
-          const enJson = JSON.parse(enMatch[1]);
-          const bgJson = JSON.parse(bgMatch[1]);
-          enTranslations = enJson;
-          bgTranslations = bgJson;
+          const enMatchText = enMatch[1];
+          const bgMatchText = bgMatch[1];
+          if (enMatchText && bgMatchText) {
+            try {
+              const enJson = JSON.parse(enMatchText);
+              const bgJson = JSON.parse(bgMatchText);
+              enTranslations = enJson;
+              bgTranslations = bgJson;
+            } catch {
+              // Ignore JSON parse errors
+            }
+          }
         }
       }
     } catch {

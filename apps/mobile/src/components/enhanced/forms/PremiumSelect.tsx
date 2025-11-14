@@ -212,7 +212,7 @@ export function PremiumSelect({
                       key={option.value}
                       onPress={() => { handleSelect(option.value); }}
                       disabled={option.disabled}
-                      style={({ pressed }) => [
+                      style={({ pressed }: { pressed: boolean }) => [
                         styles.option,
                         pressed && styles.optionPressed,
                         isSelected && styles.optionSelected,

@@ -43,15 +43,15 @@ export function useMotionStyles(
   }
   
   // Default transform: convert to CSS properties
-  const style: CSSProperties = {}
+  const style: Record<string, string | number> = {}
   
   for (const [key, val] of Object.entries(currentValues)) {
     // Convert camelCase to kebab-case for CSS properties
     const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
-    style[cssKey as keyof CSSProperties] = val as string | number
+    style[cssKey] = val
   }
   
-  return style
+  return style as CSSProperties
 }
 
 /**

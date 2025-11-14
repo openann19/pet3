@@ -1,14 +1,14 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback, useRef } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseTimestampRevealOptions {
   autoHideDelay?: number;
@@ -16,9 +16,9 @@ export interface UseTimestampRevealOptions {
 }
 
 export interface UseTimestampRevealReturn {
-  opacity: SharedValue<number>;
-  translateY: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  opacity: MotionValue<number>;
+  translateY: MotionValue<number>;
+  animatedStyle: CSSProperties;
   show: () => void;
   hide: () => void;
 }
@@ -31,8 +31,8 @@ export function useTimestampReveal(
 ): UseTimestampRevealReturn {
   const { autoHideDelay = DEFAULT_AUTO_HIDE_DELAY, enabled = DEFAULT_ENABLED } = options;
 
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(10);
+  const opacity = useMotionValue(0);
+  const translateY = useMotionValue(10);
   const hideTimeoutRef = useRef<number | undefined>(undefined);
 
   const show = useCallback(() => {
@@ -45,12 +45,22 @@ export function useTimestampReveal(
       hideTimeoutRef.current = undefined;
     }
 
-    opacity.value = withSpring(1, springConfigs.smooth);
-    translateY.value = withSpring(0, springConfigs.smooth);
+    void animate(opacity, 1, {
+      ...springConfigs.smooth,
+    });
+    void animate(translateY, 0, {
+      ...springConfigs.smooth,
+    });
 
     hideTimeoutRef.current = window.setTimeout(() => {
-      opacity.value = withTiming(0, timingConfigs.fast);
-      translateY.value = withTiming(10, timingConfigs.fast);
+      void animate(opacity, 0, {
+        duration: timingConfigs.fast.duration,
+        ease: timingConfigs.fast.ease as string,
+      });
+      void animate(translateY, 10, {
+        duration: timingConfigs.fast.duration,
+        ease: timingConfigs.fast.ease as string,
+      });
       hideTimeoutRef.current = undefined;
     }, autoHideDelay);
   }, [enabled, autoHideDelay, opacity, translateY]);
@@ -61,14 +71,20 @@ export function useTimestampReveal(
       hideTimeoutRef.current = undefined;
     }
 
-    opacity.value = withTiming(0, timingConfigs.fast);
-    translateY.value = withTiming(10, timingConfigs.fast);
+    void animate(opacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(translateY, 10, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
   }, [opacity, translateY]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
+      opacity: opacity.get(),
+      transform: [{ translateY: translateY.get() }],
     };
   });
 

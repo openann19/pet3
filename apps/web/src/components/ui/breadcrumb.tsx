@@ -1,6 +1,9 @@
+'use client';
+
 import type { ComponentProps } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { ChevronRight, MoreHorizontal } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 
@@ -38,12 +41,14 @@ function BreadcrumbLink({
 }: ComponentProps<'a'> & {
   asChild?: boolean;
 }) {
-  const Comp = asChild ? Slot : 'a';
+  const Comp = asChild ? Slot : motion.a;
 
   return (
     <Comp
       data-slot="breadcrumb-link"
-      className={cn('hover:text-foreground transition-colors', className)}
+      className={cn('hover:text-foreground', className)}
+      whileHover={{ color: 'var(--foreground)' }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       {...props}
     />
   );

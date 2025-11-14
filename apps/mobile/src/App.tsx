@@ -15,7 +15,10 @@ const logger = createLogger('App')
 
 // Global error handler for production
 if (__DEV__ === false) {
-  const ErrorUtils = require('react-native').ErrorUtils
+  const ErrorUtils = require('react-native').ErrorUtils as {
+    getGlobalHandler?: () => ((error: Error, isFatal?: boolean) => void) | undefined
+    setGlobalHandler?: (handler: (error: Error, isFatal?: boolean) => void) => void
+  }
   const origHandler = ErrorUtils?.getGlobalHandler?.()
 
   ErrorUtils?.setGlobalHandler?.((error: Error, isFatal?: boolean) => {

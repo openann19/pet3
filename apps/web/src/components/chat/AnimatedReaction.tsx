@@ -1,6 +1,6 @@
 import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { useReactionAnimation } from '@/hooks/use-reaction-animation';
 import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
@@ -40,7 +40,7 @@ export function AnimatedReaction({
 
   return (
     <motion.div
-      style={animatedStyle}
+      style={animatedStyle as MotionStyle}
       onClick={handleClick}
       className={cn('text-2xl cursor-pointer select-none', className)}
     >

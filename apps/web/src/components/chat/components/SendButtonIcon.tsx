@@ -1,16 +1,14 @@
 /**
-import { motion } from 'framer-motion';
  * Send Button Icon Component
  *
- * Animated send button icon with spring animation
+ * Animated send button icon with spring animation using Framer Motion
  */
 
+'use client';
+import { motion, useAnimationControls } from 'framer-motion';
 import { useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring } from '@petspark/motion';
 import { PaperPlaneRight } from '@phosphor-icons/react';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { springConfigs } from '@/effects/framer-motion/variants';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface SendButtonIconProps {
@@ -18,28 +16,38 @@ export interface SendButtonIconProps {
 }
 
 export function SendButtonIcon({ isActive = false }: SendButtonIconProps): JSX.Element {
-    const _uiConfig = useUIConfig();
-    const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
-
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { scale: scale.value }],
-  })) as AnimatedStyle;
+  const _uiConfig = useUIConfig();
+  const controls = useAnimationControls();
 
   useEffect(() => {
     if (isActive) {
-      translateX.value = withSpring(4, springConfigs.bouncy);
-      scale.value = withSpring(1.1, springConfigs.bouncy);
+      void controls.start({
+        x: 4,
+        scale: 1.1,
+        transition: springConfigs.bouncy,
+      });
 
-      setTimeout(() => {
-        translateX.value = withSpring(0, springConfigs.smooth);
-        scale.value = withSpring(1, springConfigs.smooth);
+      const timeout = setTimeout(() => {
+        void controls.start({
+          x: 0,
+          scale: 1,
+          transition: springConfigs.smooth,
+        });
       }, 150);
+
+      return () => {
+        clearTimeout(timeout);
+      };
     }
-  }, [isActive, translateX, scale]);
+    return undefined;
+  }, [isActive, controls]);
 
   return (
-    <motion.div style={iconStyle}>
+    <motion.div
+      animate={controls}
+      initial={{ x: 0, scale: 1 }}
+      aria-hidden="true"
+    >
       <PaperPlaneRight size={20} weight="fill" />
     </motion.div>
   );

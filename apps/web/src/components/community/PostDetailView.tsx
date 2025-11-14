@@ -28,6 +28,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Suspense } from 'react';
+import { isTruthy } from '@/core/guards';
 import { MediaViewer } from '@/components/lazy-exports';
 import { ReportDialog } from './ReportDialog';
 
@@ -341,7 +342,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                           >
                             <img
                               src={url}
-                              alt={`Post media ${String(index + 1 ?? '')}`}
+                              alt={`Post media ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
                           </button>

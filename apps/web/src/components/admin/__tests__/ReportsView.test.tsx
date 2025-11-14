@@ -5,6 +5,19 @@ import ReportsView from '@/components/admin/ReportsView';
 import { adminApi } from '@/api/admin-api';
 import { useStorage } from '@/hooks/use-storage';
 
+interface Report {
+  id: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+  reportedBy?: string;
+  reportedUserId?: string;
+  reportedPetId?: string;
+  reason?: string;
+  description?: string;
+  priority?: string;
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
 vi.mock('@/api/admin-api');
 vi.mock('@/lib/api/admin', () => ({
   adminReportsApi: {
@@ -54,7 +67,7 @@ describe('ReportsView', () => {
       reportedUserId: 'user-002',
       reason: 'Harassment',
       description: 'User sending harassing messages',
-      status: 'reviewing' as const,
+      status: 'pending' as const,
       priority: 'critical' as const,
       createdAt: new Date(Date.now() - 3600000).toISOString(),
     },
@@ -80,8 +93,8 @@ describe('ReportsView', () => {
       }
       return [defaultValue, setValue, deleteValue];
     });
-    vi.mocked(adminReportsApi.resolveReport).mockResolvedValue(mockReports[0]!);
-    vi.mocked(adminReportsApi.dismissReport).mockResolvedValue(mockReports[0]!);
+    vi.mocked(adminReportsApi.resolveReport).mockResolvedValue(mockReports[0] as Report);
+    vi.mocked(adminReportsApi.dismissReport).mockResolvedValue(mockReports[0] as Report);
   });
 
   afterEach(() => {

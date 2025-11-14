@@ -56,7 +56,7 @@ const getMoodColors = (mode: 'light' | 'dark' = 'light') => ({
 export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodColorThemeReturn {
   const { text, enabled = true } = options;
   const { theme } = useUIConfig();
-  const themeMode = theme.mode || 'light';
+  const themeMode = (theme as { mode?: 'light' | 'dark' }).mode || 'light';
 
   const colors = useMemo(() => {
     const moodColors = getMoodColors(themeMode);
@@ -86,7 +86,7 @@ export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodCol
   const colorOpacity = useSharedValue(0);
 
   if (enabled && theme.adaptiveMood) {
-    colorOpacity.value = withSpring(1, springConfigs.smooth);
+    colorOpacity.value = withSpring(1, springConfigs.smooth).target;
   }
 
   const animatedStyle = useAnimatedStyle(() => {

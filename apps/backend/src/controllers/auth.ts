@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import { hashPassword, verifyPassword } from '../utils/password.js';

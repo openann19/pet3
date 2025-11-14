@@ -2,15 +2,12 @@
 
 import { useCallback, useRef } from 'react';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseDragGestureOptions {
   enabled?: boolean;
@@ -30,10 +27,14 @@ export interface UseDragGestureOptions {
 }
 
 export interface UseDragGestureReturn {
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-  isDragging: SharedValue<boolean>;
-  animatedStyle: AnimatedStyle;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  isDragging: MotionValue<boolean>;
+  animatedStyle: {
+    x: MotionValue<number>;
+    y: MotionValue<number>;
+    cursor: string;
+  };
   handleMouseDown: (e: React.MouseEvent) => void;
   handleMouseMove: (e: React.MouseEvent) => void;
   handleMouseUp: () => void;
@@ -56,9 +57,9 @@ export function useDragGesture(options: UseDragGestureOptions = {}): UseDragGest
     snapBackDuration = timingConfigs.smooth.duration ?? 300,
   } = options;
 
-  const x = useSharedValue(0);
-  const y = useSharedValue(0);
-  const isDragging = useSharedValue(false);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const isDragging = useMotionValue(false);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const offsetXRef = useRef(0);
@@ -98,9 +99,9 @@ export function useDragGesture(options: UseDragGestureOptions = {}): UseDragGest
       isActiveRef.current = true;
       startXRef.current = clientX;
       startYRef.current = clientY;
-      offsetXRef.current = x.value;
-      offsetYRef.current = y.value;
-      isDragging.value = true;
+      offsetXRef.current = x.get();
+      offsetYRef.current = y.get();
+      isDragging.set(true);
 
       if (hapticFeedback) {
         haptics.selection();
@@ -123,12 +124,12 @@ export function useDragGesture(options: UseDragGestureOptions = {}): UseDragGest
 
       if (axis === 'x' || axis === 'both') {
         newX = getConstrainedX(offsetXRef.current + deltaX);
-        x.value = newX;
+        x.set(newX);
       }
 
       if (axis === 'y' || axis === 'both') {
         newY = getConstrainedY(offsetYRef.current + deltaY);
-        y.value = newY;
+        y.set(newY);
       }
 
       onDrag?.(newX, newY);
@@ -140,14 +141,20 @@ export function useDragGesture(options: UseDragGestureOptions = {}): UseDragGest
     if (!enabled || !isActiveRef.current) return;
 
     isActiveRef.current = false;
-    isDragging.value = false;
+    isDragging.set(false);
 
-    const finalX = x.value;
-    const finalY = y.value;
+    const finalX = x.get();
+    const finalY = y.get();
 
     if (snapBack) {
-      x.value = withTiming(0, { duration: snapBackDuration });
-      y.value = withTiming(0, { duration: snapBackDuration });
+      void animate(x, 0, {
+        duration: snapBackDuration / 1000,
+        ease: 'easeOut',
+      });
+      void animate(y, 0, {
+        duration: snapBackDuration / 1000,
+        ease: 'easeOut',
+      });
     }
 
     onDragEnd?.(finalX, finalY);
@@ -201,29 +208,21 @@ export function useDragGesture(options: UseDragGestureOptions = {}): UseDragGest
   }, [handleEnd]);
 
   const reset = useCallback(() => {
-    x.value = withSpring(0, springConfigs.smooth);
-    y.value = withSpring(0, springConfigs.smooth);
-    isDragging.value = false;
+    void animate(x, 0, springConfigs.smooth);
+    void animate(y, 0, springConfigs.smooth);
+    isDragging.set(false);
     isActiveRef.current = false;
     offsetXRef.current = 0;
     offsetYRef.current = 0;
   }, [x, y, isDragging]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const transforms: Record<string, number | string>[] = [];
-
-    if (x.value !== 0) {
-      transforms.push({ translateX: x.value });
-    }
-    if (y.value !== 0) {
-      transforms.push({ translateY: y.value });
-    }
-
-    return {
-      transform: transforms.length > 0 ? transforms : undefined,
-      cursor: isDragging.value ? 'grabbing' : 'grab',
-    };
-  }) as AnimatedStyle;
+  // Note: cursor state should be managed via CSS or component state
+  // For now, return motion values that components can use directly
+  const animatedStyle = {
+    x,
+    y,
+    cursor: isDragging.get() ? 'grabbing' : 'grab',
+  };
 
   return {
     x,

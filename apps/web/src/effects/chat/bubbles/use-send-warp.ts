@@ -22,6 +22,7 @@ import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-mo
 import { logEffectEnd, logEffectStart } from '../core/telemetry';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { useUIConfig } from '@/hooks/use-ui-config';
+import { isTruthy } from '@/core/guards';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 /**

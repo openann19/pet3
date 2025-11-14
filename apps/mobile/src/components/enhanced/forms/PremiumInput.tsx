@@ -18,6 +18,7 @@ import * as Haptics from 'expo-haptics'
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
 import type { IconProps } from 'react-native-vector-icons/Icon'
+import { isTruthy } from '@petspark/shared'
 
 const Eye = (props: Omit<IconProps, 'name'>): React.JSX.Element => (
   <FeatherIcon name="eye" {...props} />
@@ -44,11 +45,10 @@ export interface PremiumInputProps extends Omit<TextInputProps, 'style'> {
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'filled' | 'outlined'
   fullWidth?: boolean
-  type?: 'default' | 'password' | 'email' | 'numeric'
+  type?: 'default' | 'password' | 'email' | 'numeric' | 'phone-pad'
   onClear?: () => void
   style?: ViewStyle
   testID?: string
-  type?: 'default' | 'password' | 'email' | 'numeric' | 'phone-pad'
 }
 
 export function PremiumInput({

@@ -147,7 +147,12 @@ export function VirtualMessageList({
       <div ref={containerRef} className={`flex-1 overflow-y-auto p-4 ${className ?? ''}`}>
         {groups.map((g) => (
           <React.Fragment key={g.date}>
-            <motion.div style={headerFx.animatedStyle} className="flex justify-center py-2">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={headerFx.variants}
+              className="flex justify-center py-2"
+            >
               <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
                 {g.date}
               </div>
@@ -204,11 +209,16 @@ export function VirtualMessageList({
               }}
             >
               {row.type === 'header' ? (
-                <motion.div style={headerFx.animatedStyle} className="flex justify-center py-2">
-                  <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
-                    {row.date}
-                  </div>
-                </motion.div>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={headerFx.variants}
+              className="flex justify-center py-2"
+            >
+              <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
+                {row.date}
+              </div>
+            </motion.div>
               ) : row.type === 'typing' ? (
                 <AnimatePresence>
                   <TypingIndicatorComponent key="typing" users={typingUsers} />

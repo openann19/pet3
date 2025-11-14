@@ -1,18 +1,17 @@
 /**
-import { motion } from 'framer-motion';
  * Message Item Component
  *
  * Individual message bubble with animations and interactions
  */
 
+import { motion } from 'framer-motion';
 import { useEffect, useRef, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Translate as TranslateIcon } from '@phosphor-icons/react';
-import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks/use-entry-animation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useSendWarp } from '@/effects/chat/bubbles/use-send-warp';
 import { useReceiveAirCushion } from '@/effects/chat/bubbles/use-receive-air-cushion';
 import { WebBubbleWrapper } from '../WebBubbleWrapper';
@@ -25,7 +24,7 @@ import { REACTION_EMOJIS } from '@/lib/chat-types';
 import type { ChatMessage } from '@/lib/chat-types';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { extractNumberValue } from '@/utils/shared-value-helpers';
 
 export interface MessageItemProps {
   message: ChatMessage;
@@ -47,7 +46,7 @@ export function MessageItem({
   onTranslate,
 }: MessageItemProps): JSX.Element {
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const bubbleHover = useHoverAnimation({ scale: 1.02 });
+  const prefersReducedMotion = useReducedMotion();
 
   // Premium send/receive effects
   const sendWarp = useSendWarp({
@@ -83,8 +82,8 @@ export function MessageItem({
   const stableReference = useMemo(() => {
     return getStableMessageReference(
       message.id,
-      message.timestamp || message.createdAt,
-      message.senderName || currentUserName || 'Unknown',
+      message.timestamp ?? message.createdAt,
+      message.senderName ?? currentUserName ?? 'Unknown',
       message.content,
       true // use relative timestamp
     );
@@ -93,8 +92,8 @@ export function MessageItem({
   // Ensure focus appearance on bubble
   useEffect(() => {
     if (bubbleRef.current) {
-      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]') as HTMLElement;
-      if (bubbleElement) {
+      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]');
+      if (bubbleElement instanceof HTMLElement) {
         bubbleElement.setAttribute('id', stableReference.stableId);
         bubbleElement.setAttribute('tabIndex', '0');
         bubbleElement.setAttribute('role', 'article');
@@ -107,21 +106,18 @@ export function MessageItem({
     }
   }, [stableReference]);
 
-  // Combine all animations
-  const combinedStyle = useAnimatedStyle(() => {
-    const entryStyle = messageAnimation.animatedStyle;
-    const effectStyle = isCurrentUser ? sendWarp.animatedStyle : receiveAir.animatedStyle;
-
-    return {
-      ...entryStyle,
-      ...effectStyle,
-    };
-  }) as AnimatedStyle;
+  // Use animation styles directly (they're already CSSProperties from useAnimatedStyle)
+  const combinedStyleValue = useAnimatedStyleValue(
+    isCurrentUser ? sendWarp.animatedStyle : receiveAir.animatedStyle
+  );
 
   return (
     <motion.div
-      style={combinedStyle}
-      className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
+      variants={messageAnimation.variants}
+      initial={messageAnimation.initial}
+      animate={messageAnimation.animate}
+      style={combinedStyleValue}
+      className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
       {!isCurrentUser && message.senderAvatar && (
         <PresenceAvatar
@@ -138,14 +134,14 @@ export function MessageItem({
         <WebBubbleWrapper
           isIncoming={!isCurrentUser}
           index={delay / 50}
-          glowOpacity={isCurrentUser ? sendWarp.glowOpacity.value : 0}
-          glowIntensity={isCurrentUser ? sendWarp.bloomIntensity.value : 0}
+          glowOpacity={isCurrentUser ? extractNumberValue(sendWarp.glowOpacity.value, 0) : 0}
+          glowIntensity={isCurrentUser ? extractNumberValue(sendWarp.bloomIntensity.value, 0) : 0}
           className="relative"
         >
           <motion.div
-            style={bubbleHover.animatedStyle}
-            onMouseEnter={bubbleHover.handleMouseEnter}
-            onMouseLeave={bubbleHover.handleMouseLeave}
+            whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 400 }}
             className={`relative group ${message.type === 'sticker' ? 'p-0' : 'p-3'
               } rounded-2xl shadow-lg focus-ring ${isCurrentUser
                 ? 'bg-linear-to-br from-primary to-accent text-white'

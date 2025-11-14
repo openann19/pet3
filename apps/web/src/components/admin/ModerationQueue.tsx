@@ -16,11 +16,14 @@ import { moderationService, photoService } from '@/lib/backend-services';
 import type { ModerationReason, ModerationTask, PhotoRecord } from '@/lib/backend-types';
 import { createLogger } from '@/lib/logger';
 import {
+  Calendar,
   CheckCircle,
   Clock,
+  Dog,
   Eye,
   Image as ImageIcon,
   ShieldCheck,
+  User,
   Warning,
   XCircle,
 } from '@phosphor-icons/react';

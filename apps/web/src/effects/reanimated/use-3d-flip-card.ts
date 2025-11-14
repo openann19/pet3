@@ -1,10 +1,12 @@
 /**
  * 3D Flip Card Animation
  * Realistic card flip with perspective and backface visibility
+ * Migrated to pure Framer Motion
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring, interpolate } from '@petspark/motion';
+import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion';
 import { useCallback, useState } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface Use3DFlipCardOptions {
   duration?: number;
@@ -13,44 +15,53 @@ export interface Use3DFlipCardOptions {
   stiffness?: number;
 }
 
-export function use3DFlipCard(options: Use3DFlipCardOptions = {}) {
+export interface Use3DFlipCardReturn {
+  rotateY: MotionValue<number>;
+  frontOpacity: MotionValue<number>;
+  backOpacity: MotionValue<number>;
+  backRotateY: MotionValue<number>;
+  perspective: number;
+  flip: () => void;
+  isFlipped: boolean;
+}
+
+export function use3DFlipCard(options: Use3DFlipCardOptions = {}): Use3DFlipCardReturn {
   const { perspective = 1200, damping = 20, stiffness = 100 } = options;
 
-  const rotateY = useSharedValue(0);
+  const prefersReducedMotion = useReducedMotion();
+  const rotateY = useMotionValue(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   const flip = useCallback(() => {
     const targetRotation = isFlipped ? 0 : 180;
-    rotateY.value = withSpring(targetRotation, {
-      damping,
-      stiffness,
-    });
     setIsFlipped(!isFlipped);
-  }, [isFlipped, damping, stiffness]);
 
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(rotateY.value, [0, 90, 180], [1, 0, 0]);
+    if (!prefersReducedMotion) {
+      animate(rotateY, targetRotation, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
+    } else {
+      rotateY.set(targetRotation);
+    }
+  }, [isFlipped, damping, stiffness, rotateY, prefersReducedMotion]);
 
-    return {
-      opacity,
-      transform: [{ perspective }, { rotateY: `${rotateY.value}deg` }],
-      backfaceVisibility: 'hidden',
-    };
-  });
+  // Front face opacity: 1 at 0°, 0 at 90° and 180°
+  const frontOpacity = useTransform(rotateY, [0, 90, 180], [1, 0, 0]);
 
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(rotateY.value, [0, 90, 180], [0, 0, 1]);
+  // Back face opacity: 0 at 0° and 90°, 1 at 180°
+  const backOpacity = useTransform(rotateY, [0, 90, 180], [0, 0, 1]);
 
-    return {
-      opacity,
-      transform: [{ perspective }, { rotateY: `${rotateY.value + 180}deg` }],
-      backfaceVisibility: 'hidden',
-    };
-  });
+  // Back face rotation: front rotation + 180°
+  const backRotateY = useTransform(rotateY, (value) => value + 180);
 
   return {
-    frontAnimatedStyle,
-    backAnimatedStyle,
+    rotateY,
+    frontOpacity,
+    backOpacity,
+    backRotateY,
+    perspective,
     flip,
     isFlipped,
   };

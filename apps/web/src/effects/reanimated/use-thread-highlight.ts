@@ -1,16 +1,14 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withSequence,
-  withDelay,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect, useCallback } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseThreadHighlightOptions {
   isThreadMessage?: boolean;
@@ -20,13 +18,13 @@ export interface UseThreadHighlightOptions {
 }
 
 export interface UseThreadHighlightReturn {
-  scale: SharedValue<number>;
-  highlightOpacity: SharedValue<number>;
-  previewOpacity: SharedValue<number>;
-  previewTranslateY: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
-  previewStyle: ReturnType<typeof useAnimatedStyle>;
-  highlightStyle: ReturnType<typeof useAnimatedStyle>;
+  scale: MotionValue<number>;
+  highlightOpacity: MotionValue<number>;
+  previewOpacity: MotionValue<number>;
+  previewTranslateY: MotionValue<number>;
+  animatedStyle: CSSProperties;
+  previewStyle: CSSProperties;
+  highlightStyle: CSSProperties;
   trigger: () => void;
   dismiss: () => void;
 }
@@ -38,7 +36,7 @@ const DEFAULT_ENABLED = true;
 
 export function useThreadHighlight(
   options: UseThreadHighlightOptions = {}
-): UseThreadHighlightWebReturn {
+): UseThreadHighlightReturn {
   const {
     isThreadMessage = DEFAULT_IS_THREAD_MESSAGE,
     highlightDuration = DEFAULT_HIGHLIGHT_DURATION,
@@ -46,31 +44,49 @@ export function useThreadHighlight(
     enabled = DEFAULT_ENABLED,
   } = options;
 
-  const scale = useSharedValue(1);
-  const highlightOpacity = useSharedValue(0);
-  const previewOpacity = useSharedValue(0);
-  const previewTranslateY = useSharedValue(10);
+  const scale = useMotionValue(1);
+  const highlightOpacity = useMotionValue(0);
+  const previewOpacity = useMotionValue(0);
+  const previewTranslateY = useMotionValue(10);
 
   const trigger = useCallback(() => {
     if (!enabled || !isThreadMessage) {
       return;
     }
 
-    scale.value = withSequence(
-      withSpring(1.05, {
-        damping: 15,
-        stiffness: 400,
-      }),
-      withSpring(1, springConfigs.bouncy)
-    );
+    // Animate scale
+    void animate(scale, 1.05, {
+      type: 'spring',
+      damping: 15,
+      stiffness: 400,
+    }).then(() => {
+      void animate(scale, 1, {
+        ...springConfigs.bouncy,
+      });
+    });
 
-    highlightOpacity.value = withSequence(
-      withTiming(1, timingConfigs.fast),
-      withDelay(highlightDuration, withTiming(0, timingConfigs.smooth))
-    );
+    // Animate highlight opacity
+    void animate(highlightOpacity, 1, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    }).then(() => {
+      setTimeout(() => {
+        void animate(highlightOpacity, 0, {
+          duration: timingConfigs.smooth.duration,
+          ease: timingConfigs.smooth.ease as string,
+        });
+      }, highlightDuration);
+    });
 
-    previewOpacity.value = withDelay(previewDelay, withSpring(1, springConfigs.smooth));
-    previewTranslateY.value = withDelay(previewDelay, withSpring(0, springConfigs.smooth));
+    // Animate preview with delay
+    setTimeout(() => {
+      void animate(previewOpacity, 1, {
+        ...springConfigs.smooth,
+      });
+      void animate(previewTranslateY, 0, {
+        ...springConfigs.smooth,
+      });
+    }, previewDelay);
   }, [
     enabled,
     isThreadMessage,
@@ -83,9 +99,18 @@ export function useThreadHighlight(
   ]);
 
   const dismiss = useCallback(() => {
-    previewOpacity.value = withTiming(0, timingConfigs.fast);
-    previewTranslateY.value = withTiming(10, timingConfigs.fast);
-    highlightOpacity.value = withTiming(0, timingConfigs.fast);
+    void animate(previewOpacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(previewTranslateY, 10, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(highlightOpacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
   }, [previewOpacity, previewTranslateY, highlightOpacity]);
 
   useEffect(() => {
@@ -106,28 +131,35 @@ export function useThreadHighlight(
     return undefined;
   }, [enabled, isThreadMessage, trigger, dismiss, highlightDuration, previewDelay]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
+      transform: [{ scale: scale.get() }],
     };
   });
 
-  const highlightStyle = useAnimatedStyle(() => {
+  const highlightStyle = useMotionStyle(() => {
+    const opacity = highlightOpacity.get();
     return {
-      opacity: highlightOpacity.value,
-      backgroundColor: `rgba(59, 130, 246, ${highlightOpacity.value * 0.2})`,
+      opacity,
+      backgroundColor: `rgba(59, 130, 246, ${opacity * 0.2})`,
     };
   });
 
-  const previewStyle = useAnimatedStyle(() => {
+  const previewStyle = useMotionStyle(() => {
     return {
-      opacity: previewOpacity.value,
-      transform: [{ translateY: previewTranslateY.value }],
+      opacity: previewOpacity.get(),
+      transform: [{ translateY: previewTranslateY.get() }],
     };
   });
 
   return {
-    ...baseResult,
+    scale,
+    highlightOpacity,
+    previewOpacity,
+    previewTranslateY,
+    animatedStyle,
+    previewStyle,
+    highlightStyle,
     trigger,
     dismiss,
   };

@@ -1,14 +1,9 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
+import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion';
 import { useMemo, useEffect } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface UseMessageAgeEffectOptions {
   timestamp: number | string;
@@ -20,9 +15,12 @@ export interface UseMessageAgeEffectOptions {
 }
 
 export interface UseMessageAgeEffectReturn {
-  opacity: number;
-  scale: number;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  animatedStyle: {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+  };
 }
 
 const DEFAULT_ENABLED = true;
@@ -48,6 +46,9 @@ export function useMessageAgeEffect(
     scaleMin = DEFAULT_SCALE_MIN,
   } = options;
 
+  const prefersReducedMotion = useReducedMotion();
+  const duration = prefersReducedMotion ? 0 : (timingConfigs.smooth.duration ?? 0.3);
+
   const age = useMemo(() => {
     if (!enabled) {
       return 0;
@@ -55,34 +56,33 @@ export function useMessageAgeEffect(
     return getMessageAge(timestamp);
   }, [timestamp, enabled]);
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
+  const opacity = useMotionValue(1);
+  const scale = useMotionValue(1);
 
   useEffect(() => {
     if (!enabled || age < fadeStartAge) {
-      opacity.value = withTiming(1, timingConfigs.fast);
-      scale.value = withTiming(1, timingConfigs.fast);
+      animate(opacity, 1, { duration: prefersReducedMotion ? 0 : (timingConfigs.fast.duration ?? 0.15) });
+      animate(scale, 1, { duration: prefersReducedMotion ? 0 : (timingConfigs.fast.duration ?? 0.15) });
       return;
     }
 
     const progress = Math.min((age - fadeStartAge) / (fadeEndAge - fadeStartAge), 1);
-    const targetOpacity = interpolate(progress, [0, 1], [1, opacityMin], Extrapolation.CLAMP);
-    const targetScale = interpolate(progress, [0, 1], [1, scaleMin], Extrapolation.CLAMP);
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+    const targetOpacity = 1 - (1 - opacityMin) * clampedProgress;
+    const targetScale = 1 - (1 - scaleMin) * clampedProgress;
 
-    opacity.value = withTiming(targetOpacity, timingConfigs.smooth);
-    scale.value = withTiming(targetScale, timingConfigs.smooth);
-  }, [age, enabled, fadeStartAge, fadeEndAge, opacityMin, scaleMin, opacity, scale]);
+    animate(opacity, targetOpacity, { duration });
+    animate(scale, targetScale, { duration });
+  }, [age, enabled, fadeStartAge, fadeEndAge, opacityMin, scaleMin, opacity, scale, duration, prefersReducedMotion]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const animatedStyle = {
+    opacity,
+    scale,
+  };
 
   return {
-    opacity: opacity.value,
-    scale: scale.value,
+    opacity,
+    scale,
     animatedStyle,
   };
 }

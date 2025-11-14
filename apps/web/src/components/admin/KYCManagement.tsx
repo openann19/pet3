@@ -1,5 +1,6 @@
 import { kycApi } from '@/api/kyc-api';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
+import { useAnimatePresence, useEntryAnimation } from '@/effects/reanimated';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -72,7 +73,7 @@ export function KYCManagement() {
     if (!presence.shouldRender) return null
     
     return (
-      <motion.div style={presence.animatedStyle} className="text-center py-12">
+      <motion.div style={presence.animatedStyle as MotionStyle} className="text-center py-12">
         <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No sessions in this category</p>
       </motion.div>
@@ -88,7 +89,12 @@ export function KYCManagement() {
     })
     
     return (
-      <motion.div style={entry.animatedStyle}>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={entry.variants}
+        style={{ opacity: entry.opacity, y: entry.translateY, scale: entry.scale } as MotionStyle}
+      >
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { handleSessionClick(session); }}

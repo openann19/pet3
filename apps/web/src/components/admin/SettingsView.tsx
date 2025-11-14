@@ -1,16 +1,14 @@
 'use client'
-import { motion } from 'framer-motion';
-
 import { useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
-import { useStorage } from '@/hooks/useStorage'
+import { useStorage } from '@/hooks/use-storage'
 import { toast } from 'sonner'
-import { AnimatedView } from '@/hooks/use-animated-style-value'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { triggerHaptic } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
@@ -53,7 +51,7 @@ export default function SettingsView() {
   const handleFeatureFlagChange = useCallback((key: keyof FeatureFlags, value: boolean): void => {
     try {
       triggerHaptic('selection')
-      setFeatureFlags((current: FeatureFlags) => {
+      void setFeatureFlags((current: FeatureFlags) => {
         if (!current) {
           logger.warn('Feature flags is null, using defaults')
           return {
@@ -66,7 +64,7 @@ export default function SettingsView() {
         }
         return { ...current, [key]: value }
       })
-      toast.success(`Feature ${String(value ? 'enabled' : 'disabled' ?? '')}`)
+      toast.success(`Feature ${value ? 'enabled' : 'disabled'}`)
       logger.info('Feature flag updated', { key, value })
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
@@ -78,7 +76,7 @@ export default function SettingsView() {
   const handleSystemSettingChange = useCallback((key: keyof SystemSettings, value: number | boolean): void => {
     try {
       triggerHaptic('light')
-      setSystemSettings((current: SystemSettings) => {
+      void setSystemSettings((current: SystemSettings) => {
         if (!current) {
           logger.warn('System settings is null, using defaults')
           return {
@@ -100,9 +98,9 @@ export default function SettingsView() {
     }
   }, [setSystemSettings])
 
-  const featureFlagsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemSettingsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemInfoCardHover = useHoverLift({ intensity: 1.02 })
+  const featureFlagsCardHover = useHoverLift({ scale: 1.02 })
+  const systemSettingsCardHover = useHoverLift({ scale: 1.02 })
+  const systemInfoCardHover = useHoverLift({ scale: 1.02 })
 
   return (
     <div className="flex-1 flex flex-col">
@@ -118,7 +116,10 @@ export default function SettingsView() {
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6 max-w-4xl">
           <motion.div
-            style={featureFlagsCardHover.animatedStyle}
+            style={{
+              scale: featureFlagsCardHover.scale,
+              y: featureFlagsCardHover.translateY,
+            }}
             onMouseEnter={featureFlagsCardHover.handleEnter}
             onMouseLeave={featureFlagsCardHover.handleLeave}
           >
@@ -187,7 +188,10 @@ export default function SettingsView() {
           </motion.div>
 
           <motion.div
-            style={systemSettingsCardHover.animatedStyle}
+            style={{
+              scale: systemSettingsCardHover.scale,
+              y: systemSettingsCardHover.translateY,
+            }}
             onMouseEnter={systemSettingsCardHover.handleEnter}
             onMouseLeave={systemSettingsCardHover.handleLeave}
           >
@@ -203,16 +207,15 @@ export default function SettingsView() {
                 <Label>Max Reports Per User (Daily)</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[systemSettings?.maxReportsPerUser ?? 10]}
-                    onValueChange={([value]) => {
-                      if (value !== undefined) {
-                        handleSystemSettingChange('maxReportsPerUser', value)
-                      }
+                    value={systemSettings?.maxReportsPerUser ?? 10}
+                    onValueChange={(value: number) => {
+                      handleSystemSettingChange('maxReportsPerUser', value);
                     }}
                     min={1}
                     max={50}
                     step={1}
                     className="flex-1"
+                    aria-label="Maximum reports per user"
                   />
                   <span className="w-12 text-right font-medium">
                     {systemSettings?.maxReportsPerUser ?? 10}
@@ -229,16 +232,15 @@ export default function SettingsView() {
                 <Label>Match Distance Radius (km)</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[systemSettings?.matchDistanceRadius ?? 50]}
-                    onValueChange={([value]) => {
-                      if (value !== undefined) {
-                        handleSystemSettingChange('matchDistanceRadius', value)
-                      }
+                    value={systemSettings?.matchDistanceRadius ?? 50}
+                    onValueChange={(value) => {
+                      handleSystemSettingChange('matchDistanceRadius', value);
                     }}
                     min={1}
                     max={200}
                     step={5}
                     className="flex-1"
+                    aria-label="Match distance radius in kilometers"
                   />
                   <span className="w-12 text-right font-medium">
                     {systemSettings?.matchDistanceRadius ?? 50}
@@ -286,7 +288,10 @@ export default function SettingsView() {
           </motion.div>
 
           <motion.div
-            style={systemInfoCardHover.animatedStyle}
+            style={{
+              scale: systemInfoCardHover.scale,
+              y: systemInfoCardHover.translateY,
+            }}
             onMouseEnter={systemInfoCardHover.handleEnter}
             onMouseLeave={systemInfoCardHover.handleLeave}
           >

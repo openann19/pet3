@@ -36,7 +36,9 @@ function createTestQueryClient(): QueryClient {
 function createWrapper(): ({ children }: { children: ReactNode }) => React.JSX.Element {
   const queryClient = createTestQueryClient()
   return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
   )
 }
 
@@ -48,6 +50,7 @@ describe('useFeedData', () => {
   it('should return loading state initially', async () => {
     mockMatchingApi.getAvailablePets.mockResolvedValue({
       pets: [],
+      total: 0,
     })
 
     const { result } = renderHook(() => useFeedData(), {
@@ -92,8 +95,24 @@ describe('useFeedData', () => {
           ownerId: 'owner1',
           name: 'Fluffy',
           species: 'dog',
+          breedId: 'breed1',
           breedName: 'Golden Retriever',
+          sex: 'male',
+          neuterStatus: 'neutered',
+          dateOfBirth: '2021-01-01',
           ageMonths: 36,
+          lifeStage: 'adult',
+          size: 'large',
+          weightKg: 30,
+          intents: [],
+          location: {
+            geohash: 'abc123',
+            roundedLat: 37.7749,
+            roundedLng: -122.4194,
+            city: 'San Francisco',
+            country: 'USA',
+            timezone: 'America/Los_Angeles',
+          },
           media: [{ type: 'photo', url: '/photo1.jpg' }],
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
@@ -103,13 +122,30 @@ describe('useFeedData', () => {
           ownerId: 'owner2',
           name: 'Buddy',
           species: 'cat',
+          breedId: 'breed2',
           breedName: 'Persian',
+          sex: 'female',
+          neuterStatus: 'spayed',
+          dateOfBirth: '2022-01-01',
           ageMonths: 24,
+          lifeStage: 'adult',
+          size: 'medium',
+          weightKg: 5,
+          intents: [],
+          location: {
+            geohash: 'def456',
+            roundedLat: 37.7749,
+            roundedLng: -122.4194,
+            city: 'San Francisco',
+            country: 'USA',
+            timezone: 'America/Los_Angeles',
+          },
           media: [{ type: 'photo', url: '/photo2.jpg' }],
           createdAt: '2024-01-02T00:00:00Z',
           updatedAt: '2024-01-02T00:00:00Z',
         },
       ],
+      total: 2,
     })
 
     const { result } = renderHook(() => useFeedData(), {
@@ -150,8 +186,24 @@ describe('useFeedData', () => {
           ownerId: 'owner1',
           name: 'Fluffy',
           species: 'dog',
+          breedId: 'breed1',
           breedName: 'Golden Retriever',
+          sex: 'male',
+          neuterStatus: 'neutered',
+          dateOfBirth: '2021-01-01',
           ageMonths: 36,
+          lifeStage: 'adult',
+          size: 'large',
+          weightKg: 30,
+          intents: [],
+          location: {
+            geohash: 'abc123',
+            roundedLat: 37.7749,
+            roundedLng: -122.4194,
+            city: 'San Francisco',
+            country: 'USA',
+            timezone: 'America/Los_Angeles',
+          },
           media: [
             { type: 'photo', url: '/photo1.jpg' },
             { type: 'video', url: '/video1.mp4' },
@@ -160,6 +212,7 @@ describe('useFeedData', () => {
           updatedAt: '2024-01-01T00:00:00Z',
         },
       ],
+      total: 1,
     })
 
     const { result } = renderHook(() => useFeedData(), {
@@ -171,9 +224,11 @@ describe('useFeedData', () => {
     })
 
     const pet = result.current.pets[0]
-    expect(pet.age).toBe(3) // 36 months = 3 years
-    expect(pet.photos).toEqual(['/photo1.jpg']) // Only photos, not videos
-    expect(pet.species).toBe('dog')
+    if (pet) {
+      expect(pet.age).toBe(3) // 36 months = 3 years
+      expect(pet.photos).toEqual(['/photo1.jpg']) // Only photos, not videos
+      expect(pet.species).toBe('dog')
+    }
   })
 
   it('should handle invalid species by defaulting to other', async () => {
@@ -184,13 +239,30 @@ describe('useFeedData', () => {
           ownerId: 'owner1',
           name: 'Fluffy',
           species: 'invalid-species',
+          breedId: 'breed1',
           breedName: 'Unknown',
+          sex: 'male',
+          neuterStatus: 'neutered',
+          dateOfBirth: '2023-01-01',
           ageMonths: 12,
+          lifeStage: 'adult',
+          size: 'medium',
+          weightKg: 15,
+          intents: [],
+          location: {
+            geohash: 'abc123',
+            roundedLat: 37.7749,
+            roundedLng: -122.4194,
+            city: 'San Francisco',
+            country: 'USA',
+            timezone: 'America/Los_Angeles',
+          },
           media: [],
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
         },
       ],
+      total: 1,
     })
 
     const { result } = renderHook(() => useFeedData(), {
@@ -207,6 +279,7 @@ describe('useFeedData', () => {
   it('should support custom limit parameter', async () => {
     mockMatchingApi.getAvailablePets.mockResolvedValue({
       pets: [],
+      total: 0,
     })
 
     renderHook(() => useFeedData(50), {
@@ -221,6 +294,7 @@ describe('useFeedData', () => {
   it('should provide loadPets function for manual refresh', async () => {
     mockMatchingApi.getAvailablePets.mockResolvedValue({
       pets: [],
+      total: 0,
     })
 
     const { result } = renderHook(() => useFeedData(), {

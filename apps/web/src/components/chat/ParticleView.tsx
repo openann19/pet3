@@ -1,44 +1,44 @@
 'use client';
-import { motion } from 'framer-motion';
-
-import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
+import { motion, type MotionStyle } from 'framer-motion';
 import type { Particle } from '@/effects/reanimated/particle-engine';
+import type { MotionValue } from 'framer-motion';
 
 export interface ParticleViewProps {
-    particle: Particle;
-    className?: string;
+  particle: Particle;
+  className?: string;
 }
 
 /**
  * ParticleView component that renders a single particle with animated style
- * Uses useAnimatedStyle to create reactive styles from particle SharedValues
+ * Uses Framer Motion MotionValues directly for reactive animations
  */
 export function ParticleView({ particle, className }: ParticleViewProps): React.JSX.Element {
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            position: 'absolute' as const,
-            left: particle.x.value,
-            top: particle.y.value,
-            width: particle.size,
-            height: particle.size,
-            backgroundColor: particle.color,
-            borderRadius: particle.size / 2,
-            opacity: particle.opacity.value,
-            transform: [
-                { translateX: particle.x.value },
-                { translateY: particle.y.value },
-                { scale: particle.scale.value },
-                { rotate: `${particle.rotation.value}deg` },
-            ],
-            pointerEvents: 'none' as const,
-            zIndex: 9999,
-        };
-    }) as AnimatedStyle;
+  // Convert SharedValue to MotionValue if needed, or use directly
+  // The particle engine uses SharedValue which is compatible with MotionValue
+  const x = particle.x as unknown as MotionValue<number>;
+  const y = particle.y as unknown as MotionValue<number>;
+  const opacity = particle.opacity as unknown as MotionValue<number>;
+  const scale = particle.scale as unknown as MotionValue<number>;
+  const rotation = particle.rotation as unknown as MotionValue<number>;
 
-    return (
-        <motion.div style={animatedStyle} className={className}>
-            <div />
-        </motion.div>
-    );
+  const style: MotionStyle = {
+    position: 'absolute',
+    left: x,
+    top: y,
+    width: particle.size,
+    height: particle.size,
+    backgroundColor: particle.color,
+    borderRadius: particle.size / 2,
+    opacity,
+    scale,
+    rotate: rotation,
+    pointerEvents: 'none',
+    zIndex: 9999,
+  };
+
+  return (
+    <motion.div style={style} className={className} aria-hidden="true">
+      <div />
+    </motion.div>
+  );
 }

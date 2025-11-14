@@ -141,7 +141,8 @@ const mockMatch: Match = {
   matchedPetId: 'pet1',
   matchedAt: new Date().toISOString(),
   status: 'active',
-  compatibilityScore: 85
+  compatibilityScore: 85,
+  reasoning: ['High compatibility based on shared interests and location']
 }
 
 describe('MatchesView', () => {

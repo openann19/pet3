@@ -1,9 +1,7 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionValue } from 'framer-motion';
 
 import { type ReactNode } from 'react';
-import { useAnimatedStyle } from '@petspark/motion';
-import { AnimatedView, type AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useTypingIndicator } from './effects/useTypingIndicator';
 import { useReactionTrail, type ReactionTrailParticle } from './effects/useReactionTrail';
 import { useAiReplyAnimation } from './effects/use-ai-reply-animation';
@@ -104,44 +102,57 @@ export function BubbleWrapperGodTier({
     }
   }, [isDeleting, deleteAnimation, particleExplosion]);
 
-  const combinedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: ageEffect.opacity * deleteAnimation.opacity.value,
-      transform: [
-        { scale: ageEffect.scale * deleteAnimation.scale.value },
-        { scaleY: compression.scaleY.value },
-        { translateY: deleteAnimation.translateY.value },
-        { translateX: deleteAnimation.translateX.value },
-        { rotate: `${deleteAnimation.rotation.value}deg` },
-      ],
-      marginBottom: compression.marginBottom.value,
-      height: deleteAnimation.height.value,
-      overflow: 'hidden' as const,
-    };
-  }) as AnimatedStyle;
+  // Combine all animation values directly for framer-motion
+  // Note: compression.scaleY and compression.marginBottom are SharedValue, not MotionValue
+  // Framer Motion's style prop accepts MotionValue directly, but SharedValue needs conversion
+  const combinedStyle = {
+    opacity: deleteAnimation.opacity,
+    scale: deleteAnimation.scale,
+    scaleY: typeof compression.scaleY === 'object' && 'get' in compression.scaleY 
+      ? compression.scaleY as unknown as MotionValue<number>
+      : compression.scaleY,
+    y: deleteAnimation.translateY,
+    x: deleteAnimation.translateX,
+    rotate: deleteAnimation.rotation,
+    marginBottom: typeof compression.marginBottom === 'object' && 'get' in compression.marginBottom
+      ? compression.marginBottom as unknown as MotionValue<number>
+      : compression.marginBottom,
+    height: deleteAnimation.height,
+    overflow: 'hidden' as const,
+  } as React.CSSProperties & {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+    scaleY: MotionValue<number>;
+    y: MotionValue<number>;
+    x: MotionValue<number>;
+    rotate: MotionValue<number>;
+    marginBottom: MotionValue<number>;
+    height: MotionValue<number>;
+    overflow: 'hidden';
+  };
 
   return (
     <div className={cn('relative', className)} ref={bubbleRef}>
       <motion.div style={combinedStyle} className="relative">
         {isAIMessage && (
-          <motion.div style={aiAnimation.containerStyle as AnimatedStyle} className="relative">
-            <motion.div
-              style={aiAnimation.glowStyle as AnimatedStyle}
-              className="absolute inset-0 rounded-2xl pointer-events-none -z-10 bg-linear-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 blur-xl"
-            >
-              <div />
+            <motion.div style={aiAnimation.containerStyle} className="relative">
+              <motion.div
+                style={aiAnimation.glowStyle}
+                className="absolute inset-0 rounded-2xl pointer-events-none -z-10 bg-linear-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 blur-xl"
+              >
+                <div />
+              </motion.div>
+              <motion.div
+                style={aiAnimation.shimmerStyle}
+                className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent w-1/3" />
+              </motion.div>
             </motion.div>
-            <motion.div
-              style={aiAnimation.shimmerStyle as AnimatedStyle}
-              className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent w-1/3" />
-            </motion.div>
-          </motion.div>
         )}
 
         <motion.div
-          style={moodTheme.animatedStyle as AnimatedStyle}
+          style={moodTheme.animatedStyle}
           className="absolute inset-0 rounded-2xl pointer-events-none -z-10"
         >
           <div />
@@ -152,7 +163,7 @@ export function BubbleWrapperGodTier({
             {typingIndicator.dotStyles.map((style, index) => (
               <motion.div
                 key={index}
-                style={style as AnimatedStyle}
+                style={style}
                 className="rounded-full bg-foreground/30"
               >
                 <div />
@@ -166,7 +177,7 @@ export function BubbleWrapperGodTier({
         {reactionTrail.particles.map((particle: ReactionTrailParticle) => (
           <motion.div
             key={particle.id}
-            style={reactionTrail.getParticleStyle(particle) as AnimatedStyle}
+            style={reactionTrail.getParticleStyle(particle)}
             className="absolute pointer-events-none z-9999 text-2xl"
           >
             {particle.emoji}

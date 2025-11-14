@@ -1,9 +1,16 @@
+'use client';
+
 import type { ComponentProps } from 'react';
 import * as NavigationMenuPrimitive from '@radix-ui/react-navigation-menu';
 import { cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
+import { navMenuIconVariants, createNavMenuContentVariants, navMenuViewportVariants } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { AnimatePresence } from 'framer-motion';
 
 function NavigationMenu({
   className,
@@ -85,35 +92,105 @@ function NavigationMenuTrigger({
   children,
   ...props
 }: ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
+  const prefersReducedMotion = useReducedMotion();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const observer = new MutationObserver(() => {
+      setIsOpen(trigger.getAttribute('data-state') === 'open');
+    });
+
+    observer.observe(trigger, {
+      attributes: true,
+      attributeFilter: ['data-state'],
+    });
+
+    setIsOpen(trigger.getAttribute('data-state') === 'open');
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <NavigationMenuPrimitive.Trigger
+      ref={triggerRef}
       data-slot="navigation-menu-trigger"
       className={cn(navigationMenuTriggerStyle(), 'group', className)}
       {...props}
     >
       {children}{' '}
-      <ChevronDown
-        className="relative top-0 ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180"
-        aria-hidden="true"
-      />
+      <motion.div
+        variants={prefersReducedMotion ? undefined : navMenuIconVariants}
+        animate={isOpen ? 'open' : 'closed'}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.24 }}
+      >
+        <ChevronDown className="relative top-0 ml-1 size-3" aria-hidden="true" />
+      </motion.div>
     </NavigationMenuPrimitive.Trigger>
   );
 }
 
 function NavigationMenuContent({
   className,
+  children,
   ...props
 }: ComponentProps<typeof NavigationMenuPrimitive.Content>) {
+  const prefersReducedMotion = useReducedMotion();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [direction, setDirection] = useState<'from-start' | 'from-end'>('from-start');
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const observer = new MutationObserver(() => {
+      setIsOpen(content.getAttribute('data-state') === 'open');
+      const motionAttr = content.getAttribute('data-motion');
+      if (motionAttr?.startsWith('from-')) {
+        setDirection(motionAttr as 'from-start' | 'from-end');
+      }
+    });
+
+    observer.observe(content, {
+      attributes: true,
+      attributeFilter: ['data-state', 'data-motion'],
+    });
+
+    setIsOpen(content.getAttribute('data-state') === 'open');
+    const motionAttr = content.getAttribute('data-motion');
+    if (motionAttr?.startsWith('from-')) {
+      setDirection(motionAttr as 'from-start' | 'from-end');
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const contentVariants = createNavMenuContentVariants(direction);
+
   return (
     <NavigationMenuPrimitive.Content
+      ref={contentRef}
       data-slot="navigation-menu-content"
       className={cn(
-        'data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 top-0 left-0 w-full p-2 pr-2.5 md:absolute md:w-auto',
-        'group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:data-[state=open]:animate-in group-data-[viewport=false]/navigation-menu:data-[state=closed]:animate-out group-data-[viewport=false]/navigation-menu:data-[state=closed]:zoom-out-95 group-data-[viewport=false]/navigation-menu:data-[state=open]:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-[state=open]:fade-in-0 group-data-[viewport=false]/navigation-menu:data-[state=closed]:fade-out-0 group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:border group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:duration-200 **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none',
+        'top-0 left-0 w-full p-2 pr-2.5 md:absolute md:w-auto',
+        'group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:border group-data-[viewport=false]/navigation-menu:shadow **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none',
         className
       )}
       {...props}
-    />
+    >
+      <motion.div
+        variants={prefersReducedMotion ? undefined : contentVariants}
+        initial="hidden"
+        animate={isOpen ? 'visible' : 'exit'}
+        exit="exit"
+      >
+        {children}
+      </motion.div>
+    </NavigationMenuPrimitive.Content>
   );
 }
 
@@ -121,16 +198,47 @@ function NavigationMenuViewport({
   className,
   ...props
 }: ComponentProps<typeof NavigationMenuPrimitive.Viewport>) {
+  const prefersReducedMotion = useReducedMotion();
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const observer = new MutationObserver(() => {
+      setIsOpen(viewport.getAttribute('data-state') === 'open');
+    });
+
+    observer.observe(viewport, {
+      attributes: true,
+      attributeFilter: ['data-state'],
+    });
+
+    setIsOpen(viewport.getAttribute('data-state') === 'open');
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className={cn('absolute top-full left-0 isolate z-50 flex justify-center')}>
       <NavigationMenuPrimitive.Viewport
+        ref={viewportRef}
         data-slot="navigation-menu-viewport"
         className={cn(
-          'origin-top-center bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 relative mt-1.5 h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden rounded-md border shadow md:w-(--radix-navigation-menu-viewport-width)',
+          'origin-top-center bg-popover text-popover-foreground relative mt-1.5 h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden rounded-md border shadow md:w-(--radix-navigation-menu-viewport-width)',
           className
         )}
         {...props}
-      />
+      >
+        <motion.div
+          variants={prefersReducedMotion ? undefined : navMenuViewportVariants}
+          initial="hidden"
+          animate={isOpen ? 'visible' : 'exit'}
+          exit="exit"
+          className="h-full w-full"
+        />
+      </NavigationMenuPrimitive.Viewport>
     </div>
   );
 }
@@ -143,7 +251,7 @@ function NavigationMenuLink({
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
+        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

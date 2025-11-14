@@ -1,7 +1,7 @@
 /**
-import { motion } from 'framer-motion';
  * Ultra Enhanced Card
  * Card with 3D transforms, hover effects, and smooth animations
+ * Migrated to pure Framer Motion - uses MotionValues directly
  */
 
 import {
@@ -11,8 +11,6 @@ import {
   useParallaxTilt,
   useUltraCardReveal,
 } from '@/effects/reanimated';
-import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { type HTMLAttributes, type ReactNode } from 'react';
@@ -42,13 +40,13 @@ export function UltraCard({
   className,
   ...props
 }: UltraCardProps) {
-    const _uiConfig = useUIConfig();
-    const reveal = useUltraCardReveal({
-        index,
-        enabled: enableReveal,
-        delay: 0,
-        rotationIntensity: 12,
-      });
+  const _uiConfig = useUIConfig();
+  const reveal = useUltraCardReveal({
+    index,
+    enabled: enableReveal,
+    delay: 0,
+    rotationIntensity: 12,
+  });
 
   const magnetic = useMagneticHover({
     strength: 0.2,
@@ -82,15 +80,6 @@ export function UltraCard({
     tilt.handleMove(x, y, rect.width, rect.height);
   };
 
-  const combinedStyle = {
-    ...reveal.animatedStyle,
-    ...(enableMagnetic ? magnetic.animatedStyle : {}),
-  } as AnimatedStyle;
-
-  const combinedStyleValue = useAnimatedStyleValue(combinedStyle);
-  const hoverLiftStyleValue = useAnimatedStyleValue(enableHoverLift ? hoverLift.animatedStyle : (enableTilt ? tilt.animatedStyle : {}) as AnimatedStyle);
-  const glowStyleValue = useAnimatedStyleValue(glow.animatedStyle as AnimatedStyle);
-
   return (
     <div
       ref={enableMagnetic ? magnetic.handleRef : undefined}
@@ -99,30 +88,57 @@ export function UltraCard({
       onMouseMove={enableMagnetic ? magnetic.handleMouseMove : undefined}
       className="inline-block"
     >
-      <motion.div style={combinedStyleValue}>
-        <div
+      <motion.div
+        style={{
+          opacity: enableReveal ? reveal.opacity : 1,
+          scale: enableReveal ? reveal.scale : 1,
+          rotateX: enableReveal ? reveal.rotateX : 0,
+          rotateY: enableReveal ? reveal.rotateY : 0,
+          z: enableReveal ? reveal.translateZ : 0,
+          perspective: enableReveal ? reveal.perspective : undefined,
+          x: enableMagnetic ? magnetic.translateX : 0,
+          y: enableMagnetic ? magnetic.translateY : 0,
+        }}
+      >
+        <motion.div
           onMouseMove={enableTilt ? handleTiltMove : undefined}
           onMouseLeave={enableTilt ? tilt.handleLeave : undefined}
           className="relative"
+          style={{
+            rotateX: enableTilt ? tilt.rotateX : 0,
+            rotateY: enableTilt ? tilt.rotateY : 0,
+            perspective: enableTilt ? tilt.perspective : undefined,
+            scale: enableHoverLift ? hoverLift.scale : 1,
+            y: enableHoverLift ? hoverLift.translateY : 0,
+          }}
         >
-          <motion.div style={hoverLiftStyleValue}>
-            <div
-              className={cn(
-                'bg-card border border-border rounded-xl shadow-lg transition-shadow duration-300',
-                'hover:shadow-2xl',
-                className
-              )}
-              {...props}
-            >
-              {enableGlow && (
-                <motion.div style={glowStyleValue}>
-                  <div className="absolute inset-0 rounded-xl pointer-events-none" />
-                </motion.div>
-              )}
-              <div className="relative z-10">{children}</div>
-            </div>
+          <motion.div
+            className={cn(
+              'bg-card border border-border rounded-xl shadow-lg',
+              className
+            )}
+            whileHover={{
+              boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+            }}
+            transition={{
+              duration: 0.3,
+              ease: 'easeInOut',
+            }}
+            {...props}
+          >
+            {enableGlow && (
+              <motion.div
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  boxShadow: glow.boxShadow,
+                  filter: glow.filter,
+                  opacity: glow.opacity,
+                }}
+              />
+            )}
+            <div className="relative z-10">{children}</div>
           </motion.div>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

@@ -1,21 +1,27 @@
 /**
  * Wave Animation (Web Adapter)
- * Delegates to shared motion hook for parity and reduced-motion handling.
+ * Migrated to pure Framer Motion
  */
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  interpolate,
-  Easing,
-} from '@petspark/motion';
+import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
-export const useWaveAnimation = useSharedWaveAnimation
+export interface UseWaveAnimationOptions {
+  amplitude?: number;
+  frequency?: number;
+  speed?: number;
+  direction?: 'horizontal' | 'vertical';
+  enabled?: boolean;
+}
 
-export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
+export interface UseWaveAnimationReturn {
+  translateX: MotionValue<number> | undefined;
+  translateY: MotionValue<number> | undefined;
+  progress: MotionValue<number>;
+}
+
+export function useWaveAnimation(options: UseWaveAnimationOptions = {}): UseWaveAnimationReturn {
   const {
     amplitude = 20,
     frequency = 2,
@@ -24,68 +30,97 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
     enabled = true,
   } = options;
 
-  const progress = useSharedValue(0);
+  const prefersReducedMotion = useReducedMotion();
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    if (enabled) {
-      progress.value = withRepeat(
-        withTiming(1, { duration: speed, easing: Easing.linear }),
-        -1,
-        false
-      );
-    } else {
-      progress.value = 0;
-    }
-  }, [enabled, speed]);
+    if (enabled && !prefersReducedMotion) {
+      // Convert speed from ms to seconds
+      const duration = speed / 1000;
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const phase = progress.value * Math.PI * 2 * frequency;
-    const wave = Math.sin(phase) * amplitude;
+      const animation = animate(progress, [0, 1], {
+        duration,
+        repeat: Infinity,
+        ease: 'linear',
+      });
 
-    if (direction === 'horizontal') {
-      return {
-        transform: [{ translateX: wave }],
+      return () => {
+        animation.stop();
       };
     } else {
-      return {
-        transform: [{ translateY: wave }],
-      };
+      progress.set(0);
     }
+  }, [enabled, speed, prefersReducedMotion, progress]);
+
+  // Calculate wave value using useTransform
+  const waveValue = useTransform(progress, (value) => {
+    const phase = value * Math.PI * 2 * frequency;
+    return Math.sin(phase) * amplitude;
   });
 
+  // Return appropriate motion values based on direction
+  const translateX = direction === 'horizontal' ? waveValue : undefined;
+  const translateY = direction === 'vertical' ? waveValue : undefined;
+
   return {
-    animatedStyle,
+    translateX,
+    translateY,
     progress,
   };
 }
 
-export function useMultiWave(waveCount = 3) {
-  const progress = useSharedValue(0);
+export interface UseMultiWaveReturn {
+  createWaveMotionValues: (waveIndex: number, amplitude?: number) => {
+    translateX: MotionValue<number>;
+    translateY: MotionValue<number>;
+    opacity: MotionValue<number>;
+  };
+  progress: MotionValue<number>;
+}
+
+export function useMultiWave(waveCount = 3): UseMultiWaveReturn {
+  const prefersReducedMotion = useReducedMotion();
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false
-    );
-  }, []);
+    if (!prefersReducedMotion) {
+      const animation = animate(progress, [0, 1], {
+        duration: 4, // 4 seconds
+        repeat: Infinity,
+        ease: 'linear',
+      });
 
-  const createWaveStyle = (waveIndex: number, amplitude = 15) => {
-    return useAnimatedStyle(() => {
-      const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
-      const phase = progress.value * Math.PI * 2 + phaseOffset;
-      const wave = Math.sin(phase) * amplitude;
-      const opacity = interpolate(progress.value, [0, 0.5, 1], [0.3, 0.6, 0.3]);
-
-      return {
-        transform: [{ translateY: wave }, { translateX: wave * 0.5 }],
-        opacity,
+      return () => {
+        animation.stop();
       };
+    } else {
+      progress.set(0);
+    }
+  }, [prefersReducedMotion, progress]);
+
+  const createWaveMotionValues = (waveIndex: number, amplitude = 15) => {
+    const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
+
+    // Calculate wave translation
+    const translateY = useTransform(progress, (value) => {
+      const phase = value * Math.PI * 2 + phaseOffset;
+      return Math.sin(phase) * amplitude;
     });
+
+    const translateX = useTransform(translateY, (y) => y * 0.5);
+
+    // Calculate opacity
+    const opacity = useTransform(progress, [0, 0.5, 1], [0.3, 0.6, 0.3]);
+
+    return {
+      translateX,
+      translateY,
+      opacity,
+    };
   };
 
   return {
-    createWaveStyle,
+    createWaveMotionValues,
     progress,
   };
 }

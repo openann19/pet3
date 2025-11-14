@@ -5,6 +5,7 @@ import { type ReactNode } from 'react'
 import { AnimatedView } from '@/hooks/use-animated-style-value'
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value'
 import { getSpacing } from '@/lib/design-tokens'
 import { getTypographyClasses } from '@/lib/typography'
@@ -63,14 +64,14 @@ export function NavButton({
     transform: [...animationTransforms, ...bounceTransforms],
   }
 
-  // Use spacing tokens for min-width: 60px (spacing 15) and 70px (spacing 17.5, use 18 as closest)
-  const minWidthStyle = { minWidth: getSpacing('15') }
-  const smMinWidthStyle = { minWidth: getSpacing('18') }
+  // Use direct pixel values for min-width: 60px and 70px (spacing tokens '15' and '18' don't exist)
+  const minWidthStyle = { minWidth: '60px' }
+  const smMinWidthStyle = { minWidth: '70px' }
 
   return (
     <motion.div
       style={{ ...combinedStyle, ...minWidthStyle, [`@media (min-width: 640px)`]: smMinWidthStyle } as React.CSSProperties}
-      className={cn('flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 relative', activeClasses, className)}
+      className={cn('flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl relative', activeClasses, className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={bounceAnimation.handlePress}

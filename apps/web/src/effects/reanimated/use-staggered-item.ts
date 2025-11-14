@@ -1,9 +1,9 @@
 'use client';
 
-import { useSharedValue, useAnimatedStyle, withTiming, withDelay } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 import { timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseStaggeredItemOptions {
   index: number;
@@ -12,39 +12,43 @@ export interface UseStaggeredItemOptions {
 }
 
 export interface UseStaggeredItemReturn {
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  y: ReturnType<typeof useSharedValue<number>>;
-  itemStyle: AnimatedStyle;
+  opacity: MotionValue<number>;
+  y: MotionValue<number>;
+  itemStyle: CSSProperties;
 }
 
 /**
  * Hook for staggered list item animations
- * Uses React Reanimated for smooth 60fps animations on UI thread
+ * Uses framer-motion for smooth animations
  */
 export function useStaggeredItem(options: UseStaggeredItemOptions): UseStaggeredItemReturn {
   const { index, delay = 0, staggerDelay = 50 } = options;
 
-  const opacity = useSharedValue(0);
-  const y = useSharedValue(20);
+  const opacity = useMotionValue(0);
+  const y = useMotionValue(20);
 
   useEffect(() => {
     const totalDelay = delay + index * staggerDelay;
-    const delayMs = totalDelay;
+    const delayMs = totalDelay / 1000;
 
-    opacity.value = withDelay(delayMs, withTiming(1, timingConfigs.smooth));
-    y.value = withDelay(delayMs, withTiming(0, timingConfigs.smooth));
+    animate(opacity, 1, {
+      delay: delayMs,
+      duration: timingConfigs.smooth.duration / 1000,
+      ease: 'easeOut',
+    });
+    animate(y, 0, {
+      delay: delayMs,
+      duration: timingConfigs.smooth.duration / 1000,
+      ease: 'easeOut',
+    });
   }, [index, delay, staggerDelay, opacity, y]);
-
-  const itemStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ translateY: y.value }],
-    };
-  }) as AnimatedStyle;
 
   return {
     opacity,
     y,
-    itemStyle,
+    itemStyle: {
+      opacity: opacity.get(),
+      transform: `translateY(${y.get()}px)`,
+    },
   };
 }

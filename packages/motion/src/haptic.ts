@@ -1,4 +1,11 @@
-import logger from '@/core/logger';
+// Logger import - use a simple console fallback if logger is not available
+const logger = {
+  warn: (message: string, error?: unknown) => {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn(message, error);
+    }
+  }
+};
 
 /**
  * Cross-platform haptic feedback utilities

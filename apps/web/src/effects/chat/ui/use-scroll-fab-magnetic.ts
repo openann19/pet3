@@ -20,6 +20,7 @@ import {
   Easing,
   type SharedValue,
 } from '@petspark/motion';
+import { isTruthy } from '@/core/guards';
 import { useReducedMotionSV, getReducedMotionDuration } from '../core/reduced-motion';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { adaptiveAnimationConfigs } from '../../core/adaptive-animation-config';

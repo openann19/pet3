@@ -163,7 +163,7 @@ describe('ChatView', () => {
 
   describe('Rendering', () => {
     it('should render chat view', async () => {
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()]) // matches
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()]) // all-pets
       vi.mocked(useStorage).mockReturnValueOnce([[mockUserPet], vi.fn()]) // user-pets
@@ -177,7 +177,7 @@ describe('ChatView', () => {
     })
 
     it('should show empty state when no user pet', async () => {
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
@@ -193,7 +193,7 @@ describe('ChatView', () => {
 
   describe('Chat Rooms', () => {
     it('should display chat rooms list', async () => {
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([], vi.fn())
       vi.mocked(useStorage).mockReturnValueOnce([[mockUserPet], vi.fn()])
@@ -208,7 +208,7 @@ describe('ChatView', () => {
     })
 
     it('should create chat rooms from matches', async () => {
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       const setChatRooms = vi.fn()
       vi.mocked(useStorage).mockReturnValueOnce([[mockMatch], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[mockMatchedPet], vi.fn()])
@@ -226,7 +226,7 @@ describe('ChatView', () => {
   describe('Room Selection', () => {
     it('should select room when clicked', async () => {
       const user = userEvent.setup()
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[mockUserPet], vi.fn()])
@@ -249,7 +249,7 @@ describe('ChatView', () => {
 
   describe('Message Loading', () => {
     it('should load messages for rooms', async () => {
-      const { useStorage } = await import('@/hooks/useStorage')
+      const { useStorage } = await import('@/hooks/use-storage')
       const { getRoomMessages } = await import('@/lib/chat-service')
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])
       vi.mocked(useStorage).mockReturnValueOnce([[], vi.fn()])

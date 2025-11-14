@@ -2,16 +2,12 @@
 
 import { useCallback } from 'react';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { springConfigs, timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export type StickerAnimationType =
   | 'bounce'
@@ -31,7 +27,7 @@ export interface UseStickerAnimationOptions {
 }
 
 export interface UseStickerAnimationReturn {
-  animatedStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
   trigger: () => void;
   reset: () => void;
 }
@@ -50,18 +46,18 @@ export function useStickerAnimation(
     intensity = DEFAULT_INTENSITY,
   } = options;
 
-  const scale = useSharedValue(1);
-  const rotation = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(1);
+  const scale = useMotionValue(1);
+  const rotation = useMotionValue(0);
+  const translateY = useMotionValue(0);
+  const translateX = useMotionValue(0);
+  const opacity = useMotionValue(1);
 
   const reset = useCallback(() => {
-    scale.value = 1;
-    rotation.value = 0;
-    translateY.value = 0;
-    translateX.value = 0;
-    opacity.value = 1;
+    scale.set(1);
+    rotation.set(0);
+    translateY.set(0);
+    translateX.set(0);
+    opacity.set(1);
   }, [scale, rotation, translateY, translateX, opacity]);
 
   const trigger = useCallback(() => {
@@ -73,111 +69,86 @@ export function useStickerAnimation(
 
     switch (animation) {
       case 'bounce': {
-        scale.value = withSequence(
-          withSpring(1.2 * intensity, springConfigs.bouncy),
-          withSpring(1, springConfigs.smooth)
-        );
-        translateY.value = withSequence(
-          withSpring(-10 * intensity, springConfigs.bouncy),
-          withSpring(0, springConfigs.smooth)
-        );
+        void animate(scale, 1.2 * intensity, {
+          ...springConfigs.bouncy,
+        }).then(() => {
+          void animate(scale, 1, {
+            ...springConfigs.smooth,
+          });
+        });
+        void animate(translateY, -10 * intensity, {
+          ...springConfigs.bouncy,
+        }).then(() => {
+          void animate(translateY, 0, {
+            ...springConfigs.smooth,
+          });
+        });
         break;
       }
 
       case 'spin': {
-        rotation.value = withRepeat(
-          withTiming(360, {
-            duration: duration / 2,
-            easing: Easing.linear,
-          }),
-          -1,
-          false
-        );
+        void animate(rotation, 360, {
+          duration: (duration / 2) / 1000,
+          ease: 'linear',
+          repeat: Infinity,
+        });
         break;
       }
 
       case 'pulse': {
-        scale.value = withRepeat(
-          withSequence(
-            withTiming(1.15 * intensity, timingConfigs.smooth),
-            withTiming(1, timingConfigs.smooth)
-          ),
-          -1,
-          true
-        );
+        void animate(scale, [1, 1.15 * intensity, 1], {
+          duration: timingConfigs.smooth.duration,
+          ease: timingConfigs.smooth.ease as string,
+          repeat: Infinity,
+        });
         break;
       }
 
       case 'shake': {
-        translateX.value = withRepeat(
-          withSequence(
-            withTiming(-8 * intensity, { duration: 50, easing: Easing.linear }),
-            withTiming(8 * intensity, { duration: 50, easing: Easing.linear }),
-            withTiming(-8 * intensity, { duration: 50, easing: Easing.linear }),
-            withTiming(8 * intensity, { duration: 50, easing: Easing.linear }),
-            withTiming(0, { duration: 50, easing: Easing.linear })
-          ),
-          1,
-          false
-        );
+        void animate(translateX, [-8 * intensity, 8 * intensity, -8 * intensity, 8 * intensity, 0], {
+          duration: 0.25,
+          ease: 'linear',
+          times: [0, 0.25, 0.5, 0.75, 1],
+        });
         break;
       }
 
       case 'float': {
-        translateY.value = withRepeat(
-          withSequence(
-            withTiming(-8 * intensity, {
-              duration: duration / 2,
-              easing: Easing.inOut(Easing.ease),
-            }),
-            withTiming(0, {
-              duration: duration / 2,
-              easing: Easing.inOut(Easing.ease),
-            })
-          ),
-          -1,
-          true
-        );
+        void animate(translateY, [-8 * intensity, 0], {
+          duration: (duration / 2) / 1000,
+          ease: 'easeInOut',
+          repeat: Infinity,
+          repeatType: 'reverse',
+        });
         break;
       }
 
       case 'grow': {
-        scale.value = withSequence(
-          withSpring(1.3 * intensity, springConfigs.bouncy),
-          withSpring(1, springConfigs.smooth)
-        );
+        void animate(scale, 1.3 * intensity, {
+          ...springConfigs.bouncy,
+        }).then(() => {
+          void animate(scale, 1, {
+            ...springConfigs.smooth,
+          });
+        });
         break;
       }
 
       case 'wiggle': {
-        rotation.value = withRepeat(
-          withSequence(
-            withTiming(-15 * intensity, { duration: 100, easing: Easing.linear }),
-            withTiming(15 * intensity, { duration: 100, easing: Easing.linear }),
-            withTiming(-15 * intensity, { duration: 100, easing: Easing.linear }),
-            withTiming(15 * intensity, { duration: 100, easing: Easing.linear }),
-            withTiming(0, { duration: 100, easing: Easing.linear })
-          ),
-          1,
-          false
-        );
+        void animate(rotation, [-15 * intensity, 15 * intensity, -15 * intensity, 15 * intensity, 0], {
+          duration: 0.4,
+          ease: 'linear',
+          times: [0, 0.25, 0.5, 0.75, 1],
+        });
         break;
       }
 
       case 'flip': {
-        rotation.value = withSequence(
-          withTiming(180, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(360, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(0, {
-            duration: 0,
-          })
-        );
+        void animate(rotation, [180, 360, 0], {
+          duration: duration / 1000,
+          ease: 'easeInOut',
+          times: [0, 0.5, 1],
+        });
         break;
       }
 
@@ -186,17 +157,12 @@ export function useStickerAnimation(
     }
   }, [enabled, animation, duration, intensity, scale, rotation, translateY, translateX, reset]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-        { rotate: `${String(rotation.value ?? '')}deg` },
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-      ],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+  // Return style object that will be updated via motion values
+  // Components should use motion.div with style={{ scale, rotate, x: translateX, y: translateY, opacity }}
+  const animatedStyle: CSSProperties = {
+    transform: `scale(${scale.get()}) rotate(${rotation.get()}deg) translateX(${translateX.get()}px) translateY(${translateY.get()}px)`,
+    opacity: opacity.get(),
+  };
 
   return {
     animatedStyle,

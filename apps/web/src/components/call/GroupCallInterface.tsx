@@ -1,6 +1,6 @@
-import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
+import { isTruthy } from '@/core/guards';
+import { motion, useMotionValue, animate } from 'framer-motion';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
@@ -25,15 +25,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useBounceOnTap, useHoverLift, useModalAnimation } from '@/effects/reanimated';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
 import type { GroupCallSession, CallParticipant } from '@/lib/call-types';
 import { formatCallDuration } from '@/lib/call-utils';
 import { haptics } from '@/lib/haptics';
@@ -71,29 +62,29 @@ function ParticipantVideo({
   onVideoRef,
 }: ParticipantVideoProps): JSX.Element {
   const hoverLift = useHoverLift();
-  const pulseScale = useSharedValue(1);
+  const pulseScale = useMotionValue(1);
 
   useEffect(() => {
     if (isTruthy(isRaised)) {
-      pulseScale.value = withRepeat(
-        withSequence(withTiming(1.1, { duration: 500 }), withTiming(1, { duration: 500 })),
-        -1,
-        true
-      );
+      animate(pulseScale, [1, 1.1, 1], {
+        repeat: Infinity,
+        duration: 1,
+        ease: 'easeInOut',
+      });
     } else {
-      pulseScale.value = withTiming(1, { duration: 200 });
+      animate(pulseScale, 1, { duration: 0.2, ease: 'easeOut' });
     }
   }, [isRaised, pulseScale]);
 
-  const pulseStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: pulseScale.value }],
-    };
-  }) as ReturnType<typeof useAnimatedStyle>;
-
   return (
     <motion.div
-      style={hoverLift.animatedStyle}
+      style={{ scale: pulseScale }}
+      whileHover="hover"
+      onHoverStart={hoverLift.handleEnter}
+      onHoverEnd={hoverLift.handleLeave}
+      variants={hoverLift.variants}
+      initial="rest"
+      animate="rest"
       className={cn(
         'relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20',
         isSpotlight ? 'col-span-full row-span-2' : ''
@@ -129,7 +120,8 @@ function ParticipantVideo({
         </div>
         {isRaised && (
           <motion.div
-            style={pulseStyle}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 1, ease: 'easeInOut' }}
             className="glass-strong backdrop-blur-xl px-2 py-1 rounded-full flex items-center gap-1"
             role="status"
             aria-label="Hand raised"
@@ -166,26 +158,10 @@ function ParticipantVideo({
 }
 
 function SpeakingIndicator(): JSX.Element {
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 500 }), withTiming(1, { duration: 500 })),
-      -1,
-      true
-    );
-  }, [scale]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const scaleValue = interpolate(scale.value, [1, 1.2], [1, 1.2], Extrapolation.CLAMP);
-    return {
-      transform: [{ scale: scaleValue }],
-    };
-  }) as ReturnType<typeof useAnimatedStyle>;
-
   return (
     <motion.div
-      style={animatedStyle}
+      animate={{ scale: [1, 1.2, 1] }}
+      transition={{ repeat: Infinity, duration: 1, ease: 'easeInOut' }}
       className="w-2 h-2 bg-green-400 rounded-full"
       role="status"
       aria-label="Speaking"
@@ -442,7 +418,10 @@ export default function GroupCallInterface({
 
   return (
     <motion.div
-      style={modalAnimation.style}
+      style={{ opacity: modalAnimation.opacity, scale: modalAnimation.scale, y: modalAnimation.y }}
+      variants={modalAnimation.variants}
+      initial="hidden"
+      animate="visible"
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
         isFullscreen ? 'bg-background' : 'bg-background/95 backdrop-blur-xl p-4'
@@ -616,7 +595,12 @@ export default function GroupCallInterface({
               role="toolbar"
               aria-label="Call controls"
             >
-              <motion.div style={muteButton.animatedStyle}>
+              <motion.div
+                style={{ scale: muteButton.scale }}
+                variants={muteButton.variants}
+                initial="rest"
+                animate="rest"
+              >
                 <Button
                   onClick={muteButton.handlePress}
                   size="icon"
@@ -645,7 +629,12 @@ export default function GroupCallInterface({
               </motion.div>
 
               {isVideoCall && (
-                <motion.div style={videoButton.animatedStyle}>
+                <motion.div
+                  style={{ scale: videoButton.scale }}
+                  variants={videoButton.variants}
+                  initial="rest"
+                  animate="rest"
+                >
                   <Button
                     onClick={videoButton.handlePress}
                     size="icon"
@@ -679,7 +668,12 @@ export default function GroupCallInterface({
                 </motion.div>
               )}
 
-              <motion.div style={endCallButton.animatedStyle}>
+              <motion.div
+                style={{ scale: endCallButton.scale }}
+                variants={endCallButton.variants}
+                initial="rest"
+                animate="rest"
+              >
                 <Button
                   onClick={endCallButton.handlePress}
                   size="icon"
@@ -695,7 +689,12 @@ export default function GroupCallInterface({
                 </Button>
               </motion.div>
 
-              <motion.div style={raiseHandButton.animatedStyle}>
+              <motion.div
+                style={{ scale: raiseHandButton.scale }}
+                variants={raiseHandButton.variants}
+                initial="rest"
+                animate="rest"
+              >
                 <Button
                   onClick={raiseHandButton.handlePress}
                   size="icon"
@@ -713,7 +712,12 @@ export default function GroupCallInterface({
                 </Button>
               </motion.div>
 
-              <motion.div style={useBounceOnTap({ hapticFeedback: true }).animatedStyle}>
+              <motion.div
+                style={{ scale: useBounceOnTap({ hapticFeedback: true }).scale }}
+                variants={useBounceOnTap({ hapticFeedback: true }).variants}
+                initial="rest"
+                animate="rest"
+              >
                 <Button
                   size="icon"
                   variant="outline"
@@ -842,24 +846,12 @@ function ParticipantsPanel({
   onInvite,
   onClose: _onClose,
 }: ParticipantsPanelProps): JSX.Element {
-  const slideX = useSharedValue(400);
-  const opacity = useSharedValue(0);
-
-  useEffect(() => {
-    slideX.value = withTiming(0, { duration: 300 });
-    opacity.value = withTiming(1, { duration: 300 });
-  }, [slideX, opacity]);
-
-  const panelStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: slideX.value }],
-      opacity: opacity.value,
-    };
-  }) as ReturnType<typeof useAnimatedStyle>;
-
   return (
     <motion.div
-      style={panelStyle}
+      initial={{ x: 400, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 400, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       className="absolute top-20 right-0 bottom-24 w-80 glass-strong backdrop-blur-2xl border-l border-border/50 z-30"
       role="complementary"
       aria-label="Participants panel"
@@ -927,32 +919,10 @@ function ParticipantsPanel({
 }
 
 function ActiveIndicator(): JSX.Element {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-    opacity.value = withRepeat(
-      withSequence(withTiming(0.5, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-  }, [scale, opacity]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  }) as ReturnType<typeof useAnimatedStyle>;
-
   return (
     <motion.div
-      style={animatedStyle}
+      animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
+      transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
       className="w-2 h-2 bg-green-500 rounded-full"
       role="status"
       aria-label="Call active"
@@ -961,25 +931,10 @@ function ActiveIndicator(): JSX.Element {
 }
 
 function ConnectingIndicator(): JSX.Element {
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 750 }), withTiming(1, { duration: 750 })),
-      -1,
-      true
-    );
-  }, [scale]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  }) as ReturnType<typeof useAnimatedStyle>;
-
   return (
     <motion.div
-      style={animatedStyle}
+      animate={{ scale: [1, 1.2, 1] }}
+      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
       className="w-2 h-2 bg-yellow-500 rounded-full"
       role="status"
       aria-label="Connecting"

@@ -77,7 +77,7 @@ export function useMoodTheme(options: UseMoodThemeOptions): UseMoodThemeReturn {
   const gradientOpacity = useSharedValue(0);
 
   if (enabled && theme.adaptiveMood) {
-    gradientOpacity.value = withSpring(1, springConfigs.smooth);
+    gradientOpacity.value = withSpring(1, springConfigs.smooth).target;
   }
 
   const animatedStyle = useAnimatedStyle(() => {

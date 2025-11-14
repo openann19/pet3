@@ -204,7 +204,7 @@ export function PremiumSelect({
         <SelectTrigger
           id={selectId}
           className={cn(
-            'w-full rounded-xl transition-all duration-300',
+            'w-full rounded-xl',
             'focus-visible:ring-2 focus-visible:ring-primary/20',
             error && 'border-destructive focus-visible:ring-destructive/20',
             variants[variant],

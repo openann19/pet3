@@ -1,15 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  Extrapolation,
-} from '@petspark/motion';
+import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
 import { createLogger } from '@/lib/logger';
@@ -25,12 +18,11 @@ export interface UsePullToRefreshOptions {
 
 export interface UsePullToRefreshReturn {
   containerRef: React.RefObject<HTMLDivElement>;
-  pullDistance: ReturnType<typeof useSharedValue<number>>;
+  pullDistance: MotionValue<number>;
   isRefreshing: boolean;
-  pullOpacityStyle: AnimatedStyle;
-  pullRotationStyle: AnimatedStyle;
-  pullScaleStyle: AnimatedStyle;
-  pullTranslateStyle: AnimatedStyle;
+  pullOpacity: MotionValue<number>;
+  pullRotation: MotionValue<number>;
+  pullScale: MotionValue<number>;
 }
 
 export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRefreshReturn {
@@ -40,44 +32,19 @@ export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRef
   const startY = useRef<number>(0);
   const isPulling = useRef<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const pullDistance = useSharedValue(0);
+  const pullDistance = useMotionValue(0);
 
-  const pullOpacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(pullDistance.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
-    };
-  }) as AnimatedStyle;
+  const pullOpacity = useTransform(pullDistance, [0, threshold], [0, 1], {
+    clamp: true,
+  });
 
-  const pullRotationStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          rotate: `${interpolate(
-            pullDistance.value,
-            [0, threshold],
-            [0, 360],
-            Extrapolation.CLAMP
-          )}deg`,
-        },
-      ],
-    };
-  }) as AnimatedStyle;
+  const pullRotation = useTransform(pullDistance, [0, threshold], [0, 360], {
+    clamp: true,
+  });
 
-  const pullScaleStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          scale: interpolate(pullDistance.value, [0, threshold], [0.5, 1], Extrapolation.CLAMP),
-        },
-      ],
-    };
-  }) as AnimatedStyle;
-
-  const pullTranslateStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: pullDistance.value }],
-    };
-  }) as AnimatedStyle;
+  const pullScale = useTransform(pullDistance, [0, threshold], [0.5, 1], {
+    clamp: true,
+  });
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
@@ -99,7 +66,7 @@ export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRef
       const diff = currentY - startY.current;
 
       if (diff > 0 && diff < 120) {
-        pullDistance.value = diff;
+        pullDistance.set(diff);
       }
     },
     [pullDistance, enabled]
@@ -109,7 +76,7 @@ export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRef
     if (!isPulling.current || !enabled) return;
     isPulling.current = false;
 
-    const distance = pullDistance.value;
+    const distance = pullDistance.get();
 
     if (distance > threshold) {
       setIsRefreshing(true);
@@ -129,7 +96,11 @@ export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRef
       }
     }
 
-    pullDistance.value = withSpring(0, springConfigs.smooth);
+    void animate(pullDistance, 0, {
+      type: 'spring',
+      stiffness: springConfigs.smooth.stiffness ?? 300,
+      damping: springConfigs.smooth.damping ?? 30,
+    });
   }, [pullDistance, onRefresh, threshold, enabled]);
 
   useEffect(() => {
@@ -159,9 +130,8 @@ export function usePullToRefresh(options: UsePullToRefreshOptions): UsePullToRef
     containerRef,
     pullDistance,
     isRefreshing,
-    pullOpacityStyle,
-    pullRotationStyle,
-    pullScaleStyle,
-    pullTranslateStyle,
+    pullOpacity,
+    pullRotation,
+    pullScale,
   };
 }

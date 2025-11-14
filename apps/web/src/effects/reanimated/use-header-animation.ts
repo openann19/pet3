@@ -1,27 +1,20 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  withDelay,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseHeaderAnimationOptions {
   delay?: number;
 }
 
 export interface UseHeaderAnimationReturn {
-  y: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  shimmerX: ReturnType<typeof useSharedValue<number>>;
-  shimmerOpacity: ReturnType<typeof useSharedValue<number>>;
-  headerStyle: AnimatedStyle;
-  shimmerStyle: AnimatedStyle;
+  y: MotionValue<number>;
+  opacity: MotionValue<number>;
+  shimmerX: MotionValue<number>;
+  shimmerOpacity: MotionValue<number>;
+  headerStyle: CSSProperties;
+  shimmerStyle: CSSProperties;
 }
 
 export function useHeaderAnimation(
@@ -29,53 +22,51 @@ export function useHeaderAnimation(
 ): UseHeaderAnimationReturn {
   const { delay = 0.1 } = options;
 
-  const y = useSharedValue(-100);
-  const opacity = useSharedValue(0);
-  const shimmerX = useSharedValue(-100);
-  const shimmerOpacity = useSharedValue(0);
+  const y = useMotionValue(-100);
+  const opacity = useMotionValue(0);
+  const shimmerX = useMotionValue(-100);
+  const shimmerOpacity = useMotionValue(0);
 
   useEffect(() => {
-    const delayMs = delay * 1000;
-    y.value = withDelay(delayMs, withTiming(0, { duration: 400 }));
-    opacity.value = withDelay(delayMs, withTiming(1, { duration: 400 }));
+    const delayMs = delay;
+    animate(y, 0, {
+      delay: delayMs,
+      duration: 0.4,
+      ease: 'easeOut',
+    });
+    animate(opacity, 1, {
+      delay: delayMs,
+      duration: 0.4,
+      ease: 'easeOut',
+    });
 
-    shimmerX.value = withRepeat(
-      withSequence(withTiming(-100, { duration: 0 }), withTiming(100, { duration: 3000 })),
-      -1,
-      false
-    );
+    animate(shimmerX, [-100, 100], {
+      repeat: Infinity,
+      duration: 3,
+      ease: 'linear',
+      times: [0, 1],
+    });
 
-    shimmerOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 0 }),
-        withTiming(0.5, { duration: 1500 }),
-        withTiming(0, { duration: 1500 })
-      ),
-      -1,
-      false
-    );
+    animate(shimmerOpacity, [0, 0.5, 0], {
+      repeat: Infinity,
+      duration: 3,
+      ease: 'easeInOut',
+      times: [0, 0.5, 1],
+    });
   }, [delay, y, opacity, shimmerX, shimmerOpacity]);
-
-  const headerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: y.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
-
-  const shimmerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: `${shimmerX.value}%` }],
-      opacity: shimmerOpacity.value,
-    };
-  }) as AnimatedStyle;
 
   return {
     y,
     opacity,
     shimmerX,
     shimmerOpacity,
-    headerStyle,
-    shimmerStyle,
+    headerStyle: {
+      transform: `translateY(${y.get()}px)`,
+      opacity: opacity.get(),
+    },
+    shimmerStyle: {
+      transform: `translateX(${shimmerX.get()}%)`,
+      opacity: shimmerOpacity.get(),
+    },
   };
 }

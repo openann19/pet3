@@ -79,14 +79,14 @@ export default function StoryViewer({
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const { trackReaction, trackInteraction } = useStoryAnalytics({
-    story: currentStory || null,
+    story: currentStory ?? null,
     currentUserId,
     isActive: !isPaused,
   });
 
   const handleNext = useCallback(() => {
     const viewDuration = (Date.now() - startTimeRef.current) / 1000;
-    const completedView = viewDuration >= (currentStory?.duration || 5) * 0.8;
+    const completedView = viewDuration >= (currentStory?.duration ?? 5) * 0.8;
 
     if (currentStory && !isOwn) {
       const updatedStory = addStoryView(
@@ -95,7 +95,7 @@ export default function StoryViewer({
         currentUserName,
         viewDuration,
         completedView,
-        currentUserAvatar || undefined
+        currentUserAvatar ?? undefined
       );
       onStoryUpdate?.(updatedStory);
     }
@@ -183,7 +183,7 @@ export default function StoryViewer({
       clearInterval(progressIntervalRef.current);
     }
 
-    const duration = currentStory?.duration || 5;
+    const duration = currentStory?.duration ?? 5;
     const interval = 50;
 
     if (typeof window === 'undefined') return;
@@ -334,17 +334,19 @@ export default function StoryViewer({
     if (currentStory) {
       trackInteraction('share');
       if (navigator.share) {
-        navigator
+        void navigator
           .share({
             title: `Story by ${currentStory.userName}`,
-            text: currentStory.caption || '',
+            text: currentStory.caption ?? '',
             url: typeof window !== 'undefined' ? `${window.location.origin}/stories/${currentStory.id}` : '',
           })
           .catch(() => {
             // Share cancelled
           });
       } else {
-        navigator.clipboard.writeText(`${window.location.origin}/stories/${currentStory.id}`);
+        void navigator.clipboard.writeText(`${window.location.origin}/stories/${currentStory.id}`).catch(() => {
+          // Clipboard write failed
+        });
         toast.success('Link copied to clipboard');
       }
     }
@@ -396,7 +398,9 @@ export default function StoryViewer({
 
   return (
     <motion.div
-      style={viewerEntry.animatedStyle}
+      style={{
+        opacity: viewerEntry.opacity,
+      }}
       className="fixed inset-0 z-100 bg-black"
       role="dialog"
       aria-modal="true"
@@ -418,7 +422,7 @@ export default function StoryViewer({
                 aria-valuenow={idx === currentIndex ? progress : idx < currentIndex ? 100 : 0}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Story ${String(idx + 1 ?? '')} of ${String(stories.length ?? '')}`}
+                  aria-label={`Story ${idx + 1} of ${stories.length}`}
               >
                 <motion.div
                   className="h-full bg-white"
@@ -477,7 +481,9 @@ export default function StoryViewer({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleFullscreen}
+                onClick={() => {
+                  void toggleFullscreen();
+                }}
                 className="text-white hover:bg-white/20"
                 aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               >
@@ -544,10 +550,16 @@ export default function StoryViewer({
           }}
         >
           {currentStory.type === 'photo' && (
-            <motion.div key={currentStory.id} style={imageEntry.animatedStyle}>
+            <motion.div
+              key={currentStory.id}
+              style={{
+                opacity: imageEntry.opacity,
+                scale: imageEntry.scale,
+              }}
+            >
               <img
                 src={currentStory.mediaUrl}
-                alt={currentStory.caption || 'Story'}
+                alt={currentStory.caption ?? 'Story'}
                 className="w-full h-full object-contain select-none"
                 draggable={false}
               />
@@ -555,7 +567,7 @@ export default function StoryViewer({
           )}
 
           {currentStory.type === 'video' && (
-            <video
+                  <video
               ref={videoRef}
               src={currentStory.mediaUrl}
               className="w-full h-full object-contain"
@@ -563,7 +575,7 @@ export default function StoryViewer({
               loop
               muted={isMuted}
               playsInline
-              aria-label={`Video story by ${String(currentStory.userName ?? '')}`}
+              aria-label={`Video story by ${currentStory.userName ?? ''}`}
             />
           )}
 
@@ -571,9 +583,12 @@ export default function StoryViewer({
             <div className="absolute bottom-24 left-0 right-0 px-4">
               <motion.div
                 className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-                style={captionAnimation.animatedStyle}
+                style={{
+                  opacity: captionAnimation.opacity,
+                  y: captionAnimation.translateY,
+                }}
               >
-                <p className="text-white text-center">{currentStory.caption}</p>
+                <p className="text-white text-center">{currentStory.caption ?? ''}</p>
               </motion.div>
             </div>
           )}
@@ -586,28 +601,34 @@ export default function StoryViewer({
               {showReactions && (
                 <motion.div
                   key="reactions"
-                  style={reactionsAnimation.animatedStyle}
+                  style={{
+                    opacity: reactionsAnimation.opacity,
+                    y: reactionsAnimation.translateY,
+                  }}
                   className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
                   role="dialog"
                   aria-label="React to story"
                 >
                   <div className="flex justify-center gap-4">
                     {STORY_REACTION_EMOJIS.map((emoji) => (
-                      <motion.div
+                      <motion.button
                         key={emoji}
-                        as="button"
+                        type="button"
                         className="text-4xl focus:outline-none focus:ring-2 focus:ring-white rounded-lg p-2"
-                        style={[reactionButtonHover.animatedStyle, reactionButtonTap.animatedStyle]}
+                        style={{
+                          scale: reactionButtonHover.scale,
+                          y: reactionButtonHover.translateY,
+                        }}
                         onMouseEnter={reactionButtonHover.handleEnter}
                         onMouseLeave={reactionButtonHover.handleLeave}
                         onClick={() => {
                           reactionButtonTap.handlePress();
                           handleReaction(emoji);
                         }}
-                        aria-label={`React with ${String(emoji ?? '')}`}
+                        aria-label={`React with ${emoji}`}
                       >
                         {emoji}
-                      </motion.div>
+                      </motion.button>
                     ))}
                   </div>
                 </motion.div>
@@ -658,7 +679,10 @@ export default function StoryViewer({
           <div className="absolute bottom-4 left-4 right-4 z-20">
             <motion.div
               className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-              style={analyticsAnimation.animatedStyle}
+              style={{
+                opacity: analyticsAnimation.opacity,
+                y: analyticsAnimation.translateY,
+              }}
               role="region"
               aria-label="Story analytics"
             >

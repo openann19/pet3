@@ -107,7 +107,9 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
 
   return (
     <motion.div
-      style={hoverAnimation.animatedStyle}
+      initial="rest"
+      whileHover="hover"
+      variants={hoverAnimation.variants}
       className="relative rounded-lg overflow-hidden max-w-sm"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
@@ -145,7 +147,9 @@ function VideoAttachment({ attachment }: VideoAttachmentProps): React.JSX.Elemen
 
   return (
     <motion.div
-      style={hoverAnimation.animatedStyle}
+      initial="rest"
+      whileHover="hover"
+      variants={hoverAnimation.variants}
       className="relative rounded-lg overflow-hidden max-w-sm"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
@@ -186,7 +190,9 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
 
   return (
     <motion.div
-      style={hoverAnimation.animatedStyle}
+      initial="rest"
+      whileHover="hover"
+      variants={hoverAnimation.variants}
       className="flex items-center gap-3 p-3 glass-effect rounded-lg"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}

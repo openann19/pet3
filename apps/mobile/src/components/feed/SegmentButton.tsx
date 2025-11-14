@@ -26,7 +26,7 @@ export const SegmentButton = memo(({ label, selected, onPress }: SegmentButtonPr
       accessibilityState={{ selected }}
       accessibilityLabel={`${label} tab`}
       accessibilityHint={selected ? `Currently viewing ${label}` : `Switch to ${label} view`}
-      style={({ pressed }) => [
+      style={({ pressed }: { pressed: boolean }) => [
         styles.segmentButton,
         selected && styles.segmentButtonActive,
         pressed && styles.segmentButtonPressed,

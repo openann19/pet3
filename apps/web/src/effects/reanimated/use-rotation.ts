@@ -1,8 +1,8 @@
 'use client';
 
-import { useSharedValue, useAnimatedStyle, withRepeat, withTiming } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseRotationOptions {
   enabled?: boolean;
@@ -11,8 +11,8 @@ export interface UseRotationOptions {
 }
 
 export interface UseRotationReturn {
-  rotation: ReturnType<typeof useSharedValue<number>>;
-  rotationStyle: AnimatedStyle;
+  rotation: MotionValue<number>;
+  rotationStyle: CSSProperties;
 }
 
 /**
@@ -22,29 +22,26 @@ export interface UseRotationReturn {
 export function useRotation(options: UseRotationOptions = {}): UseRotationReturn {
   const { enabled = true, duration = 1000, repeat = true } = options;
 
-  const rotation = useSharedValue(0);
+  const rotation = useMotionValue(0);
 
   useEffect(() => {
     if (!enabled) {
-      rotation.value = 0;
+      rotation.set(0);
       return;
     }
 
-    rotation.value = withRepeat(
-      withTiming(360, { duration }),
-      repeat === true ? -1 : repeat === false ? 0 : repeat,
-      false
-    );
+    animate(rotation, 360, {
+      duration: duration / 1000,
+      ease: 'linear',
+      repeat: repeat === true ? Infinity : repeat === false ? 0 : repeat,
+      repeatType: 'loop',
+    });
   }, [enabled, duration, repeat, rotation]);
-
-  const rotationStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }],
-    };
-  }) as AnimatedStyle;
 
   return {
     rotation,
-    rotationStyle,
+    rotationStyle: {
+      transform: `rotate(${rotation.get()}deg)`,
+    },
   };
 }

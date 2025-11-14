@@ -148,7 +148,7 @@ export default function PetProfileTemplatesDialog({
         )}
         aria-pressed={isSelected}
         aria-label={`Select ${String(template.name ?? '')} template`}
-        style={{ minHeight: getSpacing('11') }}
+        style={{ minHeight: '44px' }}
       >
         {isSelected && (
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary via-accent to-primary opacity-40 blur-sm animate-in fade-in zoom-in duration-300" />
@@ -300,7 +300,7 @@ export default function PetProfileTemplatesDialog({
                     key={type}
                     value={type}
                     className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground transition-all"
-                    style={{ minHeight: getSpacing('11') }}
+                    style={{ minHeight: '44px' }}
                   >
                     <span className="mr-1.5 text-base">{PET_TYPE_LABELS[type].emoji}</span>
                     <span className="hidden sm:inline">{PET_TYPE_LABELS[type].label}</span>
@@ -348,7 +348,7 @@ export default function PetProfileTemplatesDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 className="min-w-25"
-                style={{ minHeight: getSpacing('11') }}
+                style={{ minHeight: '44px' }}
               >
                 Cancel
               </Button>
@@ -357,7 +357,7 @@ export default function PetProfileTemplatesDialog({
                 onClick={handleConfirmSelection}
                 disabled={!selectedTemplate}
                 className="min-w-35 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: getSpacing('11') }}
+                style={{ minHeight: '44px' }}
               >
                 <Check size={18} weight="bold" className="mr-2" />
                 Use Template

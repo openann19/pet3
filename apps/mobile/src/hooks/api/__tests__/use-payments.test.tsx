@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useSubscription } from '../../payments';
+import { useSubscription } from '@/hooks/payments/useSubscription';
 
 vi.mock('@/utils/api-client', () => ({
   apiClient: {
@@ -25,18 +24,17 @@ describe('useSubscription', () => {
     vi.clearAllMocks();
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) => {
-    return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
-  };
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
 
   it('fetches subscription status', async () => {
-    const { result } = renderHook(() => useSubscription({ userId: 'test-user' }), { wrapper });
+    const { result } = renderHook(() => useSubscription(), { wrapper });
+
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isSuccess).toBe(true);
     });
   });
 });

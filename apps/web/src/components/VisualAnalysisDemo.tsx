@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, useMotionValue, animate, AnimatePresence, useTransform } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { motionDurations } from '@/effects/framer-motion/variants';
 import { Sparkle, Eye, ArrowRight } from '@phosphor-icons/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

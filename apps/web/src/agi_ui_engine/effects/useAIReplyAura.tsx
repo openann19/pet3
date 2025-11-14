@@ -46,7 +46,7 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
       glow.value = withTiming(0.8, {
         duration: 800,
         easing: Easing.out(Easing.ease),
-      });
+      }).target;
     }
 
     if (isTruthy(visual.enableShimmer)) {
@@ -63,7 +63,7 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
         ),
         -1,
         false
-      );
+      ).target;
     }
   }, [glow, shimmer, visual.enableGlow, visual.enableShimmer]);
 
@@ -72,14 +72,16 @@ export function useAIReplyAura(): UseAIReplyAuraReturn {
       return {};
     }
 
+    const glowVal = typeof glow.value === 'number' ? glow.value : glow.value.target;
+    const shimmerVal = typeof shimmer.value === 'number' ? shimmer.value : shimmer.value.target;
     return {
       shadowColor: '#6EE7B7',
-      shadowOpacity: visual.enableGlow ? glow.value : 0,
-      shadowRadius: visual.enableGlow ? 20 * glow.value : 0,
+      shadowOpacity: visual.enableGlow ? glowVal : 0,
+      shadowRadius: visual.enableGlow ? 20 * glowVal : 0,
       backgroundColor: visual.enableGlow
-        ? `rgba(110, 231, 183, ${String(0.05 + glow.value * 0.1)})`
+        ? `rgba(110, 231, 183, ${String(0.05 + glowVal * 0.1)})`
         : undefined,
-      opacity: visual.enableShimmer ? 0.9 + shimmer.value * 0.1 : undefined,
+      opacity: visual.enableShimmer ? 0.9 + shimmerVal * 0.1 : undefined,
     };
   }) as AnimatedStyle;
 

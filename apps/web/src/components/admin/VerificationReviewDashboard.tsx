@@ -1,5 +1,5 @@
 import { verificationApi } from '@/api/verification-api';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -305,7 +305,7 @@ export function VerificationReviewDashboard(): JSX.Element {
         <TabsContent value={selectedTab} className="mt-6">
           <ScrollArea className="h-125 sm:h-150 pr-2 sm:pr-4">
             {loadingPresence.shouldRender && initialLoading && (
-              <motion.div style={loadingPresence.animatedStyle}>
+              <motion.div style={loadingPresence.animatedStyle as MotionStyle}>
                 <div className="text-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
                   <p className="mt-4 text-muted-foreground">Loading verification requests...</p>
@@ -313,7 +313,7 @@ export function VerificationReviewDashboard(): JSX.Element {
               </motion.div>
             )}
             {emptyPresence.shouldRender && !initialLoading && filteredRequests.length === 0 && (
-              <motion.div style={emptyPresence.animatedStyle} className="text-center py-16">
+              <motion.div style={emptyPresence.animatedStyle as MotionStyle} className="text-center py-16">
                 <ShieldCheck size={64} className="mx-auto text-muted-foreground mb-4 opacity-50" />
                 <p className="text-muted-foreground text-lg font-medium">
                   No requests in this category

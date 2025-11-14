@@ -59,8 +59,8 @@ export function use3DTiltEffect(options: Use3DTiltEffectOptions = {}): Use3DTilt
       const deltaX = (e.clientX - centerX) / rect.width;
       const deltaY = (e.clientY - centerY) / rect.height;
 
-      rotateY.value = withSpring(deltaX * intensity, springConfigs.smooth);
-      rotateX.value = withSpring(-deltaY * intensity, springConfigs.smooth);
+      rotateY.value = withSpring(deltaX * intensity, springConfigs.smooth).target;
+      rotateX.value = withSpring(-deltaY * intensity, springConfigs.smooth).target;
     },
     [enabled, visual.enable3DTilt, rotateX, rotateY, intensity]
   );
@@ -70,8 +70,8 @@ export function use3DTiltEffect(options: Use3DTiltEffectOptions = {}): Use3DTilt
       return;
     }
 
-    rotateX.value = withSpring(0, springConfigs.smooth);
-    rotateY.value = withSpring(0, springConfigs.smooth);
+    rotateX.value = withSpring(0, springConfigs.smooth).target;
+    rotateY.value = withSpring(0, springConfigs.smooth).target;
   }, [enabled, visual.enable3DTilt, rotateX, rotateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -79,15 +79,14 @@ export function use3DTiltEffect(options: Use3DTiltEffectOptions = {}): Use3DTilt
       return {};
     }
 
+    const rotateXVal = typeof rotateX.value === 'number' ? rotateX.value : rotateX.value.target;
+    const rotateYVal = typeof rotateY.value === 'number' ? rotateY.value : rotateY.value.target;
+
     return {
       transform: [
         {
-          rotateX: `${rotateX.value}deg`,
-        },
-        {
-          rotateY: `${rotateY.value}deg`,
-        },
-        {
+          rotateX: `${rotateXVal}deg`,
+          rotateY: `${rotateYVal}deg`,
           perspective: 1000,
         },
       ],

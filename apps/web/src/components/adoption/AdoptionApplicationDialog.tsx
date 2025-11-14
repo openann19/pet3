@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { useState } from 'react';
 import {
@@ -44,7 +44,7 @@ function LoadingSpinner() {
   });
 
   return (
-    <motion.div style={rotationAnimation.rotationStyle} className="inline-block">
+    <motion.div style={rotationAnimation.rotationStyle as MotionStyle} className="inline-block">
       <PaperPlaneRight size={18} />
     </motion.div>
   );

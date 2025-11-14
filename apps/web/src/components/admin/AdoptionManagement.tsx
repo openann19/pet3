@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { useState, useMemo, useCallback } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -59,7 +59,7 @@ function AdoptionProfileCard({
 
   return (
     <motion.div
-      style={animation.itemStyle}
+      style={animation.itemStyle as MotionStyle}
       className="relative"
       role="article"
       aria-label={`Adoption profile for ${String(profile.petName ?? '')}`}

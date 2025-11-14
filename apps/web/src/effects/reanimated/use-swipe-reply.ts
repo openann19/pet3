@@ -1,17 +1,15 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback } from 'react';
 import { haptics } from '@/lib/haptics';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseSwipeReplyOptions {
   onReply?: () => void;
@@ -21,12 +19,12 @@ export interface UseSwipeReplyOptions {
 }
 
 export interface UseSwipeReplyReturn {
-  translateX: SharedValue<number>;
-  opacity: SharedValue<number>;
-  previewOpacity: SharedValue<number>;
-  previewScale: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
-  previewStyle: ReturnType<typeof useAnimatedStyle>;
+  translateX: MotionValue<number>;
+  opacity: MotionValue<number>;
+  previewOpacity: MotionValue<number>;
+  previewScale: MotionValue<number>;
+  animatedStyle: CSSProperties;
+  previewStyle: CSSProperties;
   handleGestureStart: () => void;
   handleGestureUpdate: (translationX: number, velocityX: number) => void;
   handleGestureEnd: (translationX: number, velocityX: number) => void;
@@ -45,17 +43,17 @@ export function useSwipeReply(options: UseSwipeReplyOptions = {}): UseSwipeReply
     enabled = DEFAULT_ENABLED,
   } = options;
 
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const previewOpacity = useSharedValue(0);
-  const previewScale = useSharedValue(0.9);
-  const hasTriggeredHaptic = useSharedValue(false);
+  const translateX = useMotionValue(0);
+  const opacity = useMotionValue(0);
+  const previewOpacity = useMotionValue(0);
+  const previewScale = useMotionValue(0.9);
+  const hasTriggeredHaptic = useMotionValue(0); // Use 0/1 as boolean
 
   const handleGestureStart = useCallback(() => {
     if (!enabled) {
       return;
     }
-    hasTriggeredHaptic.value = false;
+    hasTriggeredHaptic.set(0);
   }, [enabled, hasTriggeredHaptic]);
 
   const handleGestureUpdate = useCallback(
@@ -65,16 +63,16 @@ export function useSwipeReply(options: UseSwipeReplyOptions = {}): UseSwipeReply
       }
 
       const clampedX = Math.max(0, translationX);
-      translateX.value = clampedX;
+      translateX.set(clampedX);
 
       const progress = Math.min(clampedX / threshold, 1);
-      opacity.value = interpolate(progress, [0, 1], [0, 0.3], Extrapolation.CLAMP);
+      opacity.set(progress * 0.3);
 
-      if (clampedX >= threshold && !hasTriggeredHaptic.value) {
+      if (clampedX >= threshold && hasTriggeredHaptic.get() === 0) {
         if (hapticFeedback) {
           haptics.selection();
         }
-        hasTriggeredHaptic.value = true;
+        hasTriggeredHaptic.set(1);
       }
     },
     [enabled, threshold, hapticFeedback, translateX, opacity, hasTriggeredHaptic]
@@ -89,11 +87,20 @@ export function useSwipeReply(options: UseSwipeReplyOptions = {}): UseSwipeReply
       const shouldCommit = translationX >= threshold || velocityX > 500;
 
       if (shouldCommit) {
-        translateX.value = withSpring(threshold, springConfigs.smooth);
-        opacity.value = withTiming(0.3, timingConfigs.fast);
+        void animate(translateX, threshold, {
+          ...springConfigs.smooth,
+        });
+        void animate(opacity, 0.3, {
+          duration: timingConfigs.fast.duration,
+          ease: timingConfigs.fast.ease as string,
+        });
 
-        previewOpacity.value = withSpring(1, springConfigs.bouncy);
-        previewScale.value = withSpring(1, springConfigs.bouncy);
+        void animate(previewOpacity, 1, {
+          ...springConfigs.bouncy,
+        });
+        void animate(previewScale, 1, {
+          ...springConfigs.bouncy,
+        });
 
         if (onReply) {
           onReply();
@@ -110,24 +117,35 @@ export function useSwipeReply(options: UseSwipeReplyOptions = {}): UseSwipeReply
   );
 
   const reset = useCallback(() => {
-    translateX.value = withSpring(0, springConfigs.smooth);
-    opacity.value = withTiming(0, timingConfigs.fast);
-    previewOpacity.value = withTiming(0, timingConfigs.fast);
-    previewScale.value = withTiming(0.9, timingConfigs.fast);
-    hasTriggeredHaptic.value = false;
+    void animate(translateX, 0, {
+      ...springConfigs.smooth,
+    });
+    void animate(opacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(previewOpacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(previewScale, 0.9, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    hasTriggeredHaptic.set(0);
   }, [translateX, opacity, previewOpacity, previewScale, hasTriggeredHaptic]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useMotionStyle(() => {
     return {
-      transform: [{ translateX: translateX.value }],
-      opacity: opacity.value,
+      transform: [{ translateX: translateX.get() }],
+      opacity: opacity.get(),
     };
   });
 
-  const previewStyle = useAnimatedStyle(() => {
+  const previewStyle = useMotionStyle(() => {
     return {
-      opacity: previewOpacity.value,
-      transform: [{ scale: previewScale.value }],
+      opacity: previewOpacity.get(),
+      transform: [{ scale: previewScale.get() }],
     };
   });
 

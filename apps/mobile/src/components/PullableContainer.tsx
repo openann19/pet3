@@ -41,7 +41,7 @@ export function PullableContainer({
 
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.container, style, animatedStyle]}>
+      <Animated.View style={[styles.container, style, animatedStyle] as ViewStyle}>
         {showRefreshControl && (
           <RefreshControl
             refreshing={isRefreshing}
@@ -52,7 +52,7 @@ export function PullableContainer({
               : {})}
           />
         )}
-        <Animated.View style={[styles.content, contentContainerStyle]}>{children}</Animated.View>
+        <Animated.View style={[styles.content, contentContainerStyle] as ViewStyle}>{children}</Animated.View>
       </Animated.View>
     </GestureDetector>
   )

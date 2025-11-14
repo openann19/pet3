@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
+import { useEntryAnimation } from '@/effects/reanimated';
 import { useStorage } from '@/hooks/use-storage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -232,7 +233,12 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
   })
 
   return (
-    <motion.div style={entry.animatedStyle}>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={entry.variants}
+      style={{ opacity: entry.opacity, y: entry.translateY, scale: entry.scale } as MotionStyle}
+    >
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-square relative bg-muted">
           {pet.photo ? (

@@ -1,14 +1,13 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
-import { useCallback } from 'react';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
+import { useCallback, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 
 export interface UseBubbleTiltOptions {
   maxTilt?: number;
@@ -19,10 +18,10 @@ export interface UseBubbleTiltOptions {
 }
 
 export interface UseBubbleTiltReturn {
-  rotateX: SharedValue<number>;
-  rotateY: SharedValue<number>;
-  shadowDepth: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  rotateX: MotionValue<number>;
+  rotateY: MotionValue<number>;
+  shadowDepth: MotionValue<number>;
+  animatedStyle: CSSProperties;
   handleMove: (x: number, y: number, width: number, height: number) => void;
   handleLeave: () => void;
 }
@@ -41,9 +40,9 @@ export function useBubbleTilt(options: UseBubbleTiltOptions = {}): UseBubbleTilt
     perspective = DEFAULT_PERSPECTIVE,
   } = options;
 
-  const rotateX = useSharedValue(0);
-  const rotateY = useSharedValue(0);
-  const shadowDepth = useSharedValue(0);
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const shadowDepth = useMotionValue(0);
 
   const handleMove = useCallback(
     (x: number, y: number, width: number, height: number) => {
@@ -57,28 +56,32 @@ export function useBubbleTilt(options: UseBubbleTiltOptions = {}): UseBubbleTilt
       const deltaX = x - centerX;
       const deltaY = y - centerY;
 
-      const tiltX = interpolate(
-        deltaY,
-        [-height / 2, height / 2],
-        [maxTilt, -maxTilt],
-        Extrapolation.CLAMP
-      );
+      // Calculate tilt values with clamping
+      const normalizedY = Math.max(-1, Math.min(1, deltaY / (height / 2)));
+      const normalizedX = Math.max(-1, Math.min(1, deltaX / (width / 2)));
+      
+      const tiltX = -normalizedY * maxTilt;
+      const tiltY = normalizedX * maxTilt;
 
-      const tiltY = interpolate(
-        deltaX,
-        [-width / 2, width / 2],
-        [-maxTilt, maxTilt],
-        Extrapolation.CLAMP
-      );
-
-      rotateX.value = withSpring(tiltX, { damping, stiffness });
-      rotateY.value = withSpring(tiltY, { damping, stiffness });
+      void animate(rotateX, tiltX, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
+      void animate(rotateY, tiltY, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
 
       const tiltMagnitude = Math.sqrt(tiltX * tiltX + tiltY * tiltY);
-      shadowDepth.value = withSpring(
-        interpolate(tiltMagnitude, [0, maxTilt], [0, 1], Extrapolation.CLAMP),
-        { damping, stiffness }
-      );
+      const normalizedMagnitude = Math.min(1, tiltMagnitude / maxTilt);
+      
+      void animate(shadowDepth, normalizedMagnitude, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
     },
     [enabled, maxTilt, damping, stiffness, rotateX, rotateY, shadowDepth]
   );
@@ -87,31 +90,42 @@ export function useBubbleTilt(options: UseBubbleTiltOptions = {}): UseBubbleTilt
     if (!enabled) {
       return;
     }
-    rotateX.value = withSpring(0, { damping, stiffness });
-    rotateY.value = withSpring(0, { damping, stiffness });
-    shadowDepth.value = withSpring(0, { damping, stiffness });
+    void animate(rotateX, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+    void animate(rotateY, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+    void animate(shadowDepth, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
   }, [enabled, damping, stiffness, rotateX, rotateY, shadowDepth]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  // Transform shadow depth to shadow values
+  const shadowBlur = useTransform(shadowDepth, [0, 1], [4, 16]);
+  const shadowSpread = useTransform(shadowDepth, [0, 1], [0, 8]);
+  const shadowOpacity = useTransform(shadowDepth, [0, 1], [0.2, 0.4]);
+
+  const animatedStyle = useMemo<CSSProperties>(() => {
     if (!enabled) {
       return {
-        transform: [{ perspective }, { rotateX: '0deg' }, { rotateY: '0deg' }],
+        transform: `perspective(${perspective}px) rotateX(0deg) rotateY(0deg)`,
       };
     }
 
-    const shadowBlur = interpolate(shadowDepth.value, [0, 1], [4, 16], Extrapolation.CLAMP);
-    const shadowSpread = interpolate(shadowDepth.value, [0, 1], [0, 8], Extrapolation.CLAMP);
-    const shadowOpacity = interpolate(shadowDepth.value, [0, 1], [0.2, 0.4], Extrapolation.CLAMP);
-
+    // Note: Components should use motion.div with style prop for reactive updates
+    // This is a static snapshot - for reactive styles, use motion.div directly
     return {
-      transform: [
-        { perspective },
-        { rotateX: `${rotateX.value}deg` },
-        { rotateY: `${rotateY.value}deg` },
-      ],
-      boxShadow: `0 ${shadowDepth.value * 4}px ${shadowBlur}px ${shadowSpread}px rgba(0, 0, 0, ${shadowOpacity})`,
+      transform: `perspective(${perspective}px) rotateX(${rotateX.get()}deg) rotateY(${rotateY.get()}deg)`,
+      boxShadow: `0 ${shadowDepth.get() * 4}px ${shadowBlur.get()}px ${shadowSpread.get()}px rgba(0, 0, 0, ${shadowOpacity.get()})`,
     };
-  });
+  }, [enabled, perspective, rotateX, rotateY, shadowDepth, shadowBlur, shadowSpread, shadowOpacity]);
 
   return {
     rotateX,

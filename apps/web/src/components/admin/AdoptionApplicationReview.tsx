@@ -1,6 +1,6 @@
 import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { adoptionApi } from '@/api/adoption-api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -58,7 +58,7 @@ function LoadingSpinner() {
 
   return (
     <>
-      <motion.div style={rotationAnimation.rotationStyle} className="mr-2 inline-block">
+      <motion.div style={rotationAnimation.rotationStyle as MotionStyle} className="mr-2 inline-block">
         <Clock size={16} />
       </motion.div>
       Processing...
@@ -97,7 +97,7 @@ function ApplicationCard({
   });
 
   return (
-    <motion.div key={application._id} style={staggeredAnimation.itemStyle}>
+    <motion.div key={application._id} style={staggeredAnimation.itemStyle as MotionStyle}>
       <Card
         className={`overflow-hidden transition-all duration-300 ${
           application.status === 'pending' ? 'border-amber-500/30 shadow-lg shadow-amber-500/5' : ''
@@ -175,7 +175,7 @@ function ApplicationCard({
           </div>
 
           {isExpanded && (
-            <motion.div style={expandAnimation.heightStyle} className="overflow-hidden">
+            <motion.div style={expandAnimation.heightStyle as MotionStyle} className="overflow-hidden">
               <Separator className="my-3" />
 
               <div className="space-y-3">

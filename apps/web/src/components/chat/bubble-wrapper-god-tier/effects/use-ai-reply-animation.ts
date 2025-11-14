@@ -1,17 +1,7 @@
-import { isTruthy } from '@/core/guards';
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
+import { useMotionValue, animate, useTransform, type MotionValue } from 'framer-motion';
+import { isTruthy } from '@/core/guards';
 import { useEffect } from 'react';
 
 export interface UseAiReplyAnimationOptions {
@@ -24,12 +14,12 @@ export interface UseAiReplyAnimationOptions {
 }
 
 export interface UseAiReplyAnimationReturn {
-  shimmerStyle: ReturnType<typeof useAnimatedStyle>;
-  sparkleStyle: ReturnType<typeof useAnimatedStyle>;
-  glowStyle: ReturnType<typeof useAnimatedStyle>;
-  containerStyle: ReturnType<typeof useAnimatedStyle>;
-  shimmerProgress: SharedValue<number>;
-  glowOpacity: SharedValue<number>;
+  shimmerStyle: { opacity: number; x: MotionValue<number> };
+  sparkleStyle: { opacity: MotionValue<number>; scale: MotionValue<number>; rotate: MotionValue<number> };
+  glowStyle: { opacity: MotionValue<number> };
+  containerStyle: { opacity: number };
+  shimmerProgress: MotionValue<number>;
+  glowOpacity: MotionValue<number>;
 }
 
 const DEFAULT_ENABLED = true;
@@ -51,95 +41,66 @@ export function useAiReplyAnimation(
     glowIntensity = DEFAULT_GLOW_INTENSITY,
   } = options;
 
-  const shimmerProgress = useSharedValue(0);
-  const glowOpacity = useSharedValue(0);
-  const sparkleOpacity = useSharedValue(0);
-  const sparkleScale = useSharedValue(1);
-  const sparkleRotation = useSharedValue(0);
+  const shimmerProgress = useMotionValue(0);
+  const glowOpacity = useMotionValue(0);
+  const sparkleOpacity = useMotionValue(0);
+  const sparkleScale = useMotionValue(1);
+  const sparkleRotation = useMotionValue(0);
+  const disabledSparkleOpacity = useMotionValue(0);
+  const disabledSparkleScale = useMotionValue(1);
+  const disabledSparkleRotation = useMotionValue(0);
+  const disabledGlowOpacity = useMotionValue(0);
+
+  const shimmerX = useTransform(shimmerProgress, [0, 1], [-100, 100], {
+    clamp: true,
+  });
 
   useEffect(() => {
     if (!enabled) {
-      shimmerProgress.value = 0;
-      glowOpacity.value = 0;
-      sparkleOpacity.value = 0;
+      shimmerProgress.set(0);
+      glowOpacity.set(0);
+      sparkleOpacity.set(0);
       return;
     }
 
     if (isTruthy(showShimmer)) {
-      shimmerProgress.value = withRepeat(
-        withTiming(1, {
-          duration: shimmerSpeed,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      );
+      animate(shimmerProgress, [0, 1], {
+        repeat: Infinity,
+        duration: shimmerSpeed / 1000,
+        ease: 'linear',
+        times: [0, 1],
+      });
     }
 
     if (isTruthy(showGlow)) {
-      glowOpacity.value = withRepeat(
-        withSequence(
-          withTiming(glowIntensity, {
-            duration: 1500,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(glowIntensity * 0.5, {
-            duration: 1500,
-            easing: Easing.inOut(Easing.ease),
-          })
-        ),
-        -1,
-        false
-      );
+      animate(glowOpacity, [glowIntensity, glowIntensity * 0.5], {
+        repeat: Infinity,
+        duration: 3,
+        ease: 'easeInOut',
+        times: [0, 1],
+      });
     }
 
     if (isTruthy(showSparkles)) {
-      sparkleOpacity.value = withRepeat(
-        withSequence(
-          withTiming(1, {
-            duration: 500,
-            easing: Easing.out(Easing.ease),
-          }),
-          withTiming(0.3, {
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(0, {
-            duration: 500,
-            easing: Easing.in(Easing.ease),
-          })
-        ),
-        -1,
-        false
-      );
+      animate(sparkleOpacity, [0, 1, 0.3, 0], {
+        repeat: Infinity,
+        duration: 2,
+        ease: 'easeInOut',
+        times: [0, 0.25, 0.75, 1],
+      });
 
-      sparkleScale.value = withRepeat(
-        withSequence(
-          withTiming(1.2, {
-            duration: 500,
-            easing: Easing.out(Easing.back(1.5)),
-          }),
-          withTiming(0.8, {
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(1, {
-            duration: 500,
-            easing: Easing.in(Easing.ease),
-          })
-        ),
-        -1,
-        false
-      );
+      animate(sparkleScale, [1, 1.2, 0.8, 1], {
+        repeat: Infinity,
+        duration: 2,
+        ease: 'easeInOut',
+        times: [0, 0.25, 0.75, 1],
+      });
 
-      sparkleRotation.value = withRepeat(
-        withTiming(360, {
-          duration: 3000,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      );
+      animate(sparkleRotation, 360, {
+        repeat: Infinity,
+        duration: 3,
+        ease: 'linear',
+      });
     }
   }, [
     enabled,
@@ -155,51 +116,22 @@ export function useAiReplyAnimation(
     sparkleRotation,
   ]);
 
-  const shimmerStyle = useAnimatedStyle(() => {
-    if (!showShimmer || !enabled) {
-      return { opacity: 0 };
-    }
-
-    const translateX = interpolate(shimmerProgress.value, [0, 1], [-100, 100], Extrapolation.CLAMP);
-
-    return {
-      opacity: 0.3,
-      transform: [{ translateX }],
-    };
-  });
-
-  const sparkleStyle = useAnimatedStyle(() => {
-    if (!showSparkles || !enabled) {
-      return { opacity: 0 };
-    }
-
-    return {
-      opacity: sparkleOpacity.value,
-      transform: [{ scale: sparkleScale.value }, { rotate: `${sparkleRotation.value}deg` }],
-    };
-  });
-
-  const glowStyle = useAnimatedStyle(() => {
-    if (!showGlow || !enabled) {
-      return { opacity: 0 };
-    }
-
-    return {
-      opacity: glowOpacity.value,
-    };
-  });
-
-  const containerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: enabled ? 1 : 0.95,
-    };
-  });
-
   return {
-    shimmerStyle,
-    sparkleStyle,
-    glowStyle,
-    containerStyle,
+    shimmerStyle: {
+      opacity: showShimmer && enabled ? 0.3 : 0,
+      x: shimmerX,
+    },
+    sparkleStyle: {
+      opacity: showSparkles && enabled ? sparkleOpacity : disabledSparkleOpacity,
+      scale: showSparkles && enabled ? sparkleScale : disabledSparkleScale,
+      rotate: showSparkles && enabled ? sparkleRotation : disabledSparkleRotation,
+    },
+    glowStyle: {
+      opacity: showGlow && enabled ? glowOpacity : disabledGlowOpacity,
+    },
+    containerStyle: {
+      opacity: enabled ? 1 : 0.95,
+    },
     shimmerProgress,
     glowOpacity,
   };

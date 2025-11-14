@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { ScreenErrorBoundary } from '@/components/error/ScreenErrorBoundary'
@@ -27,7 +27,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { NavButton } from '@/components/navigation/NavButton'
 import { isTruthy } from '@petspark/shared';
 import type { View } from '@/lib/routes';
-import { getDefaultView, isValidView } from '@/lib/routes';
+import { getDefaultView } from '@/lib/routes';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Heart, Translate, Sun, Moon, ShieldCheck, Palette, Sparkle, ChatCircle, Users, MapPin, User } from 'phosphor-react'
 
@@ -46,17 +46,41 @@ const AdminConsole = lazy(() => import('@/components/AdminConsole'))
 const AuthScreen = lazy(() => import('@/components/AuthScreen'))
 const PetsDemoPage = lazy(() => import('@/components/demo/PetsDemoPage'))
 const GenerateProfilesButton = lazy(() => import('@/components/GenerateProfilesButton'))
-const PremiumNotificationBell = lazy(() => import('@/components/notifications/PremiumNotificationBell'))
-const UltraThemeSettings = lazy(() => import('@/components/settings/UltraThemeSettings'))
+const PremiumNotificationBell = lazy(() => 
+  import('@/components/notifications/PremiumNotificationBell').then(
+    (m): { default: React.ComponentType } => ({ default: m.PremiumNotificationBell })
+  )
+)
+const UltraThemeSettings = lazy(() => 
+  import('@/components/settings/UltraThemeSettings').then(
+    (m): { default: React.ComponentType } => ({ default: m.UltraThemeSettings })
+  )
+)
 const StatsCard = lazy(() => import('@/components/StatsCard'))
-const SyncStatusIndicator = lazy(() => import('@/components/SyncStatusIndicator'))
+const SyncStatusIndicator = lazy(() => 
+  import('@/components/SyncStatusIndicator').then(
+    (m): { default: React.ComponentType } => ({ default: m.SyncStatusIndicator })
+  )
+)
 const WelcomeScreen = lazy(() => import('@/components/WelcomeScreen'))
 const QuickActionsMenu = lazy(() => import('@/components/QuickActionsMenu'))
 const BottomNavBar = lazy(() => import('@/components/navigation/BottomNavBar'))
-const BillingIssueBanner = lazy(() => import('@/components/payments/BillingIssueBanner'))
-const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'))
+const BillingIssueBanner = lazy(() => 
+  import('@/components/payments/BillingIssueBanner').then(
+    (m): { default: React.ComponentType } => ({ default: m.BillingIssueBanner })
+  )
+)
+const InstallPrompt = lazy(() => 
+  import('@/components/pwa/InstallPrompt').then(
+    (m): { default: React.ComponentType } => ({ default: m.InstallPrompt })
+  )
+)
 const SeedDataInitializer = lazy(() => import('@/components/SeedDataInitializer'))
-const OfflineIndicator = lazy(() => import('@/components/network/OfflineIndicator'))
+const OfflineIndicator = lazy(() => 
+  import('@/components/network/OfflineIndicator').then(
+    (m): { default: React.ComponentType } => ({ default: m.OfflineIndicator })
+  )
+)
 type AppState = 'welcome' | 'auth' | 'main'
 
 function App() {
@@ -140,35 +164,25 @@ function App() {
   // Button animations
   const closeButtonBounce = useBounceOnTap({ hapticFeedback: true })
 
-  // Convert animated styles to CSS for framer-motion
-  const headerStyle = useAnimatedStyleValue(headerAnimation.headerStyle)
-  const headerShimmerStyle = useAnimatedStyleValue(headerAnimation.shimmerStyle)
-  const logoAnimationStyle = useAnimatedStyleValue(logoAnimation.style)
-  const logoGlowStyle = useAnimatedStyleValue(logoGlow.style)
-  const headerButton1Style = useAnimatedStyleValue(headerButton1.buttonStyle)
-  const headerButton2Style = useAnimatedStyleValue(headerButton2.buttonStyle)
-  const headerButton3Style = useAnimatedStyleValue(headerButton3.buttonStyle)
-  const headerButton4Style = useAnimatedStyleValue(headerButton4.buttonStyle)
-  const headerButton5Style = useAnimatedStyleValue(headerButton5.buttonStyle)
-  const headerButton6Style = useAnimatedStyleValue(headerButton6.buttonStyle)
-  const languageIconRotationStyle = useAnimatedStyleValue(languageIconRotation.style)
-  const loadingTransitionStyle = useAnimatedStyleValue(loadingTransition.style)
-  const pageTransitionStyle = useAnimatedStyleValue(pageTransition.style)
-  const navBarStyle = useAnimatedStyleValue(navBarAnimation.navStyle)
-  const navBarShimmerStyle = useAnimatedStyleValue(navBarAnimation.shimmerStyle)
-  const lostFoundButtonStyle = useAnimatedStyleValue(lostFoundAnimation.buttonStyle)
-  const lostFoundIconStyle = useAnimatedStyleValue(lostFoundAnimation.iconStyle)
-  const lostFoundIndicatorStyle = useAnimatedStyleValue(lostFoundAnimation.indicatorStyle)
-  const generateProfilesModalStyle = useAnimatedStyleValue(generateProfilesModal.style)
-  const generateProfilesContentStyle = useAnimatedStyleValue(generateProfilesContent.style)
-  const statsModalStyle = useAnimatedStyleValue(statsModal.style)
-  const statsContentStyle = useAnimatedStyleValue(statsContent.style)
-  const mapModalStyle = useAnimatedStyleValue(mapModal.style)
-  const mapContentStyle = useAnimatedStyleValue(mapContent.style)
-  const adminModalStyle = useAnimatedStyleValue(adminModal.style)
-  const adminContentStyle = useAnimatedStyleValue(adminContent.style)
-  const themeContentStyle = useAnimatedStyleValue(themeContent.style)
-  const closeButtonBounceStyle = useAnimatedStyleValue(closeButtonBounce.animatedStyle)
+  // These hooks already return CSSProperties, no need to convert
+  const headerStyle = headerAnimation.headerStyle
+  const headerShimmerStyle = headerAnimation.shimmerStyle
+  const logoAnimationStyle = logoAnimation.style
+  const logoGlowStyle = logoGlow.style
+  const headerButton1Style = headerButton1.buttonStyle
+  const headerButton2Style = headerButton2.buttonStyle
+  const headerButton3Style = headerButton3.buttonStyle
+  const headerButton4Style = headerButton4.buttonStyle
+  const headerButton5Style = headerButton5.buttonStyle
+  const headerButton6Style = headerButton6.buttonStyle
+  const languageIconRotationStyle = languageIconRotation.style
+  const loadingTransitionStyle = loadingTransition.style
+  const pageTransitionStyle = pageTransition.style
+  const navBarStyle = navBarAnimation.navStyle
+  const navBarShimmerStyle = navBarAnimation.shimmerStyle
+  // Lost & Found button uses motion values directly via motion.div
+  // Modal animations use variants directly via motion.div variants prop
+  // closeButtonBounce returns motion values directly - use scale in style prop
 
   // Memoize computed values to prevent unnecessary re-renders
   const totalMatches = useMemo(() => 
@@ -203,7 +217,7 @@ function App() {
 
   useEffect(() => {
     // Initialize performance monitoring in production
-    if (import.meta.env['NODE_ENV'] === 'production') {
+    if (import.meta.env.NODE_ENV === 'production') {
       void Promise.all([
         import('@/lib/monitoring/performance'),
         import('@/lib/logger')
@@ -230,19 +244,25 @@ function App() {
   }, [hasSeenWelcome, isAuthenticated])
 
   const handleWelcomeGetStarted = () => {
-    setHasSeenWelcome(true)
+    void setHasSeenWelcome(true).catch((error) => {
+      console.error('Failed to save has-seen-welcome state:', error)
+    })
     setAuthMode('signup')
     setAppState('auth')
   }
 
   const handleWelcomeSignIn = () => {
-    setHasSeenWelcome(true)
+    void setHasSeenWelcome(true).catch((error) => {
+      console.error('Failed to save has-seen-welcome state:', error)
+    })
     setAuthMode('signin')
     setAppState('auth')
   }
 
   const handleWelcomeExplore = () => {
-    setHasSeenWelcome(true)
+    void setHasSeenWelcome(true).catch((error) => {
+      console.error('Failed to save has-seen-welcome state:', error)
+    })
     setAppState('main')
   }
 
@@ -569,12 +589,16 @@ function App() {
             />
 
             <motion.div
-              className={`${String(NAV_BUTTON_BASE_CLASSES ?? '')} relative cursor-pointer ${
-                String(currentView === 'lost-found'
-                                                                    ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
-                                                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60' ?? '')
+              className={`${NAV_BUTTON_BASE_CLASSES} relative cursor-pointer ${
+                currentView === 'lost-found'
+                  ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
-              style={lostFoundButtonStyle}
+              style={{
+                scale: lostFoundAnimation.scale,
+                y: lostFoundAnimation.translateY,
+                rotate: lostFoundAnimation.rotation,
+              }}
               onMouseEnter={lostFoundAnimation.handleHover}
               onMouseLeave={lostFoundAnimation.handleLeave}
               onClick={() => {
@@ -583,14 +607,22 @@ function App() {
                 setCurrentView('lost-found')
               }}
             >
-              <motion.div style={lostFoundIconStyle}>
+              <motion.div
+                style={{
+                  scale: lostFoundAnimation.iconScale,
+                  rotate: lostFoundAnimation.iconRotation,
+                }}
+              >
                 <MapPin size={22} weight={currentView === 'lost-found' ? 'fill' : 'regular'} />
               </motion.div>
               <span className="text-[10px] sm:text-xs font-semibold leading-tight">{t.nav['lost-found'] || 'Lost & Found'}</span>
               {currentView === 'lost-found' && (
                 <motion.div
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
-                  style={lostFoundIndicatorStyle}
+                  style={{
+                    opacity: lostFoundAnimation.indicatorOpacity,
+                    width: lostFoundAnimation.indicatorWidth,
+                  }}
                 >
                   <div />
                 </motion.div>
@@ -622,23 +654,44 @@ function App() {
 
       {showGenerateProfiles && (
         <motion.div
-          style={generateProfilesModalStyle}
+          variants={generateProfilesModal.variants}
+          initial="hidden"
+          animate={showGenerateProfiles ? 'visible' : 'hidden'}
+          exit="hidden"
+          style={{
+            opacity: generateProfilesModal.opacity,
+          }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowGenerateProfiles(false); }}
         >
           <motion.div
-            style={generateProfilesContentStyle}
+            variants={generateProfilesContent.variants}
+            initial="hidden"
+            animate={showGenerateProfiles ? 'visible' : 'hidden'}
+            exit="hidden"
+            style={{
+              opacity: generateProfilesContent.opacity,
+              scale: generateProfilesContent.scale,
+              y: generateProfilesContent.y,
+            }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="bg-card p-6 rounded-2xl shadow-2xl max-w-md w-full border border-border/50"
           >
             <Suspense fallback={<LoadingState />}>
               <GenerateProfilesButton />
             </Suspense>
-            <motion.div style={closeButtonBounceStyle}>
+            <motion.div
+              style={{ scale: closeButtonBounce.scale }}
+              variants={closeButtonBounce.variants}
+              whileTap="tap"
+            >
               <Button
                 variant="outline"
                 className="w-full mt-4"
-                onClick={() => { setShowGenerateProfiles(false); }}
+                onClick={() => {
+                  closeButtonBounce.handlePress();
+                  setShowGenerateProfiles(false);
+                }}
               >
                 Close
               </Button>
@@ -648,12 +701,26 @@ function App() {
       )}
       {showStats && totalSwipes > 0 && (
         <motion.div
-          style={statsModalStyle}
+          variants={statsModal.variants}
+          initial="hidden"
+          animate={showStats ? 'visible' : 'hidden'}
+          exit="hidden"
+          style={{
+            opacity: statsModal.opacity,
+          }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowStats(false); }}
         >
           <motion.div
-            style={statsContentStyle}
+            variants={statsContent.variants}
+            initial="hidden"
+            animate={showStats ? 'visible' : 'hidden'}
+            exit="hidden"
+            style={{
+              opacity: statsContent.opacity,
+              scale: statsContent.scale,
+              y: statsContent.y,
+            }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="max-w-2xl w-full"
           >
@@ -664,7 +731,7 @@ function App() {
                 successRate={successRate}
               />
             </Suspense>
-            <motion.div style={closeButtonBounceStyle}>
+            <motion.div>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -679,12 +746,26 @@ function App() {
 
       {showMap && (
         <motion.div
-          style={mapModalStyle}
+          variants={mapModal.variants}
+          initial="hidden"
+          animate={showMap ? 'visible' : 'hidden'}
+          exit="hidden"
+          style={{
+            opacity: mapModal.opacity,
+          }}
           className="fixed inset-0 z-50"
         >
           <Suspense fallback={<LoadingState />}>
             <motion.div
-              style={mapContentStyle}
+              variants={mapContent.variants}
+              initial="hidden"
+              animate={showMap ? 'visible' : 'hidden'}
+              exit="hidden"
+              style={{
+                opacity: mapContent.opacity,
+                scale: mapContent.scale,
+                y: mapContent.y,
+              }}
               className="h-full w-full"
             >
               <PlaydateMap
@@ -698,11 +779,25 @@ function App() {
 
       {showAdminConsole && (
         <motion.div
-          style={adminModalStyle}
+          variants={adminModal.variants}
+          initial="hidden"
+          animate={showAdminConsole ? 'visible' : 'hidden'}
+          exit="hidden"
+          style={{
+            opacity: adminModal.opacity,
+          }}
           className="fixed inset-0 z-50 bg-background"
         >
           <motion.div
-            style={adminContentStyle}
+            variants={adminContent.variants}
+            initial="hidden"
+            animate={showAdminConsole ? 'visible' : 'hidden'}
+            exit="hidden"
+            style={{
+              opacity: adminContent.opacity,
+              scale: adminContent.scale,
+              y: adminContent.y,
+            }}
             className="h-full w-full"
           >
             <Suspense fallback={<LoadingState />}>
@@ -716,7 +811,17 @@ function App() {
         <Dialog open={showThemeSettings} onOpenChange={setShowThemeSettings}>
           <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto p-0">
             <DialogTitle className="sr-only">Ultra Theme Settings</DialogTitle>
-            <motion.div style={themeContentStyle}>
+            <motion.div
+              variants={themeContent.variants}
+              initial="hidden"
+              animate={showThemeSettings ? 'visible' : 'hidden'}
+              exit="hidden"
+              style={{
+                opacity: themeContent.opacity,
+                scale: themeContent.scale,
+                y: themeContent.y,
+              }}
+            >
               <Suspense fallback={<LoadingState />}>
                 <UltraThemeSettings />
               </Suspense>

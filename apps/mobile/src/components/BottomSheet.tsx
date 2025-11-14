@@ -13,9 +13,9 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useModalAnimation } from '@mobile/effects/reanimated'
+import { useModalAnimation } from '../effects/reanimated'
 import { colors } from '../theme/colors'
-import { springConfigs } from '@mobile/effects/reanimated/transitions'
+import { springConfigs } from '../effects/reanimated/transitions'
 
 const springConfig = springConfigs.smooth
 
@@ -55,9 +55,10 @@ export function BottomSheet({
         translateY.value = event.translationY
       }
     })
-    .onEnd((event: { translationY: number; velocityY: number }) => {
+    .onEnd((event) => {
+      const { translationY, velocityY } = event
       const threshold = height * 0.3
-      if (event.translationY > threshold || event.velocityY > 500) {
+      if (translationY > threshold || velocityY > 500) {
         translateY.value = withSpring(height, springConfig, () => {
           runOnJS(onClose)()
         })
@@ -79,7 +80,7 @@ export function BottomSheet({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Animated.View style={Object.assign({}, styles.backdrop, animatedBackdropStyle)}>
+      <Animated.View style={[styles.backdrop, animatedBackdropStyle]}>
         <TouchableOpacity
           style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
           activeOpacity={1}
@@ -87,12 +88,11 @@ export function BottomSheet({
         />
         <GestureDetector gesture={panGesture}>
           <Animated.View
-            style={Object.assign(
-              {},
+            style={[
               styles.sheet,
               { height, paddingBottom: insets.bottom },
-              animatedSheetStyle
-            )}
+              animatedSheetStyle,
+            ]}
           >
             <View style={styles.handle} />
             {children}
@@ -105,7 +105,11 @@ export function BottomSheet({
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },

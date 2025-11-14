@@ -1,9 +1,7 @@
 'use client';
-import { motion } from 'framer-motion';
 
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { useDiscoverKeyboard } from '@/hooks/use-discover-keyboard';
@@ -89,38 +87,39 @@ export function DiscoverCardStackPage({
     containerRef: mainRef,
   });
 
-  // Card animation values
-  const cardOpacity = useSharedValue(1);
-  const cardScale = useSharedValue(1);
-  const cardY = useSharedValue(0);
-  const nextCardOpacity = useSharedValue(0.5);
-  const nextCardScale = useSharedValue(0.95);
+  // Card animation values - using Framer Motion
+  const cardOpacity = useMotionValue(1);
+  const cardScale = useMotionValue(1);
+  const cardY = useMotionValue(0);
+  const nextCardOpacity = useMotionValue(0.5);
+  const nextCardScale = useMotionValue(0.95);
 
   useEffect(() => {
     if (prefersReducedMotion) {
-      cardOpacity.value = withTiming(1, { duration: 100 });
-      cardScale.value = 1;
-      cardY.value = 0;
-      nextCardOpacity.value = withTiming(0.5, { duration: 100 });
-      nextCardScale.value = 0.95;
+      void animate(cardOpacity, 1, { duration: 0.1 });
+      cardScale.set(1);
+      cardY.set(0);
+      void animate(nextCardOpacity, 0.5, { duration: 0.1 });
+      nextCardScale.set(0.95);
     } else {
-      cardOpacity.value = withSpring(1, springConfigs.smooth);
-      cardScale.value = withSpring(1, springConfigs.smooth);
-      cardY.value = withSpring(0, springConfigs.smooth);
-      nextCardOpacity.value = withSpring(0.5, springConfigs.smooth);
-      nextCardScale.value = withSpring(0.95, springConfigs.smooth);
+      void animate(cardOpacity, 1, springConfigs.smooth);
+      void animate(cardScale, 1, springConfigs.smooth);
+      void animate(cardY, 0, springConfigs.smooth);
+      void animate(nextCardOpacity, 0.5, springConfigs.smooth);
+      void animate(nextCardScale, 0.95, springConfigs.smooth);
     }
   }, [currentIndex, prefersReducedMotion, cardOpacity, cardScale, cardY, nextCardOpacity, nextCardScale]);
 
-  const cardStyle = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ scale: cardScale.value }, { translateY: cardY.value }],
-  }));
+  const cardStyle = {
+    opacity: cardOpacity,
+    scale: cardScale,
+    y: cardY,
+  };
 
-  const nextCardStyle = useAnimatedStyle(() => ({
-    opacity: nextCardOpacity.value,
-    transform: [{ scale: nextCardScale.value }],
-  }));
+  const nextCardStyle = {
+    opacity: nextCardOpacity,
+    scale: nextCardScale,
+  };
 
   if (!currentPet) {
     return (
@@ -136,7 +135,7 @@ export function DiscoverCardStackPage({
           <p className="text-6xl mb-4" aria-hidden="true">
             🐾
           </p>
-          <h1 className={`${getTypographyClasses('title')} text-slate-100 mb-2`}>
+          <h1 className={`${getTypographyClasses('h1')} text-slate-100 mb-2`}>
             No more pets nearby
           </h1>
           <p className={`${getTypographyClasses('body')} text-slate-400`}>
@@ -213,7 +212,7 @@ export function DiscoverCardStackPage({
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-left">
                   <div className="flex items-center gap-2 mb-2">
-                    <h2 className={`${getTypographyClasses('card-title')} text-slate-50`}>
+                    <h2 className={`${getTypographyClasses('h2')} text-slate-50`}>
                       {currentPet.name}
                     </h2>
                     {currentPet.verified && (
@@ -222,10 +221,10 @@ export function DiscoverCardStackPage({
                       </span>
                     )}
                   </div>
-                  <p className={`${getTypographyClasses('card-subtitle')} text-slate-200 mb-2`}>
+                  <p className={`${getTypographyClasses('body-sm')} text-slate-200 mb-2`}>
                     {currentPet.breed}
                   </p>
-                  <p className={`${getTypographyClasses('meta')} text-slate-300 mb-3`}>
+                  <p className={`${getTypographyClasses('caption')} text-slate-300 mb-3`}>
                     📍 {currentPet.location}
                   </p>
                   {currentPet.bio && (
@@ -235,7 +234,7 @@ export function DiscoverCardStackPage({
                       {currentPet.bio}
                     </p>
                   )}
-                  <p className={`${getTypographyClasses('hint')} text-slate-400 italic`}>
+                  <p className={`${getTypographyClasses('caption')} text-slate-400 italic`}>
                     Click for details
                   </p>
                 </div>

@@ -6,6 +6,8 @@
 
 'use client';
 
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { supportApi } from '@/api/support-api';
 import { adminApi } from '@/api/admin-api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -56,6 +58,7 @@ import { toast } from 'sonner';
 const logger = createLogger('SupportChatPanel');
 
 export default function SupportChatPanel() {
+  const prefersReducedMotion = useReducedMotion();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [stats, setStats] = useState<SupportTicketStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -309,13 +312,19 @@ export default function SupportChatPanel() {
                     <div className="text-center py-8 text-muted-foreground">No tickets found</div>
                   ) : (
                     tickets.map((ticket) => (
-                      <Card
+                      <motion.div
                         key={ticket.id}
-                        className={`cursor-pointer hover:bg-muted transition-colors ${selectedTicket?.id === ticket.id ? 'ring-2 ring-primary' : ''
+                        className={`cursor-pointer ${selectedTicket?.id === ticket.id ? 'ring-2 ring-primary' : ''
                           }`}
                         onClick={() => handleSelectTicket(ticket)}
+                        whileHover={!prefersReducedMotion ? { backgroundColor: 'var(--muted)' } : undefined}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : 0.15,
+                          ease: 'easeInOut',
+                        }}
                       >
-                        <CardContent className="p-4">
+                        <Card>
+                          <CardContent className="p-4">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold truncate">{ticket.subject}</h3>
@@ -332,7 +341,8 @@ export default function SupportChatPanel() {
                             </span>
                           </div>
                         </CardContent>
-                      </Card>
+                        </Card>
+                      </motion.div>
                     ))
                   )}
                 </div>
@@ -424,7 +434,7 @@ export default function SupportChatPanel() {
                           {message.userName.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`flex-1 ${String(message.isAdmin ? 'text-right' : '' ?? '')}`}>
+                      <div className={`flex-1 ${String(message.isAdmin ? 'text-right' : '')}`}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-sm">{message.userName}</span>
                           {message.isAdmin && (

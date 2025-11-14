@@ -1,15 +1,9 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withDelay,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseHeaderButtonAnimationOptions {
   delay?: number;
@@ -19,14 +13,14 @@ export interface UseHeaderButtonAnimationOptions {
 }
 
 export interface UseHeaderButtonAnimationReturn {
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  scale: ReturnType<typeof useSharedValue<number>>;
-  translateY: ReturnType<typeof useSharedValue<number>>;
-  rotation: ReturnType<typeof useSharedValue<number>>;
-  hoverScale: ReturnType<typeof useSharedValue<number>>;
-  hoverY: ReturnType<typeof useSharedValue<number>>;
-  hoverRotation: ReturnType<typeof useSharedValue<number>>;
-  buttonStyle: AnimatedStyle;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  translateY: MotionValue<number>;
+  rotation: MotionValue<number>;
+  hoverScale: MotionValue<number>;
+  hoverY: MotionValue<number>;
+  hoverRotation: MotionValue<number>;
+  buttonStyle: CSSProperties;
   handleEnter: () => void;
   handleLeave: () => void;
   handleTap: () => void;
@@ -42,49 +36,78 @@ export function useHeaderButtonAnimation(
     rotation: hoverRotationValue = -5,
   } = options;
 
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
-  const translateY = useSharedValue(0);
-  const rotation = useSharedValue(0);
-  const hoverScale = useSharedValue(1);
-  const hoverY = useSharedValue(0);
-  const hoverRotation = useSharedValue(0);
+  const opacity = useMotionValue(0);
+  const scale = useMotionValue(0.8);
+  const translateY = useMotionValue(0);
+  const rotation = useMotionValue(0);
+  const hoverScale = useMotionValue(1);
+  const hoverY = useMotionValue(0);
+  const hoverRotation = useMotionValue(0);
 
   useEffect(() => {
-    const delayMs = delay * 1000;
-    opacity.value = withDelay(delayMs, withTiming(1, { duration: 400 }));
-    scale.value = withDelay(delayMs, withSpring(1, springConfigs.smooth));
+    const delayMs = delay;
+    animate(opacity, 1, {
+      delay: delayMs,
+      duration: 0.4,
+      ease: 'easeOut',
+    });
+    animate(scale, 1, {
+      delay: delayMs,
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   }, [delay, opacity, scale]);
 
   const handleEnter = () => {
-    hoverScale.value = withSpring(hoverScaleValue, springConfigs.smooth);
-    hoverY.value = withSpring(hoverYValue, springConfigs.smooth);
-    hoverRotation.value = withSpring(hoverRotationValue, springConfigs.smooth);
+    animate(hoverScale, hoverScaleValue, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(hoverY, hoverYValue, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(hoverRotation, hoverRotationValue, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   };
 
   const handleLeave = () => {
-    hoverScale.value = withSpring(1, springConfigs.smooth);
-    hoverY.value = withSpring(0, springConfigs.smooth);
-    hoverRotation.value = withSpring(0, springConfigs.smooth);
+    animate(hoverScale, 1, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(hoverY, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(hoverRotation, 0, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
   };
 
   const handleTap = () => {
-    hoverScale.value = withSpring(0.9, springConfigs.smooth);
-    setTimeout(() => {
-      hoverScale.value = withSpring(1, springConfigs.smooth);
-    }, 150);
+    animate(hoverScale, 0.9, {
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    }).then(() => {
+      animate(hoverScale, 1, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping,
+        stiffness: springConfigs.smooth.stiffness,
+      });
+    });
   };
-
-  const buttonStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [
-        { scale: scale.value * hoverScale.value },
-        { translateY: translateY.value + hoverY.value },
-        { rotate: `${rotation.value + hoverRotation.value}deg` },
-      ],
-    };
-  }) as AnimatedStyle;
 
   return {
     opacity,
@@ -94,7 +117,10 @@ export function useHeaderButtonAnimation(
     hoverScale,
     hoverY,
     hoverRotation,
-    buttonStyle,
+    buttonStyle: {
+      opacity: opacity.get(),
+      transform: `scale(${scale.get() * hoverScale.get()}) translateY(${translateY.get() + hoverY.get()}px) rotate(${rotation.get() + hoverRotation.get()}deg)`,
+    },
     handleEnter,
     handleLeave,
     handleTap,

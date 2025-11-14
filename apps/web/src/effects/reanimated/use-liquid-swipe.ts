@@ -3,8 +3,10 @@
  * Smooth, fluid swipe with elastic bounce and momentum
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring, withDecay } from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useCallback, useState } from 'react';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseLiquidSwipeOptions {
   threshold?: number;
@@ -15,7 +17,15 @@ export interface UseLiquidSwipeOptions {
   onSwipeRight?: () => void;
 }
 
-export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}) {
+export interface UseLiquidSwipeReturn {
+  animatedStyle: CSSProperties;
+  handleDragStart: (event: React.MouseEvent | React.TouchEvent) => void;
+  handleDragMove: (event: React.MouseEvent | React.TouchEvent) => void;
+  handleDragEnd: () => void;
+  isDragging: boolean;
+}
+
+export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}): UseLiquidSwipeReturn {
   const {
     threshold = 100,
     damping = 15,
@@ -25,9 +35,9 @@ export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}) {
     onSwipeRight,
   } = options;
 
-  const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const rotate = useSharedValue(0);
+  const translateX = useMotionValue(0);
+  const scale = useMotionValue(1);
+  const rotate = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
 
@@ -44,25 +54,28 @@ export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}) {
       const clientX = 'touches' in event ? (event.touches[0]?.clientX ?? 0) : event.clientX;
       const deltaX = clientX - startX;
 
-      translateX.value = deltaX;
-      scale.value = 1 - Math.abs(deltaX) / 1000;
-      rotate.value = deltaX / 20;
+      translateX.set(deltaX);
+      scale.set(1 - Math.abs(deltaX) / 1000);
+      rotate.set(deltaX / 20);
     },
-    [isDragging, startX]
+    [isDragging, startX, translateX, scale, rotate]
   );
 
   const handleDragEnd = useCallback(() => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    const currentTranslateX = translateX.value;
+    const currentTranslateX = translateX.get();
 
     if (Math.abs(currentTranslateX) > threshold) {
-      // Swipe complete
+      // Swipe complete - use decay-like animation
       const direction = currentTranslateX > 0 ? 1 : -1;
-      translateX.value = withDecay({
-        velocity: direction * velocity,
-        deceleration: 0.998,
+      const targetX = currentTranslateX + direction * velocity * 0.1; // Approximate decay
+      
+      void animate(translateX, targetX, {
+        type: 'spring',
+        damping: 0.5,
+        stiffness: 50,
       });
 
       if (direction > 0 && onSwipeRight) {
@@ -72,17 +85,29 @@ export function useLiquidSwipe(options: UseLiquidSwipeOptions = {}) {
       }
     } else {
       // Return to center
-      translateX.value = withSpring(0, { damping, stiffness });
-      scale.value = withSpring(1, { damping, stiffness });
-      rotate.value = withSpring(0, { damping, stiffness });
+      void animate(translateX, 0, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
+      void animate(scale, 1, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
+      void animate(rotate, 0, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
     }
-  }, [isDragging, threshold, damping, stiffness, velocity, onSwipeLeft, onSwipeRight]);
+  }, [isDragging, threshold, damping, stiffness, velocity, onSwipeLeft, onSwipeRight, translateX, scale, rotate]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useMotionStyle(() => ({
     transform: [
-      { translateX: translateX.value },
-      { scale: scale.value },
-      { rotate: `${String(rotate.value ?? '')}deg` },
+      { translateX: translateX.get() },
+      { scale: scale.get() },
+      { rotate: `${rotate.get()}deg` },
     ],
   }));
 

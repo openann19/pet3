@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, withSpring } from '@petspark/motion';
-import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
-import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Sparkle, X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import type { SmartSuggestion } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { slideUpVariants, springConfigs, getVariantsWithReducedMotion } from '@/effects/framer-motion/variants';
 
 interface SmartSuggestionsPanelProps {
   onSelect: (suggestion: SmartSuggestion) => void;
@@ -16,33 +15,27 @@ interface SmartSuggestionsPanelProps {
 
 export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSuggestionsPanelProps) {
   const _uiConfig = useUIConfig();
+  const prefersReducedMotion = useReducedMotion();
   const [suggestions] = useState<SmartSuggestion[]>([
     { id: '1', category: 'suggestion', text: 'Tell me more about your pet!', icon: '🐾' },
     { id: '2', category: 'suggestion', text: 'Want to set up a playdate?', icon: '🎾' },
     { id: '3', category: 'question', text: 'What does your pet love to do?', icon: '❓' },
   ]);
 
-  const y = useSharedValue(20);
-  const opacity = useSharedValue(0);
-
-  useEffect(() => {
-    y.value = withSpring(0, { damping: 20, stiffness: 300 });
-    opacity.value = withTiming(1, { duration: 300 });
-  }, [y, opacity]);
-
-  const containerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: y.value }],
-    opacity: opacity.value,
-  })) as AnimatedStyle;
-
-  const containerStyleValue = useAnimatedStyleValue(containerStyle);
+  const containerVariants = getVariantsWithReducedMotion(slideUpVariants, prefersReducedMotion);
 
   return (
-    <div style={containerStyleValue} className="px-4 pb-2">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="px-4 pb-2"
+    >
       <div className="glass-effect rounded-2xl p-3 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkle size={16} weight="fill" className="text-primary" />
+            <Sparkle size={16} weight="fill" className="text-primary" aria-hidden="true" />
             <span className="text-xs font-semibold">Smart Suggestions</span>
           </div>
           <Button
@@ -52,7 +45,7 @@ export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSugg
             onClick={onDismiss}
             aria-label="Dismiss smart suggestions"
           >
-            <X size={12} />
+            <X size={12} aria-hidden="true" />
           </Button>
         </div>
 
@@ -62,7 +55,7 @@ export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSugg
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -73,26 +66,17 @@ function SuggestionButton({
   suggestion: SmartSuggestion;
   onSelect: (suggestion: SmartSuggestion) => void;
 }) {
-  const hoverLift = useHoverLift({ scale: 1.02 });
-  const bounceOnTap = useBounceOnTap({ scale: 0.98 });
-
-  const buttonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: hoverLift.scale.value * bounceOnTap.scale.value }],
-  })) as AnimatedStyle;
-
-  const buttonStyleValue = useAnimatedStyleValue(buttonStyle);
-
   return (
-    <button
+    <motion.button
       onClick={() => { onSelect(suggestion); }}
-      onMouseEnter={hoverLift.handleEnter}
-      onMouseLeave={hoverLift.handleLeave}
-      onMouseDown={bounceOnTap.handlePress}
-      style={buttonStyleValue}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors whitespace-nowrap text-sm"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={springConfigs.smooth}
+      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors whitespace-nowrap text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      aria-label={suggestion.text}
     >
-      {suggestion.icon && <span>{suggestion.icon}</span>}
+      {suggestion.icon && <span aria-hidden="true">{suggestion.icon}</span>}
       <span>{suggestion.text}</span>
-    </button>
+    </motion.button>
   );
 }

@@ -1,15 +1,10 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-  withSpring,
-} from '@petspark/motion';
-import { useEffect, useState } from 'react';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
+import { useEffect, useState, useCallback } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import { springConfigs } from '@/effects/reanimated/transitions';
+import { springConfigs } from '@/effects/framer-motion/variants';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface UseThreadLayoutAnimatorOptions {
   isExpanded?: boolean;
@@ -18,11 +13,18 @@ export interface UseThreadLayoutAnimatorOptions {
 }
 
 export interface UseThreadLayoutAnimatorReturn {
-  height: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  translateY: ReturnType<typeof useSharedValue<number>>;
-  containerStyle: ReturnType<typeof useAnimatedStyle>;
-  messageStyle: (index: number) => ReturnType<typeof useAnimatedStyle>;
+  height: MotionValue<number>;
+  opacity: MotionValue<number>;
+  translateY: MotionValue<number>;
+  containerStyle: {
+    opacity: MotionValue<number>;
+    y: MotionValue<number>;
+    overflow: 'hidden';
+  };
+  messageStyle: (index: number) => {
+    opacity: MotionValue<number>;
+    y: MotionValue<number>;
+  };
   expand: () => void;
   collapse: () => void;
 }
@@ -39,12 +41,18 @@ export function useThreadLayoutAnimator(
     staggerDelay = DEFAULT_STAGGER_DELAY,
   } = options;
 
-  const height = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(-20);
-  const [messageOpacities] = useState(() => Array.from({ length: 10 }, () => useSharedValue(0)));
+  const prefersReducedMotion = useReducedMotion();
+  const fastDuration = prefersReducedMotion ? 0 : (timingConfigs.fast.duration ?? 0.15);
+  const smoothDuration = prefersReducedMotion ? 0 : (timingConfigs.smooth.duration ?? 0.3);
+
+  const height = useMotionValue(0);
+  const opacity = useMotionValue(0);
+  const translateY = useMotionValue(-20);
+  const fallbackOpacity = useMotionValue(0);
+  const fallbackY = useMotionValue(-10);
+  const [messageOpacities] = useState(() => Array.from({ length: 10 }, () => useMotionValue(0)));
   const [messageTranslateYs] = useState(() =>
-    Array.from({ length: 10 }, () => useSharedValue(-10))
+    Array.from({ length: 10 }, () => useMotionValue(-10))
   );
 
   useEffect(() => {
@@ -53,28 +61,32 @@ export function useThreadLayoutAnimator(
     }
 
     if (isExpanded) {
-      height.value = withSpring(1, springConfigs.smooth);
-      opacity.value = withTiming(1, timingConfigs.smooth);
-      translateY.value = withSpring(0, springConfigs.smooth);
+      animate(height, 1, { ...springConfigs.smooth, duration: smoothDuration });
+      animate(opacity, 1, { duration: smoothDuration });
+      animate(translateY, 0, { ...springConfigs.smooth, duration: smoothDuration });
 
-      messageOpacities.forEach((opacity, index) => {
-        opacity.value = withDelay(index * staggerDelay, withTiming(1, timingConfigs.smooth));
+      messageOpacities.forEach((opacityVal, index) => {
+        setTimeout(() => {
+          animate(opacityVal, 1, { duration: smoothDuration });
+        }, index * staggerDelay);
       });
 
-      messageTranslateYs.forEach((translateY, index) => {
-        translateY.value = withDelay(index * staggerDelay, withSpring(0, springConfigs.smooth));
+      messageTranslateYs.forEach((translateYVal, index) => {
+        setTimeout(() => {
+          animate(translateYVal, 0, { ...springConfigs.smooth, duration: smoothDuration });
+        }, index * staggerDelay);
       });
     } else {
-      height.value = withTiming(0, timingConfigs.fast);
-      opacity.value = withTiming(0, timingConfigs.fast);
-      translateY.value = withTiming(-20, timingConfigs.fast);
+      animate(height, 0, { duration: fastDuration });
+      animate(opacity, 0, { duration: fastDuration });
+      animate(translateY, -20, { duration: fastDuration });
 
-      messageOpacities.forEach((opacity) => {
-        opacity.value = withTiming(0, timingConfigs.fast);
+      messageOpacities.forEach((opacityVal) => {
+        animate(opacityVal, 0, { duration: fastDuration });
       });
 
-      messageTranslateYs.forEach((translateY) => {
-        translateY.value = withTiming(-10, timingConfigs.fast);
+      messageTranslateYs.forEach((translateYVal) => {
+        animate(translateYVal, -10, { duration: fastDuration });
       });
     }
   }, [
@@ -86,38 +98,36 @@ export function useThreadLayoutAnimator(
     translateY,
     messageOpacities,
     messageTranslateYs,
+    fastDuration,
+    smoothDuration,
   ]);
 
-  const expand = () => {
-    height.value = withSpring(1, springConfigs.smooth);
-    opacity.value = withTiming(1, timingConfigs.smooth);
-    translateY.value = withSpring(0, springConfigs.smooth);
+  const expand = useCallback(() => {
+    animate(height, 1, { ...springConfigs.smooth, duration: smoothDuration });
+    animate(opacity, 1, { duration: smoothDuration });
+    animate(translateY, 0, { ...springConfigs.smooth, duration: smoothDuration });
+  }, [height, opacity, translateY, smoothDuration]);
+
+  const collapse = useCallback(() => {
+    animate(height, 0, { duration: fastDuration });
+    animate(opacity, 0, { duration: fastDuration });
+    animate(translateY, -20, { duration: fastDuration });
+  }, [height, opacity, translateY, fastDuration]);
+
+  const containerStyle = {
+    opacity,
+    y: translateY,
+    overflow: 'hidden' as const,
   };
 
-  const collapse = () => {
-    height.value = withTiming(0, timingConfigs.fast);
-    opacity.value = withTiming(0, timingConfigs.fast);
-    translateY.value = withTiming(-20, timingConfigs.fast);
-  };
-
-  const containerStyle = useAnimatedStyle(() => {
+  const messageStyle = useCallback((index: number) => {
+    const opacityVal = messageOpacities[index];
+    const translateYVal = messageTranslateYs[index];
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
-      overflow: 'hidden' as const,
+      opacity: opacityVal ?? fallbackOpacity,
+      y: translateYVal ?? fallbackY,
     };
-  });
-
-  const messageStyle = (index: number) => {
-    return useAnimatedStyle(() => {
-      const opacity = messageOpacities[index];
-      const translateY = messageTranslateYs[index];
-      return {
-        opacity: opacity?.value ?? 0,
-        transform: [{ translateY: translateY?.value ?? -10 }],
-      };
-    });
-  };
+  }, [messageOpacities, messageTranslateYs, fallbackOpacity, fallbackY]);
 
   return {
     height,

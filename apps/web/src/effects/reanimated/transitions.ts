@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  withSpring,
-  withTiming,
-  withDelay,
-  Easing,
-  type WithSpringConfig,
-  type WithTimingConfig,
-} from '@petspark/motion';
+import type { Transition, Spring, Tween } from 'framer-motion';
 
 export interface SpringConfig {
   damping?: number;
@@ -17,7 +10,8 @@ export interface SpringConfig {
 
 export interface TimingConfig {
   duration?: number;
-  easing?: (value: number) => number;
+  easing?: string | number[];
+  ease?: string | number[]; // Alias for easing (for compatibility)
 }
 
 export const springConfigs = {
@@ -28,22 +22,34 @@ export const springConfigs = {
 };
 
 export const timingConfigs = {
-  fast: { duration: 150, easing: Easing.ease } as TimingConfig,
-  smooth: { duration: 300, easing: Easing.inOut(Easing.ease) } as TimingConfig,
-  slow: { duration: 500, easing: Easing.inOut(Easing.ease) } as TimingConfig,
-  elastic: { duration: 400, easing: Easing.elastic(1) } as TimingConfig,
+  fast: { duration: 0.15, ease: 'easeOut' } as TimingConfig,
+  smooth: { duration: 0.3, ease: 'easeInOut' } as TimingConfig,
+  slow: { duration: 0.5, ease: 'easeInOut' } as TimingConfig,
+  elastic: { duration: 0.4, ease: [0.2, 0, 0, 1] } as TimingConfig,
 };
 
-export function createSpringTransition(config: SpringConfig = springConfigs.smooth) {
-  return (value: number) => withSpring(value, config as WithSpringConfig);
+export function createSpringTransition(config: SpringConfig = springConfigs.smooth): Spring {
+  return {
+    type: 'spring',
+    damping: config.damping ?? 25,
+    stiffness: config.stiffness ?? 400,
+    mass: config.mass,
+  };
 }
 
-export function createTimingTransition(config: TimingConfig = timingConfigs.smooth) {
-  return (value: number) => withTiming(value, config as WithTimingConfig);
+export function createTimingTransition(config: TimingConfig = timingConfigs.smooth): Tween {
+  return {
+    type: 'tween',
+    duration: config.duration ?? 0.3,
+    ease: config.easing ?? 'easeInOut',
+  };
 }
 
-export function createDelayedTransition(delay: number, transition: (value: number) => number) {
-  return (value: number) => withDelay(delay, transition(value));
+export function createDelayedTransition(delay: number, transition: Transition): Transition {
+  return {
+    ...transition,
+    delay: delay / 1000, // Convert ms to seconds
+  };
 }
 
 export const fadeIn = {

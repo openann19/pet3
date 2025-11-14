@@ -324,16 +324,15 @@ export default function MapSettingsView() {
                 <Label>Privacy Grid Size (meters)</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[mapSettings?.PRIVACY_GRID_METERS ?? 1000]}
-                    onValueChange={([value]) => {
-                      if (value !== undefined) {
-                        handleSettingChange('PRIVACY_GRID_METERS', value);
-                      }
+                    value={mapSettings?.PRIVACY_GRID_METERS ?? 1000}
+                    onValueChange={(value: number) => {
+                      handleSettingChange('PRIVACY_GRID_METERS', value);
                     }}
                     min={100}
                     max={5000}
                     step={100}
                     className="flex-1"
+                    aria-label="Privacy grid size in meters"
                   />
                   <span className="w-20 text-right font-medium">
                     {mapSettings?.PRIVACY_GRID_METERS ?? 1000}m
@@ -361,16 +360,15 @@ export default function MapSettingsView() {
                 <Label>Precise Location Timeout (minutes)</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[mapSettings?.PRECISE_LOCATION_TIMEOUT_MINUTES ?? 60]}
-                    onValueChange={([value]) => {
-                      if (value !== undefined) {
-                        handleSettingChange('PRECISE_LOCATION_TIMEOUT_MINUTES', value);
-                      }
+                    value={mapSettings?.PRECISE_LOCATION_TIMEOUT_MINUTES ?? 60}
+                    onValueChange={(value: number) => {
+                      handleSettingChange('PRECISE_LOCATION_TIMEOUT_MINUTES', value);
                     }}
                     min={5}
                     max={240}
                     step={5}
                     className="flex-1"
+                    aria-label="Precise location timeout in minutes"
                   />
                   <span className="w-20 text-right font-medium">
                     {mapSettings?.PRECISE_LOCATION_TIMEOUT_MINUTES ?? 60} min
@@ -537,16 +535,15 @@ export default function MapSettingsView() {
                 <Label>Max Visible Markers</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[mapSettings?.MAX_MARKERS_VISIBLE ?? 50]}
-                    onValueChange={([value]) => {
-                      if (value !== undefined) {
-                        handleSettingChange('MAX_MARKERS_VISIBLE', value);
-                      }
+                    value={mapSettings?.MAX_MARKERS_VISIBLE ?? 50}
+                    onValueChange={(value: number) => {
+                      handleSettingChange('MAX_MARKERS_VISIBLE', value);
                     }}
                     min={10}
                     max={200}
                     step={10}
                     className="flex-1"
+                    aria-label="Maximum visible markers"
                   />
                   <span className="w-16 text-right font-medium">
                     {mapSettings?.MAX_MARKERS_VISIBLE ?? 50}

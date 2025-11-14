@@ -1,10 +1,10 @@
 /**
-import { motion } from 'framer-motion';
  * Reaction Button Component
  *
  * Interactive reaction button with hover animations
  */
 
+import { motion, type MotionStyle } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
@@ -35,7 +35,7 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
   return (
     <div ref={containerRef}>
       <motion.div
-        style={hover.animatedStyle}
+        style={hover.animatedStyle as MotionStyle}
         onMouseEnter={hover.handleMouseEnter}
         onMouseLeave={hover.handleMouseLeave}
         onMouseDown={hover.handleMouseDown}

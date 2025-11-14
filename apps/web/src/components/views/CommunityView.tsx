@@ -33,7 +33,7 @@ import {
   Sparkle,
   TrendUp,
 } from '@phosphor-icons/react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { motionDurations } from '@/effects/framer-motion/variants';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
@@ -104,49 +104,20 @@ function CommunityViewContent(): JSX.Element | null {
     activeTab,
   });
 
-  // Convert SharedValue (MotionValue) to MotionValue for Framer Motion compatibility
-  const pullY = useMotionValue(0);
-  const pullRotate = useTransform(pullY, (value: number) => value * 0.1);
+  // Use MotionValues directly from pull-to-refresh hook
+  const pullY = pullToRefresh.pullDistance;
+  const pullRotate = pullToRefresh.pullRotation;
   const [showPullIndicator, setShowPullIndicator] = useState(false);
 
-  // Sync SharedValue (MotionValue) with our MotionValue
-  // pullDistance is a MotionValue<number> from useSharedValue
-  const pullDistanceMotionValue: unknown = pullToRefresh.pullDistance;
+  // Subscribe to pullDistance changes to show/hide indicator
   useEffect((): (() => void) | undefined => {
-    if (pullDistanceMotionValue && typeof pullDistanceMotionValue === 'object' && 'on' in pullDistanceMotionValue) {
-      // Type guard for motion value with 'on' method
-      interface MotionValueWithOn {
-        on: (event: string, callback: (value: unknown) => void) => () => void;
-      }
-      const isMotionValueWithOn = (value: unknown): value is MotionValueWithOn => {
-        if (typeof value !== 'object' || value === null) {
-          return false;
-        }
-        // Safe property check - use Object.prototype.hasOwnProperty
-        if (!Object.prototype.hasOwnProperty.call(value, 'on')) {
-          return false;
-        }
-        // Access property safely using bracket notation after hasOwnProperty check
-        const valueRecord: Record<string, unknown> = value as Record<string, unknown>;
-        const onProperty = valueRecord.on;
-        return typeof onProperty === 'function';
-      };
-      
-      if (isMotionValueWithOn(pullDistanceMotionValue)) {
-        const unsubscribe = pullDistanceMotionValue.on('change', (latest: unknown): void => {
-          const distance = typeof latest === 'number' ? latest : 0;
-          pullY.set(distance);
-          setShowPullIndicator(distance > 0);
-        });
-        return (): void => {
-          if (typeof unsubscribe === 'function') {
-            unsubscribe();
-          }
-        };
-      }
-    }
-    return undefined;
-  }, [pullDistanceMotionValue, pullY]);
+    const unsubscribe = pullY.on('change', (latest: number): void => {
+      setShowPullIndicator(latest > 0);
+    });
+    return (): void => {
+      unsubscribe();
+    };
+  }, [pullY]);
 
   // Post actions hook
   const postActions = usePostActions({
@@ -435,6 +406,8 @@ function CommunityViewContent(): JSX.Element | null {
               className="bg-card/95 backdrop-blur-xl shadow-xl rounded-full p-3 border border-border/50"
               style={{
                 rotate: pullRotate,
+                scale: pullToRefresh.pullScale,
+                opacity: pullToRefresh.pullOpacity,
               }}
               animate={
                 pullToRefresh.isRefreshing && !prefersReducedMotion

@@ -245,7 +245,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                   <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
                     Nearby Places
                   </h3>
-                  <Presence>
+                  <Presence visible={true}>
                     {filteredPlaces.map((place, index) => (
                       <MotionView
                         key={place.id}

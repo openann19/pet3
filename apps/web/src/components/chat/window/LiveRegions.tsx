@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { isTruthy } from '@/core/guards';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface AnnounceNewMessageProps {

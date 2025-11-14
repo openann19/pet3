@@ -118,9 +118,9 @@ export function EnhancedPetDetailView({
 
   return (
     <Modal visible={isVisible} transparent animationType="none" onRequestClose={handleClose}>
-      <Pressable style={styles.overlay} onPress={handleClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+      <Pressable style={styles.overlay} onPress={handleClose}>
         <AnimatedView style={[styles.modal, modalStyle]}>
-          <Pressable onPress={e = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> e.stopPropagation()}>
+          <Pressable onPress={() => {}}>
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
               {/* Photo Gallery */}
               <View style={styles.imageContainer}>
@@ -207,7 +207,7 @@ export function EnhancedPetDetailView({
             </ScrollView>
           </Pressable>
 
-          <Pressable style={styles.closeButton} onPress={handleClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <Pressable style={styles.closeButton} onPress={handleClose}>
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
         </AnimatedView>

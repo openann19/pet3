@@ -139,3 +139,14 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction): v
     next();
   }
 }
+
+/**
+ * Extended Request type with authenticated user information
+ */
+export interface AuthenticatedRequest extends Request {
+  userId: string;
+  user: {
+    id: string;
+    email: string;
+  };
+}

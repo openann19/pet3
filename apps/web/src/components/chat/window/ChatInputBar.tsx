@@ -16,6 +16,7 @@ import VoiceRecorder from '../VoiceRecorder';
 import { useRef } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { useChatKeyboardShortcuts } from '@/hooks/chat/use-chat-keyboard-shortcuts';
+import { isTruthy } from '@/core/guards';
 
 export interface ChatInputBarProps {
   inputValue: string;

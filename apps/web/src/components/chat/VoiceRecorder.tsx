@@ -40,7 +40,7 @@ export default function VoiceRecorder({
   useEffect(() => {
     void startRecording();
 
-    if (reducedMotion) {
+    if (prefersReducedMotion) {
       containerOpacity.set(1);
       containerScale.set(1);
       micScale.set(1);

@@ -138,7 +138,7 @@ export function AdoptionFiltersSheet({
                   type="number"
                   min="0"
                   max="30"
-                  value={localFilters.ageMin || ''}
+                  value={localFilters.ageMin ?? ''}
                   onChange={(e) => {
                     updateFilters({
                       ageMin: e.target.value ? Number(e.target.value) : undefined,
@@ -156,7 +156,7 @@ export function AdoptionFiltersSheet({
                   type="number"
                   min="0"
                   max="30"
-                  value={localFilters.ageMax || ''}
+                  value={localFilters.ageMax ?? ''}
                   onChange={(e) => {
                     updateFilters({
                       ageMax: e.target.value ? Number(e.target.value) : undefined,
@@ -173,10 +173,10 @@ export function AdoptionFiltersSheet({
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
-              value={localFilters.location || ''}
+              value={localFilters.location ?? ''}
               onChange={(e) => {
                 updateFilters({
-                  location: e.target.value || undefined,
+                  location: e.target.value ? e.target.value : undefined,
                 });
               }}
               placeholder="City or zip code"
@@ -189,19 +189,20 @@ export function AdoptionFiltersSheet({
               <Label>Max Distance</Label>
               <div className="px-2">
                 <Slider
-                  value={[localFilters.maxDistance || 50]}
-                  onValueChange={([value]) => {
+                  value={localFilters.maxDistance ?? 50}
+                  onValueChange={(value: number) => {
                     updateFilters({
-                      maxDistance: value !== undefined ? value : undefined,
+                      maxDistance: value,
                     });
                   }}
                   min={1}
                   max={100}
                   step={1}
+                  aria-label="Maximum distance in kilometers"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>1 km</span>
-                  <span>{localFilters.maxDistance || 50} km</span>
+                  <span>{localFilters.maxDistance ?? 50} km</span>
                   <span>100 km</span>
                 </div>
               </div>
@@ -296,7 +297,7 @@ export function AdoptionFiltersSheet({
               id="feeMax"
               type="number"
               min="0"
-              value={localFilters.feeMax || ''}
+              value={localFilters.feeMax ?? ''}
               onChange={(e) => {
                 updateFilters({
                   feeMax: e.target.value ? Number(e.target.value) : undefined,
@@ -336,7 +337,7 @@ export function AdoptionFiltersSheet({
           <div className="space-y-3">
             <Label htmlFor="sortBy">Sort By</Label>
             <Select
-              value={localFilters.sortBy || 'recent'}
+              value={localFilters.sortBy ?? 'recent'}
               onValueChange={(value) => {
                 updateFilters({
                   sortBy: value as (typeof SORT_OPTIONS)[number],

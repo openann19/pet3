@@ -1,17 +1,14 @@
 'use client';
 
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { platformHaptics, type PlatformHaptics } from '@/lib/platform-haptics';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  useTransform,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 
 export interface UseNativeSwipeOptions {
   cardWidth: number;
@@ -32,15 +29,24 @@ export interface GestureHandlers {
 }
 
 export interface UseNativeSwipeReturn {
-  translationX: SharedValue<number>;
-  translationY: SharedValue<number>;
-  rotation: SharedValue<number>;
-  opacity: SharedValue<number>;
-  likeOpacity: SharedValue<number>;
-  passOpacity: SharedValue<number>;
-  scale: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
-  badgeStyle: AnimatedStyle;
+  translationX: MotionValue<number>;
+  translationY: MotionValue<number>;
+  rotation: MotionValue<number>;
+  opacity: MotionValue<number>;
+  likeOpacity: MotionValue<number>;
+  passOpacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  animatedStyle: {
+    x: MotionValue<number>;
+    y: MotionValue<number>;
+    rotate: MotionValue<number>;
+    scale: MotionValue<number>;
+    opacity: MotionValue<number>;
+  };
+  badgeStyle: {
+    opacity: MotionValue<number>;
+    scale: MotionValue<number>;
+  };
   gestureHandlers: GestureHandlers;
   reset: () => void;
   commit: (direction: 'left' | 'right') => void;
@@ -65,16 +71,16 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
     reduceMotion = false,
   } = options;
 
-  const haptics = customHaptics || platformHaptics;
+  const haptics = customHaptics ?? platformHaptics;
   const threshold = cardWidth * commitThreshold;
 
-  const translationX = useSharedValue(0);
-  const translationY = useSharedValue(0);
-  const rotation = useSharedValue(0);
-  const opacity = useSharedValue(1);
-  const likeOpacity = useSharedValue(0);
-  const passOpacity = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translationX = useMotionValue(0);
+  const translationY = useMotionValue(0);
+  const rotation = useMotionValue(0);
+  const opacity = useMotionValue(1);
+  const likeOpacity = useMotionValue(0);
+  const passOpacity = useMotionValue(0);
+  const scale = useMotionValue(1);
 
   const isCommittedRef = useRef(false);
   const hasCrossedThresholdRef = useRef(false);
@@ -109,8 +115,8 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
         Math.min(MAX_VERTICAL_DRAG, translationYValue * 0.3)
       );
 
-      translationX.value = clampedX;
-      translationY.value = clampedY;
+      translationX.set(clampedX);
+      translationY.set(clampedY);
 
       const absX = Math.abs(clampedX);
       if (absX > threshold && !hasCrossedThresholdRef.current) {
@@ -135,19 +141,22 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
           ? MAX_ROTATION + 5
           : -(MAX_ROTATION + 5);
 
-      translationX.value = withSpring(exitX, {
+      void animate(translationX, exitX, {
+        type: 'spring',
         damping: 20,
         stiffness: 300,
         mass: 0.9,
       });
 
-      rotation.value = withSpring(exitRotation, {
+      void animate(rotation, exitRotation, {
+        type: 'spring',
         damping: 20,
         stiffness: 300,
         mass: 0.9,
       });
 
-      opacity.value = withSpring(0, {
+      void animate(opacity, 0, {
+        type: 'spring',
         damping: 20,
         stiffness: 300,
         mass: 0.9,
@@ -188,12 +197,12 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
         const direction: 'left' | 'right' = translationXValue > 0 ? 'right' : 'left';
         handleCommit(direction, absVelocityX);
       } else {
-        translationX.value = withSpring(0, springConfigs.smooth);
-        translationY.value = withSpring(0, springConfigs.smooth);
-        rotation.value = withSpring(0, springConfigs.smooth);
-        likeOpacity.value = withSpring(0, springConfigs.smooth);
-        passOpacity.value = withSpring(0, springConfigs.smooth);
-        scale.value = withSpring(1, springConfigs.smooth);
+        void animate(translationX, 0, springConfigs.smooth);
+        void animate(translationY, 0, springConfigs.smooth);
+        void animate(rotation, 0, springConfigs.smooth);
+        void animate(likeOpacity, 0, springConfigs.smooth);
+        void animate(passOpacity, 0, springConfigs.smooth);
+        void animate(scale, 1, springConfigs.smooth);
         hasCrossedThresholdRef.current = false;
       }
     },
@@ -226,13 +235,13 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
   const reset = useCallback(() => {
     isCommittedRef.current = false;
     hasCrossedThresholdRef.current = false;
-    translationX.value = 0;
-    translationY.value = 0;
-    rotation.value = 0;
-    opacity.value = 1;
-    likeOpacity.value = 0;
-    passOpacity.value = 0;
-    scale.value = 1;
+    translationX.set(0);
+    translationY.set(0);
+    rotation.set(0);
+    opacity.set(1);
+    likeOpacity.set(0);
+    passOpacity.set(0);
+    scale.set(1);
   }, [translationX, translationY, rotation, opacity, likeOpacity, passOpacity, scale]);
 
   const commit = useCallback(
@@ -242,51 +251,79 @@ export function useNativeSwipe(options: UseNativeSwipeOptions): UseNativeSwipeRe
     [handleCommit]
   );
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const clampedX = translationX.value;
-    const rotationValue = reduceMotion
-      ? 0
-      : interpolate(
-          clampedX,
-          [-cardWidth, 0, cardWidth],
-          [-MAX_ROTATION, 0, MAX_ROTATION],
-          Extrapolation.CLAMP
-        );
+  // Use useTransform for reactive calculations
+  const rotationValue = useTransform(
+    translationX,
+    [-cardWidth, 0, cardWidth],
+    reduceMotion ? [0, 0, 0] : [-MAX_ROTATION, 0, MAX_ROTATION],
+    { clamp: true }
+  );
 
-    const likeOpacityValue = interpolate(clampedX, [0, threshold], [0, 1], Extrapolation.CLAMP);
+  const likeOpacityValue = useTransform(
+    translationX,
+    [0, threshold],
+    [0, 1],
+    { clamp: true }
+  );
 
-    const passOpacityValue = interpolate(clampedX, [-threshold, 0], [1, 0], Extrapolation.CLAMP);
+  const passOpacityValue = useTransform(
+    translationX,
+    [-threshold, 0],
+    [1, 0],
+    { clamp: true }
+  );
 
-    likeOpacity.value = likeOpacityValue;
-    passOpacity.value = passOpacityValue;
+  const scaleValue = useTransform(
+    translationX,
+    (val) => {
+      const progress = Math.abs(val) / threshold;
+      return Math.max(0.96, Math.min(1, 1 - progress * 0.04));
+    }
+  );
 
-    const progress = Math.abs(clampedX) / threshold;
-    const scaleValue = interpolate(progress, [0, 1], [1, 0.96], Extrapolation.CLAMP);
+  // Sync transformed values to motion values
+  useEffect(() => {
+    const unsubscribeLike = likeOpacityValue.on('change', (val) => {
+      likeOpacity.set(val);
+    });
+    const unsubscribePass = passOpacityValue.on('change', (val) => {
+      passOpacity.set(val);
+    });
+    const unsubscribeScale = scaleValue.on('change', (val) => {
+      scale.set(val);
+    });
 
-    scale.value = scaleValue;
-
-    return {
-      transform: [
-        { translateX: translationX.value },
-        { translateY: translationY.value },
-        { rotate: `${rotationValue}deg` },
-        { scale: scaleValue },
-      ],
-      opacity: opacity.value,
+    return () => {
+      unsubscribeLike();
+      unsubscribePass();
+      unsubscribeScale();
     };
-  }) as AnimatedStyle;
+  }, [likeOpacityValue, passOpacityValue, scaleValue, likeOpacity, passOpacity, scale]);
 
-  const badgeStyle = useAnimatedStyle(() => {
-    const maxOpacity = Math.max(likeOpacity.value, passOpacity.value);
-    return {
-      opacity: maxOpacity,
-      transform: [
-        {
-          scale: interpolate(maxOpacity, [0, 1], [0.8, 1], Extrapolation.CLAMP),
-        },
-      ],
-    };
-  }) as AnimatedStyle;
+  const animatedStyle = {
+    x: translationX,
+    y: translationY,
+    rotate: rotationValue,
+    scale: scaleValue,
+    opacity,
+  };
+
+  const badgeOpacity = useTransform(
+    [likeOpacity, passOpacity],
+    ([like, pass]) => Math.max(like, pass)
+  );
+
+  const badgeScale = useTransform(
+    badgeOpacity,
+    [0, 1],
+    [0.8, 1],
+    { clamp: true }
+  );
+
+  const badgeStyle = {
+    opacity: badgeOpacity,
+    scale: badgeScale,
+  };
 
   return {
     translationX,

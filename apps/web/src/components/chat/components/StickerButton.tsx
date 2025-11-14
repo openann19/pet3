@@ -1,12 +1,12 @@
 /**
-import { motion } from 'framer-motion';
  * Sticker Button Component
  *
  * Interactive sticker button with hover animations
  */
 
+import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useTargetSize } from '@/hooks/use-target-size';
 
@@ -17,6 +17,7 @@ export interface StickerButtonProps {
 
 export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.Element {
   const hover = useHoverAnimation({ scale: 1.2 });
+  const hoverStyle = useAnimatedStyleValue(hover.animatedStyle);
   const containerRef = useRef<HTMLDivElement>(null);
   // Target size validation - ensures 44x44px minimum touch target
   const { ensure } = useTargetSize({ enabled: true, autoFix: true });
@@ -33,7 +34,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
   return (
     <div ref={containerRef}>
       <motion.div
-        style={hover.animatedStyle}
+        style={hoverStyle}
         onMouseEnter={hover.handleMouseEnter}
         onMouseLeave={hover.handleMouseLeave}
         onMouseDown={hover.handleMouseDown}

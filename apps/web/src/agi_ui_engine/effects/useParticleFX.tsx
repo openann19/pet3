@@ -92,11 +92,11 @@ export function useParticleFX(options: UseParticleFXOptions = {}): UseParticleFX
         opacity: withTiming(0, {
           duration,
           easing: Easing.out(Easing.ease),
-        }),
+        }).target,
         scale: withTiming(0, {
           duration,
           easing: Easing.out(Easing.ease),
-        }),
+        }).target,
       }));
 
       setTimeout(() => {

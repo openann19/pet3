@@ -33,7 +33,7 @@ const SegmentBtn = memo(({ label, selected, onPress }: SegmentBtnProps): React.R
       accessibilityState={{ selected }}
       accessibilityLabel={`${label} tab`}
       accessibilityHint={selected ? `Currently viewing ${label}` : `Switch to ${label} view`}
-      style={({ pressed }) => [
+      style={({ pressed }: { pressed: boolean }) => [
         styles.segmentButton,
         selected && styles.segmentButtonActive,
         pressed && styles.segmentButtonPressed,

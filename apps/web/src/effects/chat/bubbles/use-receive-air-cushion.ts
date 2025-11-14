@@ -24,6 +24,7 @@ import { randomRange } from '../core/seeded-rng';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { adaptiveAnimationConfigs } from '../../core/adaptive-animation-config';
 import { useUIConfig } from '@/hooks/use-ui-config';
+import { isTruthy } from '@/core/guards';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 /**

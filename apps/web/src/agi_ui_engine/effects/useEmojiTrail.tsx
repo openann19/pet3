@@ -55,7 +55,7 @@ export function useEmojiTrail(options: UseEmojiTrailOptions = {}): UseEmojiTrail
           duration: 600,
           easing: Easing.in(Easing.ease),
         })
-      );
+      ).target;
     },
     [enabled, animation.showTrails, trailOpacity]
   );
@@ -65,14 +65,13 @@ export function useEmojiTrail(options: UseEmojiTrailOptions = {}): UseEmojiTrail
       return {};
     }
 
+    const opacityVal = typeof trailOpacity.value === 'number' ? trailOpacity.value : trailOpacity.value.target;
     return {
-      opacity: trailOpacity.value,
+      opacity: opacityVal,
       transform: [
         {
-          translateY: -trailOpacity.value * 30,
-        },
-        {
-          scale: 0.5 + trailOpacity.value * 0.5,
+          translateY: -opacityVal * 30,
+          scale: 0.5 + opacityVal * 0.5,
         },
       ],
     };

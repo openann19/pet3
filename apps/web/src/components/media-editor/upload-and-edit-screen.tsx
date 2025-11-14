@@ -4,6 +4,7 @@ import { editMedia } from '@/core/services/media/edit-media';
 import { useUploadPicker } from '@/core/services/media/picker';
 import type { ImageOperation, MediaInput, VideoOperation } from '@/core/types/media-types';
 import { createLogger } from '@/lib/logger';
+import { isTruthy } from '@/core/guards';
 import React, { useCallback, useState } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { DropZoneWeb } from './drop-zone-web';

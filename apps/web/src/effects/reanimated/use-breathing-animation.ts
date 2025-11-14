@@ -4,16 +4,15 @@
  */
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  interpolate,
-  Easing,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseBreathingAnimationOptions {
   minScale?: number;
@@ -23,7 +22,12 @@ export interface UseBreathingAnimationOptions {
   easing?: 'ease' | 'sine' | 'cubic';
 }
 
-export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}) {
+export interface UseBreathingAnimationReturn {
+  animatedStyle: CSSProperties;
+  progress: MotionValue<number>;
+}
+
+export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}): UseBreathingAnimationReturn {
   const {
     minScale = 0.98,
     maxScale = 1.02,
@@ -32,37 +36,38 @@ export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}
     easing = 'sine',
   } = options;
 
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
 
-  const easingFunction = {
-    ease: Easing.inOut(Easing.ease),
-    sine: Easing.inOut(Easing.sin),
-    cubic: Easing.inOut(Easing.cubic),
-  }[easing];
+  const easingMap = {
+    ease: 'easeInOut',
+    sine: [0.445, 0.05, 0.55, 0.95] as [number, number, number, number],
+    cubic: [0.65, 0, 0.35, 1] as [number, number, number, number],
+  };
 
   useEffect(() => {
     if (isTruthy(enabled)) {
-      progress.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration, easing: easingFunction }),
-          withTiming(0, { duration, easing: easingFunction })
-        ),
-        -1,
-        false
-      );
+      void animate(progress, [0, 1, 0], {
+        duration: (duration * 2) / 1000, // Full cycle (0->1->0)
+        ease: easingMap[easing],
+        repeat: Infinity,
+        times: [0, 0.5, 1],
+      });
     } else {
-      progress.value = withTiming(0, { duration: 300 });
+      void animate(progress, 0, {
+        duration: 0.3,
+        ease: 'easeOut',
+      });
     }
-  }, [enabled, duration, easingFunction]);
+  }, [enabled, duration, easing, progress]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const scale = interpolate(progress.value, [0, 0.5, 1], [minScale, maxScale, minScale]);
+  // Use useTransform for interpolation
+  const scale = useTransform(progress, [0, 0.5, 1], [minScale, maxScale, minScale]);
+  const opacity = useTransform(progress, [0, 0.5, 1], [0.95, 1, 0.95]);
 
-    const opacity = interpolate(progress.value, [0, 0.5, 1], [0.95, 1, 0.95]);
-
+  const animatedStyle = useMotionStyle(() => {
     return {
-      transform: [{ scale }],
-      opacity,
+      transform: [{ scale: scale.get() }],
+      opacity: opacity.get(),
     };
   });
 

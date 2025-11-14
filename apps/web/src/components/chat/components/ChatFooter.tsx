@@ -1,10 +1,10 @@
 /**
-import { motion } from 'framer-motion';
  * Chat Footer Component
  *
  * Footer section with input and action buttons
  */
 
+import { motion } from 'framer-motion';
 import { MapPin, Microphone, Smiley, Sparkle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +70,9 @@ export function ChatFooter({
 
   return (
     <motion.div
-      style={animation.animatedStyle}
+      initial="hidden"
+      animate="visible"
+      variants={animation.variants}
       className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl space-y-3"
     >
       <div className="flex items-center gap-2 overflow-x-auto pb-2">

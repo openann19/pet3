@@ -17,7 +17,7 @@ import { calculateCompatibility } from '@/lib/matching';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import MapLibreMap from '@/components/maps/MapLibreMap';
 import type { MapMarker } from '@/lib/maps/useMapLibreMap';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
+import { AnimatedView, useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 
 interface DiscoverMapModeProps {
@@ -39,6 +39,8 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
     enterTransition: 'slideUp',
     exitTransition: 'slideDown',
   });
+
+  const selectedPetStyleValue = useAnimatedStyleValue(selectedPetPresence.animatedStyle as AnimatedStyle);
 
   useEffect(() => {
     getCurrentLocation()
@@ -176,7 +178,7 @@ export default function DiscoverMapMode({ pets, userPet, onSwipe }: DiscoverMapM
 
       {selectedPetPresence.shouldRender && selectedPet && (
         <motion.div
-          style={selectedPetPresence.animatedStyle}
+          style={selectedPetStyleValue as import('framer-motion').MotionStyle}
           className="absolute bottom-0 left-0 right-0 max-h-[70%] bg-background rounded-t-3xl shadow-2xl border-t border-border overflow-y-auto"
         >
           <div className="p-6 space-y-4">

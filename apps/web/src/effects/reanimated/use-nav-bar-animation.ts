@@ -1,30 +1,22 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-  withDelay,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseNavBarAnimationOptions {
   delay?: number;
 }
 
 export interface UseNavBarAnimationReturn {
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  translateY: ReturnType<typeof useSharedValue<number>>;
-  scale: ReturnType<typeof useSharedValue<number>>;
-  navStyle: AnimatedStyle;
-  shimmerTranslateX: ReturnType<typeof useSharedValue<number>>;
-  shimmerOpacity: ReturnType<typeof useSharedValue<number>>;
-  shimmerStyle: AnimatedStyle;
+  opacity: MotionValue<number>;
+  translateY: MotionValue<number>;
+  scale: MotionValue<number>;
+  navStyle: CSSProperties;
+  shimmerTranslateX: MotionValue<number>;
+  shimmerOpacity: MotionValue<number>;
+  shimmerStyle: CSSProperties;
 }
 
 export function useNavBarAnimation(
@@ -32,56 +24,59 @@ export function useNavBarAnimation(
 ): UseNavBarAnimationReturn {
   const { delay = 200 } = options;
 
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(100);
-  const scale = useSharedValue(0.95);
-  const shimmerTranslateX = useSharedValue(-100);
-  const shimmerOpacity = useSharedValue(0);
+  const opacity = useMotionValue(0);
+  const translateY = useMotionValue(100);
+  const scale = useMotionValue(0.95);
+  const shimmerTranslateX = useMotionValue(-100);
+  const shimmerOpacity = useMotionValue(0);
 
   useEffect(() => {
-    const delayMs = delay;
-    opacity.value = withDelay(delayMs, withSpring(1, springConfigs.smooth));
-    translateY.value = withDelay(delayMs, withSpring(0, springConfigs.smooth));
-    scale.value = withDelay(delayMs, withTiming(1, { duration: 300 }));
+    const delayMs = delay / 1000;
+    animate(opacity, 1, {
+      delay: delayMs,
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(translateY, 0, {
+      delay: delayMs,
+      type: 'spring',
+      damping: springConfigs.smooth.damping,
+      stiffness: springConfigs.smooth.stiffness,
+    });
+    animate(scale, 1, {
+      delay: delayMs,
+      duration: 0.3,
+      ease: 'easeOut',
+    });
 
-    shimmerTranslateX.value = withRepeat(
-      withSequence(withTiming(100, { duration: 0 }), withTiming(100, { duration: 4000 })),
-      -1,
-      false
-    );
-    shimmerOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 0 }),
-        withTiming(0.4, { duration: 1000 }),
-        withTiming(0.4, { duration: 2000 }),
-        withTiming(0, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
+    animate(shimmerTranslateX, [-100, 100], {
+      repeat: Infinity,
+      duration: 4,
+      ease: 'linear',
+      times: [0, 1],
+    });
+    animate(shimmerOpacity, [0, 0.4, 0.4, 0], {
+      repeat: Infinity,
+      duration: 4,
+      ease: 'easeInOut',
+      times: [0, 0.25, 0.75, 1],
+    });
   }, [delay, opacity, translateY, scale, shimmerTranslateX, shimmerOpacity]);
-
-  const navStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }, { scale: scale.value }],
-    };
-  }) as AnimatedStyle;
-
-  const shimmerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: `${String(shimmerTranslateX.value ?? '')}%` }],
-      opacity: shimmerOpacity.value,
-    };
-  }) as AnimatedStyle;
 
   return {
     opacity,
     translateY,
     scale,
-    navStyle,
+    navStyle: {
+      opacity: opacity.get(),
+      transform: `translateY(${translateY.get()}px) scale(${scale.get()})`,
+    },
     shimmerTranslateX,
     shimmerOpacity,
-    shimmerStyle,
+    shimmerStyle: {
+      transform: `translateX(${shimmerTranslateX.get()}%)`,
+      opacity: shimmerOpacity.get(),
+    },
   };
 }

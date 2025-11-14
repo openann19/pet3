@@ -53,7 +53,7 @@ export function useMessageShimmer(options: UseMessageShimmerOptions = {}): UseMe
       }),
       -1,
       false
-    );
+    ).target;
   }, [enabled, visual.enableShimmer, shimmerProgress, shimmerWidth, duration]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -61,12 +61,13 @@ export function useMessageShimmer(options: UseMessageShimmerOptions = {}): UseMe
       return {};
     }
 
-    const opacity = Math.abs(shimmerProgress.value / shimmerWidth) * 0.6 + 0.3;
+    const progressVal = typeof shimmerProgress.value === 'number' ? shimmerProgress.value : (typeof shimmerProgress.value.target === 'number' ? shimmerProgress.value.target : 0);
+    const opacity = Math.abs(progressVal / shimmerWidth) * 0.6 + 0.3;
 
     return {
       transform: [
         {
-          translateX: shimmerProgress.value,
+          translateX: progressVal,
         },
       ],
       opacity,

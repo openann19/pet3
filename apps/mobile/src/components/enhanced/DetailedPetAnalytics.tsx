@@ -210,9 +210,10 @@ interface ProgressBarProps {
 
 function ProgressBar({ value, height = 10 }: ProgressBarProps): React.JSX.Element {
   const clamped = Math.max(0, Math.min(100, value))
+  const widthPercent = `${clamped}%` as const
   return (
     <View style={[styles.progressTrack, { height }]}>
-      <View style={[styles.progressFill, { width: `${String(clamped ?? '')}%` }]} />
+      <View style={[styles.progressFill, { width: widthPercent }]} />
     </View>
   )
 }

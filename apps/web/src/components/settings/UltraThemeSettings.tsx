@@ -1,9 +1,9 @@
 /**
-import { motion } from 'framer-motion';
  * Ultra Theme Settings Panel
  * Comprehensive theme customization with live preview and animations
  */
 
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { themePresets, type ThemePreset } from '@/lib/theme-presets';

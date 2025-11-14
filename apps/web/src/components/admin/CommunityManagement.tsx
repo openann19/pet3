@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useStorage } from '@/hooks/use-storage';
@@ -67,7 +67,7 @@ function PostItem({ post, isHidden, onHide, onUnhide, onDelete }: PostItemProps)
   }
 
   return (
-    <motion.div style={animatedStyle} className="relative">
+    <motion.div style={animatedStyle as MotionStyle} className="relative">
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         {isHidden ? (
           <Button size="sm" variant="secondary" onClick={() => onUnhide(postId)}>

@@ -13,7 +13,7 @@ import { PremiumErrorState } from './enhanced/states/PremiumErrorState'
 
 interface ScreenErrorBoundaryProps {
   children: ReactNode
-  screenName?: string
+  screenName?: string | undefined
 }
 
 function ScreenErrorBoundary({ children, screenName = 'Screen' }: ScreenErrorBoundaryProps): React.JSX.Element {
@@ -41,7 +41,7 @@ export function withScreenErrorBoundary<P extends object>(
 ): ComponentType<P> {
   const WrappedComponent = (props: P): React.JSX.Element => {
     return (
-      <ScreenErrorBoundary screenName={screenName}>
+      <ScreenErrorBoundary screenName={screenName ?? undefined}>
         <Component {...props} />
       </ScreenErrorBoundary>
     )

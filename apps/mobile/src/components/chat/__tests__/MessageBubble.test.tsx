@@ -56,8 +56,8 @@ describe('MessageBubble', () => {
   })
 
   it('should handle reply callback', () => {
-    const onReply = vi.fn()
-    render(<MessageBubble message={mockMessage} currentUserId="user1" onReply={onReply} />)
+    const onLongPress = vi.fn()
+    render(<MessageBubble message={mockMessage} currentUserId="user1" onLongPress={onLongPress} />)
 
     // Simulate swipe-to-reply
     expect(screen.getByText('Test message')).toBeTruthy()

@@ -60,7 +60,7 @@ export function useAdaptiveBubbleShape(
   const radiusValue = useSharedValue(16);
 
   if (enabled && theme.adaptiveMood) {
-    radiusValue.value = withSpring(borderRadius, springConfigs.smooth);
+    radiusValue.value = withSpring(borderRadius, springConfigs.smooth).target;
   }
 
   const animatedStyle = useAnimatedStyle(() => {

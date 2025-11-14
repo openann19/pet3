@@ -94,7 +94,7 @@ export function OptimizedImage({
         onError={handleError}
         accessible={true}
         accessibilityRole="image"
-        accessibilityLabel={accessibilityLabel}
+        {...(accessibilityLabel !== undefined ? { accessibilityLabel } : {})}
       />
     </View>
   )

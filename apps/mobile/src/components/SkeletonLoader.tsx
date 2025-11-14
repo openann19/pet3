@@ -36,13 +36,13 @@ export function SkeletonLoader({
   React.useEffect(() => {
     if (variant === 'shimmer') {
       shimmer.value = withRepeat(
-        withTiming(1, { duration: motion.durations.standard }),
+        withTiming(1, { duration: 300 }),
         -1,
         false
       )
     } else {
       shimmer.value = withRepeat(
-        withTiming(1, { duration: motion.durations.enterExit }),
+        withTiming(1, { duration: 300 }),
         -1,
         true
       )
@@ -57,7 +57,7 @@ export function SkeletonLoader({
       }
     }
     // Shimmer effect
-    const translateX = interpolate(shimmer.value, [0, 1], [-width ?? 200, width ?? 200])
+    const translateX = interpolate(shimmer.value, [0, 1], [-(width ?? 200), width ?? 200])
     return {
       transform: [{ translateX }],
     }

@@ -17,6 +17,7 @@ import {
   withTiming,
   type SharedValue,
 } from '@petspark/motion';
+import { isTruthy } from '@/core/guards';
 import { createLogger } from '@/lib/logger';
 import { getReducedMotionDuration, useReducedMotionSV } from '../core/reduced-motion';
 import { logEffectEnd, logEffectStart } from '../core/telemetry';

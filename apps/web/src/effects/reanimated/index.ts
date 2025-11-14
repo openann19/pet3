@@ -108,8 +108,10 @@ export type { UseConfettiBurstOptions, ConfettiParticle } from './use-confetti-b
 export { useMotionDiv, useInteractiveMotion, useRepeatingAnimation } from './use-motion-migration';
 export { useMotionVariants } from './use-motion-variants';
 export { useAnimatePresence } from './use-animate-presence';
+export { useEntryAnimation } from './use-entry-animation';
 export { useLayoutAnimation } from './use-layout-animation';
 export { useDragGesture } from './use-drag-gesture';
+export { useMotionStyle } from './use-motion-style';
 export type {
   UseMotionVariantsOptions,
   UseMotionVariantsReturn,
@@ -117,8 +119,45 @@ export type {
   Variants,
 } from './use-motion-variants';
 export type { UseAnimatePresenceOptions, UseAnimatePresenceReturn } from './use-animate-presence';
+export type { UseEntryAnimationOptions, UseEntryAnimationReturn } from './use-entry-animation';
 export type { UseLayoutAnimationOptions, UseLayoutAnimationReturn } from './use-layout-animation';
 export type { UseDragGestureOptions, UseDragGestureReturn } from './use-drag-gesture';
 
-// Re-export commonly used primitives to simplify imports across app code
-export { useSharedValue, useAnimatedStyle } from '@petspark/motion';
+// Value utilities
+export { extractNumberValue, isTransitionObject } from './value-utils';
+
+// Migration Status:
+// ✅ Migrated to pure Framer Motion:
+//   - use-hover-tap.ts
+//   - use-icon-rotation.ts
+//   - use-rotation.ts
+//   - use-expand-collapse.ts
+//   - use-elastic-scale.ts
+//   - use-shimmer-sweep.ts
+//   - use-bubble-tilt.ts
+//   - use-sticker-animation.ts
+//   - use-floating-particle.ts
+//   - use-ripple-effect.ts
+//   - use-nav-bar-animation.ts
+//   - use-pull-to-refresh.ts
+//   - use-swipe-reply.ts
+//   - use-animate-presence.ts
+//   - use-entry-animation.ts
+//   - use-layout-animation.ts
+//   - use-drag-gesture.ts
+//   - use-shimmer.ts
+//   - use-delete-bubble-animation.ts (in hooks/)
+//   - use-native-swipe.ts (in hooks/)
+//
+// ✅ Components migrated:
+//   - MessageBubble.tsx (partial - delete animation uses motion values)
+//   - SmartSkeleton.tsx (uses motion values directly)
+//   - DiscoverCardStackPage.tsx (uses motion values directly)
+//
+// ⚠️ Still using compatibility layer (need migration):
+//   - Some hooks in this directory may still use @petspark/motion compatibility APIs
+//   - Components should migrate to use motion.div with style props directly
+//
+// Note: useSharedValue and useAnimatedStyle are no longer exported
+// Use framer-motion's useMotionValue, animate, and motion components directly
+// For value utilities, import from framer-motion or use the hooks provided here

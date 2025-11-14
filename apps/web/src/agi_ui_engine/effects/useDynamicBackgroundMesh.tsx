@@ -53,7 +53,7 @@ export function useDynamicBackgroundMesh(
       }),
       -1,
       false
-    );
+    ).target;
   }, [enabled, theme.dynamicBackground, meshProgress, speed]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -61,12 +61,13 @@ export function useDynamicBackgroundMesh(
       return {} as Record<string, unknown>;
     }
 
-    const angle = meshProgress.value * 360;
+    const progressVal = typeof meshProgress.value === 'number' ? meshProgress.value : meshProgress.value.target;
+    const angle = progressVal * 360;
 
     return {
       background: `linear-gradient(${angle}deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))`,
       backgroundSize: '200% 200%',
-      backgroundPosition: `${meshProgress.value * 100}% ${meshProgress.value * 100}%`,
+      backgroundPosition: `${progressVal * 100}% ${progressVal * 100}%`,
     };
   }) as AnimatedStyle;
 

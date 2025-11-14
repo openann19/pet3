@@ -166,7 +166,7 @@ export function SplitButton({
                 key={index}
                 onPress={() => { handleSecondaryAction(action); }}
                 disabled={action.disabled}
-                style={({ pressed }) => [
+                style={({ pressed }: { pressed: boolean }) => [
                   styles.menuItem,
                   pressed && styles.menuItemPressed,
                   action.disabled && styles.menuItemDisabled,

@@ -317,6 +317,7 @@ describe('DiscoverView', () => {
         open: mockOpen,
         close: vi.fn(),
         toggle: vi.fn(),
+        setOpen: vi.fn(),
       }));
 
       render(<DiscoverView />);

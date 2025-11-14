@@ -247,7 +247,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
         )}
 
         <div className="absolute inset-0 pointer-events-none">
-          <Presence>
+          <Presence visible={floatingReactions.length > 0}>
             {floatingReactions.map((reaction) => (
               <MotionView
                 key={reaction.id}
@@ -296,7 +296,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
         </div>
       )}
 
-      <Presence>
+      <Presence visible={showChat && stream.allowChat}>
         {showChat && stream.allowChat && (
           <MotionView
             initial={{ x: '100%' }}

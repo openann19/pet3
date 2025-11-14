@@ -1,14 +1,12 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseShimmerSweepOptions {
   duration?: number;
@@ -17,45 +15,44 @@ export interface UseShimmerSweepOptions {
 }
 
 export interface UseShimmerSweepReturn {
-  x: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  x: MotionValue<number>;
+  opacity: MotionValue<number>;
+  style: CSSProperties;
 }
 
 export function useShimmerSweep(options: UseShimmerSweepOptions = {}): UseShimmerSweepReturn {
   const { duration = 3000, delay = 0, opacityRange = [0, 0.5] } = options;
 
-  const x = useSharedValue(-100);
-  const opacity = useSharedValue(0);
+  const x = useMotionValue(-100);
+  const opacity = useMotionValue(0);
 
   useEffect(() => {
-    x.value = withRepeat(
-      withSequence(withTiming(-100, { duration: 0 }), withTiming(100, { duration })),
-      -1,
-      false
-    );
+    // Animate x from -100% to 100% repeatedly
+    void animate(x, [-100, 100], {
+      duration: duration / 1000,
+      ease: 'linear',
+      repeat: Infinity,
+      times: [0, 1],
+    });
 
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(opacityRange[0], { duration: delay }),
-        withTiming(opacityRange[1], { duration: duration * 0.5 }),
-        withTiming(opacityRange[0], { duration: duration * 0.5 })
-      ),
-      -1,
-      false
-    );
+    // Animate opacity with delay
+    void animate(opacity, [opacityRange[0], opacityRange[1], opacityRange[0]], {
+      duration: duration / 1000,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      delay: delay / 1000,
+      times: [0, 0.5, 1],
+    });
   }, [duration, delay, opacityRange, x, opacity]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: `${x.value}%` }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
+  const style: CSSProperties = {
+    transform: `translateX(${x.get()}%)`,
+    opacity: opacity.get(),
+  };
 
   return {
     x,
     opacity,
-    style: animatedStyle,
+    style,
   };
 }

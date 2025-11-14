@@ -20,6 +20,7 @@ import { TemplatePanel } from './TemplatePanel'
 import type { ChatMessage, MessageTemplate, SmartSuggestion } from '@/lib/chat-types'
 import { CHAT_STICKERS } from '@/lib/chat-utils'
 import { REACTION_EMOJIS } from '@/lib/chat-types'
+import { isTruthy } from '@petspark/shared'
 
 export interface ChatInputBarProps {
   inputValue: string
@@ -63,7 +64,7 @@ export function ChatInputBar({
   const inputRef = externalInputRef ?? internalInputRef
   const [stickerTab, setStickerTab] = useState<'stickers' | 'reactions'>('stickers')
   const [, setIsTyping] = useState(false)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const sendButtonScale = useSharedValue(1)
   const sendButtonOpacity = useSharedValue(inputValue.trim() ? 1 : 0.5)
@@ -87,7 +88,7 @@ export function ChatInputBar({
       onSend(inputValue.trim(), 'text')
       setInputValue('')
       setIsTyping(false)
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current !== null) {
         clearTimeout(typingTimeoutRef.current)
         typingTimeoutRef.current = null
       }
@@ -99,8 +100,9 @@ export function ChatInputBar({
       setInputValue(text)
       setIsTyping(true)
 
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current !== null) {
         clearTimeout(typingTimeoutRef.current)
+        typingTimeoutRef.current = null
       }
 
       typingTimeoutRef.current = setTimeout(() => {
@@ -113,8 +115,9 @@ export function ChatInputBar({
 
   useEffect(() => {
     return () => {
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current !== null) {
         clearTimeout(typingTimeoutRef.current)
+        typingTimeoutRef.current = null
       }
     }
   }, [])
@@ -218,7 +221,7 @@ export function ChatInputBar({
             </Pressable>
 
             <GestureDetector gesture={sendButtonGesture}>
-              <Animated.View style={[styles.sendButtonContainer, sendButtonAnimatedStyle]}>
+              <Animated.View style={[styles.sendButtonContainer, sendButtonAnimatedStyle] as any}>
                 <Pressable
                   disabled={!inputValue.trim()}
                   accessibilityRole="button"

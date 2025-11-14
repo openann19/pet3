@@ -4,13 +4,15 @@
  */
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withDecay,
-  cancelAnimation,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  stop,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback, useState, useRef } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseKineticScrollOptions {
   damping?: number;
@@ -18,24 +20,38 @@ export interface UseKineticScrollOptions {
   clamp?: [number, number];
 }
 
-export function useKineticScroll(options: UseKineticScrollOptions = {}) {
+export interface UseKineticScrollReturn {
+  animatedStyle: CSSProperties;
+  handleDragStart: (event: React.MouseEvent | React.TouchEvent) => void;
+  handleDragMove: (event: React.MouseEvent | React.TouchEvent) => void;
+  handleDragEnd: () => void;
+  isDragging: boolean;
+  offset: number;
+  reset: () => void;
+}
+
+export function useKineticScroll(options: UseKineticScrollOptions = {}): UseKineticScrollReturn {
   const { damping = 0.998, velocityMultiplier = 1, clamp } = options;
 
-  const offset = useSharedValue(0);
-  const velocity = useSharedValue(0);
+  const offset = useMotionValue(0);
+  const velocity = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
   const lastPosition = useRef(0);
   const lastTime = useRef(0);
+  const animationRef = useRef<ReturnType<typeof animate> | null>(null);
 
   const handleDragStart = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    cancelAnimation(offset);
+    if (animationRef.current) {
+      stop(animationRef.current);
+      animationRef.current = null;
+    }
     setIsDragging(true);
 
     const clientY = 'touches' in event ? (event.touches[0]?.clientY ?? 0) : event.clientY;
     lastPosition.current = clientY;
     lastTime.current = Date.now();
-    velocity.value = 0;
-  }, []);
+    velocity.set(0);
+  }, [velocity]);
 
   const handleDragMove = useCallback(
     (event: React.MouseEvent | React.TouchEvent) => {
@@ -47,47 +63,56 @@ export function useKineticScroll(options: UseKineticScrollOptions = {}) {
       const deltaTime = currentTime - lastTime.current;
 
       if (deltaTime > 0) {
-        velocity.value = (deltaY / deltaTime) * velocityMultiplier;
+        velocity.set((deltaY / deltaTime) * velocityMultiplier);
       }
 
-      offset.value += deltaY;
-
-      if (isTruthy(clamp)) {
-        offset.value = Math.max(clamp[0], Math.min(clamp[1], offset.value));
-      }
+      const newOffset = offset.get() + deltaY;
+      const clampedOffset = isTruthy(clamp)
+        ? Math.max(clamp[0], Math.min(clamp[1], newOffset))
+        : newOffset;
+      offset.set(clampedOffset);
 
       lastPosition.current = clientY;
       lastTime.current = currentTime;
     },
-    [isDragging, velocityMultiplier, clamp]
+    [isDragging, velocityMultiplier, clamp, offset, velocity]
   );
 
   const handleDragEnd = useCallback(() => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    const decayConfig =
-      clamp !== undefined
-        ? {
-            velocity: velocity.value,
-            deceleration: damping,
-            rubberBandEffect: true as const,
-            clamp,
-          }
-        : { velocity: velocity.value, deceleration: damping };
+    const currentVelocity = velocity.get();
+    const currentOffset = offset.get();
 
-    offset.value = withDecay(decayConfig);
-  }, [isDragging, damping, clamp, velocity]);
+    // Simulate decay animation
+    if (currentVelocity !== 0) {
+      const targetOffset = currentOffset + currentVelocity * 10; // Approximate decay
+      const clampedTarget = isTruthy(clamp)
+        ? Math.max(clamp[0], Math.min(clamp[1], targetOffset))
+        : targetOffset;
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: offset.value }],
+      animationRef.current = animate(offset, clampedTarget, {
+        type: 'spring',
+        damping: 1 - damping, // Convert damping to spring damping
+        stiffness: 50,
+        velocity: currentVelocity * 0.01,
+      });
+    }
+  }, [isDragging, damping, clamp, velocity, offset]);
+
+  const animatedStyle = useMotionStyle(() => ({
+    transform: [{ translateY: offset.get() }],
   }));
 
   const reset = useCallback(() => {
-    cancelAnimation(offset);
-    offset.value = 0;
-    velocity.value = 0;
-  }, []);
+    if (animationRef.current) {
+      stop(animationRef.current);
+      animationRef.current = null;
+    }
+    offset.set(0);
+    velocity.set(0);
+  }, [offset, velocity]);
 
   return {
     animatedStyle,
@@ -95,7 +120,7 @@ export function useKineticScroll(options: UseKineticScrollOptions = {}) {
     handleDragMove,
     handleDragEnd,
     isDragging,
-    offset: offset.value,
+    offset: offset.get(),
     reset,
   };
 }

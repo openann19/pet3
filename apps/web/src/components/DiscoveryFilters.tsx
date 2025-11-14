@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { useStorage } from '@/hooks/use-storage';
 import {
   Funnel,
@@ -14,9 +14,7 @@ import {
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { motion, useMotionValue, animate } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
-import { motionDurations } from '@/effects/framer-motion/variants';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -392,11 +390,12 @@ export default function DiscoveryFilters() {
                         </span>
                       </div>
                       <Slider
-                        value={[minAge]}
-                        onValueChange={(value) => setMinAge(value[0] ?? 0)}
+                        value={minAge}
+                        onValueChange={(value) => setMinAge(value)}
                         max={15}
                         step={1}
                         className="w-full"
+                        aria-label="Minimum age in years"
                       />
                     </div>
                     <div>
@@ -405,8 +404,9 @@ export default function DiscoveryFilters() {
                         <span className="text-sm font-medium">{maxAge} years</span>
                       </div>
                       <Slider
-                        value={[maxAge]}
-                        onValueChange={(value) => setMaxAge(value[0] ?? 0)}
+                        value={maxAge}
+                        onValueChange={(value) => setMaxAge(value)}
+                        aria-label="Maximum age in years"
                         max={15}
                         step={1}
                         className="w-full"
@@ -443,12 +443,13 @@ export default function DiscoveryFilters() {
                     <span className="text-sm font-medium">{maxDistance} miles</span>
                   </div>
                   <Slider
-                    value={[maxDistance]}
-                    onValueChange={(value) => setMaxDistance(value[0] ?? 0)}
+                    value={maxDistance}
+                    onValueChange={(value) => setMaxDistance(value)}
                     min={5}
                     max={100}
                     step={5}
                     className="w-full"
+                    aria-label="Maximum distance in miles"
                   />
                 </div>
 
@@ -559,12 +560,13 @@ export default function DiscoveryFilters() {
                     <span className="text-sm font-medium">{minCompatibility}%</span>
                   </div>
                   <Slider
-                    value={[minCompatibility]}
-                    onValueChange={(value) => setMinCompatibility(value[0] ?? 0)}
+                    value={minCompatibility}
+                    onValueChange={(value) => setMinCompatibility(value)}
                     min={0}
                     max={90}
                     step={10}
                     className="w-full"
+                    aria-label="Minimum compatibility score percentage"
                   />
                 </div>
               </div>
@@ -700,8 +702,9 @@ export default function DiscoveryFilters() {
                     </span>
                   </div>
                   <Slider
-                    value={[minPhotos]}
-                    onValueChange={(value) => setMinPhotos(value[0] ?? 0)}
+                    value={minPhotos}
+                    onValueChange={(value) => setMinPhotos(value)}
+                    aria-label="Minimum number of photos"
                     min={1}
                     max={10}
                     step={1}

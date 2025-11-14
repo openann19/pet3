@@ -650,6 +650,292 @@ export function createStaggerItemVariants(
 }
 
 /**
+ * Alert variants
+ */
+export const alertVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      ...springConfigs.smooth,
+      duration: motionDurations.normal,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: {
+      duration: motionDurations.fast,
+      ease: easing.accelerate,
+    },
+  },
+};
+
+/**
+ * Accordion content variants
+ */
+export const accordionContentVariants: Variants = {
+  closed: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      height: {
+        duration: motionDurations.normal,
+        ease: easing.standard,
+      },
+      opacity: {
+        duration: motionDurations.fast,
+        ease: easing.accelerate,
+      },
+    },
+  },
+  open: {
+    height: 'auto',
+    opacity: 1,
+    transition: {
+      height: {
+        duration: motionDurations.smooth,
+        ease: easing.decelerate,
+      },
+      opacity: {
+        duration: motionDurations.normal,
+        ease: easing.standard,
+      },
+    },
+  },
+};
+
+/**
+ * Accordion icon variants
+ */
+export const accordionIconVariants: Variants = {
+  closed: {
+    rotate: 0,
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.standard,
+    },
+  },
+  open: {
+    rotate: 180,
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.standard,
+    },
+  },
+};
+
+/**
+ * Sheet overlay variants
+ */
+export const sheetOverlayVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    backdropFilter: 'blur(0px)',
+  },
+  visible: {
+    opacity: 1,
+    backdropFilter: 'blur(8px)',
+    transition: {
+      duration: motionDurations.smooth,
+      ease: easing.standard,
+    },
+  },
+  exit: {
+    opacity: 0,
+    backdropFilter: 'blur(0px)',
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.accelerate,
+    },
+  },
+};
+
+/**
+ * Sheet content variants (slide from sides)
+ */
+export function createSheetContentVariants(side: 'top' | 'right' | 'bottom' | 'left'): Variants {
+  const slideProps = {
+    top: { y: '-100%' },
+    right: { x: '100%' },
+    bottom: { y: '100%' },
+    left: { x: '-100%' },
+  }[side];
+
+  return {
+    hidden: {
+      ...slideProps,
+      opacity: 0,
+    },
+    visible: {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      transition: {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+      },
+    },
+    exit: {
+      ...slideProps,
+      opacity: 0,
+      transition: {
+        duration: motionDurations.normal,
+        ease: easing.accelerate,
+      },
+    },
+  };
+}
+
+/**
+ * Select content variants (fade + zoom + slide)
+ */
+export function createSelectContentVariants(side: 'top' | 'right' | 'bottom' | 'left'): Variants {
+  const slideProps = {
+    top: { y: -8 },
+    right: { x: 8 },
+    bottom: { y: 8 },
+    left: { x: -8 },
+  }[side];
+
+  return {
+    hidden: {
+      opacity: 0,
+      scale: 0.95,
+      ...slideProps,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      x: 0,
+      y: 0,
+      transition: {
+        ...springConfigs.smooth,
+        duration: motionDurations.normal,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      ...slideProps,
+      transition: {
+        duration: motionDurations.fast,
+        ease: easing.accelerate,
+      },
+    },
+  };
+}
+
+/**
+ * Select icon (chevron) rotation variants
+ */
+export const selectIconVariants: Variants = {
+  closed: {
+    rotate: 0,
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.standard,
+    },
+  },
+  open: {
+    rotate: 180,
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.standard,
+    },
+  },
+};
+
+/**
+ * Navigation menu icon (chevron) rotation variants
+ */
+export const navMenuIconVariants: Variants = {
+  closed: {
+    rotate: 0,
+    transition: {
+      duration: motionDurations.smooth,
+      ease: easing.standard,
+    },
+  },
+  open: {
+    rotate: 180,
+    transition: {
+      duration: motionDurations.smooth,
+      ease: easing.standard,
+    },
+  },
+};
+
+/**
+ * Navigation menu content variants (fade + zoom + slide)
+ */
+export function createNavMenuContentVariants(direction: 'from-start' | 'from-end'): Variants {
+  const slideProps = {
+    'from-start': { x: -208 }, // -52 * 4 (52rem = 208px)
+    'from-end': { x: 208 },
+  }[direction];
+
+  return {
+    hidden: {
+      opacity: 0,
+      scale: 0.95,
+      ...slideProps,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      x: 0,
+      transition: {
+        ...springConfigs.smooth,
+        duration: motionDurations.smooth,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      ...slideProps,
+      transition: {
+        duration: motionDurations.normal,
+        ease: easing.accelerate,
+      },
+    },
+  };
+}
+
+/**
+ * Navigation menu viewport variants (zoom + fade)
+ */
+export const navMenuViewportVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.95,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      ...springConfigs.smooth,
+      duration: motionDurations.smooth,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    transition: {
+      duration: motionDurations.normal,
+      ease: easing.accelerate,
+    },
+  },
+};
+
+/**
  * Helper function to get variants based on reduced motion preference
  */
 export function getVariantsWithReducedMotion<T extends Variants>(

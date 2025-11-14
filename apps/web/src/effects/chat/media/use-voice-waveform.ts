@@ -11,16 +11,15 @@
 
 import { useEffect, useRef } from 'react';
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  type SharedValue,
-} from '@petspark/motion';
-import { useReducedMotionSV } from '../core/reduced-motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { adaptiveAnimationConfigs } from '../../core/adaptive-animation-config';
 import { useUIConfig } from '@/hooks/use-ui-config';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 /**
  * Voice waveform effect options
@@ -40,9 +39,9 @@ export interface UseVoiceWaveformOptions {
  * Voice waveform effect return type
  */
 export interface UseVoiceWaveformReturn {
-  playheadProgress: SharedValue<number>;
-  waveformOpacity: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
+  playheadProgress: MotionValue<number>;
+  waveformOpacity: MotionValue<number>;
+  animatedStyle: CSSProperties;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   drawWaveform: () => void;
 }
@@ -64,32 +63,36 @@ export function useVoiceWaveform(options: UseVoiceWaveformOptions = {}): UseVoic
     color = DEFAULT_COLOR,
   } = options;
 
-  const reducedMotion = useReducedMotionSV();
+  const prefersReducedMotion = useReducedMotion();
   const { hz } = useDeviceRefreshRate();
   const { visual, animation } = useUIConfig();
-  const playheadProgress = useSharedValue(0);
-  const waveformOpacity = useSharedValue(1);
+  const playheadProgress = useMotionValue(0);
+  const waveformOpacity = useMotionValue(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Update playhead progress
   useEffect(() => {
     if (enabled && duration > 0) {
       const progress = currentTime / duration;
-      if (reducedMotion.value) {
-        playheadProgress.value = progress;
+      if (prefersReducedMotion) {
+        playheadProgress.set(progress);
       } else {
-      // Use UI config spring physics or fallback to adaptive config
-      const springConfig = animation.enableReanimated && animation.springPhysics
-        ? {
-            stiffness: animation.springPhysics.stiffness,
-            damping: animation.springPhysics.damping,
-            mass: animation.springPhysics.mass,
-          }
-        : adaptiveAnimationConfigs.smoothEntry(hz as 60 | 120);
-      playheadProgress.value = withSpring(progress, springConfig);
+        // Use UI config spring physics or fallback to adaptive config
+        const springConfig = animation.enableReanimated && animation.springPhysics
+          ? {
+              type: 'spring' as const,
+              stiffness: animation.springPhysics.stiffness,
+              damping: animation.springPhysics.damping,
+              mass: animation.springPhysics.mass,
+            }
+          : {
+              type: 'spring' as const,
+              ...adaptiveAnimationConfigs.smoothEntry(hz as 60 | 120),
+            };
+        void animate(playheadProgress, progress, springConfig);
       }
     }
-  }, [enabled, currentTime, duration, reducedMotion, hz, animation, playheadProgress]);
+  }, [enabled, currentTime, duration, prefersReducedMotion, hz, animation, playheadProgress]);
 
   // Draw waveform on canvas
   const drawWaveform = () => {
@@ -148,11 +151,11 @@ export function useVoiceWaveform(options: UseVoiceWaveformOptions = {}): UseVoic
     drawWaveform();
   }, [waveform, width, height, color, enabled, visual]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: waveformOpacity.value,
-    };
-  }) as AnimatedStyle;
+  // Return animated style - components should use waveformOpacity MotionValue directly
+  // This is kept for backward compatibility
+  const animatedStyle: CSSProperties = {
+    opacity: waveformOpacity.get(),
+  };
 
   return {
     playheadProgress,

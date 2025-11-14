@@ -1,3 +1,4 @@
+import { isTruthy } from '@/core/guards';
 import type { PetProfile, OwnerPreferences } from './pet-model';
 import type { MatchingWeights, HardGatesConfig } from './matching-config';
 import { getSizeCompatibilityMatrix } from './matching-config';

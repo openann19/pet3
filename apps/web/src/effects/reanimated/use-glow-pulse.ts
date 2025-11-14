@@ -1,14 +1,8 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-  interpolate,
-} from '@petspark/motion';
+import { useMotionValue, animate, useTransform, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
+import type { CSSProperties } from 'react';
 
 export interface UseGlowPulseOptions {
   duration?: number;
@@ -18,7 +12,9 @@ export interface UseGlowPulseOptions {
 }
 
 export interface UseGlowPulseReturn {
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  animatedStyle: { boxShadow: string };
+  shadowOpacity: MotionValue<number>;
+  shadowRadius: MotionValue<number>;
   start: () => void;
   stop: () => void;
 }
@@ -35,37 +31,27 @@ export function useGlowPulse(options: UseGlowPulseOptions = {}): UseGlowPulseRet
     color = DEFAULT_COLOR,
   } = options;
 
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const shadowOpacity = interpolate(
-      progress.value,
-      [0, 0.5, 1],
-      [0.3 * intensity, 0.6 * intensity, 0.3 * intensity]
-    );
+  const shadowOpacity = useTransform(progress, [0, 0.5, 1], [
+    0.3 * intensity,
+    0.6 * intensity,
+    0.3 * intensity,
+  ]);
 
-    return {
-      shadowColor: color,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity,
-      shadowRadius: interpolate(progress.value, [0, 0.5, 1], [10, 20, 10]),
-      elevation: interpolate(progress.value, [0, 0.5, 1], [5, 10, 5]),
-    };
-  });
+  const shadowRadius = useTransform(progress, [0, 0.5, 1], [10, 20, 10]);
 
   const start = () => {
-    progress.value = withRepeat(
-      withTiming(1, {
-        duration,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      -1,
-      true
-    );
+    animate(progress, [0, 1], {
+      duration: duration / 1000,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      repeatType: 'reverse',
+    });
   };
 
   const stop = () => {
-    progress.value = 0;
+    progress.set(0);
   };
 
   useEffect(() => {
@@ -74,10 +60,14 @@ export function useGlowPulse(options: UseGlowPulseOptions = {}): UseGlowPulseRet
     } else {
       stop();
     }
-  }, [enabled]);
+  }, [enabled, progress]);
 
   return {
-    animatedStyle,
+    animatedStyle: {
+      boxShadow: `0 0 ${shadowRadius.get()}px ${color}`,
+    },
+    shadowOpacity,
+    shadowRadius,
     start,
     stop,
   };

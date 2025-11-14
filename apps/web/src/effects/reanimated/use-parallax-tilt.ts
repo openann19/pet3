@@ -1,13 +1,8 @@
 'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  type SharedValue,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useCallback } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface UseParallaxTiltOptions {
   maxTilt?: number;
@@ -18,9 +13,9 @@ export interface UseParallaxTiltOptions {
 }
 
 export interface UseParallaxTiltReturn {
-  rotateX: SharedValue<number>;
-  rotateY: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  rotateX: MotionValue<number>;
+  rotateY: MotionValue<number>;
+  perspective: number;
   handleMove: (x: number, y: number, width: number, height: number) => void;
   handleLeave: () => void;
 }
@@ -39,28 +34,13 @@ export function useParallaxTilt(options: UseParallaxTiltOptions = {}): UseParall
     perspective = DEFAULT_PERSPECTIVE,
   } = options;
 
-  const rotateX = useSharedValue(0);
-  const rotateY = useSharedValue(0);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    if (!enabled) {
-      return {
-        transform: [{ perspective }, { rotateX: '0deg' }, { rotateY: '0deg' }],
-      };
-    }
-
-    return {
-      transform: [
-        { perspective },
-        { rotateX: `${rotateX.value}deg` },
-        { rotateY: `${rotateY.value}deg` },
-      ],
-    };
-  });
+  const prefersReducedMotion = useReducedMotion();
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
 
   const handleMove = useCallback(
     (x: number, y: number, width: number, height: number) => {
-      if (!enabled) return;
+      if (!enabled || prefersReducedMotion) return;
 
       const centerX = width / 2;
       const centerY = height / 2;
@@ -68,26 +48,45 @@ export function useParallaxTilt(options: UseParallaxTiltOptions = {}): UseParall
       const deltaX = x - centerX;
       const deltaY = y - centerY;
 
-      const tiltX = interpolate(deltaY, [-height / 2, height / 2], [maxTilt, -maxTilt]);
+      // Interpolate using useTransform-like logic
+      const normalizedY = Math.max(-1, Math.min(1, deltaY / (height / 2)));
+      const normalizedX = Math.max(-1, Math.min(1, deltaX / (width / 2)));
 
-      const tiltY = interpolate(deltaX, [-width / 2, width / 2], [-maxTilt, maxTilt]);
+      const tiltX = -normalizedY * maxTilt;
+      const tiltY = normalizedX * maxTilt;
 
-      rotateX.value = withSpring(tiltX, { damping, stiffness });
-      rotateY.value = withSpring(tiltY, { damping, stiffness });
+      animate(rotateX, tiltX, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
+      animate(rotateY, tiltY, {
+        type: 'spring',
+        damping,
+        stiffness,
+      });
     },
-    [enabled, maxTilt, damping, stiffness, rotateX, rotateY]
+    [enabled, maxTilt, damping, stiffness, rotateX, rotateY, prefersReducedMotion]
   );
 
   const handleLeave = useCallback(() => {
     if (!enabled) return;
-    rotateX.value = withSpring(0, { damping, stiffness });
-    rotateY.value = withSpring(0, { damping, stiffness });
+    animate(rotateX, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
+    animate(rotateY, 0, {
+      type: 'spring',
+      damping,
+      stiffness,
+    });
   }, [enabled, damping, stiffness, rotateX, rotateY]);
 
   return {
     rotateX,
     rotateY,
-    animatedStyle,
+    perspective,
     handleMove,
     handleLeave,
   };

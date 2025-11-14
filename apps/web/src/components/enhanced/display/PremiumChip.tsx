@@ -96,10 +96,10 @@ export function PremiumChip({
           exit="exit"
           layout
         >
-          <div
+          <motion.div
             onClick={handleClick}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-full border font-medium transition-all duration-200',
+              'inline-flex items-center gap-1.5 rounded-full border font-medium',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
               'disabled:cursor-not-allowed disabled:opacity-50',
               variants[variant],
@@ -112,24 +112,37 @@ export function PremiumChip({
             aria-selected={selected}
             aria-disabled={disabled}
             tabIndex={disabled ? -1 : 0}
+            whileHover={!disabled && !reducedMotion ? { scale: 1.05 } : undefined}
+            whileTap={!disabled ? { scale: 0.95 } : undefined}
+            transition={{
+              duration: reducedMotion ? 0 : 0.2,
+              ease: 'easeInOut',
+            }}
           >
         {icon && <span className="shrink-0">{icon}</span>}
         <span>{label}</span>
         {onClose && (
-          <button
+          <motion.button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               handleClose();
             }}
             disabled={disabled}
-            className="ml-1 opacity-70 hover:opacity-100 transition-opacity shrink-0"
+            className="ml-1 shrink-0"
             aria-label="Remove chip"
+            initial={{ opacity: 0.7 }}
+            whileHover={{ opacity: 1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{
+              duration: reducedMotion ? 0 : 0.15,
+              ease: 'easeInOut',
+            }}
           >
             <X size={size === 'sm' ? 12 : size === 'md' ? 14 : 16} />
-          </button>
+          </motion.button>
           )}
-        </div>
+        </motion.div>
       </motion.div>
       )}
     </AnimatePresence>

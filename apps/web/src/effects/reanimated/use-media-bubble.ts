@@ -1,18 +1,16 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withSequence,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { useCallback, useEffect } from 'react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { makeRng } from '@petspark/shared';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export type MediaType = 'image' | 'video' | 'voice';
 
@@ -25,14 +23,14 @@ export interface UseMediaBubbleOptions {
 }
 
 export interface UseMediaBubbleReturn {
-  imageOpacity: SharedValue<number>;
-  imageScale: SharedValue<number>;
-  zoomModalOpacity: SharedValue<number>;
-  zoomModalScale: SharedValue<number>;
-  waveformScales: SharedValue<number>[];
-  imageStyle: ReturnType<typeof useAnimatedStyle>;
-  zoomModalStyle: ReturnType<typeof useAnimatedStyle>;
-  waveformStyles: ReturnType<typeof useAnimatedStyle>[];
+  imageOpacity: MotionValue<number>;
+  imageScale: MotionValue<number>;
+  zoomModalOpacity: MotionValue<number>;
+  zoomModalScale: MotionValue<number>;
+  waveformScales: MotionValue<number>[];
+  imageStyle: CSSProperties;
+  zoomModalStyle: CSSProperties;
+  waveformStyles: CSSProperties[];
   handleImageLoad: () => void;
   handleImageTap: () => void;
   closeZoom: () => void;
@@ -50,17 +48,21 @@ export function useMediaBubble(options: UseMediaBubbleOptions): UseMediaBubbleRe
     waveform = [],
   } = options;
 
-  const imageOpacity = useSharedValue(0);
-  const imageScale = useSharedValue(0.95);
-  const zoomModalOpacity = useSharedValue(0);
-  const zoomModalScale = useSharedValue(0.9);
+  const imageOpacity = useMotionValue(0);
+  const imageScale = useMotionValue(0.95);
+  const zoomModalOpacity = useMotionValue(0);
+  const zoomModalScale = useMotionValue(0.9);
 
-  const waveformScales = Array.from({ length: 20 }, () => useSharedValue(0.3));
+  const waveformScales = Array.from({ length: 20 }, () => useMotionValue(0.3));
 
   useEffect(() => {
     if (isLoaded && type === 'image') {
-      imageOpacity.value = withSpring(1, springConfigs.smooth);
-      imageScale.value = withSpring(1, springConfigs.bouncy);
+      void animate(imageOpacity, 1, {
+        ...springConfigs.smooth,
+      });
+      void animate(imageScale, 1, {
+        ...springConfigs.bouncy,
+      });
     }
   }, [isLoaded, type, imageOpacity, imageScale]);
 
@@ -74,61 +76,85 @@ export function useMediaBubble(options: UseMediaBubbleOptions): UseMediaBubbleRe
         if (isPlaying) {
           const baseValue = waveform[index] ?? 0.3;
           const variation = rng() * 0.3;
-          scale.value = withSequence(
-            withTiming(baseValue + variation, { duration: 200 }),
-            withTiming(Math.max(0.2, baseValue - variation), { duration: 200 }),
-            withTiming(baseValue, { duration: 200 })
-          );
+          void animate(scale, [baseValue + variation, Math.max(0.2, baseValue - variation), baseValue], {
+            duration: 0.6, // 200ms * 3 = 600ms
+            ease: 'easeInOut',
+            repeat: Infinity,
+            times: [0, 0.33, 0.66, 1],
+          });
         } else {
           const baseValue = waveform[index] ?? 0.3;
-          scale.value = withTiming(baseValue, timingConfigs.fast);
+          void animate(scale, baseValue, {
+            duration: timingConfigs.fast.duration,
+            ease: timingConfigs.fast.ease as string,
+          });
         }
       });
     }
   }, [isPlaying, type, waveform, waveformScales]);
 
   const handleImageLoad = useCallback(() => {
-    imageOpacity.value = withSpring(1, springConfigs.smooth);
-    imageScale.value = withSpring(1, springConfigs.bouncy);
+    void animate(imageOpacity, 1, {
+      ...springConfigs.smooth,
+    });
+    void animate(imageScale, 1, {
+      ...springConfigs.bouncy,
+    });
   }, [imageOpacity, imageScale]);
 
   const handleImageTap = useCallback(() => {
     if (onZoom) {
-      zoomModalOpacity.value = withSpring(1, springConfigs.smooth);
-      zoomModalScale.value = withSpring(1, springConfigs.bouncy);
+      void animate(zoomModalOpacity, 1, {
+        ...springConfigs.smooth,
+      });
+      void animate(zoomModalScale, 1, {
+        ...springConfigs.bouncy,
+      });
       onZoom();
     }
   }, [onZoom, zoomModalOpacity, zoomModalScale]);
 
   const closeZoom = useCallback(() => {
-    zoomModalOpacity.value = withTiming(0, timingConfigs.fast);
-    zoomModalScale.value = withTiming(0.9, timingConfigs.fast);
+    void animate(zoomModalOpacity, 0, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
+    void animate(zoomModalScale, 0.9, {
+      duration: timingConfigs.fast.duration,
+      ease: timingConfigs.fast.ease as string,
+    });
   }, [zoomModalOpacity, zoomModalScale]);
 
-  const imageStyle = useAnimatedStyle(() => {
+  const imageStyle = useMotionStyle(() => {
     return {
-      opacity: imageOpacity.value,
-      transform: [{ scale: imageScale.value }],
+      opacity: imageOpacity.get(),
+      transform: [{ scale: imageScale.get() }],
     };
   });
 
-  const zoomModalStyle = useAnimatedStyle(() => {
+  const zoomModalStyle = useMotionStyle(() => {
     return {
-      opacity: zoomModalOpacity.value,
-      transform: [{ scale: zoomModalScale.value }],
+      opacity: zoomModalOpacity.get(),
+      transform: [{ scale: zoomModalScale.get() }],
     };
   });
 
-  const waveformStyles = waveformScales.map((scale) => {
-    return useAnimatedStyle(() => {
-      const height = interpolate(scale.value, [0, 1], [8, 32], Extrapolation.CLAMP);
+  // Create transforms for waveform heights (all created at top level)
+  const waveformHeights = waveformScales.map((scale) => useTransform(scale, [0, 1], [8, 32]));
 
-      return {
-        height,
-        transform: [{ scaleY: scale.value }],
-      };
-    });
-  });
+  // Create a single style function that returns styles for all waveforms
+  // Components should use the individual MotionValues directly or create their own styles
+  // For backward compatibility, we'll create a helper that returns a style getter
+  const getWaveformStyle = (index: number): CSSProperties => {
+    return {
+      height: waveformHeights[index]?.get() ?? 8,
+      transform: `scaleY(${waveformScales[index]?.get() ?? 0.3})`,
+    };
+  };
+
+  // For backward compatibility, create styles array (but these won't be reactive)
+  // Components should use waveformScales and waveformHeights directly with motion components
+  const waveformStyles: CSSProperties[] = waveformScales.map((scale, index) => getWaveformStyle(index));
 
   return {
     imageOpacity,

@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import type { AdoptionProfile, AdoptionStatus } from '@/lib/adoption-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
-import { AnimatedView } from '@/hooks/use-animated-style-value';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 
 interface AdoptionCardProps {
   profile: AdoptionProfile;
@@ -51,11 +51,11 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
   }, [onSelect, profile]);
 
   const handleFavoriteClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
       favoriteButtonAnimation.handlePress();
     },
-    [favoriteButtonAnimation]
+    [favoriteButtonAnimation.handlePress]
   );
 
   const handleFavoriteKeyDown = useCallback(
@@ -95,9 +95,14 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
 
   return (
     <motion.div
-      style={cardAnimation.animatedStyle}
+      style={{
+        scale: cardAnimation.scale,
+        y: cardAnimation.translateY,
+      }}
+      variants={cardAnimation.variants}
       onMouseEnter={cardAnimation.handleEnter}
       onMouseLeave={cardAnimation.handleLeave}
+      onClick={handleSelect}
     >
       <Card className="overflow-hidden cursor-pointer group border-border/50 shadow-lg hover:shadow-xl transition-shadow">
         <div
@@ -126,8 +131,8 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
               {statusLabel}
             </Badge>
             {onFavorite && (
-              <motion.div
-                style={favoriteButtonAnimation.animatedStyle}
+              <AnimatedView
+                animatedStyle={favoriteButtonAnimation.animatedStyle}
                 onMouseEnter={favoriteButtonAnimation.handleMouseEnter}
                 onMouseLeave={favoriteButtonAnimation.handleMouseLeave}
                 onClick={handleFavoriteClick}
@@ -142,7 +147,7 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
                   weight={isFavorited ? 'fill' : 'regular'}
                   className={isFavorited ? 'text-destructive' : 'text-foreground'}
                 />
-              </motion.div>
+              </AnimatedView>
             )}
           </div>
 

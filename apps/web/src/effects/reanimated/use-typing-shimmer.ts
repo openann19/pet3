@@ -1,16 +1,13 @@
 'use client';
 
 import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  withDelay,
-  Easing,
-  type SharedValue,
-} from '@petspark/motion';
+  useMotionValue,
+  animate,
+  type MotionValue,
+} from 'framer-motion';
 import { useEffect, useCallback } from 'react';
+import { useMotionStyle } from './use-motion-style';
+import type { CSSProperties } from 'react';
 
 export interface UseTypingShimmerOptions {
   duration?: number;
@@ -20,15 +17,15 @@ export interface UseTypingShimmerOptions {
 }
 
 export interface UseTypingShimmerReturn {
-  shimmerTranslateX: SharedValue<number>;
-  shimmerOpacity: SharedValue<number>;
-  placeholderOpacity: SharedValue<number>;
-  placeholderScale: SharedValue<number>;
-  contentOpacity: SharedValue<number>;
-  contentScale: SharedValue<number>;
-  shimmerStyle: ReturnType<typeof useAnimatedStyle>;
-  placeholderStyle: ReturnType<typeof useAnimatedStyle>;
-  contentStyle: ReturnType<typeof useAnimatedStyle>;
+  shimmerTranslateX: MotionValue<number>;
+  shimmerOpacity: MotionValue<number>;
+  placeholderOpacity: MotionValue<number>;
+  placeholderScale: MotionValue<number>;
+  contentOpacity: MotionValue<number>;
+  contentScale: MotionValue<number>;
+  shimmerStyle: CSSProperties;
+  placeholderStyle: CSSProperties;
+  contentStyle: CSSProperties;
   start: () => void;
   stop: () => void;
   reveal: () => void;
@@ -45,76 +42,59 @@ export function useTypingShimmer(options: UseTypingShimmerOptions = {}): UseTypi
     isComplete = false,
   } = options;
 
-  const shimmerTranslateX = useSharedValue(-shimmerWidth);
-  const shimmerOpacity = useSharedValue(0.4);
-  const placeholderOpacity = useSharedValue(1);
-  const placeholderScale = useSharedValue(1);
-  const contentOpacity = useSharedValue(0);
-  const contentScale = useSharedValue(0.95);
+  const shimmerTranslateX = useMotionValue(-shimmerWidth);
+  const shimmerOpacity = useMotionValue(0.4);
+  const placeholderOpacity = useMotionValue(1);
+  const placeholderScale = useMotionValue(1);
+  const contentOpacity = useMotionValue(0);
+  const contentScale = useMotionValue(0.95);
 
   const start = useCallback(() => {
     if (!enabled) {
       return;
     }
 
-    shimmerTranslateX.value = withRepeat(
-      withTiming(shimmerWidth * 2, {
-        duration,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
+    // Animate shimmer translateX
+    void animate(shimmerTranslateX, shimmerWidth * 2, {
+      duration: duration / 1000,
+      ease: 'linear',
+      repeat: Infinity,
+    });
 
-    shimmerOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0.6, {
-          duration: duration / 3,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        withTiming(0.3, {
-          duration: duration / 3,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        withTiming(0.6, {
-          duration: duration / 3,
-          easing: Easing.inOut(Easing.ease),
-        })
-      ),
-      -1,
-      false
-    );
+    // Animate shimmer opacity
+    void animate(shimmerOpacity, [0.6, 0.3, 0.6], {
+      duration: duration / 1000,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      times: [0, 0.5, 1],
+    });
   }, [enabled, duration, shimmerWidth, shimmerTranslateX, shimmerOpacity]);
 
   const stop = useCallback(() => {
-    shimmerTranslateX.value = -shimmerWidth;
-    shimmerOpacity.value = 0.4;
+    shimmerTranslateX.set(-shimmerWidth);
+    shimmerOpacity.set(0.4);
   }, [shimmerWidth, shimmerTranslateX, shimmerOpacity]);
 
   const reveal = useCallback(() => {
-    placeholderOpacity.value = withTiming(0, {
-      duration: 300,
-      easing: Easing.out(Easing.ease),
+    void animate(placeholderOpacity, 0, {
+      duration: 0.3,
+      ease: 'easeOut',
     });
-    placeholderScale.value = withTiming(0.9, {
-      duration: 300,
-      easing: Easing.out(Easing.ease),
+    void animate(placeholderScale, 0.9, {
+      duration: 0.3,
+      ease: 'easeOut',
     });
 
-    contentOpacity.value = withDelay(
-      150,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-      })
-    );
-    contentScale.value = withDelay(
-      150,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.out(Easing.cubic),
-      })
-    );
+    void animate(contentOpacity, 1, {
+      duration: 0.3,
+      ease: 'easeOut',
+      delay: 0.15,
+    });
+    void animate(contentScale, 1, {
+      duration: 0.3,
+      ease: [0.25, 0.1, 0.25, 1], // cubic easing
+      delay: 0.15,
+    });
 
     stop();
   }, [placeholderOpacity, placeholderScale, contentOpacity, contentScale, stop]);
@@ -131,34 +111,35 @@ export function useTypingShimmer(options: UseTypingShimmerOptions = {}): UseTypi
     }
   }, [enabled, isComplete, start, stop, reveal]);
 
-  const shimmerStyle = useAnimatedStyle(() => {
-    const gradientStart = shimmerTranslateX.value;
-    const gradientEnd = shimmerTranslateX.value + shimmerWidth;
+  const shimmerStyle = useMotionStyle(() => {
+    const gradientStart = shimmerTranslateX.get();
+    const gradientEnd = shimmerTranslateX.get() + shimmerWidth;
+    const opacity = shimmerOpacity.get();
 
     return {
-      transform: [{ translateX: shimmerTranslateX.value }],
-      opacity: shimmerOpacity.value,
+      transform: [{ translateX: shimmerTranslateX.get() }],
+      opacity,
       background: `linear-gradient(90deg, 
         transparent 0%, 
-        rgba(255, 255, 255, ${String(shimmerOpacity.value * 0.5 ?? '')}) ${String(gradientStart ?? '')}px, 
-        rgba(255, 255, 255, ${String(shimmerOpacity.value ?? '')}) ${String((gradientStart + gradientEnd) / 2 ?? '')}px, 
-        rgba(255, 255, 255, ${String(shimmerOpacity.value * 0.5 ?? '')}) ${String(gradientEnd ?? '')}px, 
+        rgba(255, 255, 255, ${opacity * 0.5}) ${gradientStart}px, 
+        rgba(255, 255, 255, ${opacity}) ${(gradientStart + gradientEnd) / 2}px, 
+        rgba(255, 255, 255, ${opacity * 0.5}) ${gradientEnd}px, 
         transparent 100%
       )`,
     };
   });
 
-  const placeholderStyle = useAnimatedStyle(() => {
+  const placeholderStyle = useMotionStyle(() => {
     return {
-      opacity: placeholderOpacity.value,
-      transform: [{ scale: placeholderScale.value }],
+      opacity: placeholderOpacity.get(),
+      transform: [{ scale: placeholderScale.get() }],
     };
   });
 
-  const contentStyle = useAnimatedStyle(() => {
+  const contentStyle = useMotionStyle(() => {
     return {
-      opacity: contentOpacity.value,
-      transform: [{ scale: contentScale.value }],
+      opacity: contentOpacity.get(),
+      transform: [{ scale: contentScale.get() }],
     };
   });
 

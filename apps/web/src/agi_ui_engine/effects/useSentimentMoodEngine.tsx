@@ -145,7 +145,7 @@ export function useSentimentMoodEngine(
   const moodOpacity = useSharedValue(0);
 
   if (enabled && theme.adaptiveMood) {
-    moodOpacity.value = withSpring(1, springConfigs.smooth);
+    moodOpacity.value = withSpring(1, springConfigs.smooth).target;
   }
 
   const animatedStyle = useAnimatedStyle(() => {
