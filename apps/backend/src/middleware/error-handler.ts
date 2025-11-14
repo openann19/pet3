@@ -16,6 +16,8 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
+  const requestId = req.requestId;
+
   if (err instanceof APIError) {
     logger.error('API Error', err, {
       path: req.path,
@@ -23,6 +25,7 @@ export function errorHandler(
       statusCode: err.statusCode,
       code: err.code,
       context: err.context,
+      requestId,
     });
 
     res.status(err.statusCode).json({
@@ -30,6 +33,7 @@ export function errorHandler(
         message: err.message,
         code: err.code,
         ...(err.context && { context: err.context }),
+        ...(requestId && { requestId }),
       },
     });
     return;
@@ -38,12 +42,14 @@ export function errorHandler(
   logger.error('Unhandled Error', err, {
     path: req.path,
     method: req.method,
+    requestId,
   });
 
   res.status(500).json({
     error: {
       message: 'Internal server error',
       code: 'INTERNAL_ERROR',
+      ...(requestId && { requestId }),
     },
   });
 }

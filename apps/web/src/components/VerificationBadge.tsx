@@ -39,7 +39,7 @@ export function VerificationBadge({
         return {
           icon: <Certificate size={iconSizes[size]} weight="fill" />,
           label: 'Premium Verified',
-          className: 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0',
+          className: 'bg-linear-to-r from-yellow-500 to-orange-500 text-white border-0',
           emoji: '👑',
           description: 'Premium verified owner with complete background check',
         };
@@ -47,7 +47,7 @@ export function VerificationBadge({
         return {
           icon: <Star size={iconSizes[size]} weight="fill" />,
           label: 'Standard Verified',
-          className: 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0',
+          className: 'bg-linear-to-r from-blue-500 to-purple-500 text-white border-0',
           emoji: '⭐',
           description: 'Standard verified owner with complete documentation',
         };
@@ -55,7 +55,7 @@ export function VerificationBadge({
         return {
           icon: <ShieldCheck size={iconSizes[size]} weight="fill" />,
           label: 'Verified',
-          className: 'bg-gradient-to-r from-green-500 to-teal-500 text-white border-0',
+          className: 'bg-linear-to-r from-green-500 to-teal-500 text-white border-0',
           emoji: '✓',
           description: 'Basic verified owner',
         };

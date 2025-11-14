@@ -445,7 +445,7 @@ export function useKeyboardNavigation(
         return
       }
 
-      const nativeEvent = 'nativeEvent' in event ? (event.nativeEvent as KeyboardEvent) : event
+      const nativeEvent = 'nativeEvent' in event ? (event.nativeEvent) : event
 
       // Handle focus trap Tab key
       if (isFocusTrapActive && nativeEvent.key === 'Tab') {

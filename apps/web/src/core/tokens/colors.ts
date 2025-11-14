@@ -15,7 +15,12 @@ export function getColorToken(
   mode: ThemeMode = 'light'
 ): string {
   const themeColors = tokens.colors[mode];
-  return themeColors[colorKey] || themeColors.foreground;
+  if (!themeColors) {
+    // Fallback to light theme if mode is not available
+    const fallback = tokens.colors.light;
+    return fallback?.[colorKey] || fallback?.foreground || '#000000';
+  }
+  return themeColors[colorKey] || themeColors.foreground || '#000000';
 }
 
 /**
@@ -36,8 +41,8 @@ export function getColorTokenWithOpacity(
   }
 
   // If already rgba/rgb, extract and apply opacity
-  const rgbaMatch = color.match(/rgba?\(([^)]+)\)/);
-  if (rgbaMatch) {
+  const rgbaMatch = /rgba?\(([^)]+)\)/.exec(color);
+  if (rgbaMatch?.[1]) {
     const values = rgbaMatch[1].split(',').map((v) => v.trim());
     if (values.length >= 3) {
       const r = values[0];
@@ -48,8 +53,8 @@ export function getColorTokenWithOpacity(
   }
 
   // If hex, convert to rgba
-  const hexMatch = color.match(/^#([0-9a-fA-F]{6})$/);
-  if (hexMatch) {
+  const hexMatch = /^#([0-9a-fA-F]{6})$/.exec(color);
+  if (hexMatch?.[1]) {
     const hex = hexMatch[1];
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);

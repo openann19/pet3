@@ -258,8 +258,9 @@ export function useSubscription(
     }
   }, [userId, subscription, setLocalBillingIssue, setLocalSubscription, refetchSubscription])
 
-  const dismissBillingIssue = useCallback(async (): Promise<void> => {
+  const dismissBillingIssue = useCallback((): Promise<void> => {
     setLocalBillingIssue(null)
+    return Promise.resolve()
   }, [setLocalBillingIssue])
 
   const hasPremiumFeature = useCallback(

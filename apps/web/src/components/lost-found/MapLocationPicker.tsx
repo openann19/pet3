@@ -171,7 +171,7 @@ export function MapLocationPicker({
         </div>
 
         <Card className="flex-1 relative overflow-hidden mb-4">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 flex items-center justify-center">
+          <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 flex items-center justify-center">
             <div className="text-center space-y-4">
               <MapPin size={64} className="mx-auto text-primary" weight="duotone" />
               <div>

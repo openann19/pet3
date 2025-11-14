@@ -55,7 +55,7 @@ export function PetRatings({ trustProfile, ratings = [], compact = false }: PetR
 
   return (
     <Card className="overflow-hidden border-border/50 shadow-lg">
-      <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 pb-4">
+      <CardHeader className="bg-linear-to-br from-primary/5 to-accent/5 pb-4">
         <CardTitle className="flex items-center justify-between">
           <span className="text-lg font-bold">Ratings & Reviews</span>
           {trustProfile.trustScore >= 90 && (

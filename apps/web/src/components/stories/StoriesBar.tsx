@@ -89,7 +89,7 @@ export default function StoriesBar({
             </div>
             <button
               onClick={handleShowCreateDialog}
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl shadow-lg hover:scale-105 transition-transform"
+              className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl shadow-lg hover:scale-105 transition-transform"
             >
               +
             </button>

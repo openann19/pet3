@@ -326,7 +326,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps): Re
 
           <View style={styles.switchRow}>
             <Text style={styles.switchText}>{t.auth.alreadyHaveAccount} </Text>
-            <TouchableOpacity onPress={onSwitchToSignIn} disabled={isSubmitting} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+            <TouchableOpacity onPress={onSwitchToSignIn} disabled={isSubmitting}>
               <Text style={styles.switchLink}>{t.auth.signIn}</Text>
             </TouchableOpacity>
           </View>

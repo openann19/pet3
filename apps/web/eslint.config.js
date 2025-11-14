@@ -163,6 +163,10 @@ export default tseslint.config(
           message:
             '❌ PRODUCTION BLOCKER: spark.kv.delete() calls are banned. Use APIClient.delete() instead.',
         },
+        {
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+          message: 'Avoid raw HTML; sanitize + safe render.',
+        },
       ],
       'no-restricted-imports': [
         'error',
@@ -222,6 +226,7 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
@@ -231,6 +236,8 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      'max-lines': ['error', { max: 300, skipComments: true, skipBlankLines: true }],
+      'max-lines-per-function': ['error', { max: 60 }],
     },
   },
   {

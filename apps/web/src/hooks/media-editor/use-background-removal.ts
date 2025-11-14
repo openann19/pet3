@@ -256,7 +256,7 @@ export function useBackgroundRemoval() {
       width: number,
       height: number,
       kernel: readonly (readonly number[])[],
-      channel: number = 0
+      channel = 0
     ): Float32Array => {
       const result = new Float32Array(width * height);
       const kernelSize = kernel.length;
@@ -426,7 +426,7 @@ export function useBackgroundRemoval() {
       const result = new ImageData(width, height);
       const resultData = result.data;
 
-      const [keyH, keyS, keyV] = rgbToHsv(keyColor[0]!, keyColor[1]!, keyColor[2]!);
+      const [keyH, keyS, keyV] = rgbToHsv(keyColor[0], keyColor[1], keyColor[2]);
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];

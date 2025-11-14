@@ -1,21 +1,22 @@
-import { useState } from 'react';
+import { lostFoundAPI } from '@/api/lost-found-api';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { MapPin, Upload, Calendar, Clock } from '@phosphor-icons/react';
-import { toast } from 'sonner';
-import { lostFoundAPI } from '@/api/lost-found-api';
-import { MapLocationPicker } from './MapLocationPicker';
-import type { LostAlert } from '@/lib/lost-found-types';
 import { createLogger } from '@/lib/logger';
+import type { LostAlert } from '@/lib/lost-found-types';
+import { userService } from '@/lib/user-service';
+import { Calendar, Clock, MapPin, Upload } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { MapLocationPicker } from './MapLocationPicker';
 
 interface ReportSightingDialogProps {
   open: boolean;
@@ -82,7 +83,11 @@ export function ReportSightingDialog({
     try {
       setIsSubmitting(true);
 
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       const whenISO = new Date(`${sightingDate}T${sightingTime}`).toISOString();
 
       await lostFoundAPI.createSighting({
@@ -96,7 +101,7 @@ export function ReportSightingDialog({
         contactMask: maskContactInfo(contactInfo),
         reporterId: user.id,
         reporterName: user.login || 'Anonymous',
-        reporterAvatar: user.avatarUrl,
+        reporterAvatar: user.avatarUrl ?? undefined,
       });
 
       toast.success('Sighting reported! The owner will be notified.');

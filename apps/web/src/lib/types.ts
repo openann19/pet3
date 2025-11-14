@@ -88,12 +88,14 @@ export interface Match {
   matchedPetName?: string;
   matchedPetPhoto?: string;
   compatibilityScore: number;
+  compatibility?: number; // Alias for compatibilityScore for backward compatibility
   reasoning: string[];
   matchedAt: string;
   status: 'active' | 'archived';
 }
 
 export interface SwipeAction {
+  id?: string; // Optional for backward compatibility
   petId: string;
   targetPetId: string;
   action: 'like' | 'pass' | 'superlike';

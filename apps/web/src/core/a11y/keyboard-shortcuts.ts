@@ -34,8 +34,8 @@ export interface KeyboardShortcut {
  * Keyboard shortcuts registry
  */
 export class KeyboardShortcutsRegistry {
-  private shortcuts: Map<string, KeyboardShortcut> = new Map();
-  private enabled: boolean = true;
+  private shortcuts = new Map<string, KeyboardShortcut>();
+  private enabled = true;
   private handler: ((e: KeyboardEvent) => void) | null = null;
 
   /**

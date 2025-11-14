@@ -7,8 +7,10 @@
 
 import type { NextRequest } from '@/types/next-server';
 import { NextResponse } from '@/types/next-server';
-import { TokenBucket, createTokenBucket } from '../rate-limit/token-bucket';
-import { QuotaService, createQuotaService } from '../rate-limit/quota-service';
+import type { TokenBucket} from '../rate-limit/token-bucket';
+import { createTokenBucket } from '../rate-limit/token-bucket';
+import type { QuotaService} from '../rate-limit/quota-service';
+import { createQuotaService } from '../rate-limit/quota-service';
 
 export interface RateLimitConfig {
   // Token bucket config
@@ -31,8 +33,8 @@ export interface RateLimitHeaders {
 
 // Global token buckets (in-memory)
 // For production, use distributed storage (Redis, Upstash, etc.)
-const tokenBuckets: Map<string, TokenBucket> = new Map();
-const quotaServices: Map<string, QuotaService> = new Map();
+const tokenBuckets = new Map<string, TokenBucket>();
+const quotaServices = new Map<string, QuotaService>();
 
 /**
  * Get or create token bucket for identifier and action

@@ -161,10 +161,10 @@ class AuditLoggerImpl {
         if (parts[1]) {
           const payload = JSON.parse(atob(parts[1])) as Record<string, unknown>;
           const userId =
-            typeof payload['sub'] === 'string'
-              ? payload['sub']
-              : typeof payload['userId'] === 'string'
-                ? payload['userId']
+            typeof payload.sub === 'string'
+              ? payload.sub
+              : typeof payload.userId === 'string'
+                ? payload.userId
                 : undefined;
           return userId;
         }

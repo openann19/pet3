@@ -56,7 +56,7 @@ export default function StoryTemplateSelector({
                 onClick={() => { setSelectedCategory(category.id); }}
                 className={cn(
                   'whitespace-nowrap',
-                  selectedCategory === category.id && 'bg-gradient-to-r from-primary to-accent'
+                  selectedCategory === category.id && 'bg-linear-to-r from-primary to-accent'
                 )}
               >
                 <span className="mr-1.5">{category.icon}</span>

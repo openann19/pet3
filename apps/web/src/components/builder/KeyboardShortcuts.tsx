@@ -153,7 +153,7 @@ export function KeyboardShortcuts({
                 if (!acc[category]) {
                     acc[category] = [];
                 }
-                acc[category]!.push(shortcut);
+                acc[category].push(shortcut);
                 return acc;
             },
             {} as Record<string, KeyboardShortcutItem[]>

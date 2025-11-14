@@ -9,6 +9,7 @@ import type { ChatMessage, ReactionType } from '@/lib/chat-types';
 import { groupMessagesByDate, generateMessageId, getReactionsArray } from '@/lib/chat-utils';
 import { queryKeys } from '@/lib/query-client';
 import { chatAPI } from '@/lib/api-services';
+import { chatApi } from '@/api/chat-api';
 
 interface UseChatMessagesOptions {
   roomId: string;
@@ -27,6 +28,7 @@ interface UseChatMessagesReturn {
   ) => ChatMessage | null;
   addReaction: (messageId: string, reaction: ReactionType) => Promise<void>;
   markAsRead: (messageId: string) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
   setMessages: (updater: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
   isLoading: boolean;
   isError: boolean;
@@ -253,6 +255,39 @@ export function useChatMessages({
     );
   }, [currentUserId, queryClient, roomId]);
 
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      try {
+        // Optimistically remove from cache
+        queryClient.setQueryData(
+          queryKeys.chat.messages(roomId),
+          (old: { pages: ChatMessage[][] } | undefined) => {
+            if (!old) return old;
+            return {
+              ...old,
+              pages: old.pages.map((page) => page.filter((msg) => msg.id !== messageId)),
+            };
+          }
+        );
+
+        // Call API to delete
+        try {
+          await chatApi.deleteMessage(messageId, false);
+        } catch (error) {
+          // If API call fails, revert optimistic update
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.chat.messages(roomId),
+          });
+          throw error;
+        }
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        throw err;
+      }
+    },
+    [queryClient, roomId]
+  );
+
   const setMessages = useCallback(
     (updater: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
       queryClient.setQueryData(
@@ -275,6 +310,7 @@ export function useChatMessages({
     sendMessage,
     addReaction,
     markAsRead,
+    deleteMessage,
     setMessages,
     isLoading: queryResult.isLoading,
     isError: queryResult.isError,

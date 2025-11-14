@@ -84,10 +84,19 @@ const mockPet = {
   name: 'Buddy',
   breed: 'Golden Retriever',
   age: 3,
-  gender: 'male',
+  gender: 'male' as const,
+  size: 'large' as const,
   photo: 'https://example.com/pet.jpg',
+  photos: ['https://example.com/pet.jpg'],
+  bio: 'Friendly golden retriever',
+  personality: ['friendly', 'playful'],
+  interests: ['fetch', 'swimming'],
+  lookingFor: ['playdates'],
   ownerId: 'user-1',
-  location: { lat: 0, lng: 0 },
+  ownerName: 'Owner',
+  verified: false,
+  createdAt: new Date().toISOString(),
+  location: '0,0',
 };
 
 const mockUserPet = {
@@ -95,10 +104,19 @@ const mockUserPet = {
   name: 'My Pet',
   breed: 'Labrador',
   age: 2,
-  gender: 'female',
+  gender: 'female' as const,
+  size: 'medium' as const,
   photo: 'https://example.com/user-pet.jpg',
+  photos: ['https://example.com/user-pet.jpg'],
+  bio: 'My pet',
+  personality: ['energetic'],
+  interests: ['running'],
+  lookingFor: ['friends'],
   ownerId: 'user-1',
-  location: { lat: 0, lng: 0 },
+  ownerName: 'Me',
+  verified: true,
+  createdAt: new Date().toISOString(),
+  location: '0,0',
 };
 
 describe('DiscoverView', () => {
@@ -122,10 +140,10 @@ describe('DiscoverView', () => {
     } as never);
 
     vi.mocked(useStorage).mockImplementation((key: string, defaultValue: unknown) => {
-      if (key === 'user-pets') return [[mockUserPet], vi.fn()];
-      if (key === 'swipe-history') return [[], vi.fn()];
-      if (key === 'matches') return [[], vi.fn()];
-      if (key === 'verification-requests') return [{}, vi.fn()];
+      if (key === 'user-pets') return [[mockUserPet], vi.fn(), vi.fn()];
+      if (key === 'swipe-history') return [[], vi.fn(), vi.fn()];
+      if (key === 'matches') return [[], vi.fn(), vi.fn()];
+      if (key === 'verification-requests') return [{}, vi.fn(), vi.fn()];
       if (key === 'discovery-preferences') {
         return [
           {
@@ -152,26 +170,43 @@ describe('DiscoverView', () => {
             },
           },
           vi.fn(),
+          vi.fn(),
         ];
       }
-      return [defaultValue, vi.fn()];
+      return [defaultValue, vi.fn(), vi.fn()];
     });
 
     vi.mocked(usePetDiscovery).mockReturnValue({
       availablePets: [mockPet],
       currentPet: mockPet,
       currentIndex: 0,
+      totalPets: 1,
       hasMore: true,
+      hasPrevious: false,
       nextPet: vi.fn(),
       prevPet: vi.fn(),
       goToPet: vi.fn(),
+      markAsSwiped: vi.fn(),
       resetDiscovery: vi.fn(),
+      reset: vi.fn(),
     });
 
     vi.mocked(useMatching).mockReturnValue({
       compatibilityScore: 85,
       compatibilityFactors: [],
       matchReasoning: ['Great match!'],
+      isLoading: false,
+      error: null,
+      calculateMatch: vi.fn(),
+      performSwipe: vi.fn().mockResolvedValue({
+        recorded: true,
+        isMatch: false,
+        compatibility: 85,
+      }),
+      checkMatch: vi.fn().mockResolvedValue({
+        isMatch: false,
+        compatibility: 85,
+      }),
     });
 
     vi.mocked(useSwipe).mockReturnValue({
@@ -194,8 +229,17 @@ describe('DiscoverView', () => {
 
     vi.mocked(useStories).mockReturnValue({
       stories: [],
+      userStories: [],
+      allStories: [],
+      selectedStory: null,
+      hasStories: false,
       addStory: vi.fn(),
       updateStory: vi.fn(),
+      deleteStory: vi.fn(),
+      selectStory: vi.fn(),
+      clearSelection: vi.fn(),
+      clearSelectedStory: vi.fn(),
+      setStories: vi.fn(),
     });
 
     vi.mocked(useDialog).mockReturnValue({

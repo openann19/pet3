@@ -6,6 +6,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { PostComposer } from '@/components/community/PostComposer';
 import { RankingSkeleton } from '@/components/community/RankingSkeleton';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog';
 import LostFoundMap from '@/components/maps/LostFoundMap';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,8 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { usePageTransition } from '@/effects/reanimated/use-page-transition';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useFeedManagement, useInfiniteScroll } from '@/components/community/features/feed';
@@ -76,8 +79,9 @@ function convertLostAlertToLostPetAlert(alert: LostAlert): LostPetAlert {
   };
 }
 
-export default function CommunityView(): JSX.Element {
+function CommunityViewContent(): JSX.Element {
   const { t } = useApp();
+  const { isOnline } = useNetworkStatus();
   const [activeTab, setActiveTab] = useState<'feed' | 'adoption' | 'lost-found'>('feed');
   const [feedTab, setFeedTab] = useState<'for-you' | 'following'>('for-you');
   const [showComposer, setShowComposer] = useState(false);
@@ -480,6 +484,7 @@ export default function CommunityView(): JSX.Element {
 
   return (
     <PageTransitionWrapper key="community-view" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <div ref={pullToRefresh.containerRef} className="max-w-6xl mx-auto space-y-6 pb-8 relative">
         {/* Pull-to-Refresh Indicator */}
         <AnimatedView
@@ -765,8 +770,8 @@ export default function CommunityView(): JSX.Element {
                         contactMask: '',
                         reporterId: typeof currentUser.id === 'string' ? currentUser.id : '',
                         reporterName:
-                          typeof currentUser['name'] === 'string'
-                            ? currentUser['name']
+                          typeof currentUser.name === 'string'
+                            ? currentUser.name
                             : 'Anonymous',
                         ...(currentUser.avatarUrl && { reporterAvatar: currentUser.avatarUrl }),
                       });
@@ -809,5 +814,19 @@ export default function CommunityView(): JSX.Element {
         />
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function CommunityView(): JSX.Element {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('CommunityView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <CommunityViewContent />
+    </RouteErrorBoundary>
   );
 }

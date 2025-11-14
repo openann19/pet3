@@ -49,6 +49,10 @@ const traversalLog: Array<{
   success: boolean;
 }> = [];
 
+function loadInventory(): ScreenConfig[] {
+  return SCREENS;
+}
+
 async function setTheme(theme: 'light' | 'dark'): Promise<void> {
   // Navigate to settings if needed, or use system theme
   // For now, we'll rely on system theme detection

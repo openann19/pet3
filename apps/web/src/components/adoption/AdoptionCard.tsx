@@ -50,7 +50,7 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
   }, [onSelect, profile]);
 
   const handleFavoriteClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
       favoriteButtonAnimation.handlePress();
     },
@@ -118,7 +118,7 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
 
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
             <Badge className={`${statusColor} border backdrop-blur-sm`}>

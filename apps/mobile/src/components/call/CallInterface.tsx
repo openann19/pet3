@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import * as Haptics from 'expo-haptics'
-import { useWebRTC } from '@/hooks/call/useWebRTC'
+import { useWebRTC } from '@/hooks/call/use-web-rtc'
 import { createLogger } from '@/utils/logger'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import { useTheme } from '@/hooks/use-theme'
@@ -430,7 +430,11 @@ export const CallInterface: React.FC<CallInterfaceProps> = ({
                   styles.endCallButton,
                   { backgroundColor: theme.colors.danger },
                 ]}
-                onPress={handleEndCall}
+                onPress={() => {
+                  handleEndCall().catch((error) => {
+                    logger.error('Failed to end call', error instanceof Error ? error : new Error(String(error)))
+                  })
+                }}
                 accessibilityLabel="End call"
                 accessibilityRole="button"
               >

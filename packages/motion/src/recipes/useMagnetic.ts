@@ -1,8 +1,8 @@
-import { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated'
-import { useRef, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { LayoutChangeEvent } from 'react-native'
-import { motion } from '../tokens'
 import { useReducedMotionSV } from '../reduced-motion'
+import { motion } from '../tokens'
 
 // Type declaration for optional react-native-gesture-handler module
 // Declaration file is in src/types/react-native-gesture-handler.d.ts
@@ -46,7 +46,7 @@ async function loadGestureHandler(): Promise<GestureHandler | null> {
   // Type declaration is in src/types/react-native-gesture-handler.d.ts
   // Using type assertion to handle optional module that may not exist at runtime
   gestureLoadPromise = (
-     
+
     import('react-native-gesture-handler') as unknown as Promise<{
       default?: ReactNativeGestureHandlerModule
       Gesture?: GestureHandler
@@ -87,6 +87,8 @@ export interface UseMagneticReturn {
   onLayout: (e: LayoutChangeEvent) => void
   animatedStyle: ReturnType<typeof useAnimatedStyle>
   gesture?: unknown
+  onPointerMove?: (e: React.PointerEvent) => void
+  onPointerLeave?: (e: React.PointerEvent) => void
 }
 
 /**

@@ -107,7 +107,7 @@ function getAdjacentColors(element: HTMLElement): string[] {
  * Convert RGB/RGBA color to hex
  */
 function rgbToHex(rgb: string): string {
-  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+  const match = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/.exec(rgb);
   if (!match) {
     return rgb; // Already hex or invalid
   }

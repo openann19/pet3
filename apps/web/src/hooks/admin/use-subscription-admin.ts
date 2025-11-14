@@ -3,11 +3,11 @@
  * Extracted business logic from SubscriptionAdminPanel component
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
+import type { AuditLogEntry, RevenueMetrics, Subscription } from '@/lib/payments-service';
 import { PaymentsService } from '@/lib/payments-service';
-import { spark } from '@/lib/spark';
-import type { Subscription, AuditLogEntry, RevenueMetrics } from '@/lib/payments-service';
+import { userService } from '@/lib/user-service';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export interface UseSubscriptionAdminReturn {
   subscriptions: Subscription[];
@@ -56,7 +56,11 @@ export function useSubscriptionAdmin(): UseSubscriptionAdminReturn {
       }
 
       try {
-        const user = await spark.user();
+        const user = await userService.user();
+        if (!user) {
+          toast.error('User not authenticated');
+          return;
+        }
         await PaymentsService.compSubscription(
           subscription.userId,
           subscription.planId,
@@ -78,7 +82,11 @@ export function useSubscriptionAdmin(): UseSubscriptionAdminReturn {
   const cancelSubscription = useCallback(
     async (subscription: Subscription) => {
       try {
-        const user = await spark.user();
+        const user = await userService.user();
+        if (!user) {
+          toast.error('User not authenticated');
+          return;
+        }
         await PaymentsService.cancelSubscription(
           subscription.id,
           true,
@@ -104,7 +112,11 @@ export function useSubscriptionAdmin(): UseSubscriptionAdminReturn {
       }
 
       try {
-        const user = await spark.user();
+        const user = await userService.user();
+        if (!user) {
+          toast.error('User not authenticated');
+          return;
+        }
         await PaymentsService.refundSubscription(subscription.id, amount, user.id, reason);
 
         toast.success('Refund processed successfully');

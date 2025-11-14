@@ -439,7 +439,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
       <AnimatedView style={modalAnimation.style} className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
               <Heart size={24} className="text-white" weight="fill" />
             </div>
             <div>

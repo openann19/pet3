@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useStorage } from '@/hooks/use-storage';
-import type { Story } from '@/lib/stories-types';
+import type { Story } from '@petspark/shared';
 
 interface UseStoriesOptions {
   currentUserId?: string;
@@ -77,6 +77,7 @@ export function useStories({
     deleteStory,
     selectStory,
     clearSelection,
+    clearSelectedStory: clearSelection, // Alias for backward compatibility
     setStories: setAllStories,
   };
 }

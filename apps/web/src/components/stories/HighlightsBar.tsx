@@ -3,7 +3,7 @@ import { motion, MotionView } from '@petspark/motion';
 import { Plus } from '@phosphor-icons/react';
 import { useStorage } from '@/hooks/use-storage';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { StoryHighlight } from '@/lib/stories-types';
+import type { StoryHighlight } from '@petspark/shared';
 import HighlightViewer from './HighlightViewer';
 import CreateHighlightDialog from './CreateHighlightDialog';
 import { haptics } from '@/lib/haptics';
@@ -55,7 +55,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center border-2 border-dashed border-border group-hover:border-primary transition-colors">
+                <div className="w-20 h-20 rounded-full bg-linear-to-br from-muted to-muted/50 flex items-center justify-center border-2 border-dashed border-border group-hover:border-primary transition-colors">
                   <Plus
                     size={28}
                     className="text-muted-foreground group-hover:text-primary transition-colors"
@@ -85,7 +85,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-accent to-secondary p-1">
+                <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary via-accent to-secondary p-1">
                   <div className="w-full h-full rounded-full bg-background" />
                 </div>
 
@@ -95,7 +95,7 @@ export default function HighlightsBar({ petId, userId, onlyOwn = false }: Highli
                     alt={highlight.title}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold text-xl">
+                  <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold text-xl">
                     {highlight.title?.[0]?.toUpperCase() ?? 'H'}
                   </AvatarFallback>
                 </Avatar>

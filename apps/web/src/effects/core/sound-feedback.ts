@@ -75,9 +75,9 @@ export class SoundFeedbackService {
   private hapticEnabled: boolean;
   private respectReducedMotion: boolean;
   private audioContext: AudioContext | null = null;
-  private soundCache: Map<SoundType, AudioBuffer> = new Map();
-  private lastPlayTime: number = 0;
-  private cooldownMs: number = 50; // Minimum time between sounds
+  private soundCache = new Map<SoundType, AudioBuffer>();
+  private lastPlayTime = 0;
+  private cooldownMs = 50; // Minimum time between sounds
 
   constructor(options: SoundFeedbackOptions = {}) {
     this.enabled = options.enabled ?? true;

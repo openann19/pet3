@@ -189,6 +189,7 @@ export function usePetDiscovery({
     goToPet,
     markAsSwiped,
     resetDiscovery,
+    reset: resetDiscovery, // Alias for backward compatibility
     hasMore: currentIndex < availablePets.length - 1,
     hasPrevious: currentIndex > 0,
   };

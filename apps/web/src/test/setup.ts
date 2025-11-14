@@ -689,9 +689,9 @@ if (typeof TouchEvent === 'undefined') {
         super(type, eventInitDict);
 
         // Create TouchList from touches array if provided
-        const touchesArray = (eventInitDict?.touches as Touch[]) || [];
-        const targetTouchesArray = (eventInitDict?.targetTouches as Touch[]) || [];
-        const changedTouchesArray = (eventInitDict?.changedTouches as Touch[]) || [];
+        const touchesArray = (eventInitDict?.touches!) || [];
+        const targetTouchesArray = (eventInitDict?.targetTouches!) || [];
+        const changedTouchesArray = (eventInitDict?.changedTouches!) || [];
 
         // Create TouchList objects
         const createTouchList = (touches: Touch[]): TouchList => {

@@ -61,9 +61,7 @@ describe('Focus Appearance Integration', () => {
   describe('IconButton Component', () => {
     it('should have focus appearance applied on mount', () => {
       render(
-        <IconButton icon={<Heart />} aria-label="Like">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" />
       );
 
       const button = screen.getByRole('button', { name: 'Like' });
@@ -80,9 +78,7 @@ describe('Focus Appearance Integration', () => {
     it('should meet minimum focus indicator requirements', async () => {
       const user = userEvent.setup();
       render(
-        <IconButton icon={<Heart />} aria-label="Like">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" />
       );
 
       const button = screen.getByRole('button', { name: 'Like' });

@@ -15,7 +15,8 @@ const communityAPI = new CommunityAPI();
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -46,94 +47,96 @@ const mockComment: Comment = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'POST' && url.pathname === '/community/posts') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(JSON.stringify({ data: { post: mockPost } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/community/posts') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { posts: [mockPost], nextCursor: undefined, total: 1 } }));
-      return;
-    }
-
-    if (
-      req.method === 'GET' &&
-      url.pathname.startsWith('/community/posts/') &&
-      !url.pathname.includes('/')
-    ) {
-      const postId = url.pathname.split('/').pop();
-      if (postId === 'post-999') {
-        res.statusCode = 404;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
         res.end();
         return;
       }
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { post: mockPost } }));
-      return;
-    }
 
-    if (req.method === 'POST' && url.pathname.includes('/view')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
+      const url = new URL(req.url, 'http://localhost:8080');
 
-    if (req.method === 'GET' && url.pathname === '/community/posts/fingerprints') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { fingerprints: ['fp-1'] } }));
-      return;
-    }
+      if (req.method === 'POST' && url.pathname === '/community/posts') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(JSON.stringify({ data: { post: mockPost } }));
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname.includes('/like')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { added: true, reactionsCount: 1 } }));
-      return;
-    }
+      if (req.method === 'GET' && url.pathname === '/community/posts') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { posts: [mockPost], nextCursor: undefined, total: 1 } }));
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname.includes('/comments')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { comment: mockComment } }));
-      return;
-    }
+      if (
+        req.method === 'GET' &&
+        url.pathname.startsWith('/community/posts/') &&
+        !url.pathname.includes('/')
+      ) {
+        const postId = url.pathname.split('/').pop();
+        if (postId === 'post-999') {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { post: mockPost } }));
+        return;
+      }
 
-    if (req.method === 'GET' && url.pathname.includes('/comments')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { comments: [mockComment] } }));
-      return;
-    }
+      if (req.method === 'POST' && url.pathname.includes('/view')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname.includes('/report')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { report: { id: 'report-1' } } }));
-      return;
-    }
+      if (req.method === 'GET' && url.pathname === '/community/posts/fingerprints') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { fingerprints: ['fp-1'] } }));
+        return;
+      }
 
-    res.statusCode = 404;
-    res.end();
+      if (req.method === 'POST' && url.pathname.includes('/like')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { added: true, reactionsCount: 1 } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/comments')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { comment: mockComment } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname.includes('/comments')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { comments: [mockComment] } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/report')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { report: { id: 'report-1' } } }));
+        return;
+      }
+
+      res.statusCode = 404;
+      res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

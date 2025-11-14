@@ -46,7 +46,7 @@ export function useStorage<T>(
   useEffect(() => {
     let cancelled = false
 
-    const loadValue = async () => {
+    const loadValue = async (): Promise<void> => {
       try {
         const stored = await storage.get<T>(key)
 
@@ -69,7 +69,7 @@ export function useStorage<T>(
     }
 
     if (!isInitializedRef.current) {
-      loadValue()
+      void loadValue()
     }
 
     return () => {
@@ -144,7 +144,7 @@ export function useStorageOnce<T>(key: string, defaultValue: T): T {
     if (!hasLoadedRef.current) {
       hasLoadedRef.current = true
       const stored = storage.get<T>(key)
-      if (stored !== null) {
+      if (stored !== null && stored !== undefined) {
         setValue(stored)
       }
     }

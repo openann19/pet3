@@ -48,7 +48,7 @@ describe('SmartSkeleton', () => {
 
   it('should disable animation when animate is false', () => {
     const { container } = render(<SmartSkeleton animate={false} />);
-    const shimmer = container.querySelector('.bg-gradient-to-r');
+    const shimmer = container.querySelector('.bg-linear-to-r');
     expect(shimmer).not.toBeInTheDocument();
   });
 

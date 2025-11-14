@@ -56,9 +56,7 @@ describe('Target Size Integration', () => {
   describe('IconButton Component', () => {
     it('should meet minimum target size requirements', () => {
       render(
-        <IconButton icon={<Heart />} aria-label="Like">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" />
       );
 
       const button = screen.getByRole('button', { name: 'Like' });
@@ -75,9 +73,7 @@ describe('Target Size Integration', () => {
 
     it('should validate different sizes', () => {
       const { rerender } = render(
-        <IconButton icon={<Heart />} aria-label="Like" size="sm">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" size="sm" />
       );
 
       let button = screen.getByRole('button', { name: 'Like' });
@@ -85,9 +81,7 @@ describe('Target Size Integration', () => {
       expect(result.valid).toBe(true);
 
       rerender(
-        <IconButton icon={<Heart />} aria-label="Like" size="md">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" size="md" />
       );
 
       button = screen.getByRole('button', { name: 'Like' });
@@ -95,9 +89,7 @@ describe('Target Size Integration', () => {
       expect(result.valid).toBe(true);
 
       rerender(
-        <IconButton icon={<Heart />} aria-label="Like" size="lg">
-          <Heart />
-        </IconButton>
+        <IconButton icon={<Heart />} aria-label="Like" size="lg" />
       );
 
       button = screen.getByRole('button', { name: 'Like' });

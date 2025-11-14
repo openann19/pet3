@@ -54,12 +54,12 @@ const DEFAULT_THRESHOLDS = {
 /**
  * Track performance regressions
  */
-const performanceHistory: Array<{
+const performanceHistory: {
   effect: string;
   durationMs: number;
   droppedFrames: number;
   timestamp: number;
-}> = [];
+}[] = [];
 
 const MAX_HISTORY_SIZE = 100;
 

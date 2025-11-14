@@ -1,6 +1,6 @@
-import { forwardRef, useMemo } from 'react';
-import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 import { motion, type HTMLMotionProps, type Variants } from 'framer-motion';
+import type { ForwardRefExoticComponent, RefAttributes } from 'react';
+import { forwardRef, useMemo } from 'react';
 
 interface HoverStyle {
   scale?: number;
@@ -8,31 +8,88 @@ interface HoverStyle {
   rotate?: number;
   translateX?: number;
   translateY?: number;
+  x?: number;
+  y?: number;
 }
+
+type AsTag = 'div' | 'button';
 
 // Extract all valid HTML div attributes while excluding motion-specific props
 type DivAttributes = Omit<
   React.HTMLAttributes<HTMLDivElement>,
-  'onMouseEnter' | 'onMouseLeave' | 'onMouseDown' | 'onMouseUp' | 'onClick' | 'onTouchStart' | 'onTouchEnd'
+  | 'onMouseEnter'
+  | 'onMouseLeave'
+  | 'onMouseDown'
+  | 'onMouseUp'
+  | 'onClick'
+  | 'onTouchStart'
+  | 'onTouchEnd'
+  | 'onAnimationStart'
+  | 'onAnimationEnd'
+  | 'onAnimationIteration'
 >;
 
-interface MotionViewWebProps extends DivAttributes {
+type ButtonAttributes = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  | 'onMouseEnter'
+  | 'onMouseLeave'
+  | 'onMouseDown'
+  | 'onMouseUp'
+  | 'onClick'
+  | 'onTouchStart'
+  | 'onTouchEnd'
+>;
+
+interface MotionViewCommonProps {
   children?: React.ReactNode;
-  animatedStyle?: never;
+  animatedStyle?: Record<string, unknown> | object | Record<string, unknown>[];
   whileHover?: HoverStyle;
   whileTap?: HoverStyle;
   initial?: Variants | boolean | Variants['initial'];
   animate?: Variants['animate'] | Variants | boolean;
   exit?: Variants['exit'] | Variants;
   transition?: HTMLMotionProps<'div'>['transition'];
-  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
-  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
-  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
-  onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
-  onClick?: React.MouseEventHandler<HTMLDivElement>;
-  onTouchStart?: React.TouchEventHandler<HTMLDivElement>;
-  onTouchEnd?: React.TouchEventHandler<HTMLDivElement>;
+  as?: AsTag;
+  // Framer-motion advanced props (web-oriented, no-ops on RN)
+  layout?: boolean | 'position' | 'size';
+  layoutId?: string;
+  onHoverStart?: (event: MouseEvent, info: unknown) => void;
+  onHoverEnd?: (event: MouseEvent, info: unknown) => void;
+  onTapStart?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
+  onTap?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
+  onTapCancel?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
+  drag?: boolean | 'x' | 'y';
+  dragConstraints?: unknown;
+  dragElastic?: number;
+  dragMomentum?: boolean;
+  onDragStart?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
+  onDrag?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
+  onDragEnd?: (event: MouseEvent | TouchEvent | PointerEvent, info: unknown) => void;
 }
+
+type MotionViewWebProps =
+  | (MotionViewCommonProps &
+    DivAttributes & {
+      as?: 'div';
+      onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+      onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
+      onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+      onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
+      onClick?: React.MouseEventHandler<HTMLDivElement>;
+      onTouchStart?: React.TouchEventHandler<HTMLDivElement>;
+      onTouchEnd?: React.TouchEventHandler<HTMLDivElement>;
+    })
+  | (MotionViewCommonProps &
+    ButtonAttributes & {
+      as: 'button';
+      onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>;
+      onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>;
+      onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
+      onMouseUp?: React.MouseEventHandler<HTMLButtonElement>;
+      onClick?: React.MouseEventHandler<HTMLButtonElement>;
+      onTouchStart?: React.TouchEventHandler<HTMLButtonElement>;
+      onTouchEnd?: React.TouchEventHandler<HTMLButtonElement>;
+    });
 
 /**
  * Web-specific MotionView component using framer-motion.
@@ -43,8 +100,8 @@ interface MotionViewWebProps extends DivAttributes {
  * by the build system. This file serves as a fallback.
  */
 export const MotionView: ForwardRefExoticComponent<
-  MotionViewWebProps & RefAttributes<HTMLDivElement>
-> = forwardRef<HTMLDivElement, MotionViewWebProps>(
+  MotionViewWebProps & RefAttributes<HTMLDivElement | HTMLButtonElement>
+> = forwardRef<HTMLDivElement | HTMLButtonElement, MotionViewWebProps>(
   (
     {
       children,
@@ -54,66 +111,48 @@ export const MotionView: ForwardRefExoticComponent<
       animate,
       exit,
       transition,
-      animatedStyle: _animatedStyle, // Explicitly ignore animatedStyle prop
+      animatedStyle: _animatedStyle,
+      as = 'div',
+      layout,
+      layoutId,
+      onHoverStart,
+      onHoverEnd,
+      onTapStart,
+      onTap,
+      onTapCancel,
+      drag,
+      dragConstraints,
+      dragElastic,
+      dragMomentum,
+      onDragStart,
+      onDrag,
+      onDragEnd,
       ...restProps
     },
     ref
   ) => {
-    // Map HoverStyle to framer-motion format
-    // Filter out undefined values to avoid passing undefined to framer-motion
     const mappedWhileHover = useMemo(() => {
-      if (!whileHover) {
-        return undefined;
-      }
+      if (!whileHover) return undefined;
       const mapped: Record<string, number> = {};
-      if (whileHover.scale !== undefined) {
-        mapped.scale = whileHover.scale;
-      }
-      if (whileHover.opacity !== undefined) {
-        mapped.opacity = whileHover.opacity;
-      }
-      if (whileHover.rotate !== undefined) {
-        mapped.rotate = whileHover.rotate;
-      }
-      if (whileHover.translateX !== undefined) {
-        mapped.x = whileHover.translateX;
-      }
-      if (whileHover.translateY !== undefined) {
-        mapped.y = whileHover.translateY;
-      }
+      if (whileHover.scale !== undefined) mapped.scale = whileHover.scale;
+      if (whileHover.opacity !== undefined) mapped.opacity = whileHover.opacity;
+      if (whileHover.rotate !== undefined) mapped.rotate = whileHover.rotate;
+      if (whileHover.translateX !== undefined) mapped.x = whileHover.translateX;
+      if (whileHover.translateY !== undefined) mapped.y = whileHover.translateY;
       return Object.keys(mapped).length > 0 ? mapped : undefined;
     }, [whileHover]);
 
     const mappedWhileTap = useMemo(() => {
-      if (!whileTap) {
-        return undefined;
-      }
+      if (!whileTap) return undefined;
       const mapped: Record<string, number> = {};
-      if (whileTap.scale !== undefined) {
-        mapped.scale = whileTap.scale;
-      }
-      if (whileTap.opacity !== undefined) {
-        mapped.opacity = whileTap.opacity;
-      }
-      if (whileTap.rotate !== undefined) {
-        mapped.rotate = whileTap.rotate;
-      }
-      if (whileTap.translateX !== undefined) {
-        mapped.x = whileTap.translateX;
-      }
-      if (whileTap.translateY !== undefined) {
-        mapped.y = whileTap.translateY;
-      }
+      if (whileTap.scale !== undefined) mapped.scale = whileTap.scale;
+      if (whileTap.opacity !== undefined) mapped.opacity = whileTap.opacity;
+      if (whileTap.rotate !== undefined) mapped.rotate = whileTap.rotate;
+      if (whileTap.translateX !== undefined) mapped.x = whileTap.translateX;
+      if (whileTap.translateY !== undefined) mapped.y = whileTap.translateY;
       return Object.keys(mapped).length > 0 ? mapped : undefined;
     }, [whileTap]);
 
-    // restProps contains all valid HTML div attributes
-    // framer-motion's motion.div will handle these correctly and won't pass
-    // motion-specific props (whileHover, whileTap, initial, animate, etc.) to the DOM
-    // We explicitly extract animatedStyle above to ensure it's not passed through
-    // Also explicitly exclude whileHover and whileTap from restProps to prevent DOM leakage
-
-    // Filter out any motion-specific props that might have leaked into restProps
     const {
       whileHover: _whileHover,
       whileTap: _whileTap,
@@ -122,6 +161,7 @@ export const MotionView: ForwardRefExoticComponent<
       exit: _exit,
       transition: _transition,
       animatedStyle: _animatedStyleProp,
+      as: _asConsumed,
       ...domProps
     } = restProps as typeof restProps & {
       whileHover?: unknown;
@@ -131,21 +171,41 @@ export const MotionView: ForwardRefExoticComponent<
       exit?: unknown;
       transition?: unknown;
       animatedStyle?: unknown;
+      as?: unknown;
+    };
+
+    const Comp = as === 'button' ? motion.button : motion.div;
+
+    // Build props object conditionally to satisfy exactOptionalPropertyTypes
+    // Only include props that are defined (not undefined)
+    const motionProps = {
+      ...domProps,
+      ...(initial !== undefined && { initial }),
+      ...(animate !== undefined && { animate }),
+      ...(exit !== undefined && { exit }),
+      ...(transition !== undefined && { transition }),
+      ...(mappedWhileHover !== undefined && { whileHover: mappedWhileHover }),
+      ...(mappedWhileTap !== undefined && { whileTap: mappedWhileTap }),
+      ...(layout !== undefined && { layout }),
+      ...(layoutId !== undefined && { layoutId }),
+      ...(onHoverStart !== undefined && { onHoverStart }),
+      ...(onHoverEnd !== undefined && { onHoverEnd }),
+      ...(onTapStart !== undefined && { onTapStart }),
+      ...(onTap !== undefined && { onTap }),
+      ...(onTapCancel !== undefined && { onTapCancel }),
+      ...(drag !== undefined && { drag }),
+      ...(dragConstraints !== undefined && { dragConstraints }),
+      ...(dragElastic !== undefined && { dragElastic }),
+      ...(dragMomentum !== undefined && { dragMomentum }),
+      ...(onDragStart !== undefined && { onDragStart }),
+      ...(onDrag !== undefined && { onDrag }),
+      ...(onDragEnd !== undefined && { onDragEnd }),
     };
 
     return (
-      <motion.div
-        ref={ref}
-        initial={initial}
-        animate={animate}
-        exit={exit}
-        transition={transition}
-        whileHover={mappedWhileHover}
-        whileTap={mappedWhileTap}
-        {...domProps}
-      >
+      <Comp ref={ref as never} {...(motionProps as HTMLMotionProps<'div'>)}>
         {children}
-      </motion.div>
+      </Comp>
     );
   }
 );

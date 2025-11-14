@@ -1,12 +1,12 @@
 declare module 'react-native-reanimated' {
-  import type { ComponentType, ComponentPropsWithoutRef } from 'react'
+  import type { ComponentType, ComponentPropsWithoutRef, ForwardRefExoticComponent, RefAttributes } from 'react'
 
   // Minimal ambient declarations to satisfy tsc in non-native environments.
   interface AnimatedComponents {
     readonly SharedValue: <T>(value: T) => SharedValue<T>
-    readonly View: ComponentType<ComponentPropsWithoutRef<'div'>>
-    readonly Text: ComponentType<ComponentPropsWithoutRef<'span'>>
-    readonly ScrollView: ComponentType<ComponentPropsWithoutRef<'div'>>
+    readonly View: ForwardRefExoticComponent<import('react-native').ViewProps>
+    readonly Text: ForwardRefExoticComponent<import('react-native').TextProps>
+    readonly ScrollView: ForwardRefExoticComponent<import('react-native').ViewProps>
   }
   const Animated: AnimatedComponents
   export default Animated
@@ -113,7 +113,7 @@ declare module 'react-native-reanimated' {
 }
 
 declare module 'react-native' {
-  import type { CSSProperties, ComponentPropsWithoutRef } from 'react'
+  import type { CSSProperties } from 'react'
 
   export interface LayoutRectangle {
     x: number
@@ -134,12 +134,14 @@ declare module 'react-native' {
   export type ImageStyle = CSSProperties & Record<string, unknown>
 
   // Component props
-  export interface ViewProps extends ComponentPropsWithoutRef<'div'> {
-    style?: ViewStyle | ViewStyle[]
+  export interface ViewProps {
+    style?: ViewStyle | AnimatedStyle<ViewStyle> | Array<ViewStyle | AnimatedStyle<ViewStyle>>
+    [key: string]: unknown
   }
 
-  export interface TextProps extends ComponentPropsWithoutRef<'span'> {
-    style?: TextStyle | TextStyle[]
+  export interface TextProps {
+    style?: TextStyle | AnimatedStyle<TextStyle> | Array<TextStyle | AnimatedStyle<TextStyle>>
+    [key: string]: unknown
   }
 
   // Platform API

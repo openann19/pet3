@@ -220,10 +220,10 @@ export async function checkRateLimit(
   const startTime = performance.now()
 
   // Get client IP
-  const ip = rateLimitManager['getClientIP']()
+  const ip = rateLimitManager.getClientIP()
 
   // Check abuse detection
-  if (rateLimitManager['checkAbuse'](ip, userId)) {
+  if (rateLimitManager.checkAbuse(ip, userId)) {
     logger.warn('Request blocked due to abuse detection', { userId, ip, action })
     return {
       allowed: false,
@@ -236,16 +236,16 @@ export async function checkRateLimit(
   // Check IP-based rate limit
   const ipResult = await rateLimitManager.checkIPRateLimit(ip, config)
   if (!ipResult.allowed) {
-    rateLimitManager['recordViolation'](ip, userId)
+    rateLimitManager.recordViolation(ip, userId)
     const responseTime = performance.now() - startTime
-    rateLimitManager['updateMetrics'](action, false, responseTime)
+    rateLimitManager.updateMetrics(action, false, responseTime)
     return ipResult
   }
 
   try {
     const result = await rateLimitingApi.checkRateLimit(userId, action, maxRequests, windowMs)
     const responseTime = performance.now() - startTime
-    rateLimitManager['updateMetrics'](action, result.allowed, responseTime)
+    rateLimitManager.updateMetrics(action, result.allowed, responseTime)
     return result
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
@@ -263,12 +263,12 @@ export async function checkRateLimit(
 
     // Check if limit exceeded
     if (recentAttempts.length >= maxRequests) {
-      rateLimitManager['recordViolation'](ip, userId)
+      rateLimitManager.recordViolation(ip, userId)
       const oldestAttempt = recentAttempts[0]
       if (isTruthy(oldestAttempt)) {
         const resetAt = oldestAttempt + windowMs
         const responseTime = performance.now() - startTime
-        rateLimitManager['updateMetrics'](action, false, responseTime)
+        rateLimitManager.updateMetrics(action, false, responseTime)
         return {
           allowed: false,
           remaining: 0,
@@ -291,7 +291,7 @@ export async function checkRateLimit(
         : now + windowMs
 
     const responseTime = performance.now() - startTime
-    rateLimitManager['updateMetrics'](action, true, responseTime)
+    rateLimitManager.updateMetrics(action, true, responseTime)
 
     return {
       allowed: true,

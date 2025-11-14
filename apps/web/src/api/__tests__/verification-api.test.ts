@@ -14,7 +14,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -31,54 +32,56 @@ const mockRequest: VerificationRequest = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
 
-    const url = new URL(req.url, 'http://localhost:8080');
+      const url = new URL(req.url, 'http://localhost:8080');
 
-    if (req.method === 'GET' && url.pathname === '/verification/requests') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { requests: [mockRequest] } }));
-      return;
-    }
+      if (req.method === 'GET' && url.pathname === '/verification/requests') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { requests: [mockRequest] } }));
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname === '/verification/update-status') {
-      const requestId = url.searchParams.get('requestId');
-      const payload = await readJson<{
-        status: 'approved' | 'rejected';
-        reviewedBy: string;
-        notes?: string;
-      }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            request: {
-              ...mockRequest,
-              id: requestId || 'req-1',
-              status: payload.status,
-              reviewedBy: payload.reviewedBy,
-              notes: payload.notes,
+      if (req.method === 'POST' && url.pathname === '/verification/update-status') {
+        const requestId = url.searchParams.get('requestId');
+        const payload = await readJson<{
+          status: 'approved' | 'rejected';
+          reviewedBy: string;
+          notes?: string;
+        }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              request: {
+                ...mockRequest,
+                id: requestId || 'req-1',
+                status: payload.status,
+                reviewedBy: payload.reviewedBy,
+                notes: payload.notes,
+              },
             },
-          },
-        })
-      );
-      return;
-    }
+          })
+        );
+        return;
+      }
 
-    res.statusCode = 404;
-    res.end();
+      res.statusCode = 404;
+      res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

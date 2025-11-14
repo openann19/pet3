@@ -6,10 +6,10 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { Pool } from 'pg';
 import { AdminAuditLogger } from '../services/admin-audit-logger';
-import { ValidationError } from '../utils/errors';
+import { validate } from '../middleware/validate';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('AdminRoutes');
@@ -26,6 +26,14 @@ const auditLogCreateSchema = z.object({
   targetType: z.string().min(1, 'Target type is required'),
   targetId: z.string().optional(),
   details: z.record(z.unknown()).optional(),
+});
+
+const auditLogsQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(1000).optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
+  adminId: z.string().min(1).optional(),
+  action: z.string().min(1).optional(),
+  targetType: z.string().min(1).optional(),
 });
 
 export function createAdminRoutes(config: AdminRoutesConfig): Router {
@@ -149,19 +157,18 @@ export function createAdminRoutes(config: AdminRoutesConfig): Router {
    * GET /api/v1/admin/settings/audit
    * Get admin audit logs (legacy endpoint)
    */
-  router.get('/admin/settings/audit', async (req: Request, res: Response): Promise<void> => {
-    try {
-      const limit = req.query.limit
-        ? Number.parseInt(String(req.query.limit), 10)
-        : 100;
-      const offset = req.query.offset
-        ? Number.parseInt(String(req.query.offset), 10)
-        : 0;
-      const adminId = req.query.adminId ? String(req.query.adminId) : undefined;
-      const action = req.query.action ? String(req.query.action) : undefined;
-      const targetType = req.query.targetType
-        ? String(req.query.targetType)
-        : undefined;
+  router.get(
+    '/admin/settings/audit',
+    validate({ query: auditLogsQuerySchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        type ValidatedQuery = z.infer<typeof auditLogsQuerySchema>;
+        const query = req.query as unknown as ValidatedQuery;
+        const limit = query.limit ?? 100;
+        const offset = query.offset ?? 0;
+        const adminId = query.adminId;
+        const action = query.action;
+        const targetType = query.targetType;
 
       const result = await adminAuditLogger.getAuditLogs({
         limit,
@@ -185,30 +192,30 @@ export function createAdminRoutes(config: AdminRoutesConfig): Router {
           timestamp: log.timestamp.toISOString(),
         }))
       );
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to get admin audit logs', err);
-      throw error;
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('Failed to get admin audit logs', err);
+        throw error;
+      }
     }
-  });
+  );
 
   /**
    * GET /api/v1/admin/audit-logs
    * Get admin audit logs (new endpoint for mobile/web compatibility)
    */
-  router.get('/admin/audit-logs', async (req: Request, res: Response): Promise<void> => {
-    try {
-      const limit = req.query.limit
-        ? Number.parseInt(String(req.query.limit), 10)
-        : 100;
-      const offset = req.query.offset
-        ? Number.parseInt(String(req.query.offset), 10)
-        : 0;
-      const adminId = req.query.adminId ? String(req.query.adminId) : undefined;
-      const action = req.query.action ? String(req.query.action) : undefined;
-      const targetType = req.query.targetType
-        ? String(req.query.targetType)
-        : undefined;
+  router.get(
+    '/admin/audit-logs',
+    validate({ query: auditLogsQuerySchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        type ValidatedQuery = z.infer<typeof auditLogsQuerySchema>;
+        const query = req.query as unknown as ValidatedQuery;
+        const limit = query.limit ?? 100;
+        const offset = query.offset ?? 0;
+        const adminId = query.adminId;
+        const action = query.action;
+        const targetType = query.targetType;
 
       const result = await adminAuditLogger.getAuditLogs({
         limit,
@@ -237,38 +244,37 @@ export function createAdminRoutes(config: AdminRoutesConfig): Router {
       logger.error('Failed to get admin audit logs', err);
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * POST /api/v1/admin/settings/audit
    * Create admin audit log entry (legacy endpoint)
    */
-  router.post('/admin/settings/audit', async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId ?? req.body.adminId ?? 'admin';
+  router.post(
+    '/admin/settings/audit',
+    validate({ body: auditLogCreateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      type ValidatedBody = z.infer<typeof auditLogCreateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.adminId ?? 'admin';
 
-    try {
-      const validationResult = auditLogCreateSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
+      try {
+        await adminAuditLogger.log({
+          adminId: validatedBody.adminId,
+          adminName: (req.user as { name?: string })?.name,
+          action: validatedBody.action,
+          targetType: validatedBody.targetType,
+          targetId: validatedBody.targetId,
+          details: validatedBody.details,
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'],
         });
-      }
 
-      await adminAuditLogger.log({
-        adminId: validationResult.data.adminId,
-        adminName: (req.user as { name?: string })?.name,
-        action: validationResult.data.action,
-        targetType: validationResult.data.targetType,
-        targetId: validationResult.data.targetId,
-        details: validationResult.data.details,
-        ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
-      });
-
-      logger.info('Admin audit log created', {
-        adminId: validationResult.data.adminId,
-        action: validationResult.data.action,
-      });
+        logger.info('Admin audit log created', {
+          adminId: validatedBody.adminId,
+          action: validatedBody.action,
+        });
 
       res.status(201).json({ success: true });
     } catch (error) {
@@ -282,52 +288,43 @@ export function createAdminRoutes(config: AdminRoutesConfig): Router {
    * POST /api/v1/admin/audit-logs
    * Create admin audit log entry (new endpoint for mobile/web compatibility)
    */
-  router.post('/admin/audit-logs', async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId ?? req.body.adminId ?? 'admin';
-
-    try {
-      // Handle both string details (from mobile) and object details (from web)
-      const body = req.body;
-      let details: Record<string, unknown> | undefined;
-
-      if (body.details) {
-        if (typeof body.details === 'string') {
+  router.post(
+    '/admin/audit-logs',
+    (req: Request, _res: Response, next: NextFunction): void => {
+      // Preprocess details field: handle both string (from mobile) and object (from web)
+      if (req.body.details) {
+        if (typeof req.body.details === 'string') {
           try {
-            details = JSON.parse(body.details);
+            req.body.details = JSON.parse(req.body.details);
           } catch {
-            details = { message: body.details };
+            req.body.details = { message: req.body.details };
           }
-        } else {
-          details = body.details;
         }
       }
+      next();
+    },
+    validate({ body: auditLogCreateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      type ValidatedBody = z.infer<typeof auditLogCreateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.adminId ?? 'admin';
 
-      const validationResult = auditLogCreateSchema.safeParse({
-        ...body,
-        details,
-      });
-
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
+      try {
+        await adminAuditLogger.log({
+          adminId: validatedBody.adminId,
+          adminName: (req.user as { name?: string })?.name,
+          action: validatedBody.action,
+          targetType: validatedBody.targetType,
+          targetId: validatedBody.targetId,
+          details: validatedBody.details,
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'],
         });
-      }
 
-      await adminAuditLogger.log({
-        adminId: validationResult.data.adminId,
-        adminName: (req.user as { name?: string })?.name,
-        action: validationResult.data.action,
-        targetType: validationResult.data.targetType,
-        targetId: validationResult.data.targetId,
-        details: validationResult.data.details,
-        ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
-      });
-
-      logger.info('Admin audit log created', {
-        adminId: validationResult.data.adminId,
-        action: validationResult.data.action,
-      });
+        logger.info('Admin audit log created', {
+          adminId: validatedBody.adminId,
+          action: validatedBody.action,
+        });
 
       res.status(201).json({ success: true });
     } catch (error) {
@@ -335,7 +332,8 @@ export function createAdminRoutes(config: AdminRoutesConfig): Router {
       logger.error('Failed to create admin audit log', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   return router;
 }

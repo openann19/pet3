@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -11,8 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -21,26 +26,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useSubscriptionAdmin } from '@/hooks/admin/use-subscription-admin';
 import type { Subscription } from '@/lib/payments-types';
 import {
-  MagnifyingGlass,
-  CurrencyDollar,
-  Users,
-  TrendUp,
-  Gift,
-  X,
   ArrowCounterClockwise,
+  CurrencyDollar,
+  Gift,
+  MagnifyingGlass,
+  TrendUp,
+  Users,
+  X,
 } from '@phosphor-icons/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useSubscriptionAdmin } from '@/hooks/admin/use-subscription-admin';
 
 export function SubscriptionAdminPanel() {
   const {
@@ -50,6 +50,7 @@ export function SubscriptionAdminPanel() {
     loading,
     searchQuery,
     setSearchQuery,
+    loadData,
     compSubscription: compSubscriptionHook,
     cancelSubscription: cancelSubscriptionHook,
   } = useSubscriptionAdmin();

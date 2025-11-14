@@ -94,7 +94,7 @@ export default function OAuthButtons({
       // Use Apple Sign In API if available
       if (window.AppleID?.auth) {
         await window.AppleID.auth.init({
-          clientId: import.meta.env['VITE_APPLE_CLIENT_ID'],
+          clientId: import.meta.env.VITE_APPLE_CLIENT_ID,
           scope: 'name email',
           redirectURI: window.location.origin + '/api/v1/auth/oauth/apple/callback',
           usePopup: true,

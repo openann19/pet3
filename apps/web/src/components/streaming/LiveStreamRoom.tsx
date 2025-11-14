@@ -1,26 +1,27 @@
-import { useState, useEffect, useRef } from 'react';
+import { liveStreamingAPI } from '@/api/live-streaming-api';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  X,
-  Eye,
-  ChatCircle,
-  PaperPlaneTilt,
-  VideoCamera,
-  MicrophoneSlash,
-  Microphone,
-  Phone,
-  CameraRotate,
-} from '@phosphor-icons/react';
-import { motion, Presence, MotionView } from '@petspark/motion';
-import { toast } from 'sonner';
-import { liveStreamingAPI } from '@/api/live-streaming-api';
-import type { LiveStream, LiveStreamChatMessage } from '@/lib/live-streaming-types';
 import { haptics } from '@/lib/haptics';
+import type { LiveStream, LiveStreamChatMessage } from '@/lib/live-streaming-types';
 import { logger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
+import { MotionView, Presence } from '@petspark/motion';
+import {
+  CameraRotate,
+  ChatCircle,
+  Eye,
+  Microphone,
+  MicrophoneSlash,
+  PaperPlaneTilt,
+  Phone,
+  VideoCamera,
+  X,
+} from '@phosphor-icons/react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface LiveStreamRoomProps {
   streamId: string;
@@ -68,8 +69,12 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
 
   const joinStream = async () => {
     try {
-      const user = await spark.user();
-      await liveStreamingAPI.joinStream(streamId, user.id, user.login || 'User', user.avatarUrl);
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
+      await liveStreamingAPI.joinStream(streamId, user.id, user.login || 'User', user.avatarUrl ?? undefined);
       await loadStream();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -79,7 +84,8 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
 
   const leaveStream = async () => {
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) return;
       await liveStreamingAPI.leaveStream(streamId, user.id);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -96,12 +102,16 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
     if (!messageInput.trim() || !stream?.allowChat) return;
 
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       await liveStreamingAPI.sendChatMessage(
         streamId,
         user.id,
         user.login || 'User',
-        user.avatarUrl,
+        user.avatarUrl ?? undefined,
         messageInput.trim()
       );
       setMessageInput('');
@@ -125,12 +135,13 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
     }, 3000);
 
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) return;
       await liveStreamingAPI.sendReaction(
         streamId,
         user.id,
         user.login || 'User',
-        user.avatarUrl,
+        user.avatarUrl ?? undefined,
         emoji as '❤️' | '👏' | '🔥' | '😊' | '🎉'
       );
       await loadStream();
@@ -148,7 +159,11 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
     if (!isHost) return;
 
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       await liveStreamingAPI.endRoom(streamId, user.id);
       toast.success('Stream ended');
       onClose();
@@ -222,6 +237,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
             size="icon"
             onClick={onClose}
             className="rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80"
+            aria-label="Close stream"
           >
             <X size={24} />
           </Button>
@@ -272,6 +288,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
             size="icon"
             onClick={() => { setIsMuted(!isMuted); }}
             className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80"
+            aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
           >
             {isMuted ? <MicrophoneSlash size={24} /> : <Microphone size={24} />}
           </Button>
@@ -281,6 +298,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
             size="icon"
             onClick={handleEndStream}
             className="rounded-full w-16 h-16"
+            aria-label="End stream"
           >
             <Phone size={28} />
           </Button>
@@ -290,6 +308,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
             size="icon"
             onClick={() => { setIsCameraOff(!isCameraOff); }}
             className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80"
+            aria-label={isCameraOff ? 'Turn camera on' : 'Turn camera off'}
           >
             <CameraRotate size={24} />
           </Button>
@@ -315,6 +334,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
                 size="icon"
                 onClick={() => { setShowChat(false); }}
                 className="text-white hover:bg-white/10 rounded-full"
+                aria-label="Close chat"
               >
                 <X size={20} />
               </Button>
@@ -360,6 +380,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
                   disabled={!messageInput.trim()}
                   size="icon"
                   className="rounded-full"
+                  aria-label="Send message"
                 >
                   <PaperPlaneTilt size={18} weight="fill" />
                 </Button>
@@ -375,6 +396,7 @@ export function LiveStreamRoom({ streamId, isHost, onClose }: LiveStreamRoomProp
           size="icon"
           onClick={() => { setShowChat(true); }}
           className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full w-14 h-14 bg-black/60 backdrop-blur-md text-white hover:bg-black/80 z-10"
+          aria-label="Open chat"
         >
           <ChatCircle size={24} weight="fill" />
         </Button>

@@ -151,7 +151,7 @@ export class RealtimeClient {
     this.trigger('user_typing', { userId, roomId, isTyping })
   }
 
-  async emitWebRTCSignal(
+  emitWebRTCSignal(
     signalData: WebRTCSignalData
   ): Promise<{ success: boolean; error?: string }> {
     return this.emit('webrtc_signal', signalData)
@@ -164,7 +164,7 @@ export class RealtimeClient {
   ): () => void {
     const eventKey = `webrtc_signal:${currentUserId}:${callId}`
 
-    const signalHandler = (data: unknown) => {
+    const signalHandler = (data: unknown): void => {
       const signal = data as WebRTCSignalData
       if (signal.callId === callId && signal.to === currentUserId) {
         callback(signal)

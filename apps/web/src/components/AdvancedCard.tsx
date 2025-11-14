@@ -35,12 +35,12 @@ const sizeClasses: Record<CardSize, string> = {
 const variantClasses: Record<CardVariant, string> = {
   glass: 'bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl',
   gradient:
-    'bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 backdrop-blur-sm border border-white/10',
+    'bg-linear-to-br from-primary/10 via-accent/5 to-secondary/10 backdrop-blur-sm border border-white/10',
   neon: 'bg-background border-2 border-accent shadow-[0_0_20px_rgba(245,158,11,0.3)]',
   holographic:
-    'bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 backdrop-blur-md border border-white/30 relative overflow-hidden',
+    'bg-linear-to-br from-primary/20 via-accent/20 to-secondary/20 backdrop-blur-md border border-white/30 relative overflow-hidden',
   premium:
-    'bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl border border-white/40 shadow-2xl',
+    'bg-linear-to-br from-white/90 to-white/70 backdrop-blur-xl border border-white/40 shadow-2xl',
   minimal: 'bg-card border border-border',
   floating: 'bg-card border border-border shadow-xl',
 };

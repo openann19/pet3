@@ -23,6 +23,7 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import type { Pet } from '@/lib/types';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export default function ContentView() {
   const [allPets] = useStorage<Pet[]>('all-pets', []);
@@ -96,10 +97,15 @@ export default function ContentView() {
             >
               <div className="aspect-square relative bg-muted">
                 {pet.photo ? (
-                  <img src={pet.photo} alt={pet.name} className="h-full w-full object-cover" />
+                  <ProgressiveImage
+                    src={pet.photo}
+                    alt={pet.name}
+                    className="h-full w-full object-cover"
+                    aria-label={`Photo of ${pet.name}`}
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <ImageIcon size={48} className="text-muted-foreground" />
+                    <ImageIcon size={48} className="text-muted-foreground" aria-hidden="true" />
                   </div>
                 )}
                 <Badge className="absolute right-2 top-2" variant="secondary">
@@ -153,10 +159,11 @@ export default function ContentView() {
             <div className="space-y-4">
               <div className="aspect-video relative bg-muted rounded-lg overflow-hidden">
                 {selectedPet.photo ? (
-                  <img
+                  <ProgressiveImage
                     src={selectedPet.photo}
                     alt={selectedPet.name}
                     className="w-full h-full object-cover"
+                    aria-label={`Photo of ${selectedPet.name}`}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

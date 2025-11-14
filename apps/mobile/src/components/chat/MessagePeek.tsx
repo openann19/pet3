@@ -75,7 +75,7 @@ export function MessagePeekNative({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+      <Pressable style={styles.backdrop} onPress={onClose}>
         <Animated.View
           style={[styles.backdropOverlay, backdropStyle]}
           entering={FadeIn.duration(120)}

@@ -4,8 +4,9 @@
  * Custom render functions with providers for testing
  */
 
-import { render, RenderOptions } from '@testing-library/react';
-import { ReactElement, ReactNode } from 'react';
+import { render } from '@testing-library/react';
+import type { RenderOptions } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { UIProvider } from '@/contexts/UIContext';
@@ -46,8 +47,8 @@ interface AllProvidersProps {
  * AllProviders component that wraps children with all necessary providers
  * Note: AppProvider and AuthProvider use hooks internally, so we use the actual providers
  */
-function AllProviders({ children, queryClient, initialEntries = ['/'] }: AllProvidersProps) {
-  const client = queryClient || createTestQueryClient();
+function AllProviders({ children, queryClient }: AllProvidersProps) {
+  const client = queryClient ?? createTestQueryClient();
 
   return (
     <BrowserRouter>
@@ -95,8 +96,8 @@ export function renderWithQueryClient(
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'> & { queryClient?: QueryClient }
 ): ReturnType<typeof render> {
-  const { queryClient, ...renderOptions } = options || {};
-  const client = queryClient || createTestQueryClient();
+  const { queryClient, ...renderOptions } = options ?? {};
+  const client = queryClient ?? createTestQueryClient();
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
@@ -120,7 +121,7 @@ export function renderWithRouter(
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'> & { initialEntries?: string[] }
 ): ReturnType<typeof render> {
-  const { initialEntries = ['/'], ...renderOptions } = options || {};
+  const { initialEntries: _initialEntries = ['/'], ...renderOptions } = options ?? {};
 
   function Wrapper({ children }: { children: ReactNode }) {
     return <BrowserRouter>{children}</BrowserRouter>;

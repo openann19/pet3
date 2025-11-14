@@ -21,6 +21,6 @@ import { lazy } from 'react';
  */
 export const LiveStreamRoom = lazy(() =>
   import('./LiveStreamRoom').then((module) => ({
-    LiveStreamRoom: module.LiveStreamRoom,
-  }))
+    default: module.LiveStreamRoom,
+  })) as Promise<{ default: typeof import('./LiveStreamRoom').LiveStreamRoom }>
 );

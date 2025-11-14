@@ -9,7 +9,8 @@ import { motion } from '../tokens'
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion'
 
 export interface PresenceProps {
-  visible: boolean
+  visible?: boolean
+  mode?: 'wait' | 'sync' | 'popLayout' | (string & {})
   children: React.ReactNode
 }
 
@@ -17,7 +18,7 @@ export interface PresenceProps {
  * Presence component for enter/exit animations.
  * Respects reduced motion preferences (instant transitions when enabled).
  */
-export function Presence({ visible, children }: PresenceProps): JSX.Element {
+export function Presence({ visible = true, children }: PresenceProps): JSX.Element {
   const reducedMotion = useReducedMotionSV()
   const a = useSharedValue(visible ? 1 : 0)
 

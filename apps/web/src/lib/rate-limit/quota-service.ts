@@ -32,7 +32,7 @@ export interface QuotaUsage {
  * For production, use persistent storage (Redis, database, KV store)
  */
 export class QuotaService {
-  private quotas: Map<string, QuotaUsage> = new Map();
+  private quotas = new Map<string, QuotaUsage>();
   private readonly dailyLimit: number;
   private readonly windowMs: number;
   private readonly resetAtMidnight: boolean;

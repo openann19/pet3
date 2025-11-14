@@ -100,12 +100,12 @@ export interface UseOfflineQueueReturn {
     options?: Partial<QueuedOperation<T>>
   ) => string
   readonly enqueueBatch: <T>(
-    operations: Array<{
+    operations: {
       type: OperationType
       resourceType: string
       data: T
       options?: Partial<QueuedOperation<T>>
-    }>
+    }[]
   ) => string[]
   readonly dequeue: (id: string) => void
   readonly retry: (id: string) => Promise<void>
@@ -650,7 +650,7 @@ export function useOfflineQueue(
         resourceType,
         data,
         status: 'pending',
-        priority: (operationOptions?.priority ?? 'medium') as OperationPriority,
+        priority: (operationOptions?.priority ?? 'medium'),
         retryCount: 0,
         maxRetries: operationOptions?.maxRetries ?? maxRetries,
         createdAt: Date.now(),
@@ -738,12 +738,12 @@ export function useOfflineQueue(
   // Enqueue batch operations
   const enqueueBatch = useCallback(
     <T,>(
-      operations: Array<{
+      operations: {
         type: OperationType
         resourceType: string
         data: T
         options?: Partial<QueuedOperation<T>>
-      }>
+      }[]
     ): string[] => {
       if (!enableBatchOperations) {
         throw new Error('Batch operations are not enabled')

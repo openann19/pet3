@@ -17,6 +17,16 @@ vi.mock('@/lib/haptics', () => ({
   },
 }));
 
+vi.mock('@/components/error/RouteErrorBoundary', () => ({
+  RouteErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/effects/reanimated/animated-view', () => ({
+  AnimatedView: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => (
+    <div {...props}>{children}</div>
+  ),
+}));
+
 vi.mock('@/components/auth/SignInForm', () => ({
   default: ({ onSuccess, onSwitchToSignUp }: { onSuccess: () => void; onSwitchToSignUp: () => void }) => (
     <div data-testid="sign-in-form">
@@ -68,8 +78,9 @@ describe('AuthScreen', () => {
     it('should render back button', () => {
       renderWithProviders(<AuthScreen onBack={mockOnBack} onSuccess={mockOnSuccess} />);
 
-      const backButton = screen.getByRole('button', { name: /back/i });
+      const backButton = screen.getByLabelText(/back/i);
       expect(backButton).toBeInTheDocument();
+      expect(backButton).toHaveAttribute('aria-label');
     });
 
     it('should render language toggle button', () => {
@@ -117,7 +128,7 @@ describe('AuthScreen', () => {
       const user = userEvent.setup();
       renderWithProviders(<AuthScreen onBack={mockOnBack} onSuccess={mockOnSuccess} />);
 
-      const backButton = screen.getByRole('button', { name: /back/i });
+      const backButton = screen.getByLabelText(/back/i);
       await user.click(backButton);
 
       expect(mockOnBack).toHaveBeenCalledTimes(1);
@@ -148,7 +159,7 @@ describe('AuthScreen', () => {
     it('should render language toggle button', () => {
       renderWithProviders(<AuthScreen onBack={mockOnBack} onSuccess={mockOnSuccess} />);
 
-      const languageButton = screen.getByRole('button', { name: /switch to/i });
+      const languageButton = screen.getByRole('button', { name: /switch language/i });
       expect(languageButton).toBeInTheDocument();
     });
 
@@ -156,7 +167,7 @@ describe('AuthScreen', () => {
       const user = userEvent.setup();
       renderWithProviders(<AuthScreen onBack={mockOnBack} onSuccess={mockOnSuccess} />);
 
-      const languageButton = screen.getByRole('button', { name: /switch to/i });
+      const languageButton = screen.getByRole('button', { name: /switch language/i });
       await user.click(languageButton);
 
       // Language toggle should work (implementation may vary)
@@ -194,10 +205,10 @@ describe('AuthScreen', () => {
     it('should have proper ARIA labels for buttons', () => {
       renderWithProviders(<AuthScreen onBack={mockOnBack} onSuccess={mockOnSuccess} />);
 
-      const backButton = screen.getByRole('button', { name: /back/i });
+      const backButton = screen.getByLabelText(/back/i);
       expect(backButton).toHaveAttribute('aria-label');
 
-      const languageButton = screen.getByRole('button', { name: /switch to/i });
+      const languageButton = screen.getByRole('button', { name: /switch language/i });
       expect(languageButton).toHaveAttribute('aria-label');
       expect(languageButton).toHaveAttribute('aria-pressed');
     });

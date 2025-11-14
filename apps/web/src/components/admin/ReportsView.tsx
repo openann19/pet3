@@ -175,7 +175,7 @@ export default function ReportsView() {
                 : 'no_action';
 
       const updatedBackendReport = await adminReportsApi.resolveReport(selectedReport.id, {
-        action: backendAction as 'warn' | 'suspend' | 'ban' | 'remove_content' | 'no_action',
+        action: backendAction,
         notes: resolution,
       });
 
@@ -496,7 +496,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     critical: { variant: 'destructive', icon: Warning },
   };
 
-  const config = variants[priority] ?? variants['medium'];
+  const config = variants[priority] ?? variants.medium;
   if (!config) return null;
   const Icon = config.icon;
 
@@ -517,7 +517,7 @@ function StatusBadge({ status }: { status: string }) {
     dismissed: { variant: 'outline', label: 'Dismissed' },
   };
 
-  const config = variants[status] ?? variants['pending'];
+  const config = variants[status] ?? variants.pending;
   if (!config) return null;
 
   return <Badge variant={config?.variant}>{config?.label}</Badge>;

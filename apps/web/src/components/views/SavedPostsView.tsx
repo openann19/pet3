@@ -2,6 +2,7 @@
 
 import { PostCard } from '@/components/community/PostCard';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { PostDetailView } from '@/components/community/PostDetailView';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -73,7 +74,7 @@ interface SavedPostsViewProps {
   onAuthorClick?: (authorId: string) => void;
 }
 
-export default function SavedPostsView({ onBack, onAuthorClick }: SavedPostsViewProps) {
+function SavedPostsViewContent({ onBack, onAuthorClick }: SavedPostsViewProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -112,7 +113,7 @@ export default function SavedPostsView({ onBack, onAuthorClick }: SavedPostsView
             </Button>
           )}
           <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
               <BookmarkSimple size={24} className="text-white" weight="fill" />
             </div>
             <div>
@@ -190,5 +191,19 @@ export default function SavedPostsView({ onBack, onAuthorClick }: SavedPostsView
         )}
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function SavedPostsView(props: SavedPostsViewProps) {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('SavedPostsView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <SavedPostsViewContent {...props} />
+    </RouteErrorBoundary>
   );
 }

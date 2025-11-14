@@ -52,7 +52,7 @@ function Slider({
           data-slot="slider-range"
           className={cn(
             'absolute rounded-full',
-            'bg-gradient-to-r from-primary via-primary/95 to-accent',
+            'bg-linear-to-r from-primary via-primary/95 to-accent',
             'shadow-lg shadow-primary/25',
             'transition-all duration-300',
             'group-hover:shadow-xl group-hover:shadow-primary/30',
@@ -62,7 +62,7 @@ function Slider({
           )}
         >
           <MotionView
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
             animate={{
               x: ['-100%', '200%'],
             }}

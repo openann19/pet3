@@ -630,3 +630,6 @@ class AdoptionMarketplaceService {
 }
 
 export const adoptionMarketplaceService = new AdoptionMarketplaceService();
+
+// Re-export types for convenience
+export type { AdoptionListing, AdoptionListingFilters } from './adoption-marketplace-types';

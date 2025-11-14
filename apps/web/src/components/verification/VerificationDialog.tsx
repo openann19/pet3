@@ -248,7 +248,7 @@ export function VerificationDialog({ open, onOpenChange, petId, userId }: Verifi
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20"
+                className="p-2 rounded-xl bg-linear-to-br from-primary/20 to-accent/20"
               >
                 <ShieldCheck size={24} weight="fill" className="text-primary" />
               </MotionView>
@@ -312,7 +312,7 @@ export function VerificationDialog({ open, onOpenChange, petId, userId }: Verifi
 
             {activeRequest && (
               <MotionView initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
+                <div className="p-4 rounded-xl bg-linear-to-br from-primary/10 to-accent/10 border border-primary/20">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-foreground/80">
                       Verification Progress
@@ -331,7 +331,7 @@ export function VerificationDialog({ open, onOpenChange, petId, userId }: Verifi
                   <MotionView
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="p-6 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30"
+                    className="p-6 rounded-xl bg-linear-to-br from-primary/20 to-accent/20 border border-primary/30"
                   >
                     <div className="text-center">
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4">

@@ -54,7 +54,7 @@ export interface DiscoveryPreferences {
   };
 }
 
-const DEFAULT_PREFERENCES: DiscoveryPreferences = {
+export const DEFAULT_PREFERENCES: DiscoveryPreferences = {
   minAge: 0,
   maxAge: 15,
   sizes: ['small', 'medium', 'large', 'extra-large'],
@@ -594,11 +594,10 @@ export default function DiscoveryFilters() {
                             setCropSize(cropSizeValue);
                           }
                         }}
-                        className={`p-4 rounded-lg border-2 transition-all text-left hover:scale-[1.02] active:scale-[0.98] ${
-                          cropSize === value
+                        className={`p-4 rounded-lg border-2 transition-all text-left hover:scale-[1.02] active:scale-[0.98] ${cropSize === value
                             ? 'border-primary bg-primary/10'
                             : 'border-border hover:border-primary/50'
-                        }`}
+                          }`}
                       >
                         <div className="text-2xl mb-1">{icon}</div>
                         <div className="text-sm font-medium">{label}</div>
@@ -636,11 +635,10 @@ export default function DiscoveryFilters() {
                             setPhotoQuality(photoQualityValue);
                           }
                         }}
-                        className={`p-4 rounded-lg border-2 transition-all text-left hover:scale-[1.01] active:scale-[0.99] ${
-                          photoQuality === value
+                        className={`p-4 rounded-lg border-2 transition-all text-left hover:scale-[1.01] active:scale-[0.99] ${photoQuality === value
                             ? 'border-primary bg-primary/10'
                             : 'border-border hover:border-primary/50'
-                        }`}
+                          }`}
                       >
                         <div className="font-medium text-sm flex items-center gap-2">
                           {photoQuality === value && (

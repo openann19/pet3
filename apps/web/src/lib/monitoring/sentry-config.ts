@@ -4,16 +4,23 @@ import * as Sentry from '@sentry/browser';
 
 const logger = createLogger('Sentry');
 
+// Sentry configuration from environment (optional)
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+const SENTRY_ENVIRONMENT = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT || 'development';
+const SENTRY_TRACES_SAMPLE_RATE = import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE
+  ? parseFloat(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE)
+  : 0.1;
+
 class SentryConfigImpl {
   private initialized = false;
 
   init(): void {
-    if (this.initialized || !ENV.VITE_SENTRY_DSN) return;
+    if (this.initialized || !SENTRY_DSN) return;
 
     Sentry.init({
-      dsn: ENV.VITE_SENTRY_DSN,
-      environment: ENV.VITE_ENVIRONMENT,
-      tracesSampleRate: ENV.VITE_SENTRY_TRACES_SAMPLE_RATE || 0.1,
+      dsn: SENTRY_DSN,
+      environment: SENTRY_ENVIRONMENT,
+      tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
 
       integrations: [Sentry.browserTracingIntegration()],
 
@@ -23,7 +30,7 @@ class SentryConfigImpl {
         _hint?: Sentry.EventHint
       ): Sentry.ErrorEvent | null => {
         // Filter out non-critical errors in development
-        if (ENV.VITE_ENVIRONMENT === 'development') {
+        if (SENTRY_ENVIRONMENT === 'development') {
           if (event.exception?.values?.[0]?.type === 'ChunkLoadError') {
             return null; // Don't report chunk load errors in dev
           }
@@ -50,8 +57,8 @@ class SentryConfigImpl {
 
     this.initialized = true;
     logger.info('Sentry initialized', {
-      environment: ENV.VITE_ENVIRONMENT,
-      dsn: ENV.VITE_SENTRY_DSN?.substring(0, 20) + '...',
+      environment: SENTRY_ENVIRONMENT,
+      dsn: SENTRY_DSN?.substring(0, 20) + '...',
     });
   }
 

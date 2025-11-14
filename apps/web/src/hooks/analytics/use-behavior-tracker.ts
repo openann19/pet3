@@ -202,7 +202,7 @@ export function useBehaviorTracker(config: BehaviorTrackerConfig = {}) {
 
   // Refs
   const clickHistoryRef = useRef<
-    Array<{ element: Element; timestamp: number; x: number; y: number }>
+    { element: Element; timestamp: number; x: number; y: number }[]
   >([]);
   const mousePointsRef = useRef<MousePoint[]>([]);
   const lastMousePointRef = useRef<MousePoint | null>(null);

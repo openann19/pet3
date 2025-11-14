@@ -18,7 +18,17 @@ interface UseFiltersOptions {
   onApply?: (values: Record<string, unknown>) => void
 }
 
-export function useFilters({ categories, initialValues = {}, onApply }: UseFiltersOptions) {
+export function useFilters({ categories, initialValues = {}, onApply }: UseFiltersOptions): {
+  values: Record<string, unknown>
+  activeFiltersCount: number
+  applyFilters: () => void
+  resetFilters: () => void
+  handleMultiSelect: (categoryId: string, optionId: string) => void
+  handleSingleSelect: (categoryId: string, optionId: string) => void
+  handleRangeChange: (categoryId: string, value: number[]) => void
+  handleToggle: (categoryId: string) => void
+  setValues: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
+} {
   const [localValues, setLocalValues] = useState<Record<string, unknown>>(initialValues)
 
   const activeFiltersCount = useMemo(() => {

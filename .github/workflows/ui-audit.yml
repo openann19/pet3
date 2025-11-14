@@ -1,24 +1,25 @@
 name: UI Audit
 
 on:
-  pull_request:
-    paths:
-      - 'apps/web/src/**'
-      - 'apps/mobile/src/**'
-      - 'apps/web/design-system/**'
   push:
-    branches:
-      - main
-    paths:
-      - 'apps/web/src/**'
-      - 'apps/mobile/src/**'
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
-  ui-audit-web:
-    name: UI Audit - Web
+  audit:
+    name: UI Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.18.3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,82 +27,73 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate inventory
+        run: tsx tools/ui-audit/inventory.ts
+
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps
 
       - name: Build web app
-        run: cd apps/web && pnpm build
+        working-directory: apps/web
+        run: pnpm build
 
-      - name: Run Playwright UI Audit
-        run: cd apps/web && pnpm e2e --project=ui-audit-xs --project=ui-audit-sm
-        continue-on-error: true
+      - name: Start web server
+        working-directory: apps/web
+        run: pnpm preview --port 5173 &
+        env:
+          CI: true
 
-      - name: Run axe-core checks
-        run: cd apps/web && pnpm test:a11y
-        continue-on-error: true
-
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-audit-screenshots
-          path: reports/ui-audit/screens/
-          retention-days: 7
-
-      - name: Upload findings
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-audit-findings
-          path: reports/ui-audit/
-          retention-days: 7
-
-      - name: Check for BLOCKER/HIGH violations
+      - name: Wait for server
         run: |
-          if [ -f reports/ui-audit/findings.json ]; then
-            BLOCKER_COUNT=$(jq '[.findings[] | select(.severity == "BLOCKER")] | length' reports/ui-audit/findings.json)
-            HIGH_COUNT=$(jq '[.findings[] | select(.severity == "HIGH")] | length' reports/ui-audit/findings.json)
-            TOTAL=$((BLOCKER_COUNT + HIGH_COUNT))
-            if [ $TOTAL -gt 0 ]; then
-              echo "Found $TOTAL BLOCKER/HIGH violations"
-              exit 1
-            fi
+          timeout 30 bash -c 'until curl -f http://localhost:5173; do sleep 1; done'
+
+      - name: Run web Playwright tests (a11y + visual)
+        working-directory: apps/web
+        run: pnpm exec playwright test e2e/ui-audit/a11y-and-visual.spec.ts
+        continue-on-error: true
+
+      - name: Run web Playwright tests (performance)
+        working-directory: apps/web
+        run: pnpm exec playwright test e2e/ui-audit/performance.spec.ts
+        continue-on-error: true
+
+      - name: Run web bundle analysis
+        working-directory: apps/web
+        run: |
+          pnpm build
+          find dist -name "*.js" -exec ls -lh {} \; | head -20
+        continue-on-error: true
+
+      - name: Run mobile tests (if Detox available)
+        working-directory: apps/mobile
+        run: |
+          if command -v detox &> /dev/null; then
+            pnpm exec detox test e2e/ui-audit/screens.spec.ts --configuration android.emu.debug || true
+          else
+            echo "Detox not available, skipping mobile tests"
           fi
-
-  ui-audit-tokens:
-    name: UI Audit - Token Enforcement
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run ESLint with token rules
-        run: |
-          cd apps/web && pnpm lint --rule-dir ../../eslint-rules
         continue-on-error: true
 
-      - name: Check for raw hex colors
-        run: |
-          HEX_COUNT=$(grep -r "#[0-9A-Fa-f]\{3,8\}" apps/web/src apps/mobile/src --include="*.ts" --include="*.tsx" | wc -l || echo "0")
-          if [ $HEX_COUNT -gt 0 ]; then
-            echo "Found $HEX_COUNT raw hex colors. Use design tokens instead."
-            exit 1
-          fi
+      - name: Aggregate findings
+        run: tsx tools/ui-audit/aggregate.ts
+
+      - name: Generate per-item reports
+        run: tsx tools/ui-audit/generate-per-item-reports.ts
+        continue-on-error: true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-audit-artifacts
+          path: |
+            audit/**
+            ci/summary.json
+          retention-days: 30
+
+      - name: Check for critical findings
+        run: node tools/ui-audit/fail-if-red.js

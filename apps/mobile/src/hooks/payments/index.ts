@@ -1,2 +1,2 @@
-export { useSubscription } from './useSubscription'
-export type { UseSubscriptionOptions, UseSubscriptionReturn } from './useSubscription'
+export { useSubscription } from './use-subscription'
+export type { UseSubscriptionOptions, UseSubscriptionReturn } from './use-subscription'

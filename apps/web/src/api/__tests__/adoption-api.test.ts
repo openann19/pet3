@@ -38,7 +38,7 @@ const createAPIClientMock = () => {
 
     // Handle empty responses (e.g., 204 No Content)
     const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType?.includes('application/json')) {
       return { data: {} };
     }
 
@@ -74,7 +74,8 @@ let testServerPort: number;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -125,95 +126,97 @@ const mockApplication: AdoptionApplication = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
-
-    const url = new URL(req.url, `http://localhost`);
-
-    // Handle GET /adoption/listings (with or without query params)
-    if (req.method === 'GET' && url.pathname === '/adoption/listings') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { profiles: [mockProfile], hasMore: false } }));
-      return;
-    }
-
-    // Handle GET /adoption/listings/:id
-    if (req.method === 'GET' && url.pathname.startsWith('/adoption/listings/')) {
-      const id = url.pathname.split('/').pop();
-      if (id === 'profile-999') {
-        res.statusCode = 404;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
         res.end();
         return;
       }
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: mockProfile }));
-      return;
-    }
 
-    // Handle POST /adoption/applications
-    if (req.method === 'POST' && url.pathname === '/adoption/applications') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(JSON.stringify({ data: mockApplication }));
-      return;
-    }
+      const url = new URL(req.url, `http://localhost`);
 
-    // Handle GET /adoption/applications (with or without query params)
-    if (req.method === 'GET' && url.pathname === '/adoption/applications') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: [mockApplication] }));
-      return;
-    }
+      // Handle GET /adoption/listings (with or without query params)
+      if (req.method === 'GET' && url.pathname === '/adoption/listings') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { profiles: [mockProfile], hasMore: false } }));
+        return;
+      }
 
-    // Handle POST /adoption/listings
-    if (req.method === 'POST' && url.pathname === '/adoption/listings') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(JSON.stringify({ data: mockProfile }));
-      return;
-    }
+      // Handle GET /adoption/listings/:id
+      if (req.method === 'GET' && url.pathname.startsWith('/adoption/listings/')) {
+        const id = url.pathname.split('/').pop();
+        if (id === 'profile-999') {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: mockProfile }));
+        return;
+      }
 
-    // Handle PATCH /adoption/listings/:id
-    if (req.method === 'PATCH' && url.pathname.startsWith('/adoption/listings/')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
+      // Handle POST /adoption/applications
+      if (req.method === 'POST' && url.pathname === '/adoption/applications') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(JSON.stringify({ data: mockApplication }));
+        return;
+      }
 
-    // Handle PATCH /adoption/applications/:id
-    if (req.method === 'PATCH' && url.pathname.startsWith('/adoption/applications/')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
+      // Handle GET /adoption/applications (with or without query params)
+      if (req.method === 'GET' && url.pathname === '/adoption/applications') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: [mockApplication] }));
+        return;
+      }
 
-    // Handle DELETE /adoption/listings/:id
-    if (req.method === 'DELETE' && url.pathname.startsWith('/adoption/listings/')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
+      // Handle POST /adoption/listings
+      if (req.method === 'POST' && url.pathname === '/adoption/listings') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(JSON.stringify({ data: mockProfile }));
+        return;
+      }
 
-    // Handle GET /api/v1/adoption/shelters
-    if (req.method === 'GET' && url.pathname === '/api/v1/adoption/shelters') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: [] }));
-      return;
-    }
+      // Handle PATCH /adoption/listings/:id
+      if (req.method === 'PATCH' && url.pathname.startsWith('/adoption/listings/')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
 
-    res.statusCode = 404;
-    res.end();
+      // Handle PATCH /adoption/applications/:id
+      if (req.method === 'PATCH' && url.pathname.startsWith('/adoption/applications/')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      // Handle DELETE /adoption/listings/:id
+      if (req.method === 'DELETE' && url.pathname.startsWith('/adoption/listings/')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      // Handle GET /api/v1/adoption/shelters
+      if (req.method === 'GET' && url.pathname === '/api/v1/adoption/shelters') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: [] }));
+        return;
+      }
+
+      res.statusCode = 404;
+      res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
@@ -222,7 +225,7 @@ beforeAll(async () => {
       if (address && typeof address === 'object') {
         testServerPort = address.port;
         testServerPortForMock = testServerPort;
-        process.env['TEST_API_PORT'] = String(testServerPort);
+        process.env.TEST_API_PORT = String(testServerPort);
       }
       resolve();
     });
@@ -247,8 +250,8 @@ describe('AdoptionAPI.getAdoptionProfiles', () => {
     const result = await adoptionApi.getAdoptionProfiles();
 
     expect(result).toMatchObject({
-      profiles: expect.any(Array),
-      hasMore: expect.any(Boolean),
+      profiles: expect.any(Array) as unknown[],
+      hasMore: expect.any(Boolean) as boolean,
     });
     expect(result.profiles.length).toBeGreaterThanOrEqual(0);
   });
@@ -268,8 +271,8 @@ describe('AdoptionAPI.getAdoptionProfiles', () => {
     });
 
     expect(result).toMatchObject({
-      profiles: expect.any(Array),
-      hasMore: expect.any(Boolean),
+      profiles: expect.any(Array) as unknown[],
+      hasMore: expect.any(Boolean) as boolean,
     });
   });
 
@@ -289,8 +292,8 @@ describe('AdoptionAPI.getProfileById', () => {
 
     expect(profile).toMatchObject({
       _id: 'profile-1',
-      petName: expect.any(String),
-      breed: expect.any(String),
+      petName: expect.any(String) as string,
+      breed: expect.any(String) as string,
     });
   });
 

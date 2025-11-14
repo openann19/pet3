@@ -17,7 +17,7 @@ import {
 } from '@/effects/reanimated';
 import { Moon, Sun, Palette, Check } from '@phosphor-icons/react';
 
-export function UltraThemeSettings() {
+function UltraThemeSettings() {
   const { themePreset, setThemePreset } = useApp();
   const [previewTheme, setPreviewTheme] = useState<ThemePreset | null>(null);
 
@@ -122,6 +122,9 @@ export function UltraThemeSettings() {
     </div>
   );
 }
+
+export { UltraThemeSettings };
+export default UltraThemeSettings;
 
 interface ThemeSectionProps {
   title: string;

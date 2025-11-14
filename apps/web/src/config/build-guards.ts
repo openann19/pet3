@@ -8,7 +8,7 @@ import { isTruthy, isDefined } from '@petspark/shared';
 // Production builds should not use legacy KV mocks - this is enforced via runtime guards below
 
 // Feature flag validation
-const VITE_USE_MOCKS = import.meta.env['VITE_USE_MOCKS'];
+const VITE_USE_MOCKS = import.meta.env.VITE_USE_MOCKS;
 
 if (VITE_USE_MOCKS === 'true' && import.meta.env.PROD) {
   throw new Error(`
@@ -48,8 +48,8 @@ if (import.meta.env.PROD) {
 
 export const BUILD_CONFIG = {
   useMocks: VITE_USE_MOCKS === 'true' && !import.meta.env.PROD,
-  apiUrl: import.meta.env['VITE_API_URL'] || 'http://localhost:3000/api/v1',
-  wsUrl: import.meta.env['VITE_WS_URL'] || 'ws://localhost:3000',
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
+  wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:3000',
   isProd: import.meta.env.PROD,
 } as const;
 

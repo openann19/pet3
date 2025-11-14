@@ -92,6 +92,9 @@ export const queryKeys = {
     methods: (userId: string) => ['payments', 'methods', userId] as const,
     billingIssues: (userId: string) => ['payments', 'billing-issues', userId] as const,
   },
+  domain: {
+    snapshots: ['domain', 'snapshots'] as const,
+  },
 } as const
 
 // Mutation keys for consistent mutation tracking

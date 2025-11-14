@@ -1,21 +1,21 @@
-import React, { useEffect, useCallback } from 'react'
+import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import * as Haptics from 'expo-haptics'
+import React, { useCallback, useEffect } from 'react'
 import {
-  View,
-  Text,
   Modal,
-  TouchableOpacity,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
   type ViewStyle,
 } from 'react-native'
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
-import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 import FeatherIcon from 'react-native-vector-icons/Feather'
 import { isTruthy } from '@petspark/shared';
 
@@ -113,7 +113,7 @@ export function PremiumModal({
       testID={testID}
     >
       <AnimatedView style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} />
         <View style={styles.container}>
           <AnimatedView
             style={[styles.content, sizeStyles[size], variants[variant], contentStyle, style]}

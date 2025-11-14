@@ -261,7 +261,7 @@ class APIClientImpl {
 
     // Add access token if available (stored in memory)
     if (this.accessToken) {
-      merged['Authorization'] = `Bearer ${this.accessToken}`;
+      merged.Authorization = `Bearer ${this.accessToken}`;
     }
 
     return merged;

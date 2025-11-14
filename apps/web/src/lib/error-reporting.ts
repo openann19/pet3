@@ -23,7 +23,7 @@ export function initErrorReporting(config: ErrorReportingConfig = {}): void {
   if (errorReportingInitialized) return;
   if (!config.enabled && !import.meta.env.PROD) return;
 
-  const dsn = config.dsn ?? import.meta.env['VITE_SENTRY_DSN'];
+  const dsn = config.dsn ?? import.meta.env.VITE_SENTRY_DSN;
   if (!dsn) {
     // No DSN configured, skip initialization
     return;
@@ -37,7 +37,7 @@ export function initErrorReporting(config: ErrorReportingConfig = {}): void {
         Sentry.init({
           dsn,
           environment: config.environment ?? import.meta.env.MODE ?? 'production',
-          release: config.release ?? import.meta.env['VITE_APP_VERSION'],
+          release: config.release ?? import.meta.env.VITE_APP_VERSION,
           integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
           tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
           replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 1.0,

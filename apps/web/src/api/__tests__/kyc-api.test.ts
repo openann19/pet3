@@ -14,7 +14,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -35,118 +36,120 @@ const mockSubmission: KYCSubmission = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'POST' && url.pathname === '/kyc/start') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(
+          JSON.stringify({
+            data: {
+              sessionId: 'session-1',
+              submissionId: 'sub-1',
+              providerToken: 'token-1',
+            },
+          })
+        );
+        return;
+      }
+
+      if (
+        req.method === 'GET' &&
+        url.pathname === '/kyc/status' &&
+        !url.searchParams.get('submissions')
+      ) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { status: mockStatus } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname.startsWith('/kyc/verification/')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: mockSubmission }));
+        return;
+      }
+
+      if (
+        req.method === 'GET' &&
+        url.pathname === '/kyc/status' &&
+        url.searchParams.get('submissions') === 'true'
+      ) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: [mockSubmission] }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/webhook')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: {} }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/review')) {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: {} }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/kyc/consent') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(
+          JSON.stringify({
+            data: {
+              id: 'consent-1',
+              userId: 'user-1',
+              type: 'terms',
+              version: '1.0',
+              accepted: true,
+              createdAt: new Date().toISOString(),
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/kyc/age-verification') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(
+          JSON.stringify({
+            data: {
+              id: 'age-1',
+              userId: 'user-1',
+              ageVerified: true,
+              verifiedAt: new Date().toISOString(),
+            },
+          })
+        );
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'POST' && url.pathname === '/kyc/start') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(
-        JSON.stringify({
-          data: {
-            sessionId: 'session-1',
-            submissionId: 'sub-1',
-            providerToken: 'token-1',
-          },
-        })
-      );
-      return;
-    }
-
-    if (
-      req.method === 'GET' &&
-      url.pathname === '/kyc/status' &&
-      !url.searchParams.get('submissions')
-    ) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { status: mockStatus } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname.startsWith('/kyc/verification/')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: mockSubmission }));
-      return;
-    }
-
-    if (
-      req.method === 'GET' &&
-      url.pathname === '/kyc/status' &&
-      url.searchParams.get('submissions') === 'true'
-    ) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: [mockSubmission] }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname.includes('/webhook')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: {} }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname.includes('/review')) {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: {} }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/kyc/consent') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(
-        JSON.stringify({
-          data: {
-            id: 'consent-1',
-            userId: 'user-1',
-            type: 'terms',
-            version: '1.0',
-            accepted: true,
-            createdAt: new Date().toISOString(),
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/kyc/age-verification') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(
-        JSON.stringify({
-          data: {
-            id: 'age-1',
-            userId: 'user-1',
-            ageVerified: true,
-            verifiedAt: new Date().toISOString(),
-          },
-        })
-      );
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

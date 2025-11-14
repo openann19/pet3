@@ -362,7 +362,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
           accessible
           accessibilityLabel="Available subscription plans"
         >
-          {PLANS.map(renderPlanCard)}
+          {PLANS.map((plan) => renderPlanCard(plan))}
         </ScrollView>
 
         {/* Subscribe Button */}

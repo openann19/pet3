@@ -84,7 +84,7 @@ export function useCreateSubscription(): UseMutationResult<
         platform: data.platform,
         billingCycle: data.billingCycle,
       }
-      
+
       if (data.receiptData) {
         requestData.receiptData = data.receiptData
       }
@@ -94,7 +94,7 @@ export function useCreateSubscription(): UseMutationResult<
       if (data.transactionId) {
         requestData.transactionId = data.transactionId
       }
-      
+
       const response = await paymentService.createSubscription(requestData)
 
       if (!response.success || !response.subscription) {
@@ -103,7 +103,7 @@ export function useCreateSubscription(): UseMutationResult<
 
       return response.subscription
     },
-    onSuccess: (subscription, variables) => {
+    onSuccess: (subscription, variables): void => {
       // Invalidate subscription query
       void queryClient.invalidateQueries({
         queryKey: queryKeys.payments.subscription(variables.userId),
@@ -140,7 +140,7 @@ export function useCancelSubscription(): UseMutationResult<
   return useMutation({
     mutationKey: mutationKeys.payments.cancelSubscription,
     mutationFn: async ({ userId, subscriptionId }) => {
-      return await paymentService.cancelSubscription(userId, subscriptionId)
+      return paymentService.cancelSubscription(userId, subscriptionId)
     },
     onSuccess: (_, variables) => {
       // Invalidate subscription query
@@ -174,7 +174,7 @@ export function useUpdatePaymentMethod(): UseMutationResult<
   return useMutation({
     mutationKey: mutationKeys.payments.updatePaymentMethod,
     mutationFn: async ({ userId, paymentMethodId, isDefault }) => {
-      return await paymentService.updatePaymentMethod(userId, paymentMethodId, isDefault)
+      return paymentService.updatePaymentMethod(userId, paymentMethodId, isDefault)
     },
     onSuccess: (_, variables) => {
       // Invalidate payment methods query
@@ -213,7 +213,7 @@ export function useRestorePurchases(): UseMutationResult<
   return useMutation({
     mutationKey: mutationKeys.payments.restorePurchases,
     mutationFn: async ({ userId, platform }) => {
-      return await paymentService.restorePurchases(userId, platform)
+      return paymentService.restorePurchases(userId, platform)
     },
     onSuccess: (_, variables) => {
       // Invalidate subscription query

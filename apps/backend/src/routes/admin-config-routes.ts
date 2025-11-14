@@ -11,8 +11,8 @@ import type { Request, Response } from 'express';
 import { AdminConfigService, type ConfigType } from '../services/admin-config-service';
 import { ConfigHistoryService } from '../services/config-history-service';
 import { AdminAuditLogger } from '../services/admin-audit-logger';
-import { ValidationError } from '../utils/errors';
 import { createLogger } from '../utils/logger';
+import { validate } from '../middleware/validate';
 
 const logger = createLogger('AdminConfigRoutes');
 
@@ -32,6 +32,11 @@ const configBroadcastSchema = z.object({
   configType: z.enum(['business', 'matching', 'map', 'api', 'system']),
   config: z.record(z.unknown()),
   timestamp: z.string().optional(),
+});
+
+const configHistoryQuerySchema = z.object({
+  type: z.enum(['business', 'matching', 'map', 'api', 'system']),
+  limit: z.coerce.number().int().positive().max(1000).optional(),
 });
 
 /**
@@ -94,26 +99,24 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
    * PUT /api/v1/payments/business-config
    * Update business configuration
    */
-  router.put('/payments/business-config', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.updatedBy ?? 'admin';
+  router.put(
+    '/payments/business-config',
+    validate({ body: configUpdateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof configUpdateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.updatedBy ?? 'admin';
 
-    try {
-      const validationResult = configUpdateSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
+      try {
+        const previousConfig = await adminConfigService.getConfig('business');
+        const previousVersion = previousConfig?.version ?? null;
+        const previousConfigData = previousConfig?.config ?? null;
+
+        const updatedConfig = await adminConfigService.updateConfig('business', {
+          config: validatedBody.config,
+          updatedBy: userId,
         });
-      }
-
-      const previousConfig = await adminConfigService.getConfig('business');
-      const previousVersion = previousConfig?.version ?? null;
-      const previousConfigData = previousConfig?.config ?? null;
-
-      const updatedConfig = await adminConfigService.updateConfig('business', {
-        config: validationResult.data.config,
-        updatedBy: userId,
-      });
 
       // Create history entry
       const changes = computeConfigChanges(previousConfigData, updatedConfig.config);
@@ -155,7 +158,8 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to update business config', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * GET /api/v1/matching/config
@@ -181,26 +185,24 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
    * PUT /api/v1/matching/config
    * Update matching configuration
    */
-  router.put('/matching/config', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.updatedBy ?? 'admin';
+  router.put(
+    '/matching/config',
+    validate({ body: configUpdateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof configUpdateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.updatedBy ?? 'admin';
 
-    try {
-      const validationResult = configUpdateSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
+      try {
+        const previousConfig = await adminConfigService.getConfig('matching');
+        const previousVersion = previousConfig?.version ?? null;
+        const previousConfigData = previousConfig?.config ?? null;
+
+        const updatedConfig = await adminConfigService.updateConfig('matching', {
+          config: validatedBody.config,
+          updatedBy: userId,
         });
-      }
-
-      const previousConfig = await adminConfigService.getConfig('matching');
-      const previousVersion = previousConfig?.version ?? null;
-      const previousConfigData = previousConfig?.config ?? null;
-
-      const updatedConfig = await adminConfigService.updateConfig('matching', {
-        config: validationResult.data.config,
-        updatedBy: userId,
-      });
 
       // Create history entry
       const changes = computeConfigChanges(previousConfigData, updatedConfig.config);
@@ -242,7 +244,8 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to update matching config', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * GET /api/v1/admin/config/map
@@ -268,24 +271,22 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
    * PUT /api/v1/admin/config/map
    * Update map configuration
    */
-  router.put('/admin/config/map', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.updatedBy ?? 'admin';
+  router.put(
+    '/admin/config/map',
+    validate({ body: configUpdateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof configUpdateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.updatedBy ?? 'admin';
 
-    try {
-      const validationResult = configUpdateSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
+      try {
       const previousConfig = await adminConfigService.getConfig('map');
       const previousVersion = previousConfig?.version ?? null;
       const previousConfigData = previousConfig?.config ?? null;
 
       const updatedConfig = await adminConfigService.updateConfig('map', {
-        config: validationResult.data.config,
+        config: validatedBody.config,
         updatedBy: userId,
       });
 
@@ -329,7 +330,8 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to update map config', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * GET /api/v1/admin/config/api
@@ -355,24 +357,22 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
    * PUT /api/v1/admin/config/api
    * Update API configuration
    */
-  router.put('/admin/config/api', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.updatedBy ?? 'admin';
+  router.put(
+    '/admin/config/api',
+    validate({ body: configUpdateSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof configUpdateSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.updatedBy ?? 'admin';
 
-    try {
-      const validationResult = configUpdateSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
+      try {
       const previousConfig = await adminConfigService.getConfig('api');
       const previousVersion = previousConfig?.version ?? null;
       const previousConfigData = previousConfig?.config ?? null;
 
       const updatedConfig = await adminConfigService.updateConfig('api', {
-        config: validationResult.data.config,
+        config: validatedBody.config,
         updatedBy: userId,
       });
 
@@ -416,24 +416,23 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to update API config', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * POST /api/v1/admin/config/broadcast
    * Broadcast configuration update (for real-time notifications)
    */
-  router.post('/admin/config/broadcast', async (req: Request, res: Response): Promise<void> => {
+  router.post(
+    '/admin/config/broadcast',
+    validate({ body: configBroadcastSchema }),
+    async (req: Request, res: Response): Promise<void> => {
     const userId = req.userId ?? 'admin';
 
     try {
-      const validationResult = configBroadcastSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
-      const { configType, config } = validationResult.data;
+      type ValidatedBody = z.infer<typeof configBroadcastSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const { configType, config } = validatedBody;
 
       // Update config if provided
       if (config && Object.keys(config).length > 0) {
@@ -474,24 +473,22 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to broadcast config', err, { userId });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * GET /api/v1/admin/config/history
    * Get configuration change history
    */
-  router.get('/admin/config/history', async (req: Request, res: Response): Promise<void> => {
-    try {
-      const configType = req.query.type as ConfigType | undefined;
-      const limit = req.query.limit
-        ? Number.parseInt(String(req.query.limit), 10)
-        : 50;
-
-      if (!configType) {
-        throw new ValidationError('Config type is required', {
-          errors: [{ path: ['type'], message: 'Config type is required' }],
-        });
-      }
+  router.get(
+    '/admin/config/history',
+    validate({ query: configHistoryQuerySchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        type ValidatedQuery = z.infer<typeof configHistoryQuerySchema>;
+        const validatedQuery = req.query as unknown as ValidatedQuery;
+        const configType = validatedQuery.type as ConfigType;
+        const limit = validatedQuery.limit ?? 50;
 
       const history = await configHistoryService.getConfigHistory(configType, limit);
 
@@ -512,7 +509,8 @@ export function createAdminConfigRoutes(config: AdminConfigRoutesConfig): Router
       logger.error('Failed to get config history', err);
       throw error;
     }
-  });
+    }
+  );
 
   return router;
 }

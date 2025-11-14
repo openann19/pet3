@@ -17,11 +17,10 @@ export const MotionText: ForwardRefExoticComponent<
   ({ style, animatedStyle, ...rest }, ref) => {
     const styleFinal = animatedStyle ? [style, animatedStyle] : (style ?? ({} as TextStyle))
 
-    // Web performance hints (only apply on web, and only if animated)
-    // Note: willChange is not a valid React Native style, so we only apply it conditionally
-    // In practice, Reanimated handles this on web automatically
+    // Use a typed alias to satisfy ref typing in ambient web stubs
+    const AnimatedText = (Animated.Text as unknown) as React.ComponentType<any>
 
-    return <Animated.Text ref={ref} {...rest} style={styleFinal} />
+    return <AnimatedText ref={ref} {...rest} style={styleFinal as any} />
   }
 )
 MotionText.displayName = 'MotionText'

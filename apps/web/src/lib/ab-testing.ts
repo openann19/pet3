@@ -53,14 +53,14 @@ export interface Experiment {
  */
 export interface ExperimentResult {
   readonly experimentId: string
-  readonly variantResults: Array<{
+  readonly variantResults: {
     readonly variant: ExperimentVariant
     readonly conversions: number
     readonly visitors: number
     readonly conversionRate: number
     readonly confidenceInterval: [number, number]
     readonly isSignificant: boolean
-  }>
+  }[]
   readonly overallResult: {
     readonly totalConversions: number
     readonly totalVisitors: number
@@ -370,11 +370,11 @@ export class ABTester {
    * Calculate statistical significance
    */
   private calculateStatisticalSignificance(
-    variantResults: Array<{
+    variantResults: {
       readonly conversions: number
       readonly visitors: number
       readonly conversionRate: number
-    }>,
+    }[],
     significanceLevel: number
   ): number {
     // Simplified statistical significance calculation

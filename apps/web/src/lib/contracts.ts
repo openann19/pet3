@@ -105,22 +105,23 @@ export interface Reaction {
   addedAt: string;
 }
 
-export interface Story {
-  id: string;
-  petId: string;
-  mediaUrl: string;
-  mediaType: 'image' | 'video';
-  duration: number;
-  views: StoryView[];
-  expiresAt: string;
-  createdAt: string;
-  status: 'active' | 'expired' | 'removed';
-}
-
-export interface StoryView {
-  userId: string;
-  viewedAt: string;
-}
+export type {
+  Story,
+  StoryView,
+  StoryReaction,
+  StoryHighlight,
+  StoryTemplate,
+  StoryMusic,
+  StoryLocation,
+  StorySticker,
+  TextOverlay,
+  CollaborativeStory,
+  StoryParticipant,
+  StoryAnalytics,
+  StoryType,
+  StoryVisibility,
+  StoryMusicProvider,
+} from '@petspark/shared';
 
 export type ReportReason = 'spam' | 'inappropriate' | 'fake' | 'harassment' | 'other';
 

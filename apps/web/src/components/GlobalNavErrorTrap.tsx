@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 declare global {
     interface Window {
-        __NAV_ERRORS__?: Array<{
+        __NAV_ERRORS__?: {
             kind: string;
             t: number;
             message?: string;
@@ -12,7 +12,7 @@ declare global {
             src?: string;
             note?: string;
             reason?: string;
-        }>;
+        }[];
     }
 }
 

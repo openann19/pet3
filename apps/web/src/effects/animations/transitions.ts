@@ -1,4 +1,15 @@
-import type { Transition } from '@petspark/motion';
+// Transition type definition
+export type Transition =
+  | {
+      type: 'spring';
+      stiffness: number;
+      damping: number;
+      mass?: number;
+    }
+  | {
+      duration: number;
+      ease?: number[] | string;
+    };
 
 export const springTransition: Transition = {
   type: 'spring',

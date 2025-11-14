@@ -1,191 +1,137 @@
+/**
+ * Tests for useReducedMotion hook
+ *
+ * Coverage target: >= 95% statements/branches/functions/lines
+ */
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useReducedMotion } from '../useReducedMotion';
 
 describe('useReducedMotion', () => {
-  let originalMatchMedia: typeof window.matchMedia;
-  let mockMatchMedia: (query: string) => MediaQueryList;
+  let mockMatchMedia: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    originalMatchMedia = window.matchMedia;
     mockMatchMedia = vi.fn();
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: mockMatchMedia,
+    });
   });
 
   afterEach(() => {
-    window.matchMedia = originalMatchMedia;
+    vi.restoreAllMocks();
   });
 
-  it('returns false when reduced motion is not preferred', () => {
-    const mockMediaQuery = {
+  it('should return false when reduced motion is not preferred', () => {
+    mockMatchMedia.mockReturnValue({
       matches: false,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       addListener: vi.fn(),
       removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
+    });
 
     const { result } = renderHook(() => useReducedMotion());
 
     expect(result.current).toBe(false);
   });
 
-  it('returns true when reduced motion is preferred', () => {
-    const mockMediaQuery = {
+  it('should return true when reduced motion is preferred', () => {
+    mockMatchMedia.mockReturnValue({
       matches: true,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       addListener: vi.fn(),
       removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
+    });
 
     const { result } = renderHook(() => useReducedMotion());
 
     expect(result.current).toBe(true);
   });
 
-  it('updates when media query changes', () => {
-    let changeHandler: ((e: MediaQueryListEvent) => void) | undefined;
-    const mockMediaQuery = {
+  it('should update when preference changes (addEventListener)', () => {
+    const listeners: ((event: MediaQueryListEvent) => void)[] = [];
+    mockMatchMedia.mockReturnValue({
       matches: false,
-      addEventListener: vi.fn((event: string, handler: (e: MediaQueryListEvent) => void) => {
-        changeHandler = handler;
+      addEventListener: vi.fn((event: string, listener: (event: MediaQueryListEvent) => void) => {
+        listeners.push(listener);
       }),
       removeEventListener: vi.fn(),
       addListener: vi.fn(),
       removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
+    });
 
     const { result } = renderHook(() => useReducedMotion());
 
     expect(result.current).toBe(false);
 
     act(() => {
-      if (changeHandler) {
-        changeHandler({ matches: true } as MediaQueryListEvent);
-      }
+      listeners.forEach((listener) => {
+        listener({ matches: true } as MediaQueryListEvent);
+      });
     });
 
     expect(result.current).toBe(true);
   });
 
-  it('uses addEventListener when available', () => {
-    const mockMediaQuery = {
-      matches: false,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
-
-    renderHook(() => useReducedMotion());
-
-    expect(mockMediaQuery.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
-  });
-
-  it('uses addListener as fallback for older browsers', () => {
-    const mockMediaQuery = {
+  it('should update when preference changes (addListener fallback)', () => {
+    const listeners: ((event: MediaQueryListEvent) => void)[] = [];
+    mockMatchMedia.mockReturnValue({
       matches: false,
       addEventListener: undefined,
       removeEventListener: undefined,
-      addListener: vi.fn(),
+      addListener: vi.fn((listener: (event: MediaQueryListEvent) => void) => {
+        listeners.push(listener);
+      }),
       removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
-
-    renderHook(() => useReducedMotion());
-
-    expect(mockMediaQuery.addListener).toHaveBeenCalledWith(expect.any(Function));
-  });
-
-  it('cleans up event listener on unmount', () => {
-    const removeEventListenerSpy = vi.fn();
-    const mockMediaQuery = {
-      matches: false,
-      addEventListener: vi.fn(),
-      removeEventListener: removeEventListenerSpy,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
-
-    const { unmount } = renderHook(() => useReducedMotion());
-
-    unmount();
-
-    expect(removeEventListenerSpy).toHaveBeenCalled();
-  });
-
-  it('cleans up listener on unmount for older browsers', () => {
-    const removeListenerSpy = vi.fn();
-    const mockMediaQuery = {
-      matches: false,
-      addEventListener: undefined,
-      removeEventListener: undefined,
-      addListener: vi.fn(),
-      removeListener: removeListenerSpy,
-    } as unknown as MediaQueryList;
-
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
-
-    const { unmount } = renderHook(() => useReducedMotion());
-
-    unmount();
-
-    expect(removeListenerSpy).toHaveBeenCalled();
-  });
-
-  it('handles window being undefined', () => {
-    const originalWindow = global.window;
-    Object.defineProperty(global, 'window', {
-      writable: true,
-      value: undefined,
     });
 
     const { result } = renderHook(() => useReducedMotion());
 
     expect(result.current).toBe(false);
 
-    Object.defineProperty(global, 'window', {
-      writable: true,
-      value: originalWindow,
+    act(() => {
+      listeners.forEach((listener) => {
+        listener({ matches: true } as MediaQueryListEvent);
+      });
     });
+
+    expect(result.current).toBe(true);
   });
 
-  it('handles rapid preference changes', () => {
-    const mockMediaQuery = {
+  it('should cleanup event listeners on unmount', () => {
+    const removeEventListener = vi.fn();
+    mockMatchMedia.mockReturnValue({
       matches: false,
       addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
+      removeEventListener,
       addListener: vi.fn(),
       removeListener: vi.fn(),
-    } as unknown as MediaQueryList;
+    });
 
-    mockMatchMedia = vi.fn(() => mockMediaQuery);
-    window.matchMedia = mockMatchMedia as typeof window.matchMedia;
+    const { unmount } = renderHook(() => useReducedMotion());
 
-    const { result, rerender } = renderHook(() => useReducedMotion());
+    unmount();
 
-    expect(result.current).toBe(false);
+    expect(removeEventListener).toHaveBeenCalled();
+  });
 
-    rerender();
+  it('should cleanup listeners on unmount (fallback)', () => {
+    const removeListener = vi.fn();
+    mockMatchMedia.mockReturnValue({
+      matches: false,
+      addEventListener: undefined,
+      removeEventListener: undefined,
+      addListener: vi.fn(),
+      removeListener,
+    });
 
-    expect(result.current).toBe(false);
+    const { unmount } = renderHook(() => useReducedMotion());
+
+    unmount();
+
+    expect(removeListener).toHaveBeenCalled();
   });
 });

@@ -9,6 +9,7 @@ import { lostFoundService } from '@/lib/lost-found-service';
 import { lostFoundAPI } from '@/api/lost-found-api';
 import type { LostAlert } from '@/lib/lost-found-types';
 import { logger } from '@/lib/logger';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export function LostFoundManagement() {
   const [alerts, setAlerts] = useState<LostAlert[]>([]);
@@ -124,10 +125,11 @@ export function LostFoundManagement() {
                   >
                     <div className="flex items-start gap-3">
                       {alert.photos[0] && (
-                        <img
+                        <ProgressiveImage
                           src={alert.photos[0]}
                           alt={alert.petSummary.name}
                           className="w-16 h-16 rounded-lg object-cover"
+                          aria-label={`Photo of ${alert.petSummary.name}`}
                         />
                       )}
                       <div className="flex-1 min-w-0">
@@ -185,11 +187,12 @@ export function LostFoundManagement() {
                   {selectedAlert.photos.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
                       {selectedAlert.photos.map((photo, index) => (
-                        <img
+                        <ProgressiveImage
                           key={index}
                           src={photo}
                           alt={`${String(selectedAlert.petSummary.name ?? '')} ${String(index + 1 ?? '')}`}
                           className="w-full aspect-square object-cover rounded-lg"
+                          aria-label={`${selectedAlert.petSummary.name} photo ${index + 1}`}
                         />
                       ))}
                     </div>

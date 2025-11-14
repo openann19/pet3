@@ -31,85 +31,87 @@ const mockMessage: Message = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'POST' && url.pathname.includes('/messages')) {
+        const payload = await readJson<{ type: MessageType; content: string }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(JSON.stringify({ data: { ...mockMessage, ...payload } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname.includes('/messages')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { messages: [mockMessage], nextCursor: undefined } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/read')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/reactions')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: mockMessage }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname.includes('/typing')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'DELETE' && url.pathname.includes('/messages/')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/chat/conversations') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: [{ id: 'room-1', participants: ['user-1'], updatedAt: new Date().toISOString() }],
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname.includes('/conversations/')) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: { id: 'room-1', participants: ['user-1'], createdAt: new Date().toISOString() },
+          })
+        );
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'POST' && url.pathname.includes('/messages')) {
-      const payload = await readJson<{ type: MessageType; content: string }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(JSON.stringify({ data: { ...mockMessage, ...payload } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname.includes('/messages')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { messages: [mockMessage], nextCursor: undefined } }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname.includes('/read')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname.includes('/reactions')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: mockMessage }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname.includes('/typing')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'DELETE' && url.pathname.includes('/messages/')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/chat/conversations') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: [{ id: 'room-1', participants: ['user-1'], updatedAt: new Date().toISOString() }],
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname.includes('/conversations/')) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: { id: 'room-1', participants: ['user-1'], createdAt: new Date().toISOString() },
-        })
-      );
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

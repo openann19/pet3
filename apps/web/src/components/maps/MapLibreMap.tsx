@@ -62,8 +62,7 @@ export default function MapLibreMap({
       )}
       <div
         ref={mapContainerRef}
-        className="w-full h-full"
-        style={{ height: '100%', minHeight: '400px' }}
+        className="w-full h-full min-h-[400px]"
       />
     </div>
   );

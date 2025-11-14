@@ -96,19 +96,19 @@ describe('Button', () => {
     it('should apply default size', () => {
       render(<Button>Default Size</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('h-[50px]');
+      expect(button.className).toContain('h-13');
     });
 
     it('should apply small size', () => {
       render(<Button size="sm">Small</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('h-[48px]');
+      expect(button.className).toContain('h-12');
     });
 
     it('should apply large size', () => {
       render(<Button size="lg">Large</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('h-[56px]');
+      expect(button.className).toContain('h-14');
     });
 
     it('should apply icon size', () => {
@@ -330,8 +330,8 @@ describe('Button', () => {
     it('should have minimum touch target size', () => {
       render(<Button>Touch Target</Button>);
       const button = screen.getByRole('button');
-      // Default button has h-[50px] which meets minimum touch target of 44px
-      expect(button.className).toMatch(/h-\[50px\]|min-h-\[44px\]|min-h-\[48px\]/);
+      // Default button has h-13 and min-h-11 which meets minimum touch target of 44px
+      expect(button.className).toMatch(/h-13|min-h-11/);
     });
 
     it('should support aria-disabled when disabled', () => {

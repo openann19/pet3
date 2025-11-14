@@ -3,22 +3,23 @@
  * Allows users to appeal moderation decisions
  */
 
-import { useState } from 'react';
-import { Scales, FileText } from '@phosphor-icons/react';
+import { communityAPI } from '@/api/community-api';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { communityAPI } from '@/api/community-api';
+import { Textarea } from '@/components/ui/textarea';
 import { haptics } from '@/lib/haptics';
+import { userService } from '@/lib/user-service';
+import { FileText, Scales } from '@phosphor-icons/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface AppealDialogProps {
@@ -58,7 +59,11 @@ export function AppealDialog({
     haptics.trigger('medium');
 
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
 
       await communityAPI.appealModeration(
         resourceId,

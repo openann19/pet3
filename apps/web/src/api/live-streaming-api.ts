@@ -210,27 +210,27 @@ export class LiveStreamingAPI {
       const queryParams: Record<string, unknown> = {};
 
       if (filters?.status && filters.status.length > 0) {
-        queryParams['status'] = filters.status;
+        queryParams.status = filters.status;
       }
 
       if (filters?.category && filters.category.length > 0) {
-        queryParams['category'] = filters.category;
+        queryParams.category = filters.category;
       }
 
       if (filters?.hostId) {
-        queryParams['hostId'] = filters.hostId;
+        queryParams.hostId = filters.hostId;
       }
 
       if (filters?.sortBy) {
-        queryParams['sortBy'] = filters.sortBy;
+        queryParams.sortBy = filters.sortBy;
       }
 
       if (filters?.cursor) {
-        queryParams['cursor'] = filters.cursor;
+        queryParams.cursor = filters.cursor;
       }
 
       if (filters?.limit) {
-        queryParams['limit'] = filters.limit;
+        queryParams.limit = filters.limit;
       }
 
       const url =

@@ -349,13 +349,13 @@ function SwipeableCard<T extends CardData>({
             className="absolute -top-12 left-1/2 -translate-x-1/2 z-50"
           >
             <div
-              className="px-6 py-3 bg-gradient-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
+              className="px-6 py-3 bg-linear-to-r from-primary to-accent rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
               style={{ opacity: swipeHook.likeOpacity.value }}
             >
               LIKE
             </div>
             <div
-              className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
+              className="px-6 py-3 bg-linear-to-r from-gray-500 to-gray-700 rounded-full text-white font-bold text-lg shadow-2xl border-4 border-white"
               style={{ opacity: swipeHook.passOpacity.value }}
             >
               PASS

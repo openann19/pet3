@@ -1,14 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
+import type { APIConfig } from '@/api/api-config-api';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -16,13 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAPIConfig } from '@/hooks/admin/use-api-config';
+import { useStorage as useUserStorage } from '@/hooks/use-storage';
+import { triggerHaptic } from '@/lib/haptics';
+import type { User } from '@/lib/user-service';
 import {
   Bell,
   ChartBar,
-  Cloud,
   Database,
   Envelope,
   Eye,
@@ -31,18 +34,14 @@ import {
   Image as ImageIcon,
   Key,
   MapPin,
+  Radio,
   Robot,
   ShieldCheck,
   TestTube,
   VideoCamera,
-  Warning,
-  Radio,
+  Warning
 } from '@phosphor-icons/react';
-import { triggerHaptic } from '@/lib/haptics';
-import { useStorage as useUserStorage } from '@/hooks/use-storage';
-import type { User } from '@/lib/user-service';
-import { useAPIConfig } from '@/hooks/admin/use-api-config';
-import type { APIConfig } from '@/api/api-config-api';
+import { useCallback } from 'react';
 
 export default function APIConfigView() {
   const [currentUser] = useUserStorage<User | null>('current-user', null);
@@ -123,7 +122,7 @@ export default function APIConfigView() {
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 API Configuration
               </h1>
               <p className="text-lg text-muted-foreground">

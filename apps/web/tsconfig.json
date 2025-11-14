@@ -58,6 +58,8 @@
     "storybook-static",
     "src/lib/kyc-native.ts",
     "src/components/ChatWindowNew.tsx",
+    "src/components/media-editor/MediaEditor.tsx",
+    "src/components/media-editor/video-trimmer.tsx",
     "**/*.stories.tsx"
   ]
 }

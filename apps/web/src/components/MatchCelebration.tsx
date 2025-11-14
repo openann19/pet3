@@ -229,7 +229,7 @@ export default function MatchCelebration({
             style={modalStyle}
           >
             <AnimatedView
-              className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/30 to-secondary/30"
+              className="absolute inset-0 bg-linear-to-br from-primary/30 via-accent/30 to-secondary/30"
               style={gradientStyle}
             />
 

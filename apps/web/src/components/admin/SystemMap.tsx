@@ -1,18 +1,18 @@
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Globe,
-  Database,
-  Cpu,
   Cloud,
-  Lock,
-  Pulse,
-  Stack,
-  Network,
-  Shield,
+  Cpu,
+  Database,
+  Globe,
   Lightning,
+  Lock,
+  Network,
+  Pulse,
+  Shield,
+  Stack,
 } from '@phosphor-icons/react';
 
 export default function SystemMap() {
@@ -745,7 +745,7 @@ export default function SystemMap() {
         </TabsContent>
       </Tabs>
 
-      <Card className="p-6 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10">
+      <Card className="p-6 bg-linear-to-r from-primary/10 via-accent/10 to-secondary/10">
         <h3 className="text-xl font-bold mb-2">Documentation</h3>
         <p className="text-muted-foreground mb-4">
           Complete system architecture documentation available in the repository

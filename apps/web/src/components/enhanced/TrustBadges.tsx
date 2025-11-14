@@ -53,7 +53,7 @@ const BADGE_CONFIG = {
   favorite: {
     icon: Sparkle,
     color: 'text-primary',
-    bgColor: 'bg-gradient-to-br from-primary/10 to-accent/10',
+    bgColor: 'bg-linear-to-br from-primary/10 to-accent/10',
     borderColor: 'border-primary/30',
   },
 };

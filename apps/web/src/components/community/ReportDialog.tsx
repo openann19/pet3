@@ -18,9 +18,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import type { ReportReason } from '@/lib/community-types';
 import { haptics } from '@/lib/haptics';
+import { userService } from '@/lib/user-service';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
+import { MotionView } from '@petspark/motion';
 import { Warning } from '@phosphor-icons/react';
-import { motion, MotionView } from '@petspark/motion';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -91,7 +92,11 @@ export function ReportDialog({
     haptics.trigger('medium');
 
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       const reportData: Parameters<typeof communityAPI.reportContent>[0] = {
         resourceType,
         resourceId,

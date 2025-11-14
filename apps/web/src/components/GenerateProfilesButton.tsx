@@ -95,14 +95,14 @@ export default function GenerateProfilesButton({
           size={size}
           className={
             showLabel
-              ? 'w-full h-12 bg-gradient-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group'
+              ? 'w-full h-12 bg-linear-to-r from-primary via-accent to-secondary hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group'
               : 'relative overflow-hidden'
           }
         >
           {showLabel && (
             <AnimatedView
               style={shimmerStyle}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
             />
           )}
           <AnimatedView style={iconStyle} className={showLabel ? 'mr-2' : ''}>

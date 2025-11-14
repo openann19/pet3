@@ -13,11 +13,13 @@ import { haptics } from '@/lib/haptics';
 import { uploadImage } from '@/lib/image-upload';
 import { createLogger } from '@/lib/logger';
 import type { Pet } from '@/lib/types';
+import { userService } from '@/lib/user-service';
 import {
   VideoCompressor,
   type CompressionProgress,
   type VideoMetadata,
 } from '@/lib/video-compression';
+import { MotionView, Presence } from '@petspark/motion';
 import type { Icon } from '@phosphor-icons/react';
 import {
   Camera,
@@ -34,9 +36,9 @@ import {
   WarningCircle,
   X,
 } from '@phosphor-icons/react';
-import { Presence, motion, MotionView } from '@petspark/motion';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const logger = createLogger('PostComposer');
 
@@ -410,7 +412,11 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
       setIsSubmitting(true);
       haptics.impact();
 
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
 
       // All posts require manual admin approval
       toast.info(
@@ -420,7 +426,7 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
       const postData: Parameters<typeof communityAPI.createPost>[0] = {
         authorId: user.id,
         authorName: user.login || 'User',
-        authorAvatar: user.avatarUrl,
+        authorAvatar: user.avatarUrl ?? undefined,
         kind: 'post' as PostKind,
         text: text.trim(),
         media: videoState.file ? [] : images,
@@ -535,10 +541,11 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                       exit={{ scale: 0.8, opacity: 0 }}
                       className="relative aspect-square rounded-lg overflow-hidden bg-muted group"
                     >
-                      <img
+                      <ProgressiveImage
                         src={img}
                         alt={`Upload ${index + 1}`}
                         className="w-full h-full object-cover"
+                        aria-label={`Upload preview ${index + 1}`}
                       />
                       <button
                         onClick={() => handleRemoveImage(index)}
@@ -831,9 +838,9 @@ export function PostComposer({ open, onOpenChange, onPostCreated }: PostComposer
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button 
-                      onClick={() => handleRemoveTag(tag)} 
-                      className="hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" 
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"
                       aria-label="Remove tag"
                     >
                       <X size={12} />

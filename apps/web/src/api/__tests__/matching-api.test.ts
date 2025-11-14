@@ -33,7 +33,8 @@ const matchingAPI = new MatchingAPI();
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -151,121 +152,123 @@ const mockConfig: MatchingConfig = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'POST' && url.pathname === '/matching/discover') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              candidates: [{ pet: mockPet, score: 0.85, distance: 5 }],
+              nextCursor: undefined,
+              totalCount: 1,
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/matching/score') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              score: {
+                overall: 0.85,
+                personality: 0.8,
+                interests: 0.9,
+                size: 0.7,
+                age: 0.9,
+                location: 0.8,
+              },
+              hardGates: {
+                passed: true,
+                failures: [],
+              },
+              canMatch: true,
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/matching/swipe') {
+        const payload = await readJson<{ petId: string; targetPetId: string; action: string }>(req);
+        const isMatch = payload.action === 'like' && payload.targetPetId === 'pet-2';
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              recorded: true,
+              isMatch,
+              matchId: isMatch ? 'match-1' : undefined,
+              chatRoomId: isMatch ? 'room-1' : undefined,
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/matching/matches') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { matches: [mockMatch] } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/matching/preferences') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { preferences: mockPreferences } }));
+        return;
+      }
+
+      if (req.method === 'PUT' && url.pathname === '/matching/preferences') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { preferences: mockPreferences } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/matching/report') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/matching/config') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { config: mockConfig } }));
+        return;
+      }
+
+      if (req.method === 'PUT' && url.pathname === '/matching/config') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { config: mockConfig } }));
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'POST' && url.pathname === '/matching/discover') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            candidates: [{ pet: mockPet, score: 0.85, distance: 5 }],
-            nextCursor: undefined,
-            totalCount: 1,
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/matching/score') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            score: {
-              overall: 0.85,
-              personality: 0.8,
-              interests: 0.9,
-              size: 0.7,
-              age: 0.9,
-              location: 0.8,
-            },
-            hardGates: {
-              passed: true,
-              failures: [],
-            },
-            canMatch: true,
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/matching/swipe') {
-      const payload = await readJson<{ petId: string; targetPetId: string; action: string }>(req);
-      const isMatch = payload.action === 'like' && payload.targetPetId === 'pet-2';
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            recorded: true,
-            isMatch,
-            matchId: isMatch ? 'match-1' : undefined,
-            chatRoomId: isMatch ? 'room-1' : undefined,
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/matching/matches') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { matches: [mockMatch] } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/matching/preferences') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { preferences: mockPreferences } }));
-      return;
-    }
-
-    if (req.method === 'PUT' && url.pathname === '/matching/preferences') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { preferences: mockPreferences } }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/matching/report') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/matching/config') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { config: mockConfig } }));
-      return;
-    }
-
-    if (req.method === 'PUT' && url.pathname === '/matching/config') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { config: mockConfig } }));
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

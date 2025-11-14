@@ -5,6 +5,7 @@ import {
   getCompatibilityFactors,
   generateMatchReasoning,
 } from '@/lib/matching';
+import { matchingAPI } from '@/api/matching-api';
 
 interface UseMatchingOptions {
   userPet?: Pet;
@@ -65,6 +66,62 @@ export function useMatching({ userPet, otherPet, autoCalculate = true }: UseMatc
     void calculateMatch();
   }, [calculateMatch]);
 
+  const performSwipe = useCallback(
+    async (params: { targetPetId: string; action: 'like' | 'pass' }) => {
+      if (!userPet) {
+        throw new Error('No user pet available for swipe');
+      }
+
+      try {
+        const response = await matchingAPI.swipe({
+          petId: userPet.id,
+          targetPetId: params.targetPetId,
+          action: params.action,
+        });
+
+        // Calculate compatibility for return value
+        const targetPet = otherPet?.id === params.targetPetId ? otherPet : undefined;
+        const compatibility = targetPet ? calculateCompatibility(userPet, targetPet) : 0;
+
+        return {
+          recorded: response.recorded,
+          isMatch: response.isMatch,
+          matchId: response.matchId,
+          chatRoomId: response.chatRoomId,
+          compatibility,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        throw error;
+      }
+    },
+    [userPet, otherPet]
+  );
+
+  const checkMatch = useCallback(
+    async (targetPetId: string) => {
+      if (!userPet) {
+        return { isMatch: false, compatibility: 0 };
+      }
+
+      try {
+        const response = await matchingAPI.score({
+          petId1: userPet.id,
+          petId2: targetPetId,
+        });
+
+        return {
+          isMatch: response.canMatch && response.score.totalScore >= 70,
+          compatibility: response.score.totalScore,
+        };
+      } catch (err) {
+        // Return default values on error
+        return { isMatch: false, compatibility: 0 };
+      }
+    },
+    [userPet]
+  );
+
   return {
     compatibilityScore,
     compatibilityFactors,
@@ -72,5 +129,7 @@ export function useMatching({ userPet, otherPet, autoCalculate = true }: UseMatc
     isLoading,
     error,
     calculateMatch: recalculate,
+    performSwipe,
+    checkMatch,
   };
 }
