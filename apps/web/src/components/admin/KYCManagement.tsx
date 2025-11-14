@@ -1,6 +1,6 @@
 import { kycApi } from '@/api/kyc-api';
 import { motion, type MotionStyle } from 'framer-motion';
-import { useAnimatePresence, useEntryAnimation } from '@/effects/reanimated';
+import { useAnimatePresence, useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

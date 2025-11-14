@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import type { AdoptionProfile, AdoptionStatus } from '@/lib/adoption-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { useHoverLift, useHoverTap } from '@/effects/framer-motion/hooks';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 
 interface AdoptionCardProps {

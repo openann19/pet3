@@ -51,9 +51,7 @@ import {
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useAnimatePresence, useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { useMotionValue, animate } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 

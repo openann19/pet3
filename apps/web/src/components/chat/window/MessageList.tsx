@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import TypingIndicatorComponent from '../TypingIndicator';
 import { MessageItem } from './MessageItem';
 import type { ChatMessage } from '@/lib/chat-types';

@@ -23,12 +23,8 @@ import type { DiscoveryPreferences } from '@/components/DiscoveryFilters';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
+import { useModalAnimation, useStaggeredItem, useBounceOnTap, useHoverLift } from '@/effects/framer-motion/hooks';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { motionDurations, springConfigs } from '@/effects/framer-motion/variants';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 
 const logger = createLogger('SavedSearchesManager');
 

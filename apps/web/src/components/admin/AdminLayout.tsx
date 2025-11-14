@@ -31,7 +31,7 @@ import {
   Headset,
 } from '@phosphor-icons/react';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useSidebarAnimation } from '@/effects/reanimated/use-sidebar-animation';
+import { useSidebarAnimation } from '@/effects/framer-motion/hooks';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 

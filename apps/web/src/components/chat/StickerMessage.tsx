@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Sticker } from '@/lib/sticker-library';
 import { cn } from '@/lib/utils';
 import { useStickerAnimation } from '@/effects/reanimated/use-sticker-animation';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { useHoverTap } from '@/effects/framer-motion/hooks';
 import { springConfigs } from '@/effects/framer-motion/variants';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { useReducedMotion } from '@/hooks/useReducedMotion';

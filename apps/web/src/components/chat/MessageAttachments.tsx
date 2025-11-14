@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { Play, Pause, DownloadSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { SmartImage } from '@/components/media/SmartImage';
 import type { MessageAttachment } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";

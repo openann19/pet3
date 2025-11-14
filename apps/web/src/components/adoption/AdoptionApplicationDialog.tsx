@@ -23,7 +23,7 @@ import { haptics } from '@/lib/haptics';
 import { PaperPlaneRight } from '@phosphor-icons/react';
 import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useRotation } from '@/effects/reanimated/use-rotation';
+import { useRotation } from '@/effects/framer-motion/hooks';
 import { spark } from '@/lib/spark';
 
 const logger = createLogger('AdoptionApplicationDialog');

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { MessageReaction } from '@/lib/chat-types';
 import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { useUIConfig } from "@/hooks/use-ui-config";

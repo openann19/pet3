@@ -6,7 +6,7 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
+import { useHoverAnimation } from '@/effects/framer-motion/hooks';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import type { MessageTemplate } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";

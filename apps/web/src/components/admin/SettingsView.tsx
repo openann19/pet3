@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { useStorage } from '@/hooks/use-storage'
 import { toast } from 'sonner'
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { useHoverLift } from '@/effects/framer-motion/hooks'
 import { triggerHaptic } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 

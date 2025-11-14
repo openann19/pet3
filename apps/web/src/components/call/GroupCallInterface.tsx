@@ -24,7 +24,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useBounceOnTap, useHoverLift, useModalAnimation } from '@/effects/reanimated';
+import { useBounceOnTap, useHoverLift, useModalAnimation } from '@/effects/framer-motion/hooks';
 import type { GroupCallSession, CallParticipant } from '@/lib/call-types';
 import { formatCallDuration } from '@/lib/call-utils';
 import { haptics } from '@/lib/haptics';

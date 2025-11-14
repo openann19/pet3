@@ -9,7 +9,7 @@ import type { Call } from '@/lib/call-types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useModalAnimation, useGlowPulse, useBounceOnTap } from '@/effects/reanimated';
+import { useModalAnimation, useGlowPulse, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { useMotionValue, animate } from 'framer-motion';
 import { useEffect } from 'react';
 

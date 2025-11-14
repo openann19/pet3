@@ -15,7 +15,7 @@ import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
 import { createLogger } from '@/lib/logger';
 import { userService } from '@/lib/user-service';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 
 const logger = createLogger('AdoptionListingReview');
 

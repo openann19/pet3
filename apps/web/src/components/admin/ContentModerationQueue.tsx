@@ -1,6 +1,6 @@
 import { communityAPI } from '@/api/community-api';
 import { motion, type MotionStyle } from 'framer-motion';
-import { useAnimatePresence, useEntryAnimation } from '@/effects/reanimated';
+import { useAnimatePresence, useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { liveStreamingAPI } from '@/api/live-streaming-api';
 import { lostFoundAPI } from '@/api/lost-found-api';
 import { Badge } from '@/components/ui/badge';

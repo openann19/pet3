@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import { StickerButton } from './StickerButton';
 import { ReactionButton } from './ReactionButton';

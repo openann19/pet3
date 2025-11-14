@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import type { MessageTemplate } from '@/lib/chat-types';
 import { MESSAGE_TEMPLATES } from '@/lib/chat-types';
 import { TemplateButton } from './TemplateButton';

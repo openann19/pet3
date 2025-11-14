@@ -18,7 +18,7 @@ import { useMapConfig } from '@/lib/maps/useMapConfig';
 import MapLibreMap from '@/components/maps/MapLibreMap';
 import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { AnimatedView, useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { useAnimatePresence } from '@/effects/framer-motion/hooks';
 
 interface DiscoverMapModeProps {
   pets: Pet[];

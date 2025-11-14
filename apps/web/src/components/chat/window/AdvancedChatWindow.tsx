@@ -35,7 +35,7 @@ import { AnnounceNewMessage, AnnounceTyping } from './LiveRegions';
 import { useOutbox } from '@petspark/chat-core';
 import { flags } from '@petspark/config';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { LiquidDots } from '../LiquidDots';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUIConfig } from "@/hooks/use-ui-config";

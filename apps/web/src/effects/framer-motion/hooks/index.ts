@@ -13,6 +13,7 @@
 export { useHoverLift, type UseHoverLiftOptions, type UseHoverLiftReturn } from './use-hover-lift';
 export { useBounceOnTap, type UseBounceOnTapOptions, type UseBounceOnTapReturn } from './use-bounce-on-tap';
 export { useHoverTap, type UseHoverTapOptions, type UseHoverTapReturn } from './use-hover-tap';
+export { useHoverAnimation, type UseHoverAnimationOptions, type UseHoverAnimationReturn } from './use-hover-animation';
 
 // ============================================================================
 // ANIMATION UTILITIES

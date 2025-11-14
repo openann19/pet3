@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import { motion } from 'framer-motion';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { useAnimatePresence, useHoverTap } from '@/effects/framer-motion/hooks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

@@ -28,7 +28,7 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useStaggeredItem } from '@/effects/reanimated';
+import { useStaggeredItem } from '@/effects/framer-motion/hooks';
 import { adoptionApi } from '@/api/adoption-api';
 import { createLogger } from '@/lib/logger';
 import type { AdoptionProfile } from '@/lib/adoption-types';

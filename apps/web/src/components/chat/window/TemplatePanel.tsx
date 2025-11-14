@@ -2,12 +2,8 @@
 import { motion } from 'framer-motion';
 
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation, useHoverAnimation } from '@/effects/framer-motion/hooks';
 import { Button } from '@/components/ui/button';
-import { MESSAGE_TEMPLATES } from '@/lib/chat-types';
-import type { MessageTemplate } from '@/lib/chat-types';
-import { X } from '@phosphor-icons/react';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface TemplatePanelProps {

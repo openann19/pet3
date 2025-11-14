@@ -24,9 +24,7 @@ import {
   VideoCamera,
 } from 'phosphor-react';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useAnimatePresence, useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { cn } from '@/lib/utils';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
 

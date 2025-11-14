@@ -2,7 +2,7 @@
 import { motion, type MotionStyle } from 'framer-motion';
 
 import { useMemo, type ReactElement } from 'react';
-import { useFloatingParticle } from '@/effects/reanimated/use-floating-particle';
+import { useFloatingParticle } from '@/effects/framer-motion/hooks';
 import { useGradientAnimation } from '@/effects/reanimated/use-gradient-animation';
 import { safeWindow } from '@/utils/ssr-safe';
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useApp } from '@/contexts/AppContext';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { useHoverTap } from '@/effects/framer-motion/hooks';
 import {
   useSharedValue,
   useAnimatedStyle,

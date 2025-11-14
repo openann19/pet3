@@ -1,8 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useHoverAnimation, useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { useSendWarp } from '@/effects/chat/bubbles/use-send-warp';
 import { useReceiveAirCushion } from '@/effects/chat/bubbles/use-receive-air-cushion';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';

@@ -43,9 +43,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
-import { useExpandCollapse } from '@/effects/reanimated/use-expand-collapse';
-import { useRotation } from '@/effects/reanimated/use-rotation';
+import { useStaggeredItem, useExpandCollapse, useRotation } from '@/effects/framer-motion/hooks';
 
 const logger = createLogger('AdoptionApplicationReview');
 

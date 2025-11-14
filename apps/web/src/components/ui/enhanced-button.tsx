@@ -3,8 +3,7 @@
 import type { ReactNode, ButtonHTMLAttributes, MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { haptics } from '@/lib/haptics';

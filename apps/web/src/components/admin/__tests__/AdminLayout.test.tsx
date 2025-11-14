@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AdminLayout from '../AdminLayout';
 import { useStorage } from '@/hooks/use-storage';
-import { useSidebarAnimation } from '@/effects/reanimated/use-sidebar-animation';
+import { useSidebarAnimation } from '@/effects/framer-motion/hooks';
 
 vi.mock('@/hooks/use-storage');
 vi.mock('@/effects/reanimated/use-sidebar-animation');

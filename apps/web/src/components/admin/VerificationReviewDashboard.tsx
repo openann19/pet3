@@ -31,7 +31,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { useAnimatePresence } from '@/effects/framer-motion/hooks';
 
 const logger = createLogger('VerificationReviewDashboard');
 

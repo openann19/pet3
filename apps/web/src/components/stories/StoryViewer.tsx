@@ -29,8 +29,8 @@ import {
   SpeakerSlash,
   X,
 } from '@phosphor-icons/react';
-import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import { useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/reanimated';
+import { AnimatePresence } from 'framer-motion';
+import { useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { useMotionValue, useTransform } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useCallback, useEffect, useRef, useState, memo } from 'react';

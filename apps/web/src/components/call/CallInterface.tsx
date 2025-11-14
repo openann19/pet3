@@ -19,7 +19,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { CallSession } from '@/lib/call-types';
 import { formatCallDuration } from '@/lib/call-utils';
 import { haptics } from '@/lib/haptics';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 
 interface CallInterfaceProps {
   session: CallSession;

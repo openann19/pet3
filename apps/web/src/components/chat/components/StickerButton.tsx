@@ -7,7 +7,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
+import { useHoverAnimation } from '@/effects/framer-motion/hooks';
 import { useTargetSize } from '@/hooks/use-target-size';
 
 export interface StickerButtonProps {

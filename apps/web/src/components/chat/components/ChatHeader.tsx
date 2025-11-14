@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { TypingIndicator as TypingIndicatorComponent } from './TypingIndicator';
 import type { ChatRoom } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";

@@ -14,8 +14,7 @@ import {
   Check,
   Sparkle,
 } from '@phosphor-icons/react';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import {
   useMotionValue,
   animate,

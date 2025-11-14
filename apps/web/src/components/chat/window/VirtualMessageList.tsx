@@ -6,7 +6,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ChatMessage, TypingUser } from '@/lib/chat-types';
 import { groupMessagesByDate } from '@/lib/chat-utils';
 import { MessageItem } from './MessageItem';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 import TypingIndicatorComponent from '../TypingIndicator';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';

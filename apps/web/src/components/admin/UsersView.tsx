@@ -1,6 +1,6 @@
 import { adminApi } from '@/api/admin-api';
 import { motion, type MotionStyle } from 'framer-motion';
-import { useEntryAnimation } from '@/effects/reanimated';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { badgeVariants } from '@/components/ui/badge';
 import { Badge } from '@/components/ui/badge';

@@ -7,7 +7,7 @@ import { Heart, MapPin, Check, CurrencyDollar, PawPrint } from '@phosphor-icons/
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
-import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
+import { useHoverTap } from '@/effects/framer-motion/hooks';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
 
 interface AdoptionListingCardProps {

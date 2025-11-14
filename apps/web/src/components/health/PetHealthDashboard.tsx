@@ -3,9 +3,7 @@ import { motion } from 'framer-motion';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useMotionValue, animate } from 'framer-motion';
-import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useModalAnimation, useStaggeredItem, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';

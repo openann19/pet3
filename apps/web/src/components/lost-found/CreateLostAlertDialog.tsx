@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useMotionValue, animate } from 'framer-motion';
-import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useStaggeredItem, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { lostFoundAPI } from '@/api/lost-found-api';
 import { Badge } from '@/components/ui/badge';

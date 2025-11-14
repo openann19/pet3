@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, type MotionStyle } from 'framer-motion';
-import { useEntryAnimation } from '@/effects/reanimated';
+import { useEntryAnimation } from '@/effects/framer-motion/hooks';
 import { useStorage } from '@/hooks/use-storage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

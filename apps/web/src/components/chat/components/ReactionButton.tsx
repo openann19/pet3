@@ -7,7 +7,7 @@
 import { motion, type MotionStyle } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useHoverAnimation } from '@/effects/reanimated/use-hover-animation';
+import { useHoverAnimation } from '@/effects/framer-motion/hooks';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { useTargetSize } from '@/hooks/use-target-size';
 

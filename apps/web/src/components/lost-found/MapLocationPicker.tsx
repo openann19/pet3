@@ -10,8 +10,7 @@ import {
   withTiming,
 } from '@petspark/motion';
 import { AnimatedView } from '@/hooks/use-animated-style-value';
-import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useModalAnimation, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { isTruthy } from '@/core/guards';
