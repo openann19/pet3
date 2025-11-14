@@ -314,15 +314,18 @@ function MessageBubble({
         stiffness: springConfigs.smooth.stiffness ?? 400,
       });
     } else {
-      void animate(reactionsPickerOpacity, 0, {
+      void animate(reactionsPickerOpacity, [reactionsPickerOpacity.get(), 0], {
+        type: 'tween',
         duration: timingConfigs.fast.duration ?? 0.15,
         ease: timingConfigs.fast.ease ?? 'easeOut',
       });
-      void animate(reactionsPickerScale, 0.9, {
+      void animate(reactionsPickerScale, [reactionsPickerScale.get(), 0.9], {
+        type: 'tween',
         duration: timingConfigs.fast.duration ?? 0.15,
         ease: timingConfigs.fast.ease ?? 'easeOut',
       });
-      void animate(reactionsPickerTranslateY, 10, {
+      void animate(reactionsPickerTranslateY, [reactionsPickerTranslateY.get(), 10], {
+        type: 'tween',
         duration: timingConfigs.fast.duration ?? 0.15,
         ease: timingConfigs.fast.ease ?? 'easeOut',
       });

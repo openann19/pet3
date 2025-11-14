@@ -46,7 +46,7 @@ describe('CallInterface', () => {
     localStream: undefined,
     remoteStream: undefined,
     isMinimized: false,
-    videoQuality: 'HD',
+    videoQuality: '720p',
   };
 
   beforeEach(() => {

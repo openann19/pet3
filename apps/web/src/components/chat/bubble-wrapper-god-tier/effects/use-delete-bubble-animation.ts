@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import type { CSSProperties } from 'react';
+import type { MotionStyle } from 'framer-motion';
 
 export type DeleteAnimationContext = 'self-delete' | 'admin-delete' | 'emoji-media' | 'group-chat';
 
@@ -22,7 +23,7 @@ export interface UseDeleteBubbleAnimationReturn {
   translateX: MotionValue<number>;
   height: MotionValue<number>;
   rotation: MotionValue<number>;
-  animatedStyle: CSSProperties;
+  animatedStyle: MotionStyle;
   triggerDelete: () => void;
   reset: () => void;
 }
