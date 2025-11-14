@@ -68,7 +68,7 @@ export function PresenceAvatar({
         <motion.div
           style={{
             rotate: rot,
-            opacity: status === 'offline' ? 0 : 1,
+            opacity: 1,
           }}
           className={`pointer-events-none absolute -inset-0.5 rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] ${String(ringColors ?? '')} blur-[2px] opacity-80`}
         />

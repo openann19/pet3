@@ -15,6 +15,7 @@ export interface UseStaggeredItemReturn {
   initial: 'hidden' | false;
   animate: 'visible' | false;
   itemStyle: { opacity: MotionValue<number>; y: MotionValue<number> };
+  animatedStyle: { opacity: MotionValue<number>; y: MotionValue<number> };
 }
 
 /**
@@ -49,6 +50,7 @@ export function useStaggeredItem(options: UseStaggeredItemOptions): UseStaggered
     initial: shouldAnimate ? 'hidden' : false,
     animate: shouldAnimate ? 'visible' : false,
     itemStyle: { opacity, y },
+    animatedStyle: { opacity, y },
   };
 }
 
