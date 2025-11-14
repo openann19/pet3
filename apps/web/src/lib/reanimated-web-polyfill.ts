@@ -4,11 +4,26 @@
  */
 
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Type definitions
 export interface SharedValue<T = number> {
   value: T;
+  _animation?: Animation;
+  _startValue?: number;
+  _startTime?: number;
+}
+
+interface Animation {
+  type: 'spring' | 'timing';
+  toValue: number;
+  damping?: number;
+  stiffness?: number;
+  mass?: number;
+  velocity?: number;
+  duration?: number;
+  easing?: (t: number) => number;
+  callback?: (finished?: boolean) => void;
 }
 
 export type AnimatedStyle<T = CSSProperties> = T;
@@ -77,45 +92,66 @@ export const Easing = {
   },
 };
 
-// Shared value implementation
+// Shared value implementation with reactivity
 export function useSharedValue<T>(initialValue: T): SharedValue<T> {
-  const ref = useRef<SharedValue<T>>({
-    value: initialValue,
-  });
+  const [, forceUpdate] = useState({});
+  const ref = useRef<{ value: T }>({ value: initialValue });
 
-  return ref.current;
+  // Return a reactive object that triggers updates
+  const sharedValue = useMemo(() => {
+    const handler = {
+      get(target: { value: T }, prop: string | symbol) {
+        return Reflect.get(target, prop);
+      },
+      set(target: { value: T }, prop: string | symbol, value: any) {
+        if (prop === 'value') {
+          const changed = target.value !== value;
+          target.value = value;
+          if (changed) {
+            forceUpdate({});
+          }
+          return true;
+        }
+        return Reflect.set(target, prop, value);
+      },
+    };
+    return new Proxy(ref.current, handler);
+  }, []);
+
+  return sharedValue as SharedValue<T>;
 }
 
-// Animation functions
+// Animation functions - schedule animations to run
 export function withSpring(
   toValue: number,
-  _config?: WithSpringConfig,
-  _callback?: (finished?: boolean) => void
+  config?: WithSpringConfig,
+  callback?: (finished?: boolean) => void
 ): number {
-  // In web polyfill, we return the target value
-  // The actual animation is handled by CSS transitions
-  // Callback is executed immediately in web polyfill
-  if (_callback) {
-    setTimeout(() => _callback(true), 0);
-  }
+  // Store animation metadata on the number
+  (toValue as any).__animation = {
+    type: 'spring',
+    damping: config?.damping ?? 20,
+    stiffness: config?.stiffness ?? 300,
+    mass: config?.mass ?? 1,
+    velocity: config?.velocity ?? 0,
+    callback,
+  };
   return toValue;
 }
 
 export function withTiming(
   toValue: number,
-  _config?: WithTimingConfig,
-  _callback?: (finished?: boolean) => void
+  config?: WithTimingConfig,
+  callback?: (finished?: boolean) => void
 ): number {
-  // In web polyfill, we return the target value
-  // The actual animation is handled by CSS transitions
-  // Callback is executed immediately in web polyfill
-  if (_callback) {
-    setTimeout(() => _callback(true), 0);
-  }
+  (toValue as any).__animation = {
+    type: 'timing',
+    duration: config?.duration ?? 300,
+    easing: config?.easing ?? Easing.inOut(Easing.ease),
+    callback,
+  };
   return toValue;
-}
-
-export function withDecay(config: WithDecayConfig): number {
+}export function withDecay(config: WithDecayConfig): number {
   // In web polyfill, we return the current value with decay applied
   // The actual animation is handled by CSS transitions
   const { velocity = 0, deceleration = 0.998, clamp } = config;
@@ -140,12 +176,16 @@ export function withDelay(_delayMs: number, animation: number): number {
 }
 
 export function withSequence(...animations: number[]): number {
-  // Return the last animation value
-  return animations[animations.length - 1] ?? 0;
+  // Return first animation's target, sequence will be handled by effect
+  const firstAnim = animations[0];
+  if (firstAnim !== undefined) {
+    (firstAnim as any).__sequence = animations;
+  }
+  return firstAnim ?? 0;
 }
 
-export function withRepeat(animation: number, _numberOfReps?: number, _reverse?: boolean): number {
-  // Return the animation value
+export function withRepeat(animation: number, numberOfReps = -1, reverse = false): number {
+  (animation as any).__repeat = { numberOfReps, reverse };
   return animation;
 }
 
@@ -221,35 +261,46 @@ export function interpolateColor(
   return firstColor ?? '#000';
 }
 
-// Animated style hook
+// Animated style hook with proper animation support
 export function useAnimatedStyle<T extends CSSProperties>(
   updater: () => T,
   dependencies?: unknown[]
 ): AnimatedStyle<T> {
-  return useMemo(() => {
-    const style = updater();
+  const [, forceUpdate] = useState({});
+  const frameRef = useRef<number>();
+
+  // Track style and re-compute on every frame
+  useEffect(() => {
+    const animate = () => {
+      forceUpdate({});
+      frameRef.current = requestAnimationFrame(animate);
+    };
+    frameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (frameRef.current !== undefined) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, dependencies ?? []);
+
+  const style = useMemo(() => {
+    const computed = updater();
 
     // Convert transform array to CSS transform string
-    if (style.transform && Array.isArray(style.transform)) {
-      const transforms = style.transform as Record<string, number | string>[];
+    if (computed.transform && Array.isArray(computed.transform)) {
+      const transforms = computed.transform as Record<string, number | string>[];
       const transformString = transforms
         .map((t) => {
           const key = Object.keys(t)[0];
-          if (key === undefined) {
-            return '';
-          }
+          if (key === undefined) return '';
           const value = t[key];
 
           if (key === 'translateX' || key === 'translateY') {
             return `${key}(${value}px)`;
           } else if (key === 'scale' || key === 'scaleX' || key === 'scaleY') {
             return `${key}(${value})`;
-          } else if (
-            key === 'rotate' ||
-            key === 'rotateX' ||
-            key === 'rotateY' ||
-            key === 'rotateZ'
-          ) {
+          } else if (key === 'rotate' || key === 'rotateX' || key === 'rotateY' || key === 'rotateZ') {
             return `${key}(${value}deg)`;
           }
           return `${key}(${value})`;
@@ -257,20 +308,16 @@ export function useAnimatedStyle<T extends CSSProperties>(
         .join(' ');
 
       return {
-        ...style,
+        ...computed,
         transform: transformString,
-        transition: 'all 300ms ease-in-out',
       } as T;
     }
 
-    return {
-      ...style,
-      transition: 'all 300ms ease-in-out',
-    } as T;
-  }, dependencies ?? []);
-}
+    return computed;
+  }, [updater, forceUpdate]);
 
-// Animated props hook
+  return style as AnimatedStyle<T>;
+}// Animated props hook
 export function useAnimatedProps<T>(updater: () => T, dependencies?: unknown[]): T {
   return useMemo(() => updater(), dependencies ?? []);
 }

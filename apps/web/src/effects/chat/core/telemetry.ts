@@ -329,7 +329,7 @@ export function trackFrameDrop(
   const isDropped = frameTime > frameBudget * 1.5; // 50% margin
 
   if (isDropped) {
-    const currentDrops = (activeEffect.metadata.droppedFrames as number) ?? 0;
+    const currentDrops = (activeEffect.metadata.droppedFrames!) ?? 0;
     activeEffect.metadata.droppedFrames = currentDrops + 1;
 
     // Auto-reduce quality if >2% drop rate
@@ -369,12 +369,12 @@ export function getPerformanceSummary(): {
   activeCount: number;
   totalDroppedFrames: number;
   averageDropRate: number;
-  effects: Array<{
+  effects: {
     effect: EffectName;
     duration: number;
     droppedFrames: number;
     dropRate: number;
-  }>;
+  }[];
 } {
   const effects = Array.from(activeEffects.values());
   const now = Date.now();
@@ -383,10 +383,10 @@ export function getPerformanceSummary(): {
 
   const effectSummaries = effects.map((activeEffect) => {
     const duration = now - activeEffect.startedAt;
-    const deviceHz = (activeEffect.metadata.deviceHz as DeviceHz) ?? 60;
+    const deviceHz = (activeEffect.metadata.deviceHz!) ?? 60;
     const frameBudget = 1000 / deviceHz;
     const expectedFrames = Math.ceil(duration / frameBudget);
-    const droppedFrames = (activeEffect.metadata.droppedFrames as number) ?? 0;
+    const droppedFrames = (activeEffect.metadata.droppedFrames!) ?? 0;
     const dropRate = expectedFrames > 0 ? (droppedFrames / expectedFrames) * 100 : 0;
 
     totalDroppedFrames += droppedFrames;

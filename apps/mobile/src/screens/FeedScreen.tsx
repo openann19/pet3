@@ -1,6 +1,10 @@
 import { FeatureCard } from '@mobile/components/FeatureCard'
 import { SectionHeader } from '@mobile/components/SectionHeader'
+import { RouteErrorBoundary } from '@mobile/components/RouteErrorBoundary'
+import { OfflineIndicator } from '@mobile/components/OfflineIndicator'
+import { useNetworkStatus } from '@mobile/hooks/use-network-status'
 import { colors } from '@mobile/theme/colors'
+import { getTranslations } from '@mobile/i18n/translations'
 import type { PetProfile } from '@mobile/types/pet'
 import type { PetApiResponse } from '@mobile/types/api'
 import { matchingApi } from '@mobile/utils/api-client'
@@ -8,10 +12,14 @@ import { createLogger } from '@mobile/utils/logger'
 import * as Haptics from 'expo-haptics'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Platform, StyleSheet, Text, View } from 'react-native'
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, useSharedValue, withTiming, FadeIn } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const logger = createLogger('FeedScreen')
+
+// Default language (can be made dynamic later)
+const language = 'en'
+const t = getTranslations(language)
 
 type Tab = 'discovery' | 'map'
 
@@ -58,6 +66,8 @@ function SegmentBtn({ label, selected, onPress }: SegmentBtnProps): React.ReactE
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected }}
+      accessibilityLabel={label}
+      accessibilityHint={selected ? 'Selected tab' : 'Select this tab'}
       style={[styles.segmentLabel, selected && styles.segmentLabelActive]}
       numberOfLines={1}
     >
@@ -78,12 +88,12 @@ function DiscoveryList(): React.ReactElement {
       const response = await matchingApi.getAvailablePets({ limit: 20 })
 
       // Map API response to PetProfile format using type-safe mapper
-      const mappedPets: PetProfile[] = response.pets.map(mapApiPetToProfile)
+      const mappedPets: PetProfile[] = response.pets.map((pet) => mapApiPetToProfile(pet))
 
       setPets(mappedPets)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load pets'
-      logger.error('Failed to load pets', err instanceof Error ? err : new Error(String(err)))
+      const errorMessage = err instanceof Error ? err.message : t.feed.failedToLoadPets
+      logger.warn('Failed to load pets', err instanceof Error ? err : new Error(String(err)))
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -96,7 +106,7 @@ function DiscoveryList(): React.ReactElement {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.loadingContainer} accessible accessibilityLabel={t.feed.loading}>
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     )
@@ -105,14 +115,39 @@ function DiscoveryList(): React.ReactElement {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+        <Text
+          style={styles.errorText}
+          accessible
+          accessibilityLabel={error}
+          accessibilityRole="alert"
+        >
+          {error}
+        </Text>
         <Text
           onPress={() => {
             void loadPets()
           }}
           style={styles.retryText}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={t.feed.retry}
+          accessibilityHint="Retries loading pets"
         >
-          Retry
+          {t.feed.retry}
+        </Text>
+      </View>
+    )
+  }
+
+  if (pets.length === 0) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text
+          style={styles.errorText}
+          accessible
+          accessibilityLabel={t.feed.noPetsFound}
+        >
+          {t.feed.noPetsFound}
         </Text>
       </View>
     )
@@ -124,14 +159,43 @@ function DiscoveryList(): React.ReactElement {
       data={pets}
       keyExtractor={p => String(p.id)}
       renderItem={({ item }) => (
-        <FeatureCard title={item.name} subtitle={`${item.breed} • ${item.age} years old`}>
+        <FeatureCard
+          title={item.name}
+          subtitle={`${item.breed} • ${item.age} ${t.feed.yearsOld}`}
+          accessible
+          accessibilityLabel={`${item.name}, ${item.breed}, ${item.age} ${t.feed.yearsOld}`}
+        >
           <View style={styles.row}>
-            <Text style={styles.label}>Species</Text>
-            <Text style={styles.value}>{item.species}</Text>
+            <Text
+              style={styles.label}
+              accessible
+              accessibilityLabel={t.feed.species}
+            >
+              {t.feed.species}
+            </Text>
+            <Text
+              style={styles.value}
+              accessible
+              accessibilityLabel={`${t.feed.species}: ${item.species}`}
+            >
+              {item.species}
+            </Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Photos</Text>
-            <Text style={styles.value}>{item.photos.length}</Text>
+            <Text
+              style={styles.label}
+              accessible
+              accessibilityLabel={t.feed.photos}
+            >
+              {t.feed.photos}
+            </Text>
+            <Text
+              style={styles.value}
+              accessible
+              accessibilityLabel={`${t.feed.photos}: ${item.photos.length}`}
+            >
+              {item.photos.length}
+            </Text>
           </View>
         </FeatureCard>
       )}
@@ -182,7 +246,7 @@ function MapPane(): React.ReactElement {
   useEffect(() => {
     let mounted = true
 
-    async function loadMapView() {
+    async function loadMapView(): Promise<void> {
       try {
         // Dynamic import for optional dependency
         const mapsModule = await import('react-native-maps').catch(() => null)
@@ -205,7 +269,7 @@ function MapPane(): React.ReactElement {
       }
     }
 
-    loadMapView()
+    void loadMapView()
 
     return () => {
       mounted = false
@@ -249,10 +313,27 @@ function MapPane(): React.ReactElement {
 
   if (!MapView) {
     return (
-      <View style={styles.mapFallback}>
-        <Text style={styles.mapFallbackTitle}>Map module not installed</Text>
-        <Text style={styles.mapFallbackText}>
-          Install <Text style={styles.code}>react-native-maps</Text> to enable the live map view.
+      <View
+        style={styles.mapFallback}
+        accessible
+        accessibilityLabel={`${t.feed.mapNotInstalled}. ${t.feed.mapInstallHint}`}
+      >
+        <Text
+          style={styles.mapFallbackTitle}
+          accessible
+          accessibilityRole="header"
+          accessibilityLabel={t.feed.mapNotInstalled}
+        >
+          {t.feed.mapNotInstalled}
+        </Text>
+        <Text
+          style={styles.mapFallbackText}
+          accessible
+          accessibilityLabel={t.feed.mapInstallHint}
+        >
+          {t.feed.mapInstallHint.split('react-native-maps')[0]}
+          <Text style={styles.code}>react-native-maps</Text>
+          {t.feed.mapInstallHint.split('react-native-maps')[1]}
         </Text>
       </View>
     )
@@ -273,9 +354,10 @@ function MapPane(): React.ReactElement {
   )
 }
 
-export function FeedScreen(): React.ReactElement {
+function FeedScreenContent(): React.ReactElement {
   const [tab, setTab] = useState<Tab>('discovery')
   const x = useSharedValue(0)
+  const networkStatus = useNetworkStatus()
 
   const handleTabChange = useCallback(
     (next: Tab): void => {
@@ -299,22 +381,32 @@ export function FeedScreen(): React.ReactElement {
   })
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={styles.safe}
+      edges={['top', 'left', 'right']}
+      accessible
+      accessibilityLabel={t.feed.title}
+    >
       <View style={styles.container}>
-        <SectionHeader title="Discover" description="Browse nearby pets or switch to map view." />
+        {!networkStatus.isConnected && (
+          <Animated.View entering={FadeIn.duration(300)}>
+            <OfflineIndicator message={t.chat.offlineMessage} />
+          </Animated.View>
+        )}
+        <SectionHeader title={t.feed.title} description={t.feed.description} />
 
         <View style={styles.segment} accessibilityRole="tablist">
           <View style={styles.segmentTrack}>
             <Animated.View style={[styles.segmentIndicator, indicator]} />
             <SegmentBtn
-              label="Discover"
+              label={t.feed.discover}
               selected={tab === 'discovery'}
               onPress={() => {
                 handleTabChange('discovery')
               }}
             />
             <SegmentBtn
-              label="Map"
+              label={t.feed.map}
               selected={tab === 'map'}
               onPress={() => {
                 handleTabChange('map')
@@ -326,6 +418,20 @@ export function FeedScreen(): React.ReactElement {
         {tab === 'discovery' ? <DiscoveryList /> : <MapPane />}
       </View>
     </SafeAreaView>
+  )
+}
+
+export function FeedScreen(): React.ReactElement {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.warn('FeedScreen error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }}
+    >
+      <FeedScreenContent />
+    </RouteErrorBoundary>
   )
 }
 

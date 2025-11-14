@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
-import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Sparkle, X } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -35,10 +35,8 @@ export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSugg
     opacity: opacity.value,
   })) as AnimatedStyle;
 
-  const containerStyleValue = useAnimatedStyleValue(containerStyle);
-
   return (
-    <div style={containerStyleValue} className="px-4 pb-2">
+    <AnimatedView style={containerStyle} className="px-4 pb-2">
       <div className="glass-effect rounded-2xl p-3 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -62,7 +60,7 @@ export default function SmartSuggestionsPanel({ onSelect, onDismiss }: SmartSugg
           ))}
         </div>
       </div>
-    </div>
+    </AnimatedView>
   );
 }
 
@@ -80,19 +78,21 @@ function SuggestionButton({
     transform: [{ scale: hoverLift.scale.value * bounceOnTap.scale.value }],
   })) as AnimatedStyle;
 
-  const buttonStyleValue = useAnimatedStyleValue(buttonStyle);
-
   return (
-    <button
-      onClick={() => onSelect(suggestion)}
+    <AnimatedView
+      style={buttonStyle}
+      className="inline-block"
       onMouseEnter={hoverLift.handleEnter}
       onMouseLeave={hoverLift.handleLeave}
-      onMouseDown={bounceOnTap.handlePress}
-      style={buttonStyleValue}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors whitespace-nowrap text-sm"
     >
-      {suggestion.icon && <span>{suggestion.icon}</span>}
-      <span>{suggestion.text}</span>
-    </button>
+      <button
+        onClick={() => onSelect(suggestion)}
+        onMouseDown={bounceOnTap.handlePress}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors whitespace-nowrap text-sm"
+      >
+        {suggestion.icon && <span>{suggestion.icon}</span>}
+        <span>{suggestion.text}</span>
+      </button>
+    </AnimatedView>
   );
 }

@@ -27,78 +27,36 @@ export function InstallPrompt() {
 
   return (
     <div
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 max-w-[400px] w-[calc(100%-40px)] p-4 bg-indigo-500 text-white rounded-xl shadow-lg z-[9999] flex flex-col gap-3 animate-[slideUp_0.3s_ease-out]"
       style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        maxWidth: '400px',
-        width: 'calc(100% - 40px)',
-        padding: '16px',
-        backgroundColor: '#6366f1',
-        color: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
         animation: 'slideUp 0.3s ease-out',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+      <div className="flex justify-between items-start">
         <div>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Install Pet3 App</h3>
-          <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9 }}>
+          <h3 className="m-0 text-base font-semibold">Install Pet3 App</h3>
+          <p className="mt-1 text-sm opacity-90">
             Get quick access and offline support
           </p>
         </div>
         <button
           onClick={handleDismiss}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            padding: '4px',
-            fontSize: '20px',
-            lineHeight: 1,
-            opacity: 0.8,
-          }}
+          className="bg-transparent border-0 text-white cursor-pointer p-1 text-xl leading-none opacity-80"
           aria-label="Dismiss"
         >
           ×
         </button>
       </div>
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div className="flex gap-2">
         <button
           onClick={handleInstall}
-          style={{
-            flex: 1,
-            padding: '10px',
-            backgroundColor: 'white',
-            color: '#6366f1',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
+          className="flex-1 p-2.5 bg-white text-indigo-500 border-0 rounded-lg font-semibold cursor-pointer text-sm"
         >
           Install
         </button>
         <button
           onClick={handleDismiss}
-          style={{
-            padding: '10px 16px',
-            backgroundColor: 'transparent',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '8px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
+          className="px-4 py-2.5 bg-transparent text-white border border-white/30 rounded-lg font-semibold cursor-pointer text-sm"
         >
           Not Now
         </button>

@@ -4,7 +4,9 @@
  */
 
 import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useState, useCallback } from 'react';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseMagneticHoverOptions {
   strength?: number;
@@ -14,7 +16,20 @@ export interface UseMagneticHoverOptions {
   enabled?: boolean;
 }
 
-export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
+export interface UseMagneticHoverReturn {
+  animatedStyle: AnimatedStyle;
+  handleMouseEnter: () => void;
+  handleMouseLeave: () => void;
+  handleMouseMove: (event: React.MouseEvent<HTMLElement>) => void;
+  handleRef: (element: HTMLElement | null) => void;
+  translateX: SharedValue<number>;
+  translateY: SharedValue<number>;
+  scale: SharedValue<number>;
+}
+
+export function useMagneticHover(
+  options: UseMagneticHoverOptions = {}
+): UseMagneticHoverReturn {
   const {
     strength = 0.3,
     damping = 20,
@@ -76,7 +91,7 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
       { translateY: translateY.value },
       { scale: scale.value },
     ],
-  }));
+  })) as AnimatedStyle;
 
   return {
     animatedStyle,
@@ -84,5 +99,8 @@ export function useMagneticHover(options: UseMagneticHoverOptions = {}) {
     handleMouseLeave,
     handleMouseMove,
     handleRef,
+    translateX,
+    translateY,
+    scale,
   };
 }

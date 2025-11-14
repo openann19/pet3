@@ -41,12 +41,12 @@ export interface UseConfettiBurstReturn {
   createParticleStyle: (
     particle: ConfettiParticle
   ) => () => {
-    transform: Array<{
+    transform: {
       translateX?: number;
       translateY?: number;
       rotate?: string;
       scale?: number;
-    }>;
+    }[];
     opacity: number;
     backgroundColor: string;
     width: number;
@@ -113,12 +113,12 @@ export function useConfettiBurst(options: UseConfettiBurstOptions = {}): UseConf
     (
       particle: ConfettiParticle
     ): (() => {
-      transform: Array<{
+      transform: {
         translateX?: number;
         translateY?: number;
         rotate?: string;
         scale?: number;
-      }>;
+      }[];
       opacity: number;
       backgroundColor: string;
       width: number;

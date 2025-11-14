@@ -9,7 +9,9 @@ import {
   withSpring,
   withSequence,
 } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useCallback } from 'react';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseElasticScaleOptions {
   scaleUp?: number;
@@ -19,7 +21,16 @@ export interface UseElasticScaleOptions {
   mass?: number;
 }
 
-export function useElasticScale(options: UseElasticScaleOptions = {}) {
+export interface UseElasticScaleReturn {
+  animatedStyle: AnimatedStyle;
+  handlePressIn: () => void;
+  handlePressOut: () => void;
+  scale: SharedValue<number>;
+}
+
+export function useElasticScale(
+  options: UseElasticScaleOptions = {}
+): UseElasticScaleReturn {
   const { scaleUp = 1.15, scaleDown = 0.95, damping = 12, stiffness = 200, mass = 0.8 } = options;
 
   const scale = useSharedValue(1);
@@ -49,11 +60,12 @@ export function useElasticScale(options: UseElasticScaleOptions = {}) {
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-  }));
+  })) as AnimatedStyle;
 
   return {
     animatedStyle,
     handlePressIn,
     handlePressOut,
+    scale,
   };
 }

@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { springConfigs } from '@/effects/reanimated/transitions';
-import { haptics } from '@/lib/haptics';
-import { cn } from '@/lib/utils';
-import { X, CheckCircle, Warning, Info, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { springConfigs } from '@/effects/reanimated/transitions';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { cn } from '@/lib/utils';
+import { CheckCircle, Info, AlertTriangle as Warning, X, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
 export type PremiumToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -62,8 +61,8 @@ export function PremiumToast({
   position = 'top',
   showProgress = true,
 }: PremiumToastProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const Icon = icons[type];
+  const _uiConfig = useUIConfig();
+  const Icon = icons[type];
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(position === 'top' ? -20 : 20);
   const translateX = useSharedValue(0);

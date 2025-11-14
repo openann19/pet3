@@ -31,7 +31,7 @@ export function TypingPlaceholder({
       className={cn(
         'flex items-end gap-1.5 px-3 py-2 rounded-2xl max-w-[78%]',
         isOwn
-          ? 'bg-gradient-to-br from-primary to-accent rounded-br-sm'
+          ? 'bg-linear-to-br from-primary to-accent rounded-br-sm'
           : 'bg-card border border-border rounded-bl-sm',
         className
       )}

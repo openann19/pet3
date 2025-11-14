@@ -52,14 +52,14 @@ export function VerificationLevelSelector({
               className={cn(
                 'relative p-4 rounded-xl border-2 transition-all text-left',
                 isSelected
-                  ? `bg-gradient-to-br ${color}`
+                  ? `bg-linear-to-br ${color}`
                   : 'bg-card border-border hover:border-primary/50'
               )}
             >
               {isSelected && (
                 <MotionView
                   layoutId="selected-level"
-                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10"
+                  className="absolute inset-0 rounded-xl bg-linear-to-br from-primary/10 to-accent/10"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}

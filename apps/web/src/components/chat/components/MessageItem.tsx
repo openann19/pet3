@@ -25,6 +25,7 @@ import type { ChatMessage } from '@/lib/chat-types';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export interface MessageItemProps {
   message: ChatMessage;
@@ -92,7 +93,7 @@ export function MessageItem({
   // Ensure focus appearance on bubble
   useEffect(() => {
     if (bubbleRef.current) {
-      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]') as HTMLElement;
+      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]')!;
       if (bubbleElement) {
         bubbleElement.setAttribute('id', stableReference.stableId);
         bubbleElement.setAttribute('tabIndex', '0');
@@ -202,10 +203,11 @@ export function MessageItem({
 
             {message.type === 'pet-card' && message.metadata?.petCard && (
               <div className="flex items-center gap-3 p-2 bg-white/10 rounded-lg">
-                <img
-                  src={message.metadata.petCard.petPhoto}
-                  alt={message.metadata.petCard.petName}
+                <ProgressiveImage
+                  src={message.metadata.petCard.petPhoto ?? ''}
+                  alt={message.metadata.petCard.petName ?? 'Pet'}
                   className="w-12 h-12 rounded-full object-cover"
+                  aria-label={`${message.metadata.petCard.petName ?? 'Pet'} photo`}
                 />
                 <div>
                   <p className="font-semibold text-sm">{message.metadata.petCard.petName}</p>

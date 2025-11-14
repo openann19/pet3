@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useStorage } from '@/hooks/use-storage';
 import { haptics } from '@/lib/haptics';
-import type { StoryHighlight } from '@/lib/stories-types';
+import type { StoryHighlight } from '@petspark/shared';
 import { PushPin, PushPinSlash, Trash, X } from '@phosphor-icons/react';
 import { motion, MotionView } from '@petspark/motion';
 import { useState } from 'react';
@@ -94,7 +94,13 @@ export default function HighlightViewer({
           <div className="flex items-center gap-2 ml-4">
             {isOwner && (
               <>
-                <Button variant="ghost" size="icon" onClick={handleTogglePin} className="shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleTogglePin}
+                  className="shrink-0"
+                  aria-label={highlight.isPinned ? 'Unpin highlight' : 'Pin highlight'}
+                >
                   {highlight.isPinned ? (
                     <PushPinSlash size={20} weight="fill" />
                   ) : (
@@ -107,13 +113,20 @@ export default function HighlightViewer({
                   size="icon"
                   onClick={handleDelete}
                   className="shrink-0 text-destructive hover:text-destructive"
+                  aria-label="Delete highlight"
                 >
                   <Trash size={20} weight="bold" />
                 </Button>
               </>
             )}
 
-            <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0" aria-label="X">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="shrink-0"
+              aria-label="Close highlight viewer"
+            >
               <X size={24} weight="bold" />
             </Button>
           </div>
@@ -132,6 +145,7 @@ export default function HighlightViewer({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.03 }}
+                aria-label={`View story ${index + 1}: ${story.caption || 'Untitled story'}`}
               >
                 <img
                   src={story.thumbnailUrl || story.mediaUrl}
@@ -139,7 +153,7 @@ export default function HighlightViewer({
                   className="w-full h-full object-cover"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {story.caption && (
                   <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -34,6 +34,7 @@ import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const logger = createLogger('MediaViewer');
 
@@ -570,7 +571,7 @@ export function MediaViewer({
             {(showVideoControls || !isVideo) && (
               <AnimatedView
                 style={headerStyle}
-                className="absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/80 to-transparent"
+                className="absolute top-0 left-0 right-0 z-50 p-4 bg-linear-to-b from-black/80 to-transparent"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -666,7 +667,7 @@ export function MediaViewer({
                       {showVideoControls && duration > 0 && !isNaN(duration) && (
                         <AnimatedView
                           style={videoControlsStyle}
-                          className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent"
+                          className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-black/80 to-transparent"
                         >
                           <div className="flex items-center gap-4">
                             <Button
@@ -720,10 +721,11 @@ export function MediaViewer({
                       onClick={handleImageClick}
                       className="max-w-full max-h-full cursor-zoom-in select-none"
                     >
-                      <img
+                      <ProgressiveImage
                         src={currentMedia.url}
                         alt={`Post media ${currentIndex + 1}`}
                         className="max-w-full max-h-full object-contain select-none"
+                        aria-label={`Post media ${currentIndex + 1}`}
                         draggable={false}
                       />
                     </AnimatedView>
@@ -781,9 +783,8 @@ export function MediaViewer({
                       }
                       haptics.selection();
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
-                    }`}
+                    className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
+                      }`}
                     aria-label={`View ${media[index]?.type === 'video' ? 'video' : 'photo'} ${index + 1}`}
                   />
                 ))}

@@ -13,6 +13,7 @@ import { Sparkle, Eye, ArrowRight } from '@phosphor-icons/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const DEMO_PETS = [
   {
@@ -139,11 +140,11 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
   };
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
+    <Card className="p-6 bg-linear-to-br from-primary/5 via-accent/5 to-secondary/5">
       <div className="flex items-start gap-4 mb-6">
         <AnimatedView
           style={iconStyle}
-          className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0"
+          className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0"
         >
           <Eye size={24} weight="fill" className="text-white" />
         </AnimatedView>
@@ -162,7 +163,12 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
             style={photoStyle}
             className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-4"
           >
-            <img src={currentPet.photo} alt="Demo pet" className="w-full h-full object-cover" />
+            <ProgressiveImage
+              src={currentPet.photo}
+              alt="Demo pet"
+              className="w-full h-full object-cover"
+              aria-label="Demo pet photo"
+            />
             <div className="absolute top-3 right-3">
               <Badge variant="secondary" className="bg-white/90 backdrop-blur">
                 Sample {selectedIndex + 1}/{DEMO_PETS.length}
@@ -174,7 +180,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
             <Button
               onClick={runDemo}
               disabled={analyzing}
-              className="flex-1 bg-gradient-to-r from-primary to-accent"
+              className="flex-1 bg-linear-to-r from-primary to-accent"
             >
               {analyzing ? (
                 <>
@@ -250,7 +256,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
 
           {resultPresence.shouldRender && showResult && (
             <AnimatedView style={resultPresence.animatedStyle} className="h-full">
-              <Card className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 h-full">
+              <Card className="p-5 bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold text-lg">Analysis Results</h4>
                   <Badge

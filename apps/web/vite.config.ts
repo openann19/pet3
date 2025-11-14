@@ -527,7 +527,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
         'react-native': 'react-native-web',
         'react-native-reanimated': path.resolve(
           projectRoot,
-          './src/lib/reanimated-web-polyfill.ts'
+          './src/lib/reanimated-web-simple.ts'
         ),
       },
       conditions: ['import', 'module', 'browser', 'default'],

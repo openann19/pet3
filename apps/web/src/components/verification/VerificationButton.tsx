@@ -77,7 +77,7 @@ export function VerificationButton({
           className={cn(
             'w-full p-4 rounded-xl border transition-all text-left',
             status === 'verified'
-              ? 'bg-gradient-to-br from-primary/10 to-accent/5 border-primary/30'
+              ? 'bg-linear-to-br from-primary/10 to-accent/5 border-primary/30'
               : 'bg-card border-border hover:border-primary/50',
             className
           )}

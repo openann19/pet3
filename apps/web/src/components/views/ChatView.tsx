@@ -1,16 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from 'react-native-reanimated';
+import { useMotionValue, useSpring, useTransform } from 'framer-motion';
 import ChatRoomsList from '@/components/ChatRoomsList';
 import ChatWindow from '@/components/ChatWindowNew';
 import { ChatErrorBoundary } from '@/components/chat/window/ChatErrorBoundary';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { useApp } from '@/contexts/AppContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useStorage } from '@/hooks/use-storage';
@@ -24,11 +19,14 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { usePageTransition } from '@/effects/reanimated/use-page-transition';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
 
 const logger = createLogger('ChatView');
 
-export default function ChatView() {
+function ChatViewContent() {
   const { t } = useApp();
+  const { isOnline } = useNetworkStatus();
   const [matches] = useStorage<Match[]>('matches', []);
   const [allPets] = useStorage<Pet[]>('all-pets', []);
   const [userPets] = useStorage<Pet[]>('user-pets', []);
@@ -69,8 +67,12 @@ export default function ChatView() {
     duration: 300,
   });
 
-  const emptyChatIconScale = useSharedValue(1);
-  const emptyChatIconRotation = useSharedValue(0);
+  const emptyChatIconScale = useMotionValue(1);
+  const emptyChatIconRotation = useMotionValue(0);
+
+  // Create spring animations for smooth transitions
+  const scaleSpring = useSpring(emptyChatIconScale, { stiffness: 400, damping: 30 });
+  const rotationSpring = useSpring(emptyChatIconRotation, { stiffness: 400, damping: 30 });
 
   useEffect(() => {
     if (userPets !== undefined && chatRooms !== undefined) {
@@ -159,23 +161,30 @@ export default function ChatView() {
 
   useEffect(() => {
     if (!selectedRoom && !isMobile) {
-      emptyChatIconScale.value = withRepeat(
-        withSequence(withTiming(1.1, timingConfigs.smooth), withTiming(1, timingConfigs.smooth)),
-        -1,
-        true
-      );
-      emptyChatIconRotation.value = withRepeat(
-        withSequence(
-          withTiming(5, { duration: 500 }),
-          withTiming(-5, { duration: 500 }),
-          withTiming(0, { duration: 500 })
-        ),
-        -1,
-        false
-      );
+      // Simple pulsing animation for the icon
+      const pulseInterval = setInterval(() => {
+        emptyChatIconScale.set(emptyChatIconScale.get() === 1 ? 1.1 : 1);
+      }, 1000);
+
+      // Simple rotation animation
+      const rotateInterval = setInterval(() => {
+        const currentRotation = emptyChatIconRotation.get();
+        if (currentRotation === 0) {
+          emptyChatIconRotation.set(5);
+        } else if (currentRotation === 5) {
+          emptyChatIconRotation.set(-5);
+        } else {
+          emptyChatIconRotation.set(0);
+        }
+      }, 500);
+
+      return () => {
+        clearInterval(pulseInterval);
+        clearInterval(rotateInterval);
+      };
     } else {
-      emptyChatIconScale.value = 1;
-      emptyChatIconRotation.value = 0;
+      emptyChatIconScale.set(1);
+      emptyChatIconRotation.set(0);
     }
   }, [selectedRoom, isMobile, emptyChatIconScale, emptyChatIconRotation]);
 
@@ -187,14 +196,12 @@ export default function ChatView() {
     setSelectedRoom(null);
   }, []);
 
-  const emptyChatIconStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: emptyChatIconScale.value },
-        { rotate: `${emptyChatIconRotation.value}deg` },
-      ],
-    };
-  }) as AnimatedStyle;
+  const emptyChatIconStyle: AnimatedStyle = {
+    transform: [
+      { scale: scaleSpring },
+      { rotate: rotationSpring },
+    ],
+  };
 
   if (isLoading) {
     return null;
@@ -219,6 +226,7 @@ export default function ChatView() {
 
   return (
     <PageTransitionWrapper key="chat-view" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <div className="h-[calc(100vh-8rem)]">
         <AnimatedView style={headerAnimation.style} className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold mb-2">{t.chat.title}</h2>
@@ -277,5 +285,19 @@ export default function ChatView() {
         </div>
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function ChatView() {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('ChatView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <ChatViewContent />
+    </RouteErrorBoundary>
   );
 }

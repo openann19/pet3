@@ -5,7 +5,7 @@ import type {
   CollaborativeStory,
   StoryAnalytics,
   StoryView,
-} from './stories-types';
+} from '@petspark/shared';
 
 export function createStory(
   userId: string,

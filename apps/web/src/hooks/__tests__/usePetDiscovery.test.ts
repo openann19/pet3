@@ -22,15 +22,39 @@ describe('usePetDiscovery', () => {
     {
       id: 'pet-1',
       name: 'Fluffy',
-      species: 'dog',
+      breed: 'Golden Retriever',
       age: 3,
+      gender: 'male' as const,
+      size: 'large' as const,
+      photo: 'https://example.com/pet1.jpg',
+      photos: ['https://example.com/pet1.jpg'],
+      bio: 'Friendly dog',
+      personality: ['friendly'],
+      interests: ['fetch'],
+      lookingFor: ['playdates'],
+      ownerId: 'owner-1',
+      ownerName: 'Owner',
+      verified: false,
+      createdAt: new Date().toISOString(),
       location: '40.7128,-74.0060',
     },
     {
       id: 'pet-2',
       name: 'Buddy',
-      species: 'cat',
+      breed: 'Persian',
       age: 2,
+      gender: 'male' as const,
+      size: 'small' as const,
+      photo: 'https://example.com/pet2.jpg',
+      photos: ['https://example.com/pet2.jpg'],
+      bio: 'Calm cat',
+      personality: ['calm'],
+      interests: ['napping'],
+      lookingFor: ['companionship'],
+      ownerId: 'owner-2',
+      ownerName: 'Owner 2',
+      verified: false,
+      createdAt: new Date().toISOString(),
       location: '40.7580,-73.9855',
     },
   ];
@@ -38,18 +62,30 @@ describe('usePetDiscovery', () => {
   const mockUserPet = {
     id: 'user-pet-1',
     name: 'My Pet',
-    species: 'dog',
+    breed: 'Labrador',
     age: 4,
+    gender: 'female' as const,
+    size: 'medium' as const,
+    photo: 'https://example.com/user-pet.jpg',
+    photos: ['https://example.com/user-pet.jpg'],
+    bio: 'My pet',
+    personality: ['energetic'],
+    interests: ['running'],
+    lookingFor: ['friends'],
+    ownerId: 'user-1',
+    ownerName: 'Me',
+    verified: true,
+    createdAt: new Date().toISOString(),
     location: '40.7128,-74.0060',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useStorage).mockImplementation((key: string, defaultValue: unknown) => {
-      if (key === 'all-pets') return [mockPets, vi.fn()];
-      if (key === 'swipe-history') return [[], vi.fn()];
-      if (key === 'adoptable-pet-ids') return [new Set(), vi.fn()];
-      return [defaultValue, vi.fn()];
+      if (key === 'all-pets') return [mockPets, vi.fn(), vi.fn()];
+      if (key === 'swipe-history') return [[], vi.fn(), vi.fn()];
+      if (key === 'adoptable-pet-ids') return [new Set(), vi.fn(), vi.fn()];
+      return [defaultValue, vi.fn(), vi.fn()];
     });
   });
 
@@ -67,10 +103,10 @@ describe('usePetDiscovery', () => {
     const swipedIds = new Set(['pet-1']);
 
     vi.mocked(useStorage).mockImplementation((key: string) => {
-      if (key === 'all-pets') return [mockPets, vi.fn()];
-      if (key === 'swipe-history') return [[], vi.fn()];
-      if (key === 'adoptable-pet-ids') return [new Set(), vi.fn()];
-      return [[], vi.fn()];
+      if (key === 'all-pets') return [mockPets, vi.fn(), vi.fn()];
+      if (key === 'swipe-history') return [[], vi.fn(), vi.fn()];
+      if (key === 'adoptable-pet-ids') return [new Set(), vi.fn(), vi.fn()];
+      return [[], vi.fn(), vi.fn()];
     });
 
     const { result } = renderHook(() =>

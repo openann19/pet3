@@ -25,7 +25,7 @@ const logger = createLogger('camera-permissions')
  *
  * @deprecated Use useCameraPermissions() hook directly in components.
  */
-export async function requestCameraPermissions(): Promise<boolean> {
+export function requestCameraPermissions(): Promise<boolean> {
   try {
     // expo-camera SDK 51+ uses useCameraPermissions() hook
     // This function cannot use hooks, so we return false and log a warning
@@ -43,9 +43,9 @@ export async function requestCameraPermissions(): Promise<boolean> {
           text: 'Open Settings',
           onPress: () => {
             if (Platform.OS === 'ios') {
-              Linking.openURL('app-settings:')
+              void Linking.openURL('app-settings:')
             } else {
-              Linking.openSettings()
+              void Linking.openSettings()
             }
           },
         },
@@ -67,7 +67,7 @@ export async function requestCameraPermissions(): Promise<boolean> {
  *
  * @deprecated Use useCameraPermissions() hook directly in components.
  */
-export async function checkCameraPermissions(): Promise<boolean> {
+export function checkCameraPermissions(): Promise<boolean> {
   try {
     // expo-camera SDK 51+ uses useCameraPermissions() hook
     // This function cannot use hooks, so we return false and log a warning

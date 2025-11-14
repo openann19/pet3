@@ -12,6 +12,7 @@ import { Pool } from 'pg';
 import { createLogger } from './utils/logger';
 import { errorHandler } from './middleware/error-handler';
 import { authenticateJWT } from './middleware/jwt-auth';
+import { requestIdMiddleware } from './middleware/request-id';
 import {
   createGDPRRateLimiter,
   createDeletionRateLimiter,
@@ -36,6 +37,7 @@ const app = express();
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
 
 // Middleware
+app.use(requestIdMiddleware);
 app.use(helmet());
 app.use(
   cors({
@@ -59,7 +61,11 @@ app.use((req, res, next) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    requestId: req.requestId,
+  });
 });
 
 // Initialize database

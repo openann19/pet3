@@ -11,23 +11,45 @@ describe('useStories', () => {
   const mockStories = [
     {
       id: 'story-1',
+      userId: 'user-1',
+      userName: 'User 1',
       petId: 'pet-1',
-      content: 'Story content 1',
+      petName: 'Pet 1',
+      petPhoto: 'https://example.com/pet1.jpg',
+      type: 'photo' as const,
+      mediaType: 'photo' as const,
+      mediaUrl: 'https://example.com/story1.jpg',
+      duration: 5000,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      visibility: 'everyone' as const,
+      viewCount: 0,
+      views: [],
+      reactions: [],
     },
     {
       id: 'story-2',
+      userId: 'user-2',
+      userName: 'User 2',
       petId: 'pet-2',
-      content: 'Story content 2',
+      petName: 'Pet 2',
+      petPhoto: 'https://example.com/pet2.jpg',
+      type: 'video' as const,
+      mediaType: 'video' as const,
+      mediaUrl: 'https://example.com/story2.mp4',
+      duration: 10000,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      visibility: 'everyone' as const,
+      viewCount: 0,
+      views: [],
+      reactions: [],
     },
   ];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn()] as never);
+    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn(), vi.fn()] as never);
   });
 
   it('should return all stories by default', () => {
@@ -38,7 +60,7 @@ describe('useStories', () => {
   });
 
   it('should filter stories by petId when filterByUser is true', () => {
-    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn()] as never);
+    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn(), vi.fn()] as never);
 
     const { result } = renderHook(() =>
       useStories({
@@ -52,7 +74,7 @@ describe('useStories', () => {
   });
 
   it('should return user stories', () => {
-    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn()] as never);
+    vi.mocked(useStorage).mockReturnValue([mockStories, vi.fn(), vi.fn()] as never);
 
     const { result } = renderHook(() =>
       useStories({
@@ -66,16 +88,27 @@ describe('useStories', () => {
 
   it('should add story', () => {
     const setStories = vi.fn();
-    vi.mocked(useStorage).mockReturnValue([mockStories, setStories] as never);
+    vi.mocked(useStorage).mockReturnValue([mockStories, setStories, vi.fn()] as never);
 
     const { result } = renderHook(() => useStories());
 
     const newStory = {
       id: 'story-3',
+      userId: 'user-1',
+      userName: 'User 1',
       petId: 'pet-1',
-      content: 'New story',
+      petName: 'Pet 1',
+      petPhoto: 'https://example.com/pet1.jpg',
+      type: 'photo' as const,
+      mediaType: 'photo' as const,
+      mediaUrl: 'https://example.com/story3.jpg',
+      duration: 5000,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      visibility: 'everyone' as const,
+      viewCount: 0,
+      views: [],
+      reactions: [],
     };
 
     act(() => {
@@ -92,7 +125,7 @@ describe('useStories', () => {
     const { result } = renderHook(() => useStories());
 
     act(() => {
-      result.current.updateStory('story-1', { content: 'Updated content' });
+      result.current.updateStory('story-1', { caption: 'Updated content' });
     });
 
     expect(setStories).toHaveBeenCalled();

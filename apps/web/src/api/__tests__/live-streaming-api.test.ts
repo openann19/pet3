@@ -42,7 +42,7 @@ const createAPIClientMock = () => {
 
     // Handle empty responses (e.g., 204 No Content)
     const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType?.includes('application/json')) {
       return { data: {} };
     }
 
@@ -266,7 +266,7 @@ beforeAll(async () => {
       if (address && typeof address === 'object') {
         testServerPort = address.port;
         testServerPortForMock = testServerPort;
-        process.env['TEST_API_PORT'] = String(testServerPort);
+        process.env.TEST_API_PORT = String(testServerPort);
       }
       resolve();
     });

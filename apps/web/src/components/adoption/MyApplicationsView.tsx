@@ -8,6 +8,8 @@ import { useStorage } from '@/hooks/use-storage';
 import { adoptionService } from '@/lib/adoption-service';
 import type { AdoptionApplication, AdoptionProfile } from '@/lib/adoption-types';
 import { createLogger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
+import { MotionView } from '@petspark/motion';
 import {
   ArrowLeft,
   CheckCircle,
@@ -20,8 +22,8 @@ import {
   Warning,
   XCircle,
 } from '@phosphor-icons/react';
-import { MotionView } from '@petspark/motion';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const logger = createLogger('MyApplicationsView');
 
@@ -45,7 +47,11 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
   const loadApplications = async () => {
     try {
       setIsLoading(true);
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       const userApps = await adoptionService.getUserApplications(user.id);
 
       const appsWithProfiles: ApplicationWithProfile[] = userApps.map((app) => {
@@ -167,13 +173,12 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card
-                  className={`overflow-hidden ${
-                    application.status === 'approved'
+                  className={`overflow-hidden ${application.status === 'approved'
                       ? 'border-green-500/30 shadow-lg shadow-green-500/5'
                       : application.status === 'pending'
                         ? 'border-amber-500/30 shadow-lg shadow-amber-500/5'
                         : ''
-                  }`}
+                    }`}
                 >
                   <CardHeader>
                     <div className="flex items-start gap-4">
@@ -219,15 +224,14 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
 
                   <CardContent className="space-y-4">
                     <div
-                      className={`p-4 rounded-lg border ${
-                        application.status === 'approved'
+                      className={`p-4 rounded-lg border ${application.status === 'approved'
                           ? 'bg-green-500/5 border-green-500/20'
                           : application.status === 'pending'
                             ? 'bg-amber-500/5 border-amber-500/20'
                             : application.status === 'rejected'
                               ? 'bg-red-500/5 border-red-500/20'
                               : 'bg-muted/30 border-border'
-                      }`}
+                        }`}
                     >
                       <p className="text-sm font-medium mb-1">Status Update</p>
                       <p className="text-sm text-muted-foreground">

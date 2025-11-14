@@ -120,7 +120,7 @@ export default function IncomingCallNotification({
           <AnimatedView style={avatarAnimatedStyle}>
             <Avatar className="w-16 h-16 ring-4 ring-primary/30">
               <AvatarImage src={callerAvatar} alt={callerName} />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-2xl font-bold">
+              <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-2xl font-bold">
                 {callerName[0] ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -158,7 +158,7 @@ export default function IncomingCallNotification({
           <AnimatedView style={acceptBounce.animatedStyle} className="flex-1">
             <Button
               onClick={acceptBounce.handlePress}
-              className="w-full h-12 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"
+              className="w-full h-12 bg-linear-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"
               aria-label="Accept call"
             >
               <Phone size={20} weight="fill" className="mr-2" aria-hidden="true" />

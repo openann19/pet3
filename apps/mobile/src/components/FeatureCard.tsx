@@ -6,14 +6,44 @@ type FeatureCardProps = {
   title: string
   subtitle?: string
   children?: ReactNode
+  accessible?: boolean
+  accessibilityLabel?: string
+  accessibilityRole?: 'summary' | 'text' | 'none'
+  accessibilityHint?: string
 }
 
-export function FeatureCard({ title, subtitle, children }: FeatureCardProps): React.JSX.Element {
+export function FeatureCard({
+  title,
+  subtitle,
+  children,
+  accessible = true,
+  accessibilityLabel,
+  accessibilityRole,
+  accessibilityHint,
+}: FeatureCardProps): React.JSX.Element {
+  const label = accessibilityLabel || (subtitle ? `${title}. ${subtitle}` : title)
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-      {children ? <View style={styles.content}>{children}</View> : null}
+    <View
+      style={styles.container}
+      accessible={accessible}
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={label}
+      accessibilityHint={accessibilityHint}
+    >
+      <Text style={styles.title} accessible accessibilityRole="header">
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text style={styles.subtitle} accessible accessibilityRole="text">
+          {subtitle}
+        </Text>
+      ) : null}
+      {children ? (
+        <View style={styles.content} accessible={false}>
+          {children}
+        </View>
+      ) : null}
     </View>
   )
 }

@@ -13,72 +13,75 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
 }
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'POST' && url.pathname === '/users/location') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/users/location/nearby') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { userIds: ['user-1', 'user-2'] } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/notifications/geofence') {
+        await readJson(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/notifications/user-locations') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              locations: [
+                {
+                  userId: 'user-1',
+                  lat: 37.7749,
+                  lon: -122.4194,
+                  lastUpdated: new Date().toISOString(),
+                },
+              ],
+            },
+          })
+        );
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'POST' && url.pathname === '/users/location') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/users/location/nearby') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { userIds: ['user-1', 'user-2'] } }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/notifications/geofence') {
-      await readJson(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/notifications/user-locations') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            locations: [
-              {
-                userId: 'user-1',
-                lat: 37.7749,
-                lon: -122.4194,
-                lastUpdated: new Date().toISOString(),
-              },
-            ],
-          },
-        })
-      );
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

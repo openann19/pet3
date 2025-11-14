@@ -33,8 +33,8 @@ export function Stepper({
   orientation = 'horizontal',
   className,
 }: StepperProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const progressWidth = useSharedValue(0);
+  const _uiConfig = useUIConfig();
+  const progressWidth = useSharedValue(0);
 
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progressWidth.value}%`,
@@ -87,10 +87,9 @@ export function Stepper({
                 {index < steps.length - 1 && (
                   <div
                     className={cn(
-                      'w-0.5 my-2 transition-colors duration-300',
+                      'w-0.5 h-10 my-2 transition-colors duration-300',
                       isCompleted ? 'bg-primary' : 'bg-muted'
                     )}
-                    style={{ height: '40px' }}
                   />
                 )}
               </div>
@@ -149,7 +148,7 @@ export function Stepper({
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   isCompleted && 'bg-primary border-primary text-primary-foreground',
                   isCurrent &&
-                    'bg-primary border-primary text-primary-foreground scale-110 shadow-lg',
+                  'bg-primary border-primary text-primary-foreground scale-110 shadow-lg',
                   isUpcoming && 'bg-muted border-muted-foreground text-muted-foreground',
                   isUpcoming && 'cursor-not-allowed',
                   'w-10 h-10'

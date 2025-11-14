@@ -21,6 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import type { LiveStreamCategory } from '@/lib/live-streaming-types';
 import { createLogger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
 import { ChatCircle, Tag, VideoCamera, X } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -81,12 +82,16 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
     try {
       setIsCreating(true);
 
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
 
       const result = await liveStreamingAPI.createRoom({
         hostId: user.id,
         hostName: user.login || 'User',
-        hostAvatar: user.avatarUrl,
+        hostAvatar: user.avatarUrl ?? undefined,
         title: title.trim(),
         ...(description.trim() ? { description: description.trim() } : {}),
         category,
@@ -204,7 +209,11 @@ export function GoLiveDialog({ open, onClose, onGoLive }: GoLiveDialogProps) {
                 {tags.map((tag, index) => (
                   <Badge key={index} variant="secondary" className="gap-1">
                     {tag}
-                    <button onClick={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button"> removeTag(index)}>
+                    <button
+                      onClick={() => removeTag(index)}
+                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                      aria-label="Remove tag"
+                    >
                       <X size={12} />
                     </button>
                   </Badge>

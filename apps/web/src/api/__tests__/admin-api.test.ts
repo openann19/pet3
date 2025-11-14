@@ -14,7 +14,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -43,54 +44,56 @@ const mockAuditLog: AuditLogEntry = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'GET' && url.pathname === '/admin/analytics') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: mockSystemStats }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/admin/settings/audit') {
+        const payload = await readJson<Omit<AuditLogEntry, 'id' | 'timestamp'>>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(
+          JSON.stringify({ data: { ...payload, id: 'audit-1', timestamp: new Date().toISOString() } })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/admin/settings/audit') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: [mockAuditLog] }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/admin/settings/moderate') {
+        const payload = await readJson<{ taskId: string; action: string; reason?: string }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true, taskId: payload.taskId } }));
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'GET' && url.pathname === '/admin/analytics') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: mockSystemStats }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/admin/settings/audit') {
-      const payload = await readJson<Omit<AuditLogEntry, 'id' | 'timestamp'>>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(
-        JSON.stringify({ data: { ...payload, id: 'audit-1', timestamp: new Date().toISOString() } })
-      );
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/admin/settings/audit') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: [mockAuditLog] }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/admin/settings/moderate') {
-      const payload = await readJson<{ taskId: string; action: string; reason?: string }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true, taskId: payload.taskId } }));
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });
@@ -110,14 +113,14 @@ describe('AdminAPI.getSystemStats', () => {
     const stats = await adminApi.getSystemStats();
 
     expect(stats).toMatchObject({
-      totalUsers: expect.any(Number),
-      activeUsers: expect.any(Number),
-      totalPets: expect.any(Number),
-      totalMatches: expect.any(Number),
-      totalMessages: expect.any(Number),
-      pendingReports: expect.any(Number),
-      pendingVerifications: expect.any(Number),
-      resolvedReports: expect.any(Number),
+      totalUsers: expect.any(Number) as number,
+      activeUsers: expect.any(Number) as number,
+      totalPets: expect.any(Number) as number,
+      totalMatches: expect.any(Number) as number,
+      totalMessages: expect.any(Number) as number,
+      pendingReports: expect.any(Number) as number,
+      pendingVerifications: expect.any(Number) as number,
+      resolvedReports: expect.any(Number) as number,
     });
   });
 
@@ -180,12 +183,12 @@ describe('AdminAPI.getAuditLogs', () => {
     expect(Array.isArray(logs)).toBe(true);
     if (logs.length > 0) {
       expect(logs[0]).toMatchObject({
-        id: expect.any(String),
-        adminId: expect.any(String),
-        action: expect.any(String),
-        targetType: expect.any(String),
-        targetId: expect.any(String),
-        timestamp: expect.any(String),
+        id: expect.any(String) as string,
+        adminId: expect.any(String) as string,
+        action: expect.any(String) as string,
+        targetType: expect.any(String) as string,
+        targetId: expect.any(String) as string,
+        timestamp: expect.any(String) as string,
       });
     }
   });

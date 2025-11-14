@@ -7,10 +7,12 @@ import { PlaydateScheduler } from '@/components/lazy-exports';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { useApp } from '@/contexts/AppContext';
 import { useCall } from '@/hooks/useCall';
 import { useMatches } from '@/hooks/useMatches';
 import { haptics } from '@/lib/haptics';
+import { createLogger } from '@/lib/logger';
 import { calculateCompatibility, getCompatibilityFactors } from '@/lib/matching';
 import type { Match, Pet } from '@/lib/types';
 import {
@@ -26,23 +28,22 @@ import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from 'react-native-reanimated';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
+import { useMotionValue, useSpring, useTransform } from 'framer-motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
+
+const logger = createLogger('MatchesView');
 
 interface MatchesViewProps {
   onNavigateToChat?: () => void;
 }
 
-export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
+function MatchesViewContent({ onNavigateToChat }: MatchesViewProps) {
   const { t } = useApp();
+  const { isOnline } = useNetworkStatus();
   const {
     matchedPets,
     userPet,
@@ -87,12 +88,20 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
   }, [onNavigateToChat]);
 
   // Animation hooks for empty state
-  const emptyHeartScale = useSharedValue(0);
-  const emptyHeartRotate = useSharedValue(-180);
-  const emptyPulseScale = useSharedValue(1);
-  const emptyPulseOpacity = useSharedValue(0.5);
-  const emptyTextOpacity = useSharedValue(0);
-  const emptyTextY = useSharedValue(20);
+  const emptyHeartScale = useMotionValue(0);
+  const emptyHeartRotate = useMotionValue(-180);
+  const emptyPulseScale = useMotionValue(1);
+  const emptyPulseOpacity = useMotionValue(0.5);
+  const emptyTextOpacity = useMotionValue(0);
+  const emptyTextY = useMotionValue(20);
+
+  // Create spring animations
+  const emptyHeartScaleSpring = useSpring(emptyHeartScale, { stiffness: 200, damping: 15 });
+  const emptyHeartRotateSpring = useSpring(emptyHeartRotate, { stiffness: 200, damping: 15 });
+  const emptyPulseScaleSpring = useSpring(emptyPulseScale, { stiffness: 400, damping: 30 });
+  const emptyPulseOpacitySpring = useSpring(emptyPulseOpacity, { stiffness: 400, damping: 30 });
+  const emptyTextOpacitySpring = useSpring(emptyTextOpacity, { stiffness: 400, damping: 30 });
+  const emptyTextYSpring = useSpring(emptyTextY, { stiffness: 300, damping: 20 });
 
   // Interactive element hooks
   const cardHover = useHoverLift();
@@ -104,38 +113,41 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
   // Initialize empty state animations
   useEffect(() => {
     if (matchedPets.length === 0 && !isLoading) {
-      emptyHeartScale.value = withSpring(1, { damping: 15, stiffness: 200 });
-      emptyHeartRotate.value = withSpring(0, { damping: 15, stiffness: 200 });
-      emptyTextOpacity.value = withTiming(1, { duration: 300 });
-      emptyTextY.value = withSpring(0, { damping: 20, stiffness: 300 });
+      // Set initial animation values
+      emptyHeartScale.set(1);
+      emptyHeartRotate.set(0);
+      emptyTextOpacity.set(1);
+      emptyTextY.set(0);
 
-      // Pulse animation
-      emptyPulseScale.value = withRepeat(
-        withSequence(withTiming(1.5, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-        -1,
-        false
-      );
-      emptyPulseOpacity.value = withRepeat(
-        withSequence(withTiming(0, { duration: 1000 }), withTiming(0.5, { duration: 1000 })),
-        -1,
-        false
-      );
+      // Pulse animation using intervals
+      const pulseInterval = setInterval(() => {
+        const currentScale = emptyPulseScale.get();
+        emptyPulseScale.set(currentScale === 1 ? 1.5 : 1);
+
+        const currentOpacity = emptyPulseOpacity.get();
+        emptyPulseOpacity.set(currentOpacity === 0.5 ? 0 : 0.5);
+      }, 1000);
+
+      return () => clearInterval(pulseInterval);
     }
-  }, [matchedPets.length, isLoading]);
+  }, [matchedPets.length, isLoading, emptyHeartScale, emptyHeartRotate, emptyTextOpacity, emptyTextY, emptyPulseScale, emptyPulseOpacity]);
 
-  const emptyHeartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: emptyHeartScale.value }, { rotate: `${emptyHeartRotate.value}deg` }],
-  })) as AnimatedStyle;
+  const emptyHeartStyle: AnimatedStyle = {
+    transform: [
+      { scale: emptyHeartScaleSpring },
+      { rotate: emptyHeartRotateSpring },
+    ],
+  };
 
-  const emptyPulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: emptyPulseScale.value }],
-    opacity: emptyPulseOpacity.value,
-  })) as AnimatedStyle;
+  const emptyPulseStyle: AnimatedStyle = {
+    transform: [{ scale: emptyPulseScaleSpring }],
+    opacity: emptyPulseOpacitySpring,
+  };
 
-  const emptyTextStyle = useAnimatedStyle(() => ({
-    opacity: emptyTextOpacity.value,
-    transform: [{ translateY: emptyTextY.value }],
-  })) as AnimatedStyle;
+  const emptyTextStyle: AnimatedStyle = {
+    opacity: emptyTextOpacitySpring,
+    transform: [{ translateY: emptyTextYSpring }],
+  };
 
   if (isLoading) {
     return null;
@@ -147,32 +159,20 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
           {emptyStatePresence.shouldRender && (
             <AnimatedView
-              style={[emptyHeartStyle, emptyStatePresence.animatedStyle]}
-              className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
+              style={emptyHeartStyle}
+              className="w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
             >
               <AnimatedView
-                style={
-                  useAnimatedStyle(() => ({
-                    transform: [
-                      {
-                        scale: withRepeat(
-                          withSequence(
-                            withTiming(1.2, { duration: 750 }),
-                            withTiming(1, { duration: 750 })
-                          ),
-                          -1,
-                          true
-                        ),
-                      },
-                    ],
-                  })) as AnimatedStyle
-                }
+                style={{
+                  transform: [{ scale: useMotionValue(1) }],
+                }}
+                className="animate-pulse"
               >
                 <Heart size={48} className="text-primary" />
               </AnimatedView>
               <AnimatedView
                 style={emptyPulseStyle}
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+                className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20"
               />
             </AnimatedView>
           )}
@@ -189,6 +189,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
 
   return (
     <PageTransitionWrapper key="matches-content" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <div>
         <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
           <div className="flex-1 min-w-0">
@@ -202,7 +203,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
             <AnimatedView>
               <Button
                 onClick={handleStartChat}
-                className="bg-gradient-to-r from-primary to-accent hover:shadow-xl transition-all"
+                className="bg-linear-to-r from-primary to-accent hover:shadow-xl transition-all"
                 size="lg"
               >
                 <ChatCircle size={20} weight="fill" className="mr-2" />
@@ -331,7 +332,7 @@ function MatchCard({
   return (
     <AnimatedView>
       <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl cursor-pointer group relative border border-white/20">
-        <AnimatedView className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <AnimatedView className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         <div
           className="relative h-64 overflow-hidden"
           onClick={() => {
@@ -339,11 +340,16 @@ function MatchCard({
             onSelect();
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
-          <img src={pet.photo} alt={pet.name} className="w-full h-full object-cover" />
-          <AnimatedView className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+          <ProgressiveImage
+            src={pet.photo}
+            alt={pet.name}
+            className="w-full h-full object-cover"
+            aria-label={`Photo of ${pet.name}`}
+          />
+          <AnimatedView className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
           <AnimatedView className="absolute top-3 right-3 glass-strong px-3 py-1.5 rounded-full font-bold text-sm shadow-2xl border border-white/30 backdrop-blur-xl">
-            <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
               {pet.match.compatibilityScore}%
             </span>
           </AnimatedView>
@@ -359,7 +365,7 @@ function MatchCard({
           </AnimatedView>
         </div>
 
-        <div className="p-5 bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-md">
+        <div className="p-5 bg-linear-to-br from-white/40 to-white/20 backdrop-blur-md">
           <div className="flex items-start justify-between mb-2 gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold truncate">{pet.name}</h3>
@@ -409,7 +415,7 @@ function MatchCardActions({
           haptics.trigger('selection');
           onPlaydate();
         }}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-lg"
+        className="w-10 h-10 rounded-full bg-linear-to-br from-secondary to-primary flex items-center justify-center shadow-lg"
         title="Schedule playdate"
       >
         <Calendar size={18} weight="fill" className="text-white" />
@@ -420,7 +426,7 @@ function MatchCardActions({
           haptics.trigger('medium');
           onVideoCall();
         }}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg"
+        className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg"
         title="Start video call"
       >
         <VideoCamera size={18} weight="fill" className="text-white" />
@@ -432,12 +438,26 @@ function MatchCardActions({
             haptics.trigger('medium');
             onChat();
           }}
-          className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg"
+          className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shadow-lg"
           title="Start chat"
         >
           <ChatCircle size={18} weight="fill" className="text-white" />
         </AnimatedView>
       )}
     </div>
+  );
+}
+
+export default function MatchesView(props: MatchesViewProps) {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('MatchesView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <MatchesViewContent {...props} />
+    </RouteErrorBoundary>
   );
 }

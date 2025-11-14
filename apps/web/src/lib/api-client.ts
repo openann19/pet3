@@ -246,7 +246,7 @@ class APIClientImpl {
     };
 
     if (this.accessToken) {
-      merged['Authorization'] = `Bearer ${this.accessToken}`;
+      merged.Authorization = `Bearer ${this.accessToken}`;
     }
 
     return merged;

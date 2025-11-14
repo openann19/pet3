@@ -10,21 +10,31 @@ import {
   CallInterface,
   IncomingCallNotification,
 } from '@mobile/components/call'
-import type { CallInfo } from '@mobile/hooks/call/useCallManager'
-import { useCallManager } from '@mobile/hooks/call/useCallManager'
+import { RouteErrorBoundary } from '@mobile/components/RouteErrorBoundary'
+import { OfflineIndicator } from '@mobile/components/OfflineIndicator'
+import { useNetworkStatus } from '@mobile/hooks/use-network-status'
+import type { CallInfo } from '@mobile/hooks/call/use-call-manager'
+import { useCallManager } from '@mobile/hooks/call/use-call-manager'
 import { useUserStore } from '@mobile/store/user-store'
+import { getTranslations } from '@mobile/i18n/translations'
 import { colors } from '@mobile/theme/colors'
 import { realtime } from '@mobile/lib/realtime'
 import { createLogger } from '@mobile/utils/logger'
 import React, { useState, useCallback, useEffect } from 'react'
 import { StyleSheet, Text, View, Modal, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
 const logger = createLogger('MatchesScreen')
 
-export function MatchesScreen(): React.ReactElement {
+// Default language (can be made dynamic later)
+const language = 'en'
+const t = getTranslations(language)
+
+function MatchesScreenContent(): React.ReactElement {
   const user = useUserStore((state) => state.user)
   const localUserId = user?.id ?? 'current-user'
+  const networkStatus = useNetworkStatus()
 
   // For demo purposes, use a hardcoded remote user
   // In production, this would come from the selected match
@@ -39,7 +49,7 @@ export function MatchesScreen(): React.ReactElement {
       logger.info('Call status changed', { status })
     },
     onError: (error) => {
-      logger.error('Call error', error)
+      logger.warn('Call error', error)
     },
   })
 
@@ -79,58 +89,81 @@ export function MatchesScreen(): React.ReactElement {
   }, [localUserId, selectedMatchUserName, selectedMatchUserPhoto, callManager])
 
   // Handle start call
-  const handleStartCall = useCallback(async () => {
-    try {
-      await callManager.startCall(
-        selectedMatchUserId,
-        selectedMatchUserName,
-        selectedMatchUserPhoto ?? undefined
-      )
-    } catch (error) {
+  const handleStartCall = useCallback(() => {
+    // Handle call start asynchronously without returning promise
+    callManager.startCall(
+      selectedMatchUserId,
+      selectedMatchUserName,
+      selectedMatchUserPhoto ?? undefined
+    ).catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to start call', err)
-    }
+      logger.warn(t.matches.failedToStartCall, err)
+    })
   }, [callManager, selectedMatchUserId, selectedMatchUserName, selectedMatchUserPhoto])
 
   // Handle end call
-  const handleEndCall = useCallback(async () => {
-    try {
-      await callManager.endCall()
-    } catch (error) {
+  const handleEndCall = useCallback(() => {
+    // Handle call end asynchronously without returning promise
+    callManager.endCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to end call', err)
-    }
+      logger.warn(t.matches.failedToEndCall, err)
+    })
   }, [callManager])
 
   // Handle accept call
-  const handleAcceptCall = useCallback(async () => {
-    try {
-      await callManager.acceptCall()
-    } catch (error) {
+  const handleAcceptCall = useCallback(() => {
+    // Handle call accept asynchronously without returning promise
+    callManager.acceptCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to accept call', err)
-    }
+      logger.warn(t.matches.failedToAcceptCall, err)
+    })
   }, [callManager])
 
   // Handle decline call
-  const handleDeclineCall = useCallback(async () => {
-    try {
-      await callManager.declineCall()
-    } catch (error) {
+  const handleDeclineCall = useCallback(() => {
+    // Handle call decline asynchronously without returning promise
+    callManager.declineCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to decline call', err)
-    }
+      logger.warn(t.matches.failedToDeclineCall, err)
+    })
   }, [callManager])
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={styles.safe}
+      edges={['top', 'left', 'right']}
+      accessible
+      accessibilityLabel={t.matches.title}
+    >
+      {!networkStatus.isConnected && (
+        <Animated.View entering={FadeIn.duration(300)}>
+          <OfflineIndicator message={t.chat.offlineMessage} />
+        </Animated.View>
+      )}
       <View style={styles.container}>
-        <SectionHeader title="Matches" description="Signal-driven pairing results." />
-        <FeatureCard title="Today">
-          <Text style={styles.text}>Your latest matches will show here.</Text>
+        <SectionHeader title={t.matches.title} description={t.matches.description} />
+        <FeatureCard
+          title={t.matches.today}
+          accessible
+          accessibilityLabel={t.matches.today}
+        >
+          <Text
+            style={styles.text}
+            accessible
+            accessibilityLabel={t.matches.noMatches}
+          >
+            {t.matches.noMatches}
+          </Text>
           {!callManager.isInCall && (
-            <Pressable onPress={handleStartCall} style={styles.callButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-              <Text style={styles.callButtonText}>📹 Call Match</Text>
+            <Pressable
+              onPress={handleStartCall}
+              style={styles.callButton}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t.matches.callMatch}
+              accessibilityHint="Starts a video call with the matched user"
+            >
+              <Text style={styles.callButtonText}>📹 {t.matches.callMatch}</Text>
             </Pressable>
           )}
         </FeatureCard>
@@ -170,6 +203,20 @@ export function MatchesScreen(): React.ReactElement {
         />
       )}
     </SafeAreaView>
+  )
+}
+
+export function MatchesScreen(): React.ReactElement {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.warn('MatchesScreen error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }}
+    >
+      <MatchesScreenContent />
+    </RouteErrorBoundary>
   )
 }
 

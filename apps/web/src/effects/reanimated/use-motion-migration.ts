@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -103,32 +103,41 @@ export function useInteractiveMotion({
   whileTap?: Record<string, number>;
   enabled?: boolean;
 }) {
+  const hasHover = enabled && Object.keys(whileHover).length > 0;
+  const hasTap = enabled && Object.keys(whileTap).length > 0;
+
   const hoverLift = useHoverLift({
     scale: whileHover.scale ?? 1.05,
-    enabled: enabled && Object.keys(whileHover).length > 0,
+    translateY: whileHover.y ?? whileHover.translateY,
   });
   const bounceOnTap = useBounceOnTap({
     scale: whileTap.scale ?? 0.95,
     hapticFeedback: false,
-    enabled: enabled && Object.keys(whileTap).length > 0,
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const hoverScale = hoverLift.scale.value;
-    const tapScale = bounceOnTap.scale.value;
-    const hoverY = hoverLift.translateY.value;
+    const hoverScale = hasHover ? hoverLift.scale.value : 1;
+    const tapScale = hasTap ? bounceOnTap.scale.value : 1;
+    const hoverY = hasHover ? hoverLift.translateY.value : 0;
 
     return {
       transform: [{ scale: hoverScale * tapScale }, { translateY: hoverY }],
     };
   }) as AnimatedStyle;
 
+  const handleMouseUp = useCallback(() => {
+    // Reset tap scale on mouse up
+    if (hasTap) {
+      bounceOnTap.scale.value = 1;
+    }
+  }, [hasTap, bounceOnTap.scale]);
+
   return {
     animatedStyle,
-    onMouseEnter: hoverLift.handleEnter,
-    onMouseLeave: hoverLift.handleLeave,
-    onMouseDown: bounceOnTap.handlePress,
-    onMouseUp: bounceOnTap.handleRelease,
+    onMouseEnter: hasHover ? hoverLift.handleEnter : undefined,
+    onMouseLeave: hasHover ? hoverLift.handleLeave : undefined,
+    onMouseDown: hasTap ? bounceOnTap.handlePress : undefined,
+    onMouseUp: hasTap ? handleMouseUp : undefined,
   };
 }
 
@@ -154,30 +163,34 @@ export function useRepeatingAnimation({
   useEffect(() => {
     if (!enabled) return;
 
-    if (animate.scale && animate.scale.length > 1) {
-      const sequence = animate.scale.map((val) =>
-        withTiming(val, { duration: duration / animate.scale.length })
+    const scaleValues = animate.scale;
+    if (scaleValues && Array.isArray(scaleValues) && scaleValues.length > 1) {
+      const sequence = scaleValues.map((val) =>
+        withTiming(val, { duration: duration / scaleValues.length })
       );
       scale.value = withRepeat(withSequence(...sequence), repeat, false);
     }
 
-    if (animate.rotate && animate.rotate.length > 1) {
-      const sequence = animate.rotate.map((val) =>
-        withTiming(val, { duration: duration / animate.rotate.length })
+    const rotateValues = animate.rotate;
+    if (rotateValues && Array.isArray(rotateValues) && rotateValues.length > 1) {
+      const sequence = rotateValues.map((val) =>
+        withTiming(val, { duration: duration / rotateValues.length })
       );
       rotate.value = withRepeat(withSequence(...sequence), repeat, false);
     }
 
-    if (animate.x && animate.x.length > 1) {
-      const sequence = animate.x.map((val) =>
-        withTiming(val, { duration: duration / animate.x.length })
+    const xValues = animate.x;
+    if (xValues && Array.isArray(xValues) && xValues.length > 1) {
+      const sequence = xValues.map((val) =>
+        withTiming(val, { duration: duration / xValues.length })
       );
       x.value = withRepeat(withSequence(...sequence), repeat, false);
     }
 
-    if (animate.opacity && animate.opacity.length > 1) {
-      const sequence = animate.opacity.map((val) =>
-        withTiming(val, { duration: duration / animate.opacity.length })
+    const opacityValues = animate.opacity;
+    if (opacityValues && Array.isArray(opacityValues) && opacityValues.length > 1) {
+      const sequence = opacityValues.map((val) =>
+        withTiming(val, { duration: duration / opacityValues.length })
       );
       opacity.value = withRepeat(withSequence(...sequence), repeat, false);
     }

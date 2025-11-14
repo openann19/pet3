@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
-  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  View,
 } from 'react-native'
 // Stubs for unavailable imports
 function useKV<T>(_key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   // Ignore key for mobile stub
   return useState<T>(initial)
 }
-const haptics = { trigger: (_: string) => {} }
-const toast = { success: (_: string) => {}, error: (_: string) => {}, info: (_: string) => {} }
+const haptics = { trigger: (_: string) => { } }
+const toast = { success: (_: string) => { }, error: (_: string) => { }, info: (_: string) => { } }
 
 // Types
 export interface ChatRoom {
@@ -91,7 +91,7 @@ export default function AdvancedChatWindow({
     >
       <View style={styles.header}>
         {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
             <Text style={styles.backText}>{'<'} Back</Text>
           </TouchableOpacity>
         )}
@@ -131,7 +131,7 @@ export default function AdvancedChatWindow({
           placeholder="Type a message..."
           editable={true}
         />
-        <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSendMessage(inputValue)} style={styles.sendButton}>
+        <TouchableOpacity onPress={() => handleSendMessage(inputValue)} style={styles.sendButton}>
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>

@@ -161,7 +161,7 @@ export class WorkerPoolManager {
         this.completedTasks++;
 
         if (task.onComplete) {
-          task.onComplete(message.data as unknown);
+          task.onComplete(message.data);
         }
 
         this.processQueue();

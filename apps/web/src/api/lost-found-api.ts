@@ -121,36 +121,36 @@ export class LostFoundAPI {
       const queryParams: Record<string, unknown> = {};
 
       if (filters?.status && filters.status.length > 0) {
-        queryParams['status'] = filters.status;
+        queryParams.status = filters.status;
       }
 
       if (filters?.species && filters.species.length > 0) {
-        queryParams['species'] = filters.species;
+        queryParams.species = filters.species;
       }
 
       if (filters?.location) {
-        queryParams['near'] = `${filters.location.lat},${filters.location.lon}`;
-        queryParams['radius'] = filters.location.radiusKm;
+        queryParams.near = `${filters.location.lat},${filters.location.lon}`;
+        queryParams.radius = filters.location.radiusKm;
       }
 
       if (filters?.minReward !== undefined) {
-        queryParams['minReward'] = filters.minReward;
+        queryParams.minReward = filters.minReward;
       }
 
       if (filters?.dateFrom) {
-        queryParams['dateFrom'] = filters.dateFrom;
+        queryParams.dateFrom = filters.dateFrom;
       }
 
       if (filters?.dateTo) {
-        queryParams['dateTo'] = filters.dateTo;
+        queryParams.dateTo = filters.dateTo;
       }
 
       if (filters?.cursor) {
-        queryParams['cursor'] = filters.cursor;
+        queryParams.cursor = filters.cursor;
       }
 
       if (filters?.limit) {
-        queryParams['limit'] = filters.limit;
+        queryParams.limit = filters.limit;
       }
 
       const url =

@@ -142,7 +142,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-xl p-0 overflow-hidden">
         <div className="flex flex-col h-full">
-          <SheetHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-br from-background via-primary/5 to-accent/5">
+          <SheetHeader className="px-6 py-4 border-b border-border/50 bg-linear-to-br from-background via-primary/5 to-accent/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <MotionView
@@ -479,7 +479,7 @@ function NotificationItem({
 
       {notification.priority === 'urgent' && !notification.read && (
         <MotionView
-          className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-destructive via-accent to-destructive"
+          className="absolute top-0 right-0 left-0 h-1 bg-linear-to-r from-destructive via-accent to-destructive"
           animate={{
             opacity: [0.5, 1, 0.5],
           }}

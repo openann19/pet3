@@ -1,17 +1,6 @@
-'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  withDelay,
-  interpolate,
-  Extrapolation,
-  type SharedValue,
-} from 'react-native-reanimated';
 import { useEffect, useCallback } from 'react';
+import { useMotionValue, animate, MotionValue } from 'framer-motion';
 import type { MessageStatus } from '@/lib/chat-types';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 
@@ -22,12 +11,16 @@ export interface UseReceiptTransitionOptions {
 }
 
 export interface UseReceiptTransitionReturn {
-  opacity: SharedValue<number>;
-  scale: SharedValue<number>;
-  colorIntensity: SharedValue<number>;
-  iconRotation: SharedValue<number>;
-  animatedStyle: ReturnType<typeof useAnimatedStyle>;
-  animateStatusChange: (newStatus: MessageStatus) => void;
+  readonly opacity: MotionValue<number>;
+  readonly scale: MotionValue<number>;
+  readonly colorIntensity: MotionValue<number>;
+  readonly iconRotation: MotionValue<number>;
+  readonly animatedStyle: {
+    opacity: MotionValue<number>;
+    transform: Array<{ scale: MotionValue<number> } | { rotate: string }>;
+    color: string;
+  };
+  readonly animateStatusChange: (newStatus: MessageStatus) => void;
 }
 
 const DEFAULT_PULSE_DURATION = 600;
@@ -40,47 +33,55 @@ const STATUS_COLORS = {
   failed: 'rgba(239, 68, 68, 1)',
 };
 
+
 export function useReceiptTransition(
   options: UseReceiptTransitionOptions
 ): UseReceiptTransitionReturn {
   const { status, previousStatus, pulseDuration = DEFAULT_PULSE_DURATION } = options;
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
-  const colorIntensity = useSharedValue(status === 'read' || status === 'delivered' ? 1 : 0);
-  const iconRotation = useSharedValue(0);
+  const opacity = useMotionValue(1);
+  const scale = useMotionValue(1);
+  const colorIntensity = useMotionValue(status === 'read' || status === 'delivered' ? 1 : 0);
+  const iconRotation = useMotionValue(0);
+
+  // Helper for color interpolation
+  function interpolateColor(intensity: number, base: string, target: string): string {
+    const baseMatch = base.match(/rgba?\((\d+), (\d+), (\d+)/);
+    const targetMatch = target.match(/rgba?\((\d+), (\d+), (\d+)/);
+  const baseR = baseMatch ? parseInt(baseMatch[1] ?? '0', 10) : 156;
+  const baseG = baseMatch ? parseInt(baseMatch[2] ?? '0', 10) : 163;
+  const baseB = baseMatch ? parseInt(baseMatch[3] ?? '0', 10) : 175;
+  const targetR = targetMatch ? parseInt(targetMatch[1] ?? '0', 10) : 156;
+  const targetG = targetMatch ? parseInt(targetMatch[2] ?? '0', 10) : 163;
+  const targetB = targetMatch ? parseInt(targetMatch[3] ?? '0', 10) : 175;
+    const r = Math.round(baseR + (targetR - baseR) * intensity);
+    const g = Math.round(baseG + (targetG - baseG) * intensity);
+    const b = Math.round(baseB + (targetB - baseB) * intensity);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
 
   const animateStatusChange = useCallback(
-    (newStatus: MessageStatus) => {
-      opacity.value = withSequence(
-        withTiming(0.6, { duration: pulseDuration / 3 }),
-        withTiming(1, { duration: pulseDuration / 3 })
-      );
+    async (newStatus: MessageStatus) => {
+      await animate(opacity, 0.6, { duration: pulseDuration / 3 / 1000 });
+      await animate(opacity, 1, { duration: pulseDuration / 3 / 1000 });
 
-      scale.value = withSequence(
-        withSpring(1.3, {
-          damping: 10,
-          stiffness: 400,
-        }),
-        withSpring(1, springConfigs.bouncy)
-      );
+      await animate(scale, 1.3, { type: 'spring', damping: 10, stiffness: 400 });
+      await animate(scale, 1, { type: 'spring', ...springConfigs.bouncy });
 
-      iconRotation.value = withSequence(
-        withTiming(-10, { duration: pulseDuration / 4 }),
-        withSpring(0, springConfigs.bouncy)
-      );
+      await animate(iconRotation, -10, { duration: pulseDuration / 4 / 1000 });
+      await animate(iconRotation, 0, { type: 'spring', ...springConfigs.bouncy });
 
       if (newStatus === 'read' && previousStatus === 'delivered') {
-        colorIntensity.value = withSequence(
-          withTiming(0, { duration: 100 }),
-          withDelay(50, withTiming(1, { duration: pulseDuration / 2 }))
-        );
+        await animate(colorIntensity, 0, { duration: 0.1 });
+        setTimeout(() => {
+          animate(colorIntensity, 1, { duration: (pulseDuration / 2) / 1000 });
+        }, 50);
       } else if (newStatus === 'delivered') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        animate(colorIntensity, 1, { duration: (timingConfigs.smooth.duration ?? 300) / 1000 });
       } else if (newStatus === 'read') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        animate(colorIntensity, 1, { duration: (timingConfigs.smooth.duration ?? 300) / 1000 });
       } else if (newStatus === 'sent' || newStatus === 'sending') {
-        colorIntensity.value = withTiming(0, timingConfigs.fast);
+        animate(colorIntensity, 0, { duration: (timingConfigs.fast.duration ?? 150) / 1000 });
       }
     },
     [opacity, scale, colorIntensity, iconRotation, previousStatus, pulseDuration]
@@ -91,51 +92,26 @@ export function useReceiptTransition(
       animateStatusChange(status);
     } else {
       if (status === 'read' || status === 'delivered') {
-        colorIntensity.value = withTiming(1, timingConfigs.smooth);
+        animate(colorIntensity, 1, { duration: (timingConfigs.smooth.duration ?? 300) / 1000 });
       } else {
-        colorIntensity.value = withTiming(0, timingConfigs.fast);
+        animate(colorIntensity, 0, { duration: (timingConfigs.fast.duration ?? 150) / 1000 });
       }
     }
-  }, [status, previousStatus, colorIntensity, animateStatusChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, previousStatus]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const baseColor = STATUS_COLORS.sent;
-    const targetColor = STATUS_COLORS[status] ?? STATUS_COLORS.sending;
+  const baseColor = STATUS_COLORS.sent;
+  const targetColor = STATUS_COLORS[status] ?? STATUS_COLORS.sending;
+  let color = interpolateColor(colorIntensity.get(), baseColor, targetColor);
 
-    const r = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\((\d+)/.exec(baseColor)?.[1] ?? '156', 10),
-        parseInt(/rgba?\((\d+)/.exec(targetColor)?.[1] ?? '156', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-    const g = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\(\d+, (\d+)/.exec(baseColor)?.[1] ?? '163', 10),
-        parseInt(/rgba?\(\d+, (\d+)/.exec(targetColor)?.[1] ?? '163', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-    const b = interpolate(
-      colorIntensity.value,
-      [0, 1],
-      [
-        parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(baseColor)?.[1] ?? '175', 10),
-        parseInt(/rgba?\(\d+, \d+, (\d+)/.exec(targetColor)?.[1] ?? '175', 10),
-      ],
-      Extrapolation.CLAMP
-    );
-
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }, { rotate: `${iconRotation.value}deg` }],
-      color: `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`,
-    };
-  });
+  const animatedStyle = {
+    opacity,
+    transform: [
+      { scale },
+      { rotate: `${iconRotation.get()}deg` },
+    ],
+    color,
+  };
 
   return {
     opacity,

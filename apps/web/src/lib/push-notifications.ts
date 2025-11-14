@@ -192,21 +192,21 @@ class DeepLinkManager {
   }
 
   handlePushNotificationClick(data: Record<string, unknown>) {
-    if (data['url'] && typeof data['url'] === 'string') {
-      const route = this.parseDeepLink(data['url']);
+    if (data.url && typeof data.url === 'string') {
+      const route = this.parseDeepLink(data.url);
       if (route) {
         this.navigate(route.path, route.params);
       }
-    } else if (data['path'] && typeof data['path'] === 'string') {
+    } else if (data.path && typeof data.path === 'string') {
       const params =
-        data['params'] && typeof data['params'] === 'object'
-          ? (data['params'] as Record<string, unknown>)
+        data.params && typeof data.params === 'object'
+          ? (data.params as Record<string, unknown>)
           : {};
       const stringParams: Record<string, string> = {};
       for (const [key, value] of Object.entries(params)) {
         stringParams[key] = String(value);
       }
-      this.navigate(data['path'], stringParams);
+      this.navigate(data.path, stringParams);
     }
   }
 }

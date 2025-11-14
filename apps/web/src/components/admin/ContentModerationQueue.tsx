@@ -27,6 +27,7 @@ import type { LiveStream } from '@/lib/live-streaming-types';
 import { createLogger } from '@/lib/logger';
 import type { LostAlert } from '@/lib/lost-found-types';
 import { userService } from '@/lib/user-service';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import {
   ChatCircle,
   CheckCircle,
@@ -320,10 +321,11 @@ export function ContentModerationQueue() {
           </p>
           {alert.photos && alert.photos.length > 0 && (
             <div className="w-24 h-24 bg-muted rounded overflow-hidden">
-              <img
+              <ProgressiveImage
                 src={alert.photos[0]}
                 alt={alert.petSummary.name}
                 className="w-full h-full object-cover"
+                aria-label={`Photo of ${alert.petSummary.name}`}
               />
             </div>
           )}
@@ -363,7 +365,12 @@ export function ContentModerationQueue() {
                       ? mediaItem.url
                       : '';
                 return (
-                  <img src={mediaUrl} alt="Post media" className="w-full h-full object-cover" />
+                  <ProgressiveImage
+                    src={mediaUrl}
+                    alt="Post media"
+                    className="w-full h-full object-cover"
+                    aria-label="Post media content"
+                  />
                 );
               })()}
             </div>

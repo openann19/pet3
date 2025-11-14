@@ -35,18 +35,18 @@ function StoryRingComponent({
     >
       <div className="relative">
         {isOwn && !hasActiveStories ? (
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border-2 border-dashed border-primary">
+          <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center border-2 border-dashed border-primary">
             <Plus size={24} weight="bold" className="text-primary" />
           </div>
         ) : (
           <>
             <div
-              className={`w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-tr from-primary via-accent to-secondary' : 'bg-muted'
+              className={`w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-linear-to-tr from-primary via-accent to-secondary' : 'bg-muted'
                 }`}
             >
               <Avatar className="w-full h-full border-2 border-background">
                 <AvatarImage src={petPhoto} alt={petName} />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold text-lg">
+                <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold text-lg">
                   {petName[0]}
                 </AvatarFallback>
               </Avatar>

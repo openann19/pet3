@@ -100,7 +100,7 @@ export default function ThemePresetSelector({
                       : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="aspect-[4/3] flex flex-col p-3 bg-gradient-to-br from-gray-900 to-gray-950">
+                  <div className="aspect-[4/3] flex flex-col p-3 bg-linear-to-br from-gray-900 to-gray-950">
                     <div className="flex gap-1 mb-2">
                       <div
                         className="w-full h-8 rounded-lg shadow-sm"

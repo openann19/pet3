@@ -25,7 +25,7 @@ describe('Input', () => {
   it('should handle value changes', async () => {
     const user = userEvent.setup();
     render(<Input />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
 
     await user.type(input, 'test value');
     expect(input.value).toBe('test value');
@@ -33,13 +33,13 @@ describe('Input', () => {
 
   it('should support different input types', () => {
     render(<Input type="email" data-testid="input" />);
-    const input = screen.getByTestId('input') as HTMLInputElement;
+    const input = screen.getByTestId('input');
     expect(input.type).toBe('email');
   });
 
   it('should be disabled when disabled prop is true', () => {
     render(<Input disabled data-testid="input" />);
-    const input = screen.getByTestId('input') as HTMLInputElement;
+    const input = screen.getByTestId('input');
     expect(input).toBeDisabled();
   });
 
@@ -57,7 +57,7 @@ describe('Input', () => {
 
   it('should support readOnly', () => {
     render(<Input readOnly data-testid="input" />);
-    const input = screen.getByTestId('input') as HTMLInputElement;
+    const input = screen.getByTestId('input');
     expect(input).toHaveAttribute('readOnly');
   });
 });

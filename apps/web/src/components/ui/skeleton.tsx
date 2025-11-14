@@ -16,7 +16,7 @@ function Skeleton({ className, variant = 'default', ...props }: SkeletonProps) {
         'bg-muted rounded-md',
         variant === 'default' && 'animate-pulse',
         variant === 'shimmer' &&
-          'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent',
+          'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-linear-to-r before:from-transparent before:via-white/10 before:to-transparent',
         className
       )}
       {...props}

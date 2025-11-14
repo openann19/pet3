@@ -20,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Presence, motion, MotionView } from '@petspark/motion';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const logger = createLogger('CommentsSheet');
 
@@ -383,7 +384,12 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
     <div className="flex gap-3 group">
       <Avatar className="h-10 w-10 shrink-0">
         {comment.authorAvatar ? (
-          <img src={comment.authorAvatar} alt={comment.authorName} className="object-cover" />
+          <ProgressiveImage
+            src={comment.authorAvatar}
+            alt={comment.authorName}
+            className="object-cover"
+            aria-label={`${comment.authorName} avatar`}
+          />
         ) : (
           <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
             {comment.authorName?.[0]?.toUpperCase() ?? '?'}
@@ -415,9 +421,8 @@ function CommentItem({ comment, onReply, isReply = false, isAuthor = false }: Co
               <Heart
                 size={16}
                 weight={isLiked ? 'fill' : 'regular'}
-                className={`transition-colors ${
-                  isLiked ? 'text-red-500' : 'text-muted-foreground group-hover/like:text-red-500'
-                }`}
+                className={`transition-colors ${isLiked ? 'text-red-500' : 'text-muted-foreground group-hover/like:text-red-500'
+                  }`}
               />
             </MotionView>
             {likesCount > 0 && (

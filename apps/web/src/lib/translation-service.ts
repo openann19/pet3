@@ -108,7 +108,7 @@ export interface TranslationResult {
  * Translation Service
  */
 export class TranslationService {
-  private readonly supportedLanguages: Map<LanguageCode, LanguageMetadata> = new Map([
+  private readonly supportedLanguages = new Map<LanguageCode, LanguageMetadata>([
     ['en', { code: 'en', name: 'English', nativeName: 'English', rtl: false }],
     ['bg', { code: 'bg', name: 'Bulgarian', nativeName: 'Български', rtl: false }],
     ['es', { code: 'es', name: 'Spanish', nativeName: 'Español', rtl: false }],
@@ -143,7 +143,7 @@ export class TranslationService {
     ['ur', { code: 'ur', name: 'Urdu', nativeName: 'اردو', rtl: true }],
   ]);
 
-  private readonly cache: Map<string, TranslationResult> = new Map();
+  private readonly cache = new Map<string, TranslationResult>();
   private readonly cacheMaxSize = 1000;
 
   /**

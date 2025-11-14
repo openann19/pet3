@@ -51,8 +51,8 @@ export interface PredictionResult {
  * Predictive Prefetch Manager
  */
 export class PredictivePrefetchManager {
-  private behaviorPatterns: Map<string, UserBehaviorPattern> = new Map();
-  private prefetchCache: Map<string, PetProfile> = new Map();
+  private behaviorPatterns = new Map<string, UserBehaviorPattern>();
+  private prefetchCache = new Map<string, PetProfile>();
   private prefetchQueue: string[] = [];
   private readonly maxCacheSize = 50;
   private readonly prefetchCount = 5;

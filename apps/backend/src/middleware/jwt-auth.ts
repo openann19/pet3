@@ -118,11 +118,22 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
     next();
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
+    const requestId = req.requestId;
     logger.error('JWT authentication failed', err, {
       path: req.path,
       method: req.method,
       ip: req.ip,
+      requestId,
     });
+
+    // Enhance error with request ID if it's an APIError
+    if (error instanceof UnauthorizedError && requestId) {
+      (error as { context?: Record<string, unknown> }).context = {
+        ...error.context,
+        requestId,
+      };
+    }
+
     next(error);
   }
 }

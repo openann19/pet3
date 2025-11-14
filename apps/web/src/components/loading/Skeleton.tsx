@@ -17,7 +17,7 @@ export function Skeleton({
         'bg-muted',
         animation === 'pulse' && 'animate-pulse',
         animation === 'wave' &&
-          'animate-shimmer bg-gradient-to-r from-muted via-muted-foreground/10 to-muted bg-[length:200%_100%]',
+          'animate-shimmer bg-linear-to-r from-muted via-muted-foreground/10 to-muted bg-[length:200%_100%]',
         variant === 'text' && 'h-4 rounded',
         variant === 'circular' && 'rounded-full',
         variant === 'rectangular' && 'rounded-md',

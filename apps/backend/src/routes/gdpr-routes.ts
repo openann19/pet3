@@ -17,6 +17,7 @@ import { AuditLogger } from '../services/audit-logger';
 import { MonitoringService } from '../services/monitoring';
 import { ValidationError } from '../utils/errors';
 import { createLogger } from '../utils/logger';
+import { validate } from '../middleware/validate';
 
 const logger = createLogger('GDPRRoutes');
 
@@ -43,6 +44,10 @@ const consentUpdateRequestSchema = z.object({
   userAgent: z.string().optional(),
 });
 
+const consentQuerySchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+});
+
 export interface GDPRRoutesConfig {
   gdprService: GDPRService;
   auditLogger: AuditLogger;
@@ -57,20 +62,17 @@ export function createGDPRRoutes(config: GDPRRoutesConfig): Router {
    * POST /api/gdpr/export
    * Export user data (GDPR Right to Access)
    */
-  router.post('/export', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.userId;
+  router.post(
+    '/export',
+    validate({ body: dataExportRequestSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof dataExportRequestSchema>;
+      const request = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? request.userId;
 
-    try {
-      const validationResult = dataExportRequestSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
-      const request = validationResult.data;
-      const exportData = await gdprService.exportUserData(request);
+      try {
+        const exportData = await gdprService.exportUserData(request);
       const duration = Date.now() - startTime;
 
       // Audit log
@@ -114,25 +116,23 @@ export function createGDPRRoutes(config: GDPRRoutesConfig): Router {
    * POST /api/gdpr/delete
    * Delete user data (GDPR Right to Erasure)
    */
-  router.post('/delete', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.userId;
+  router.post(
+    '/delete',
+    validate({ body: dataDeletionRequestSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof dataDeletionRequestSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.userId;
 
-    try {
-      const validationResult = dataDeletionRequestSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
-      const request: DataDeletionRequest = {
-        userId: validationResult.data.userId,
-        confirmDeletion: validationResult.data.confirmDeletion,
-        ...(validationResult.data.reason !== undefined && {
-          reason: validationResult.data.reason,
-        }),
-      };
+      try {
+        const request: DataDeletionRequest = {
+          userId: validatedBody.userId,
+          confirmDeletion: validatedBody.confirmDeletion,
+          ...(validatedBody.reason !== undefined && {
+            reason: validatedBody.reason,
+          }),
+        };
       const result = await gdprService.deleteUserData(request);
       const duration = Date.now() - startTime;
 
@@ -176,15 +176,15 @@ export function createGDPRRoutes(config: GDPRRoutesConfig): Router {
    * GET /api/gdpr/consent?userId={userId}
    * Get user consent status
    */
-  router.get('/consent', async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId ?? (req.query.userId as string | undefined);
+  router.get(
+    '/consent',
+    validate({ query: consentQuerySchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      type ValidatedQuery = z.infer<typeof consentQuerySchema>;
+      const validatedQuery = req.query as unknown as ValidatedQuery;
+      const userId = req.userId ?? validatedQuery.userId;
 
-    try {
-      if (!userId || typeof userId !== 'string' || userId.length === 0) {
-        throw new ValidationError('User ID is required', {
-          query: req.query,
-        });
-      }
+      try {
 
       const consents = await gdprService.getConsentStatus(userId);
 
@@ -215,25 +215,24 @@ export function createGDPRRoutes(config: GDPRRoutesConfig): Router {
       });
       throw error;
     }
-  });
+    }
+  );
 
   /**
    * POST /api/gdpr/consent
    * Update user consent
    */
-  router.post('/consent', async (req: Request, res: Response): Promise<void> => {
-    const startTime = Date.now();
-    const userId = req.userId ?? req.body.userId;
+  router.post(
+    '/consent',
+    validate({ body: consentUpdateRequestSchema }),
+    async (req: Request, res: Response): Promise<void> => {
+      const startTime = Date.now();
+      type ValidatedBody = z.infer<typeof consentUpdateRequestSchema>;
+      const validatedBody = req.body as unknown as ValidatedBody;
+      const userId = req.userId ?? validatedBody.userId;
 
-    try {
-      const validationResult = consentUpdateRequestSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        throw new ValidationError('Invalid request data', {
-          errors: validationResult.error.errors,
-        });
-      }
-
-      const validated = validationResult.data;
+      try {
+        const validated = validatedBody;
       // Extract IP address and user agent from request if not provided
       const request: ConsentUpdateRequest = {
         userId: validated.userId,

@@ -23,12 +23,20 @@ import AgeGateModal from './AgeGateModal';
 import { recordConsent } from '@/lib/kyc-service';
 import { createLogger } from '@/lib/logger';
 import type { APIError } from '@/lib/contracts';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useAnimatedStyle } from 'react-native-reanimated';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 const logger = createLogger('SignUpForm');
 
 interface SignUpFormProps {
   onSuccess: () => void;
   onSwitchToSignIn: () => void;
+  firstInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 interface SignUpData {
@@ -39,15 +47,58 @@ interface SignUpData {
   agreeToTerms: boolean;
 }
 
-export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps): JSX.Element {
+export default function SignUpForm({ onSuccess, onSwitchToSignIn, firstInputRef }: SignUpFormProps): JSX.Element {
   const { t } = useApp();
   const { register } = useAuth();
+  const prefersReducedMotion = useReducedMotion();
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showAgeGate, setShowAgeGate] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
+
+  // Entrance animations with staggered delays
+  const headerAnimation = useEntryAnimation({ delay: 0, enabled: !prefersReducedMotion });
+  const nameFieldAnimation = useEntryAnimation({ delay: 100, enabled: !prefersReducedMotion });
+  const passwordFieldAnimation = useEntryAnimation({ delay: 150, enabled: !prefersReducedMotion });
+  const confirmPasswordFieldAnimation = useEntryAnimation({ delay: 200, enabled: !prefersReducedMotion });
+  const termsAnimation = useEntryAnimation({ delay: 250, enabled: !prefersReducedMotion });
+  const submitButtonAnimation = useEntryAnimation({ delay: 300, enabled: !prefersReducedMotion });
+  const oauthSectionAnimation = useEntryAnimation({ delay: 350, enabled: !prefersReducedMotion });
+  const signInLinkAnimation = useEntryAnimation({ delay: 400, enabled: !prefersReducedMotion });
+
+  // Interaction animations (only when animations are enabled)
+  const submitButtonBounce = useBounceOnTap({ scale: 0.97, hapticFeedback: false });
+  const submitButtonHover = useHoverLift({ scale: 1.02, translateY: -2 });
+  const signInLinkBounce = useBounceOnTap({ scale: 0.95, hapticFeedback: false });
+
+  // Combine submit button animations
+  const submitButtonCombinedStyle = useAnimatedStyle(() => {
+    if (prefersReducedMotion) {
+      return {
+        opacity: submitButtonAnimation.opacity.value,
+        transform: [
+          { translateY: `${submitButtonAnimation.translateY.value}px` },
+          { scale: submitButtonAnimation.scale.value },
+        ],
+      };
+    }
+
+    const entryScale = submitButtonAnimation.scale.value;
+    const entryY = submitButtonAnimation.translateY.value;
+    const hoverScale = submitButtonHover.scale.value;
+    const tapScale = submitButtonBounce.scale.value;
+    const hoverY = submitButtonHover.translateY.value;
+
+    return {
+      opacity: submitButtonAnimation.opacity.value,
+      transform: [
+        { translateY: `${entryY + hoverY}px` },
+        { scale: entryScale * hoverScale * tapScale },
+      ],
+    };
+  }) as AnimatedStyle;
 
   // Localized Zod schema ensures fallback messages work when translation keys are missing
   const signUpSchema = z
@@ -171,10 +222,10 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
       )}
 
       {/* Header */}
-      <div className="text-center mb-10">
+      <AnimatedView style={headerAnimation.animatedStyle} className="text-center mb-10">
         <h1 className="text-[32px] font-bold text-(--text-primary) mb-3 tracking-tight">Create Account</h1>
         <p className="text-(--text-secondary) text-base">Join PawfectMatch to find your pet's perfect companion</p>
-      </div>
+      </AnimatedView>
 
       {/* Form */}
       <Form {...form}>
@@ -187,202 +238,208 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
           className="space-y-5"
           noValidate
         >
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Full Name</FormLabel>
-                <div className="relative">
-                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="John Doe"
-                    className="w-full h-13 pl-12 pr-4 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                    autoComplete="name"
-                    aria-label="Full Name"
-                  />
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <AnimatedView style={nameFieldAnimation.animatedStyle}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Full Name</FormLabel>
+                  <div className="relative">
+                    <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
+                    <input
+                      {...field}
+                      type="text"
+                      placeholder="John Doe"
+                      className="w-full h-12 pl-12 pr-4 bg-white border border-(--color-neutral-6) rounded-xl text-base text-(--color-fg) placeholder:text-(--color-fg-secondary) focus:border-(--color-accent-9) focus:ring-2 focus:ring-(--color-focus-ring) focus:ring-offset-2 focus:outline-none disabled:opacity-50 transition-colors"
+                      disabled={isLoading}
+                      autoComplete="name"
+                      ref={firstInputRef}
+                    />
+                  </div>
+                  <FormMessage className="text-sm text-(--error) mt-1" />
+                </FormItem>
+              )}
+            />
+          </AnimatedView>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Email</FormLabel>
-                <div className="relative">
-                  <EnvelopeSimple size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
-                  <input
-                    {...field}
-                    type="email"
-                    placeholder="you@example.com"
-                    className="w-full h-13 pl-12 pr-4 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                    autoComplete="email"
-                    aria-label="Email address"
-                  />
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Password</FormLabel>
-                <div className="relative">
-                  <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
-                  <input
-                    {...field}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    className="w-full h-13 pl-12 pr-12 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                    autoComplete="new-password"
-                    aria-label="Password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPassword((p) => !p);
-                      haptics.trigger('selection');
-                    }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
-                  </button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Confirm Password</FormLabel>
-                <div className="relative">
-                  <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
-                  <input
-                    {...field}
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    className="w-full h-13 pl-12 pr-12 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                    autoComplete="new-password"
-                    aria-label="Confirm Password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowConfirmPassword((p) => !p);
-                      haptics.trigger('selection');
-                    }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showConfirmPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
-                  </button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="agreeToTerms"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-start gap-3 pt-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={(checked) => {
-                        field.onChange(checked === true);
+          <AnimatedView style={passwordFieldAnimation.animatedStyle}>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Password</FormLabel>
+                  <div className="relative">
+                    <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
+                    <input
+                      {...field}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full h-13 pl-12 pr-12 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isLoading}
+                      autoComplete="new-password"
+                      aria-label="Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPassword((p) => !p);
                         haptics.trigger('selection');
                       }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
+                    </button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </AnimatedView>
+
+          <AnimatedView style={confirmPasswordFieldAnimation.animatedStyle}>
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-(--text-primary) mb-2 block">Confirm Password</FormLabel>
+                  <div className="relative">
+                    <LockKey size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-tertiary)" weight="regular" />
+                    <input
+                      {...field}
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full h-13 pl-12 pr-12 bg-white border border-(--border-light) rounded-xl text-base text-(--text-primary) placeholder:text-(--text-tertiary) focus:outline-none focus:border-(--coral-primary) focus:ring-2 focus:ring-(--coral-primary)/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={isLoading}
-                      className="mt-0.5 rounded border-(--border-light)"
+                      autoComplete="new-password"
+                      aria-label="Confirm Password"
                     />
-                  </FormControl>
-                  <FormLabel className="text-sm text-(--text-secondary) leading-relaxed cursor-pointer font-normal">
-                    I agree to the{' '}
-                    <a
-                      href="https://pawfectmatch.app/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-(--coral-primary) hover:underline"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowConfirmPassword((p) => !p);
+                        haptics.trigger('selection');
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     >
-                      Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a
-                      href="https://pawfectmatch.app/privacy"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-(--coral-primary) hover:underline"
-                    >
-                      Privacy Policy
-                    </a>
-                  </FormLabel>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      {showConfirmPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
+                    </button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </AnimatedView>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-13 bg-(--coral-primary) hover:bg-(--coral-hover) active:bg-(--coral-active) text-white text-base font-semibold rounded-xl transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Creating Account...' : 'Create Account'}
-          </button>
+          <AnimatedView style={termsAnimation.animatedStyle}>
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-start gap-3 pt-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked === true);
+                          haptics.trigger('selection');
+                        }}
+                        disabled={isLoading}
+                        className="mt-0.5 rounded border-(--border-light)"
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm text-(--text-secondary) leading-relaxed cursor-pointer font-normal">
+                      I agree to the{' '}
+                      <a
+                        href="https://pawfectmatch.app/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-(--coral-primary) hover:underline"
+                      >
+                        Terms of Service
+                      </a>{' '}
+                      and{' '}
+                      <a
+                        href="https://pawfectmatch.app/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-(--coral-primary) hover:underline"
+                      >
+                        Privacy Policy
+                      </a>
+                    </FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </AnimatedView>
 
-          <div className="relative my-7">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-(--border-light)" />
+          <AnimatedView style={submitButtonCombinedStyle}>
+            <button
+              type="submit"
+              disabled={isLoading}
+              onMouseDown={prefersReducedMotion ? undefined : submitButtonBounce.handlePress}
+              onMouseEnter={prefersReducedMotion ? undefined : submitButtonHover.handleEnter}
+              onMouseLeave={prefersReducedMotion ? undefined : submitButtonHover.handleLeave}
+              className="w-full h-13 bg-(--coral-primary) hover:bg-(--coral-hover) active:bg-(--coral-active) text-white text-base font-semibold rounded-xl transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </AnimatedView>
+
+          <AnimatedView style={oauthSectionAnimation.animatedStyle}>
+            <div className="relative my-7">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-(--border-light)" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white text-(--text-secondary)">or</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-(--text-secondary)">or</span>
-            </div>
-          </div>
 
-          <OAuthButtons
-            onGoogleSignIn={() => handleOAuthSuccess('google')}
-            onAppleSignIn={() => handleOAuthSuccess('apple')}
-            disabled={isLoading}
-          />
+            <OAuthButtons
+              onGoogleSignIn={() => handleOAuthSuccess('google')}
+              onAppleSignIn={() => handleOAuthSuccess('apple')}
+              disabled={isLoading}
+            />
+          </AnimatedView>
         </form>
       </Form>
 
       {/* Sign in link */}
-      <div className="text-center mt-6">
-        <p className="text-sm text-(--text-secondary)">
+      <AnimatedView style={signInLinkAnimation.animatedStyle} className="text-center mt-6">
+        <div className="text-sm text-(--text-secondary)">
           Already have an account?{' '}
-          <button
-            type="button"
-            onClick={onSwitchToSignIn}
-            disabled={isLoading}
-            className="text-(--coral-primary) font-medium hover:underline focus:outline-none disabled:opacity-50"
-          >
-            Sign in
-          </button>
-        </p>
-      </div>
+          {prefersReducedMotion ? (
+            <button
+              type="button"
+              onClick={onSwitchToSignIn}
+              disabled={isLoading}
+              className="text-(--coral-primary) font-medium hover:underline focus:outline-none disabled:opacity-50"
+            >
+              Sign in
+            </button>
+          ) : (
+            <AnimatedView style={signInLinkBounce.animatedStyle} className="inline-block">
+              <button
+                type="button"
+                onClick={onSwitchToSignIn}
+                onMouseDown={signInLinkBounce.handlePress}
+                disabled={isLoading}
+                className="text-(--coral-primary) font-medium hover:underline focus:outline-none disabled:opacity-50"
+              >
+                Sign in
+              </button>
+            </AnimatedView>
+          )}
+        </div>
+      </AnimatedView>
 
       <AgeGateModal open={showAgeGate} onVerified={handleAgeVerified} onClose={() => setShowAgeGate(false)} />
     </div>

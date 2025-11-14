@@ -1,43 +1,32 @@
-/**
- * Offline indicator component
- * Location: src/components/OfflineIndicator.tsx
- */
-
 import React from 'react'
-import { StyleSheet, Text } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { useNetworkStatus } from '../hooks/use-network-status'
+import { View, Text, StyleSheet } from 'react-native'
+import { colors } from '@mobile/theme/colors'
 
-export function OfflineIndicator(): React.JSX.Element | null {
-  const { isConnected } = useNetworkStatus()
+interface OfflineIndicatorProps {
+  message?: string
+}
 
-  if (isConnected) {
-    return null
-  }
-
+export function OfflineIndicator({
+  message = 'You are currently offline. Some features may not be available.',
+}: OfflineIndicatorProps): React.JSX.Element {
   return (
-    <Animated.View
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
-      style={styles.container}
-    >
-      <Text style={styles.text}>📡 You're offline. Changes will sync when connected.</Text>
-    </Animated.View>
+    <View style={styles.container} accessible accessibilityRole="alert" accessibilityLiveRegion="polite">
+      <Text style={styles.message}>{message}</Text>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFA726',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: colors.danger,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
   },
-  text: {
-    color: 'var(--color-bg-overlay)',
+  message: {
+    color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
     textAlign: 'center',
+    fontWeight: '500',
   },
 })

@@ -53,7 +53,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-accent/10">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-background via-primary/5 to-accent/10">
           <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl">
             <div className="w-20 h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
               <Warning size={40} className="text-destructive" weight="fill" />

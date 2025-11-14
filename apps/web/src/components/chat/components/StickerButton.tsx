@@ -22,7 +22,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
 
   useEffect(() => {
     if (containerRef.current) {
-      const buttonElement = containerRef.current.querySelector('[role="button"]') as HTMLElement;
+      const buttonElement = containerRef.current.querySelector('[role="button"]')!;
       if (buttonElement) {
         ensure(buttonElement);
       }

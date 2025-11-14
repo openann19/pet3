@@ -195,7 +195,7 @@ export function CreateLostAlertDialog({
 
       await lostFoundAPI.createAlert({
         ownerId: user.id,
-        ownerName: (typeof user['name'] === 'string' ? user['name'] : undefined) ?? 'Unknown',
+        ownerName: (typeof user.name === 'string' ? user.name : undefined) ?? 'Unknown',
         ...(user.avatarUrl ? { ownerAvatar: user.avatarUrl } : {}),
         petSummary,
         lastSeen,

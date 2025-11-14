@@ -202,7 +202,7 @@ export const VideoQualitySettings: React.FC = () => {
 
       {/* Quality Options */}
       <View style={styles.qualityList}>
-        {(Object.keys(QUALITY_PRESETS) as QualityPreset[]).map(renderQualityOption)}
+        {(Object.keys(QUALITY_PRESETS) as QualityPreset[]).map((preset) => renderQualityOption(preset))}
       </View>
 
       {/* Info Card */}

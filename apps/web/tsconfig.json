@@ -30,6 +30,9 @@
       ],
       "@petspark/shared": [
         "../../packages/shared/src/index.ts"
+      ],
+      "@petspark/spec-core": [
+        "../../packages/spec-core/src/index.ts"
       ]
     },
     "resolveJsonModule": true
@@ -55,6 +58,8 @@
     "storybook-static",
     "src/lib/kyc-native.ts",
     "src/components/ChatWindowNew.tsx",
+    "src/components/media-editor/MediaEditor.tsx",
+    "src/components/media-editor/video-trimmer.tsx",
     "**/*.stories.tsx"
   ]
 }

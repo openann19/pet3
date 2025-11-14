@@ -1,14 +1,7 @@
 'use client';
 
-import { memo, useEffect, useState, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withSequence,
-} from 'react-native-reanimated';
 import { communityAPI } from '@/api/community-api';
+import { MediaViewer, type MediaItem } from '@/components/lazy-exports';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,10 +13,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useApp } from '@/contexts/AppContext';
+import { useHoverTap } from '@/effects/reanimated';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { communityService } from '@/lib/community-service';
 import type { Post } from '@/lib/community-types';
 import { triggerHaptic } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
 import {
   BookmarkSimple,
   ChatCircle,
@@ -35,14 +33,17 @@ import {
   Tag,
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
+import { memo, Suspense, useCallback, useEffect, useState } from 'react';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { Suspense } from 'react';
 import { CommentsSheet } from './CommentsSheet';
-import { MediaViewer, type MediaItem } from '@/components/lazy-exports';
 import { PostDetailView } from './PostDetailView';
 import { ReportDialog } from './ReportDialog';
 
@@ -174,20 +175,19 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
     triggerHaptic('selection');
 
     try {
-      const spark = window.spark;
-      if (!spark) {
-        toast.error('User service not available');
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
         return;
       }
-      const user = await spark.user();
       const result = await communityAPI.toggleReaction(
         post.id,
 
         user.id,
 
-        user.login,
+        user.login || 'User',
 
-        user.avatarUrl,
+        user.avatarUrl ?? undefined,
         '❤️'
       );
 
@@ -389,7 +389,12 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
               >
                 <Avatar className="h-11 w-11 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
                   {post.authorAvatar ? (
-                    <img src={post.authorAvatar} alt={post.authorName} className="object-cover" />
+                    <ProgressiveImage
+                      src={post.authorAvatar}
+                      alt={post.authorName}
+                      className="object-cover"
+                      aria-label={`${post.authorName} avatar`}
+                    />
                   ) : (
                     <div className="w-full h-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold text-base">
                       {post.authorName?.[0]?.toUpperCase() ?? '?'}
@@ -458,15 +463,16 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
             <div className="relative bg-muted">
               <div className="relative aspect-square overflow-hidden">
                 <AnimatedView style={mediaStyle} className="w-full h-full">
-                  <img
+                  <ProgressiveImage
                     key={currentMediaIndex}
                     src={
                       typeof post.media[currentMediaIndex] === 'string'
                         ? post.media[currentMediaIndex]
                         : (post.media[currentMediaIndex] as { url: string }).url
                     }
-                    alt="Post media"
+                    alt={`Post media ${currentMediaIndex + 1}`}
                     className="w-full h-full object-cover cursor-pointer"
+                    aria-label={`Post media ${currentMediaIndex + 1}`}
                     onClick={() => handleMediaClick(currentMediaIndex)}
                   />
                 </AnimatedView>

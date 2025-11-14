@@ -11,8 +11,8 @@ import { useFullscreen } from '@/hooks/use-fullscreen';
 import { useStoryAnalytics } from '@/hooks/use-story-analytics';
 import { useStoryGestures } from '@/hooks/use-story-gestures';
 import { haptics } from '@/lib/haptics';
-import type { Story } from '@/lib/stories-types';
-import { STORY_REACTION_EMOJIS } from '@/lib/stories-types';
+import type { Story } from '@petspark/shared';
+import { STORY_REACTION_EMOJIS } from '@petspark/shared';
 import { addStoryView, formatStoryTime } from '@/lib/stories-utils';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import {
@@ -36,6 +36,7 @@ import { interpolate, Extrapolation } from 'react-native-reanimated';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import SaveToHighlightDialog from './SaveToHighlightDialog';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 interface StoryViewerProps {
   stories: Story[];
@@ -547,10 +548,11 @@ export default function StoryViewer({
         >
           {currentStory.type === 'photo' && (
             <AnimatedView key={currentStory.id} style={imageEntry.animatedStyle}>
-              <img
+              <ProgressiveImage
                 src={currentStory.mediaUrl}
                 alt={currentStory.caption || 'Story'}
                 className="w-full h-full object-contain select-none"
+                aria-label={currentStory.caption || 'Story image'}
                 draggable={false}
               />
             </AnimatedView>

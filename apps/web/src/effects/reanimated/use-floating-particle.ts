@@ -1,13 +1,6 @@
-'use client';
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { useEffect } from 'react';
+import { useMotionValue, animate, MotionValue } from 'framer-motion';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { makeRng } from '@petspark/shared';
@@ -23,12 +16,13 @@ export interface UseFloatingParticleOptions {
 }
 
 export interface UseFloatingParticleReturn {
-  x: ReturnType<typeof useSharedValue<number>>;
-  y: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  scale: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
+  readonly x: MotionValue<number>;
+  readonly y: MotionValue<number>;
+  readonly opacity: MotionValue<number>;
+  readonly scale: MotionValue<number>;
+  readonly style: AnimatedStyle;
 }
+
 
 export function useFloatingParticle(
   options: UseFloatingParticleOptions = {}
@@ -42,74 +36,45 @@ export function useFloatingParticle(
     opacity = 0.6,
   } = options;
 
-  const x = useSharedValue(initialX);
-  const y = useSharedValue(initialY);
-  const opacityValue = useSharedValue(0);
-  const scale = useSharedValue(0.5);
+  const x = useMotionValue(initialX);
+  const y = useMotionValue(initialY);
+  const opacityValue = useMotionValue(0);
+  const scale = useMotionValue(0.5);
 
   useEffect(() => {
     const seed = Date.now() + initialX + initialY;
     const rng = makeRng(seed);
-    const randomX1 = rng() * width;
-    const randomX2 = rng() * width;
-    const randomX3 = rng() * width;
-    const randomY1 = rng() * height;
-    const randomY2 = rng() * height;
-    const randomY3 = rng() * height;
+  const randomX: number[] = [rng() * width, rng() * width, rng() * width, rng() * width];
+  const randomY: number[] = [rng() * height, rng() * height, rng() * height, rng() * height];
 
-    x.value = withRepeat(
-      withSequence(
-        withTiming(randomX1, timingConfigs.smooth),
-        withTiming(randomX2, timingConfigs.smooth),
-        withTiming(randomX3, timingConfigs.smooth),
-        withTiming(randomX1, timingConfigs.smooth)
-      ),
-      -1,
-      false
-    );
+    let frame = 0;
+    let running = true;
+    const totalFrames = 4;
+    const frameDuration = (duration * 1000) / totalFrames;
 
-    y.value = withRepeat(
-      withSequence(
-        withTiming(randomY1, timingConfigs.smooth),
-        withTiming(randomY2, timingConfigs.smooth),
-        withTiming(randomY3, timingConfigs.smooth),
-        withTiming(randomY1, timingConfigs.smooth)
-      ),
-      -1,
-      false
-    );
-
-    opacityValue.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 0 }),
-        withTiming(opacity, { duration: duration * 0.2 }),
-        withTiming(opacity * 0.5, { duration: duration * 0.2 }),
-        withTiming(opacity, { duration: duration * 0.2 }),
-        withTiming(0, { duration: duration * 0.4 })
-      ),
-      -1,
-      false
-    );
-
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(0.5, { duration: duration * 0.2 }),
-        withTiming(1, { duration: duration * 0.2 }),
-        withTiming(0.8, { duration: duration * 0.2 }),
-        withTiming(1, { duration: duration * 0.2 }),
-        withTiming(0.5, { duration: duration * 0.2 })
-      ),
-      -1,
-      false
-    );
+    function animateLoop() {
+      if (!running) return;
+  animate(x, randomX[frame % randomX.length] ?? 0, { duration: frameDuration / 1000 });
+  animate(y, randomY[frame % randomY.length] ?? 0, { duration: frameDuration / 1000 });
+      animate(opacityValue, frame % 4 === 0 ? 0 : opacity, { duration: frameDuration / 1000 });
+      animate(scale, frame % 2 === 0 ? 1 : 0.5, { duration: frameDuration / 1000 });
+      frame = (frame + 1) % totalFrames;
+      setTimeout(animateLoop, frameDuration);
+    }
+    animateLoop();
+    return () => {
+      running = false;
+    };
   }, [width, height, duration, opacity, initialX, initialY, x, y, opacityValue, scale]);
 
-  const style = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: x.value }, { translateY: y.value }, { scale: scale.value }],
-      opacity: opacityValue.value,
-    };
-  }) as AnimatedStyle;
+  const style: AnimatedStyle = {
+    transform: [
+      { translateX: x },
+      { translateY: y },
+      { scale },
+    ],
+    opacity: opacityValue,
+  };
 
   return {
     x,

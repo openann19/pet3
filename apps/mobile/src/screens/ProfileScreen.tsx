@@ -2,29 +2,61 @@ import React, { memo, useCallback } from 'react'
 
 import { FeatureCard } from '@mobile/components/FeatureCard'
 import { PullableContainer } from '@mobile/components/PullableContainer'
+import { RouteErrorBoundary } from '@mobile/components/RouteErrorBoundary'
+import { OfflineIndicator } from '@mobile/components/OfflineIndicator'
+import { useNetworkStatus } from '@mobile/hooks/use-network-status'
 import { SectionHeader } from '@mobile/components/SectionHeader'
+import { getTranslations } from '@mobile/i18n/translations'
 import { samplePets } from '@mobile/data/mock-data'
 import { colors } from '@mobile/theme/colors'
+import { createLogger } from '@mobile/utils/logger'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
-export function ProfileScreen(): React.JSX.Element {
+const logger = createLogger('ProfileScreen')
+
+// Default language (can be made dynamic later)
+const language = 'en'
+const t = getTranslations(language)
+
+function ProfileScreenContent(): React.JSX.Element {
+  const networkStatus = useNetworkStatus()
+
   const handleRefresh = useCallback(async (): Promise<void> => {
-    // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 500))
+    try {
+      // Simulate network delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500))
+    } catch (error) {
+      logger.warn('ProfileScreen refresh failed', {
+        error: error instanceof Error ? error : new Error(String(error)),
+      })
+    }
   }, [])
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top', 'left', 'right']}
+      accessible
+      accessibilityLabel={t.profile.title}
+    >
+      {!networkStatus.isConnected && (
+        <Animated.View entering={FadeIn.duration(300)}>
+          <OfflineIndicator message={t.chat.offlineMessage} />
+        </Animated.View>
+      )}
       <PullableContainer onRefresh={handleRefresh}>
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          accessible
+          accessibilityLabel={`${t.profile.title}. ${t.profile.description}`}
         >
           <SectionHeader
-            title="Operator overview"
-            description="Snapshot of mobile-ready records pulled directly from the shared domain schema."
+            title={t.profile.title}
+            description={t.profile.description}
           />
 
           {samplePets.map(pet => (
@@ -32,22 +64,26 @@ export function ProfileScreen(): React.JSX.Element {
               key={pet.id}
               title={pet.name}
               subtitle={`${pet.breedName} • ${pet.location.city}`}
+              accessible
+              accessibilityLabel={`${pet.name}, ${pet.breedName}, ${pet.location.city}`}
             >
-              <InfoRow label="Life stage" value={pet.lifeStage} />
+              <InfoRow label={t.profile.lifeStage} value={pet.lifeStage} />
               <InfoRow
-                label="Intents"
+                label={t.profile.intents}
                 value={
-                  Array.isArray(pet.intents) && pet.intents.length ? pet.intents.join(', ') : '—'
+                  Array.isArray(pet.intents) && pet.intents.length
+                    ? pet.intents.join(', ')
+                    : t.profile.noValue
                 }
               />
               <InfoRow
-                label="KYC"
-                value={pet.kycVerified ? 'verified' : 'pending'}
+                label={t.profile.kyc}
+                value={pet.kycVerified ? t.profile.kycVerified : t.profile.kycPending}
                 tone={pet.kycVerified ? 'success' : 'warning'}
               />
               <InfoRow
-                label="Vet docs"
-                value={pet.vetVerified ? 'verified' : 'missing'}
+                label={t.profile.vetDocs}
+                value={pet.vetVerified ? t.profile.vetVerified : t.profile.vetMissing}
                 tone={pet.vetVerified ? 'success' : 'warning'}
               />
             </FeatureCard>
@@ -58,6 +94,20 @@ export function ProfileScreen(): React.JSX.Element {
   )
 }
 
+export function ProfileScreen(): React.JSX.Element {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.warn('ProfileScreen error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }}
+    >
+      <ProfileScreenContent />
+    </RouteErrorBoundary>
+  )
+}
+
 type Tone = 'default' | 'success' | 'warning'
 
 const InfoRow = memo(
@@ -65,9 +115,26 @@ const InfoRow = memo(
     const valueStyle =
       tone === 'success' ? styles.success : tone === 'warning' ? styles.warning : styles.value
     return (
-      <View style={styles.row} accessible accessibilityRole="summary">
-        <Text style={styles.label}>{label}</Text>
-        <Text style={valueStyle} numberOfLines={1} ellipsizeMode="tail">
+      <View
+        style={styles.row}
+        accessible
+        accessibilityRole="summary"
+        accessibilityLabel={`${label}: ${value}`}
+      >
+        <Text
+          style={styles.label}
+          accessible
+          accessibilityLabel={label}
+        >
+          {label}
+        </Text>
+        <Text
+          style={valueStyle}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          accessible
+          accessibilityLabel={value}
+        >
           {value}
         </Text>
       </View>

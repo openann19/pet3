@@ -4,6 +4,7 @@ import tseslint from 'typescript-eslint'
 import reactHooks from 'eslint-plugin-react-hooks'
 import react from 'eslint-plugin-react'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
+import sonarjs from 'eslint-plugin-sonarjs'
 import globals from 'globals'
 
 /** Globs where we actually want type-aware linting (web + key packages). */
@@ -45,15 +46,44 @@ export default [
       react: react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
+      sonarjs: sonarjs,
     },
     rules: {
       // Reasonable safety without killing dev speed
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'react/react-in-jsx-scope': 'off',
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': 'error',
+      'max-lines': ['error', { max: 300, skipComments: true, skipBlankLines: true }],
+      'max-lines-per-function': ['error', { max: 60, skipComments: true, skipBlankLines: true }],
+      'sonarjs/no-duplicate-string': 'warn',
+      // Ban framer-motion (use Reanimated only)
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'framer-motion',
+              message: 'Use Reanimated only. Framer Motion is banned.',
+            },
+          ],
+        },
+      ],
+      // Ban dangerouslySetInnerHTML and eslint-disable comments
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+          message: 'Sanitize via safe renderer; avoid raw HTML.',
+        },
+        {
+          selector: 'Program > Comment[value=/eslint-disable/]',
+          message: 'ESLint disable comments are banned. Fix the underlying issue instead.',
+        },
+      ],
     },
     settings: { react: { version: 'detect' } },
   },
@@ -106,6 +136,8 @@ export default [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       'no-console': 'off', // Allow console in tests for mocking/assertions
+      'max-lines': 'off', // Allow longer test files
+      'max-lines-per-function': 'off', // Allow longer test functions
     },
   },
 

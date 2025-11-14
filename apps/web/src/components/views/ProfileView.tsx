@@ -11,6 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
 import { toast } from 'sonner';
 import type { Pet, Match, SwipeAction } from '@/lib/types';
 import type { VideoQuality } from '@/lib/call-types';
@@ -26,6 +29,10 @@ import { VerificationButton } from '@/components/verification/VerificationButton
 import { PrivacySettings } from '@/components/settings/PrivacySettings';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('ProfileView');
 
 // Lazy load heavy components
 const VisualAnalysisDemo = lazy(() =>
@@ -56,17 +63,22 @@ function PetCard({ pet, index, t, onEdit, onShowHealth }: PetCardProps) {
       onMouseLeave={cardHover.handleLeave}
     >
       <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl group relative border border-white/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         <div className="relative h-64 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
           <AnimatedView
             style={imageHover.animatedStyle}
             onMouseEnter={imageHover.handleEnter}
             onMouseLeave={imageHover.handleLeave}
           >
-            <img src={pet.photo} alt={pet.name} className="w-full h-full object-cover" />
+            <ProgressiveImage
+              src={pet.photo}
+              alt={pet.name}
+              className="w-full h-full object-cover"
+              aria-label={`Photo of ${pet.name}`}
+            />
           </AnimatedView>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Button
             variant="ghost"
             size="icon"
@@ -78,7 +90,7 @@ function PetCard({ pet, index, t, onEdit, onShowHealth }: PetCardProps) {
           </Button>
         </div>
 
-        <div className="p-5 bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-md">
+        <div className="p-5 bg-linear-to-br from-white/40 to-white/20 backdrop-blur-md">
           <h3 className="text-xl font-bold mb-2 truncate">{pet.name}</h3>
           <p className="text-muted-foreground mb-4">
             {pet.breed} • {pet.age} {t.profile.yearsOld} • {pet.gender}
@@ -142,8 +154,9 @@ function PetCard({ pet, index, t, onEdit, onShowHealth }: PetCardProps) {
   );
 }
 
-export default function ProfileView() {
+function ProfileViewContent() {
   const { t, themePreset, setThemePreset } = useApp();
+  const { isOnline } = useNetworkStatus();
   const [userPets] = useStorage<Pet[]>('user-pets', []);
   const [matches] = useStorage<Match[]>('matches', []);
   const [swipeHistory] = useStorage<SwipeAction[]>('swipe-history', []);
@@ -241,12 +254,12 @@ export default function ProfileView() {
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
             <AnimatedView
               style={emptyStateIcon.animatedStyle}
-              className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-2xl relative"
+              className="w-24 h-24 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-2xl relative"
             >
               <AnimatedView style={emptyStatePulse.animatedStyle}>
                 <PawPrint size={48} className="text-white" weight="fill" />
               </AnimatedView>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent animate-pulse opacity-50" />
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent animate-pulse opacity-50" />
             </AnimatedView>
             <AnimatedView style={emptyStateTitle.animatedStyle} className="text-2xl font-bold mb-2">
               {t.profile.createProfile}
@@ -261,7 +274,7 @@ export default function ProfileView() {
               <Button
                 size="lg"
                 onClick={() => setShowCreateDialog(true)}
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-xl"
+                className="bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-xl"
               >
                 <Plus size={20} weight="bold" className="mr-2" />
                 {t.profile.createProfileBtn}
@@ -276,6 +289,7 @@ export default function ProfileView() {
 
   return (
     <PageTransitionWrapper key="profile-content" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8 px-2 sm:px-4">
         <AnimatedView
           style={themeSection.animatedStyle}
@@ -397,5 +411,19 @@ export default function ProfileView() {
         )}
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function ProfileView() {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('ProfileView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <ProfileViewContent />
+    </RouteErrorBoundary>
   );
 }

@@ -40,6 +40,8 @@ export interface TargetSizeValidationResult {
   readonly issues: readonly string[];
   readonly actualWidth?: number;
   readonly actualHeight?: number;
+  readonly width?: number; // Alias for actualWidth for backward compatibility
+  readonly height?: number; // Alias for actualHeight for backward compatibility
   readonly minSpacing?: number;
 }
 
@@ -194,6 +196,8 @@ export function validateTargetSize(
     issues,
     actualWidth: width,
     actualHeight: height,
+    width, // Alias for backward compatibility
+    height, // Alias for backward compatibility
     minSpacing: minSpacing === Infinity ? undefined : minSpacing,
   };
 }

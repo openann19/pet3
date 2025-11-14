@@ -1,3 +1,5 @@
+import 'react-native-reanimated';
+
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { BrowserRouter } from 'react-router-dom';
@@ -77,7 +79,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <GlobalNavErrorTrap />
       <QueryProvider>
         <ThemeProvider>

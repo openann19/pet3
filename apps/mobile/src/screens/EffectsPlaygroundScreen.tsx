@@ -9,22 +9,31 @@
 
 import { FeatureCard } from '@mobile/components/FeatureCard'
 import { SectionHeader } from '@mobile/components/SectionHeader'
+import { RouteErrorBoundary } from '@mobile/components/RouteErrorBoundary'
 import { useSendWarp } from '@mobile/effects/chat/bubbles/use-send-warp'
 import { useSwipeReplyElastic } from '@mobile/effects/chat/gestures/use-swipe-reply-elastic'
 import { useGlassMorphZoom } from '@mobile/effects/chat/media/use-glass-morph-zoom'
 import { AdditiveBloom } from '@mobile/effects/chat/shaders/additive-bloom'
 import { ChromaticAberrationFX } from '@mobile/effects/chat/shaders/chromatic-aberration'
 import { RibbonFX } from '@mobile/effects/chat/shaders/ribbon-fx'
+import { getTranslations } from '@mobile/i18n/translations'
 import { colors } from '@mobile/theme/colors'
+import { createLogger } from '@mobile/utils/logger'
 import React, { useCallback, useState } from 'react'
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+const logger = createLogger('EffectsPlaygroundScreen')
+
+// Default language (can be made dynamic later)
+const language = 'en'
+const t = getTranslations(language)
+
 const CANVAS_WIDTH = 300
 const CANVAS_HEIGHT = 200
 
-export function EffectsPlaygroundScreen(): React.ReactElement {
+function EffectsPlaygroundScreenContent(): React.ReactElement {
   const [reducedMotion, setReducedMotion] = useState(false)
 
   // Send Warp
@@ -84,30 +93,60 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
   }, [sendWarp, mediaZoom, swipeReply])
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top', 'left', 'right']}
+      accessible
+      accessibilityLabel={t.effectsPlayground.title}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        accessible
+        accessibilityLabel={`${t.effectsPlayground.title}. ${t.effectsPlayground.description}`}
+      >
         <SectionHeader
-          title="Effects Playground"
-          description="Interactive demos for Skia effects with timing controls."
+          title={t.effectsPlayground.title}
+          description={t.effectsPlayground.description}
         />
 
         {/* Reduced Motion Toggle */}
-        <FeatureCard title="Settings" subtitle="Accessibility">
+        <FeatureCard
+          title={t.effectsPlayground.settings}
+          subtitle={t.effectsPlayground.accessibility}
+          accessible
+          accessibilityLabel={`${t.effectsPlayground.settings}. ${t.effectsPlayground.accessibility}`}
+        >
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Reduced Motion</Text>
+            <Text
+              style={styles.settingLabel}
+              accessible
+              accessibilityLabel={t.effectsPlayground.reducedMotion}
+            >
+              {t.effectsPlayground.reducedMotion}
+            </Text>
             <Switch
               value={reducedMotion}
               onValueChange={setReducedMotion}
               trackColor={{ false: colors.surface, true: colors.primary }}
               thumbColor={colors.textPrimary}
+              accessible
+              accessibilityLabel={t.effectsPlayground.reducedMotion}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: reducedMotion }}
             />
           </View>
         </FeatureCard>
 
         {/* Send Warp Section */}
-        <FeatureCard title="Send Warp" subtitle="AdditiveBloom glow trail">
+        <FeatureCard
+          title={t.effectsPlayground.sendWarp}
+          subtitle={t.effectsPlayground.sendWarpSubtitle}
+          accessible
+          accessibilityLabel={`${t.effectsPlayground.sendWarp}. ${t.effectsPlayground.sendWarpSubtitle}`}
+        >
           <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
+            <View style={styles.canvasWrapper} accessible={false}>
               <AdditiveBloom
                 width={CANVAS_WIDTH}
                 height={CANVAS_HEIGHT}
@@ -118,16 +157,28 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
                 color={[0.3, 0.75, 1]}
               />
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleSendWarp} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-              <Text style={styles.buttonText}>Trigger Send</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSendWarp}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t.effectsPlayground.triggerSend}
+              accessibilityHint="Triggers the send warp animation"
+            >
+              <Text style={styles.buttonText}>{t.effectsPlayground.triggerSend}</Text>
             </TouchableOpacity>
           </View>
         </FeatureCard>
 
         {/* Media Zoom Section */}
-        <FeatureCard title="Media Zoom" subtitle="ChromaticAberrationFX on open">
+        <FeatureCard
+          title={t.effectsPlayground.mediaZoom}
+          subtitle={t.effectsPlayground.mediaZoomSubtitle}
+          accessible
+          accessibilityLabel={`${t.effectsPlayground.mediaZoom}. ${t.effectsPlayground.mediaZoomSubtitle}`}
+        >
           <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
+            <View style={styles.canvasWrapper} accessible={false}>
               <ChromaticAberrationFX
                 uri="https://via.placeholder.com/300x200"
                 width={CANVAS_WIDTH}
@@ -139,20 +190,39 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
               />
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.button} onPress={handleMediaZoom} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-                <Text style={styles.buttonText}>Open</Text>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleMediaZoom}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={t.effectsPlayground.open}
+                accessibilityHint="Opens the media zoom animation"
+              >
+                <Text style={styles.buttonText}>{t.effectsPlayground.open}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleMediaClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-                <Text style={styles.buttonText}>Close</Text>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleMediaClose}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={t.effectsPlayground.close}
+                accessibilityHint="Closes the media zoom animation"
+              >
+                <Text style={styles.buttonText}>{t.effectsPlayground.close}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </FeatureCard>
 
         {/* Reply Ribbon Section */}
-        <FeatureCard title="Reply Ribbon" subtitle="RibbonFX for swipe-to-reply">
+        <FeatureCard
+          title={t.effectsPlayground.replyRibbon}
+          subtitle={t.effectsPlayground.replyRibbonSubtitle}
+          accessible
+          accessibilityLabel={`${t.effectsPlayground.replyRibbon}. ${t.effectsPlayground.replyRibbonSubtitle}`}
+        >
           <View style={styles.canvasContainer}>
-            <View style={styles.canvasWrapper}>
+            <View style={styles.canvasWrapper} accessible={false}>
               <RibbonFX
                 width={CANVAS_WIDTH}
                 height={CANVAS_HEIGHT}
@@ -173,18 +243,43 @@ export function EffectsPlaygroundScreen(): React.ReactElement {
                 swipeReply.ribbonProgress.value = withTiming(1, { duration: 180 })
                 swipeReply.ribbonAlpha.value = withTiming(1, { duration: 180 })
               }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t.effectsPlayground.animateRibbon}
+              accessibilityHint="Animates the reply ribbon effect"
             >
-              <Text style={styles.buttonText}>Animate Ribbon</Text>
+              <Text style={styles.buttonText}>{t.effectsPlayground.animateRibbon}</Text>
             </TouchableOpacity>
           </View>
         </FeatureCard>
 
         {/* Reset Button */}
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-          <Text style={styles.resetButtonText}>Reset All</Text>
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={handleReset}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={t.effectsPlayground.resetAll}
+          accessibilityHint="Resets all effects to initial state"
+        >
+          <Text style={styles.resetButtonText}>{t.effectsPlayground.resetAll}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+  )
+}
+
+export function EffectsPlaygroundScreen(): React.ReactElement {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.warn('EffectsPlaygroundScreen error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }}
+    >
+      <EffectsPlaygroundScreenContent />
+    </RouteErrorBoundary>
   )
 }
 

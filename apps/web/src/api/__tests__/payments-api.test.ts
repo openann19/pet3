@@ -20,7 +20,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -83,16 +84,17 @@ const mockMetrics: RevenueMetrics = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
 
-    const url = new URL(req.url, 'http://localhost:8080');
+      const url = new URL(req.url, 'http://localhost:8080');
 
-    if (req.method === 'GET' && url.pathname === '/payments/entitlements') {
+      if (req.method === 'GET' && url.pathname === '/payments/entitlements') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -104,7 +106,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'PUT' && url.pathname === '/payments/entitlements') {
+      if (req.method === 'PUT' && url.pathname === '/payments/entitlements') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.end(
@@ -117,7 +119,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/subscription') {
+      if (req.method === 'GET' && url.pathname === '/payments/subscription') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -129,7 +131,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'POST' && url.pathname === '/payments/subscription') {
+      if (req.method === 'POST' && url.pathname === '/payments/subscription') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.statusCode = 201;
@@ -143,7 +145,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'PATCH' && url.pathname.startsWith('/payments/subscription/')) {
+      if (req.method === 'PATCH' && url.pathname.startsWith('/payments/subscription/')) {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.end(
@@ -156,7 +158,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'POST' && url.pathname === '/payments/consumables') {
+      if (req.method === 'POST' && url.pathname === '/payments/consumables') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.end(
@@ -169,7 +171,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'POST' && url.pathname === '/payments/consumables/redeem') {
+      if (req.method === 'POST' && url.pathname === '/payments/consumables/redeem') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.end(
@@ -183,7 +185,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/billing-issue') {
+      if (req.method === 'GET' && url.pathname === '/payments/billing-issue') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -195,7 +197,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'POST' && url.pathname === '/payments/billing-issue') {
+      if (req.method === 'POST' && url.pathname === '/payments/billing-issue') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.statusCode = 201;
@@ -209,11 +211,11 @@ beforeAll(async () => {
       return;
     }
 
-    if (
-      req.method === 'POST' &&
-      url.pathname.includes('/billing-issue/') &&
-      url.pathname.includes('/resolve')
-    ) {
+      if (
+        req.method === 'POST' &&
+        url.pathname.includes('/billing-issue/') &&
+        url.pathname.includes('/resolve')
+      ) {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.statusCode = 200;
@@ -221,7 +223,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/audit-logs') {
+      if (req.method === 'GET' && url.pathname === '/payments/audit-logs') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -233,7 +235,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/subscriptions/all') {
+      if (req.method === 'GET' && url.pathname === '/payments/subscriptions/all') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -245,7 +247,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/revenue-metrics') {
+      if (req.method === 'GET' && url.pathname === '/payments/revenue-metrics') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -257,7 +259,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'GET' && url.pathname === '/payments/usage-counter') {
+      if (req.method === 'GET' && url.pathname === '/payments/usage-counter') {
       res.setHeader('Content-Type', 'application/json');
       res.end(
         JSON.stringify({
@@ -274,7 +276,7 @@ beforeAll(async () => {
       return;
     }
 
-    if (req.method === 'POST' && url.pathname === '/payments/usage/increment') {
+      if (req.method === 'POST' && url.pathname === '/payments/usage/increment') {
       await readJson(req);
       res.setHeader('Content-Type', 'application/json');
       res.end(
@@ -289,15 +291,16 @@ beforeAll(async () => {
       return;
     }
 
-    res.statusCode = 404;
-    res.end();
+      res.statusCode = 404;
+      res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

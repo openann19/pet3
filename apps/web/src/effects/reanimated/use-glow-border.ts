@@ -12,7 +12,9 @@ import {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseGlowBorderOptions {
   color?: string;
@@ -22,7 +24,12 @@ export interface UseGlowBorderOptions {
   pulseSize?: number;
 }
 
-export function useGlowBorder(options: UseGlowBorderOptions = {}) {
+export interface UseGlowBorderReturn {
+  animatedStyle: AnimatedStyle;
+  progress: SharedValue<number>;
+}
+
+export function useGlowBorder(options: UseGlowBorderOptions = {}): UseGlowBorderReturn {
   const {
     color = 'rgba(99, 102, 241, 0.8)',
     intensity = 20,
@@ -58,7 +65,7 @@ export function useGlowBorder(options: UseGlowBorderOptions = {}) {
       filter: `drop-shadow(0 0 ${glowIntensity * 0.5}px ${color})`,
       opacity: shadowOpacity,
     };
-  });
+  }) as AnimatedStyle;
 
   return {
     animatedStyle,

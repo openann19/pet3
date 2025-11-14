@@ -179,11 +179,20 @@ export function createMockAdoptionProfile(overrides?: Partial<AdoptionProfile>):
 export function createMockStory(overrides?: Partial<Story>): Story {
   return {
     id: 'story-1',
+    userId: 'user-1',
+    userName: 'Test User',
     petId: 'pet-1',
+    petName: 'Test Pet',
+    petPhoto: 'https://example.com/pet.jpg',
+    type: 'photo',
     mediaUrl: 'https://example.com/story.jpg',
-    mediaType: 'image',
+    duration: 10,
     createdAt: '2024-01-01T00:00:00Z',
     expiresAt: '2024-01-02T00:00:00Z',
+    visibility: 'everyone',
+    viewCount: 0,
+    views: [],
+    reactions: [],
     ...overrides,
   };
 }

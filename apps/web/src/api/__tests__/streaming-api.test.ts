@@ -36,7 +36,7 @@ const createAPIClientMock = () => {
 
     // Handle empty responses (e.g., 204 No Content)
     const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType?.includes('application/json')) {
       return { data: {} };
     }
 
@@ -72,70 +72,73 @@ let testServerPort: number;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
 }
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, `http://localhost`);
+
+      if (req.method === 'POST' && url.pathname === '/streaming/token-verify') {
+        const payload = await readJson<{ token: string }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              valid: payload.token === 'valid-token',
+              room: payload.token === 'valid-token' ? 'room-1' : undefined,
+              participant: payload.token === 'valid-token' ? 'user-1' : undefined,
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/streaming/recording/start') {
+        const payload = await readJson<{ roomId: string; recordingType: 'hls' | 'webm' }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              recordingId: `recording-${payload.roomId}`,
+              status: 'recording' as const,
+            },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname.startsWith('/streaming/recording/')) {
+        const recordingId = url.pathname.split('/').pop();
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            data: {
+              recordingId: recordingId || 'recording-1',
+              roomId: 'room-1',
+              status: 'completed' as const,
+              url: `https://storage.example.com/${recordingId}.mp4`,
+              hlsUrl: `https://storage.example.com/${recordingId}.m3u8`,
+            },
+          })
+        );
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, `http://localhost`);
-
-    if (req.method === 'POST' && url.pathname === '/streaming/token-verify') {
-      const payload = await readJson<{ token: string }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            valid: payload.token === 'valid-token',
-            room: payload.token === 'valid-token' ? 'room-1' : undefined,
-            participant: payload.token === 'valid-token' ? 'user-1' : undefined,
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/streaming/recording/start') {
-      const payload = await readJson<{ roomId: string; recordingType: 'hls' | 'webm' }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            recordingId: `recording-${payload.roomId}`,
-            status: 'recording' as const,
-          },
-        })
-      );
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname.startsWith('/streaming/recording/')) {
-      const recordingId = url.pathname.split('/').pop();
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: {
-            recordingId: recordingId || 'recording-1',
-            roomId: 'room-1',
-            status: 'completed' as const,
-            url: `https://storage.example.com/${recordingId}.mp4`,
-            hlsUrl: `https://storage.example.com/${recordingId}.m3u8`,
-          },
-        })
-      );
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
@@ -144,7 +147,7 @@ beforeAll(async () => {
       if (address && typeof address === 'object') {
         testServerPort = address.port;
         testServerPortForMock = testServerPort;
-        process.env['TEST_API_PORT'] = String(testServerPort);
+        process.env.TEST_API_PORT = String(testServerPort);
       }
       resolve();
     });

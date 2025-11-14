@@ -81,9 +81,7 @@ export interface CampaignData {
   readonly content?: string;
 }
 
-export interface UserProperties {
-  readonly [key: string]: string | number | boolean | readonly string[];
-}
+export type UserProperties = Readonly<Record<string, string | number | boolean | readonly string[]>>;
 
 export interface AnalyticsConfig {
   readonly projectId: string;

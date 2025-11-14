@@ -1,30 +1,34 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useStorage } from '@/hooks/use-storage';
+import { lostFoundAPI } from '@/api/lost-found-api';
+import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog';
+import { LostAlertCard } from '@/components/lost-found/LostAlertCard';
+import { ReportSightingDialog } from '@/components/lost-found/ReportSightingDialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
-import { MagnifyingGlass, Plus, MapPin } from '@phosphor-icons/react';
-import { motion, MotionView } from '@petspark/motion';
-import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import type { LostAlert } from '@/lib/lost-found-types';
-import { LostAlertCard } from '@/components/lost-found/LostAlertCard';
-import { CreateLostAlertDialog } from '@/components/lost-found/CreateLostAlertDialog';
-import { ReportSightingDialog } from '@/components/lost-found/ReportSightingDialog';
-import { lostFoundAPI } from '@/api/lost-found-api';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
-import { toast } from 'sonner';
+import { AnimatePresence } from '@/effects/reanimated/animate-presence';
+import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';
-import type { LostAlertFilters } from '@/lib/lost-found-types';
+import type { LostAlert, LostAlertFilters } from '@/lib/lost-found-types';
+import { userService } from '@/lib/user-service';
+import { MotionView } from '@petspark/motion';
+import { MagnifyingGlass, MapPin, Plus } from '@phosphor-icons/react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const logger = createLogger('LostFoundView');
 
 type ViewMode = 'browse' | 'mine';
 type FilterTab = 'all' | 'active' | 'found' | 'favorites';
 
-export default function LostFoundView() {
+function LostFoundViewContent() {
   const { t } = useApp();
+  const { isOnline } = useNetworkStatus();
   const [viewMode, setViewMode] = useState<ViewMode>('browse');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [alerts, setAlerts] = useState<LostAlert[]>([]);
@@ -67,7 +71,11 @@ export default function LostFoundView() {
       };
 
       if (viewMode === 'mine') {
-        const user = await spark.user();
+        const user = await userService.user();
+        if (!user) {
+          toast.error('User not authenticated');
+          return;
+        }
         const userAlerts = await lostFoundAPI.getUserAlerts(user.id);
         setAlerts(userAlerts);
         setLoading(false);
@@ -163,6 +171,7 @@ export default function LostFoundView() {
 
   return (
     <PageTransitionWrapper key="lost-found-view" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -329,5 +338,19 @@ export default function LostFoundView() {
         />
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function LostFoundView() {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('LostFoundView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <LostFoundViewContent />
+    </RouteErrorBoundary>
   );
 }

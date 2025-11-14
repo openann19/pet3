@@ -35,6 +35,7 @@ const schema = z
     VITE_USE_MOCKS: z.enum(['true', 'false']).default('false'),
     VITE_ENABLE_MAPS: z.coerce.boolean().default(false),
     VITE_MAPBOX_TOKEN: z.string().optional(), // public token; optional unless maps enabled in prod
+    VITE_STRIPE_PUBLIC_KEY: z.string().optional(), // Stripe public key for payments
   })
   .superRefine((vals, ctx) => {
     if (isProd && vals.VITE_ENABLE_MAPS && !vals.VITE_MAPBOX_TOKEN) {
@@ -60,12 +61,14 @@ if (!parsed.success) {
 
 type Env = z.infer<typeof schema>;
 
-export type Environment = Env;
-
 export const env = schema.parse(import.meta.env);
-export const ENV = env;
-
 export const flags = {
   mocks: env.VITE_USE_MOCKS === 'true',
   maps: Boolean(env.VITE_ENABLE_MAPS),
 } as const;
+
+// ENV includes both env vars and flags
+export const ENV = { ...env, flags } as const;
+
+// Environment type includes both env vars and flags
+export type Environment = Env & { flags: typeof flags };

@@ -1,10 +1,9 @@
 'use client';
 
 import { getVideoThumbnails } from '@/core/services/media/video/thumbnails';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export interface VideoTrimmerProps {
   uri: string;
@@ -19,8 +18,11 @@ export function VideoTrimmer({
 }: VideoTrimmerProps): React.ReactElement {
   const [thumbs, setThumbs] = useState<string[]>([]);
   const [width, setWidth] = useState(0);
-  const start = useSharedValue(0); // px from left
-  const end = useSharedValue(0); // px from left
+  const [startPos, setStartPos] = useState(0);
+  const [endPos, setEndPos] = useState(0);
+  const [isDraggingStart, setIsDraggingStart] = useState(false);
+  const [isDraggingEnd, setIsDraggingEnd] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const handleW = 16;
 
   useEffect(() => {
@@ -37,6 +39,12 @@ export function VideoTrimmer({
     };
   }, [uri]);
 
+  useEffect(() => {
+    if (width > 0 && endPos === 0) {
+      setEndPos(width);
+    }
+  }, [width, endPos]);
+
   const pxToSec = useMemo(() => {
     return (px: number): number => {
       if (!width || durationSec === 0) {
@@ -47,130 +55,139 @@ export function VideoTrimmer({
   }, [width, durationSec]);
 
   const update = useCallback(() => {
-    const startSec = pxToSec(start.value);
-    const endSec = pxToSec(end.value);
+    const startSec = pxToSec(startPos);
+    const endSec = pxToSec(endPos);
     onChange(Math.min(startSec, endSec), Math.max(startSec, endSec));
-  }, [pxToSec, onChange, start, end]);
+  }, [pxToSec, onChange, startPos, endPos]);
 
-  const onLayout = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      const w = e.currentTarget.offsetWidth;
-      setWidth(w);
-      end.value = w;
-    },
-    [end]
-  );
+  useEffect(() => {
+    update();
+  }, [update]);
 
-  const panStart = Gesture.Pan()
-    .onChange((g) => {
-      const newValue = Math.max(0, Math.min(start.value + g.changeX, end.value - handleW));
-      start.value = newValue;
-    })
-    .onEnd(() => {
-      runOnJS(update)();
-    });
+  const onLayout = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const w = e.currentTarget.offsetWidth;
+    setWidth(w);
+    if (endPos === 0) {
+      setEndPos(w);
+    }
+  }, [endPos]);
 
-  const panEnd = Gesture.Pan()
-    .onChange((g) => {
-      const newValue = Math.min(width, Math.max(end.value + g.changeX, start.value + handleW));
-      end.value = newValue;
-    })
-    .onEnd(() => {
-      runOnJS(update)();
-    });
+  const getXFromEvent = useCallback((e: MouseEvent | React.MouseEvent): number => {
+    if (!containerRef.current) return 0;
+    const rect = containerRef.current.getBoundingClientRect();
+    return e.clientX - rect.left;
+  }, []);
 
-  const asStart = useAnimatedStyle(() => ({
-    transform: [{ translateX: start.value }],
-  }));
+  const handleMouseDownStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingStart(true);
+  }, []);
 
-  const asEnd = useAnimatedStyle(() => ({
-    transform: [{ translateX: end.value - handleW }],
-  }));
+  const handleMouseDownEnd = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingEnd(true);
+  }, []);
 
-  const asMask = useAnimatedStyle(() => {
-    const maskWidth = Math.max(handleW, end.value - start.value);
-    return {
-      left: start.value,
-      width: maskWidth,
+  useEffect(() => {
+    if (!isDraggingStart && !isDraggingEnd) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = getXFromEvent(e);
+      if (isDraggingStart) {
+        const newValue = Math.max(0, Math.min(x, endPos - handleW));
+        setStartPos(newValue);
+      } else if (isDraggingEnd) {
+        const newValue = Math.min(width, Math.max(x, startPos + handleW));
+        setEndPos(newValue);
+      }
     };
-  });
+
+    const handleMouseUp = () => {
+      setIsDraggingStart(false);
+      setIsDraggingEnd(false);
+      update();
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingStart, isDraggingEnd, getXFromEvent, endPos, startPos, width, update]);
+
+  const maskWidth = Math.max(handleW, endPos - startPos);
+  const maskLeft = startPos;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Trim</Text>
-      <View style={styles.timeline} onLayout={onLayout}>
-        <View style={styles.thumbsRow}>
+    <div className="mb-4">
+      <div className="text-sm font-bold text-foreground mb-2">Trim</div>
+      <div
+        ref={containerRef}
+        className="relative h-18 rounded-lg overflow-hidden border border-border bg-muted"
+        onMouseDown={onLayout}
+      >
+        <div className="flex w-full h-full">
           {thumbs.length > 0 ? (
             thumbs.map((thumb, i) => (
-              <Image key={i} source={{ uri: thumb }} style={styles.thumb} resizeMode="cover" />
+              <ProgressiveImage
+                key={i}
+                src={thumb}
+                alt={`Thumbnail ${i + 1}`}
+                className="flex-1 h-full object-cover"
+                aria-label={`Video thumbnail ${i + 1}`}
+              />
             ))
           ) : (
-            <View style={styles.placeholder} />
+            <div className="flex-1 h-full bg-muted-foreground/20" />
           )}
-        </View>
+        </div>
 
-        <Animated.View style={[styles.mask, asMask]} />
+        <div
+          className="absolute top-0 bottom-0 bg-black/40 pointer-events-none"
+          style={{
+            left: `${maskLeft}px`,
+            width: `${maskWidth}px`,
+          }}
+        />
 
-        <GestureDetector gesture={panStart}>
-          <Animated.View style={[styles.handle, asStart]} />
-        </GestureDetector>
-        <GestureDetector gesture={panEnd}>
-          <Animated.View style={[styles.handle, asEnd]} />
-        </GestureDetector>
-      </View>
-    </View>
+        <div
+          className={cn(
+            'absolute top-0 w-4 h-full bg-background/80 border-x border-border cursor-ew-resize z-10',
+            'hover:bg-background/90 transition-colors'
+          )}
+          style={{
+            left: `${startPos}px`,
+          }}
+          onMouseDown={handleMouseDownStart}
+          role="slider"
+          tabIndex={0}
+          aria-label="Start trim handle"
+          aria-valuemin={0}
+          aria-valuemax={durationSec}
+          aria-valuenow={pxToSec(startPos)}
+        />
+
+        <div
+          className={cn(
+            'absolute top-0 w-4 h-full bg-background/80 border-x border-border cursor-ew-resize z-10',
+            'hover:bg-background/90 transition-colors'
+          )}
+          style={{
+            left: `${endPos - handleW}px`,
+          }}
+          onMouseDown={handleMouseDownEnd}
+          role="slider"
+          tabIndex={0}
+          aria-label="End trim handle"
+          aria-valuemin={0}
+          aria-valuemax={durationSec}
+          aria-valuenow={pxToSec(endPos)}
+        />
+      </div>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  title: {
-    color: 'var(--color-bg-overlay)',
-    fontWeight: '700',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  timeline: {
-    position: 'relative',
-    height: 72,
-    borderRadius: 10,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#666',
-    backgroundColor: '#222',
-  },
-  thumbsRow: {
-    flexDirection: 'row',
-    width: '100%',
-    height: '100%',
-  },
-  thumb: {
-    flex: 1,
-    height: '100%',
-  },
-  placeholder: {
-    flex: 1,
-    height: '100%',
-    backgroundColor: '#333',
-  },
-  handle: {
-    position: 'absolute',
-    top: 0,
-    width: 16,
-    height: '100%',
-    backgroundColor: '#444',
-    borderRightWidth: 1,
-    borderLeftWidth: 1,
-    borderColor: '#666',
-    zIndex: 10,
-  },
-  mask: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    pointerEvents: 'none',
-  },
-});

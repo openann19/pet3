@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
+import { useUIConfig } from "@/hooks/use-ui-config";
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { useUIConfig } from "@/hooks/use-ui-config";
+import { useCallback } from 'react';
+import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 export interface PremiumToggleProps {
   checked?: boolean;
@@ -34,8 +34,8 @@ export function PremiumToggle({
   className,
   'aria-label': ariaLabel,
 }: PremiumToggleProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const thumbPosition = useSharedValue(checked ? 1 : 0);
+  const _uiConfig = useUIConfig();
+  const thumbPosition = useSharedValue(checked ? 1 : 0);
   const glowOpacity = useSharedValue(checked ? 1 : 0);
 
   const thumbStyle = useAnimatedStyle(() => {
@@ -91,15 +91,14 @@ export function PremiumToggle({
       >
         <AnimatedView style={[trackStyle, glowStyle]} className="absolute inset-0 rounded-full" />
         <AnimatedView
-          style={thumbStyle}
+          style={[thumbStyle, {
+            width: config.thumb,
+            height: config.thumb,
+          }]}
           className={cn(
             'absolute top-0.5 rounded-full bg-white shadow-lg',
             'transition-all duration-300'
           )}
-          style={{
-            width: config.thumb,
-            height: config.thumb,
-          }}
         />
       </button>
       {label && (

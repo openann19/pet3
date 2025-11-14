@@ -28,6 +28,7 @@ import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { haptics } from '@/lib/haptics';
 import type { Pet } from '@/lib/types';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export interface EnhancedPetDetailViewProps {
   pet: Pet;
@@ -178,10 +179,11 @@ export function EnhancedPetDetailView({
                 </div>
               )}
               <AnimatedView className="w-full h-full" key={currentPhotoIndex} style={photoStyle}>
-                <img
-                  src={photos[currentPhotoIndex]}
+                <ProgressiveImage
+                  src={photos[currentPhotoIndex] ?? pet.photo}
                   alt={pet.name}
                   className="w-full h-full object-cover"
+                  aria-label={`${pet.name} photo ${currentPhotoIndex + 1}`}
                   onLoad={handleImageLoad}
                   onError={handleImageError}
                 />

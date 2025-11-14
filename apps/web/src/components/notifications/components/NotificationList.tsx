@@ -71,7 +71,7 @@ export function NotificationList({
       return null; // Don't virtualize short lists
     }
 
-    const flat: Array<{ type: 'header' | 'notification'; key: string; data: string | PremiumNotification }> = [];
+    const flat: { type: 'header' | 'notification'; key: string; data: string | PremiumNotification }[] = [];
     groupedByTime.forEach(([timeGroup, notifs]) => {
       flat.push({ type: 'header', key: `header-${timeGroup}`, data: timeGroup });
       notifs.forEach((notification) => {

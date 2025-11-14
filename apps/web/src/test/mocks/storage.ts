@@ -79,7 +79,7 @@ export function createMockIDBRequest<T = unknown>(result?: T): MockIDBRequest<T>
   // Simulate success
   setTimeout(() => {
     if (request.onsuccess) {
-      request.onsuccess(new Event('success') as Event);
+      request.onsuccess(new Event('success'));
     }
   }, 0);
 

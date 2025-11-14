@@ -37,11 +37,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
-// Mock spark.user()
-type PartialSpark = Partial<Window['spark']>;
-(global as typeof globalThis & { spark?: PartialSpark }).spark = {
-  user: vi.fn().mockResolvedValue({ id: 'user-1', login: 'testuser' }),
-};
+// Mock userService
+vi.mock('@/lib/user-service', () => ({
+  userService: {
+    user: vi.fn().mockResolvedValue({ id: 'user-1', login: 'testuser', avatarUrl: null, email: null }),
+  },
+}));
 
 describe('AppealDialog', () => {
   const mockOnOpenChange = vi.fn();

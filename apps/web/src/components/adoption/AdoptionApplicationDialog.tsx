@@ -1,29 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import type { AdoptionProfile, HouseholdType } from '@/lib/adoption-types';
-import { adoptionService } from '@/lib/adoption-service';
+import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/AppContext';
-import { haptics } from '@/lib/haptics';
-import { PaperPlaneRight } from '@phosphor-icons/react';
-import { createLogger } from '@/lib/logger';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useRotation } from '@/effects/reanimated/use-rotation';
-import { spark } from '@/lib/spark';
+import { adoptionService } from '@/lib/adoption-service';
+import type { AdoptionProfile, HouseholdType } from '@/lib/adoption-types';
+import { haptics } from '@/lib/haptics';
+import { createLogger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
+import { PaperPlaneRight } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const logger = createLogger('AdoptionApplicationDialog');
 
@@ -103,7 +103,11 @@ export function AdoptionApplicationDialog({
       setIsSubmitting(true);
       haptics.trigger('light');
 
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
 
       await adoptionService.submitApplication({
         adoptionProfileId: profile._id,

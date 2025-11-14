@@ -1,6 +1,7 @@
 'use client';
 
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import type { useAnimatedStyle} from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   spawnParticlesData,

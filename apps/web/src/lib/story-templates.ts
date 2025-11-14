@@ -1,4 +1,4 @@
-import type { StoryTemplate } from './stories-types';
+import type { StoryTemplate } from '@petspark/shared';
 
 export interface StoryFilter {
   id: string;

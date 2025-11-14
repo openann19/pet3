@@ -1,27 +1,27 @@
-import { useState, useEffect, useMemo } from 'react';
-import { motion, MotionView } from '@petspark/motion';
-import { X, MagnifyingGlass, NavigationArrow, Star } from '@phosphor-icons/react';
+import MapLibreMap from '@/components/maps/MapLibreMap';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
+import { forwardGeocode } from '@/lib/maps/geocoding';
 import type { Location, Place } from '@/lib/maps/types';
-
-const logger = createLogger('VenuePicker');
+import { useMapConfig } from '@/lib/maps/useMapConfig';
+import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import {
-  getCurrentLocation,
-  snapToGrid,
   calculateDistance,
   formatDistance,
+  getCurrentLocation,
+  snapToGrid,
 } from '@/lib/maps/utils';
-import MapLibreMap from '@/components/maps/MapLibreMap';
-import type { MapMarker } from '@/lib/maps/useMapLibreMap';
-import { forwardGeocode } from '@/lib/maps/geocoding';
-import { useMapConfig } from '@/lib/maps/useMapConfig';
+import { MotionView } from '@petspark/motion';
+import { MagnifyingGlass, NavigationArrow, Star, X } from '@phosphor-icons/react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+
+const logger = createLogger('VenuePicker');
 
 interface VenuePickerProps {
   open: boolean;
@@ -229,7 +229,12 @@ export default function VenuePicker({
                     )}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() = aria-label="X"> setSelectedVenue(null)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedVenue(null)}
+                  aria-label="Close"
+                >
                   <X size={20} />
                 </Button>
               </div>

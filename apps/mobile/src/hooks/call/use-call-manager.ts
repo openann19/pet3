@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createLogger } from '@/utils/logger'
-import { useWebRTC, type CallState } from '@/hooks/call/useWebRTC'
+import { useWebRTC, type CallState } from '@/hooks/call/use-web-rtc'
 import { WebRTCSignalingService } from '@/services/webrtc-signaling'
 import { getWebRTCConfig } from '@/config/webrtc-config'
 import type {

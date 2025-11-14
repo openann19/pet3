@@ -10,10 +10,15 @@ describe('useOnlineStatus', () => {
     originalNavigator = global.navigator;
     mockNavigator = {
       ...originalNavigator,
-      onLine: true,
     } as Navigator;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     Object.defineProperty(global, 'navigator', {
       writable: true,
+      configurable: true,
       value: mockNavigator,
     });
   });
@@ -26,27 +31,43 @@ describe('useOnlineStatus', () => {
   });
 
   it('returns true when navigator is online', () => {
-    mockNavigator.onLine = true;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(true);
   });
 
   it('returns false when navigator is offline', () => {
-    mockNavigator.onLine = false;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: false,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(false);
   });
 
   it('updates when online event is fired', async () => {
-    mockNavigator.onLine = false;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: false,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(false);
 
     await act(async () => {
-      mockNavigator.onLine = true;
+      Object.defineProperty(mockNavigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true,
+      });
       const onlineEvent = new Event('online', { bubbles: true });
       window.dispatchEvent(onlineEvent);
     });
@@ -57,13 +78,21 @@ describe('useOnlineStatus', () => {
   });
 
   it('updates when offline event is fired', async () => {
-    mockNavigator.onLine = true;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(true);
 
     await act(async () => {
-      mockNavigator.onLine = false;
+      Object.defineProperty(mockNavigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false,
+      });
       const offlineEvent = new Event('offline', { bubbles: true });
       window.dispatchEvent(offlineEvent);
     });
@@ -74,13 +103,21 @@ describe('useOnlineStatus', () => {
   });
 
   it('handles multiple online/offline events', async () => {
-    mockNavigator.onLine = true;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(true);
 
     await act(async () => {
-      mockNavigator.onLine = false;
+      Object.defineProperty(mockNavigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false,
+      });
       window.dispatchEvent(new Event('offline', { bubbles: true }));
     });
     await waitFor(() => {
@@ -88,7 +125,11 @@ describe('useOnlineStatus', () => {
     });
 
     await act(async () => {
-      mockNavigator.onLine = true;
+      Object.defineProperty(mockNavigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true,
+      });
       window.dispatchEvent(new Event('online', { bubbles: true }));
     });
     await waitFor(() => {
@@ -96,7 +137,11 @@ describe('useOnlineStatus', () => {
     });
 
     await act(async () => {
-      mockNavigator.onLine = false;
+      Object.defineProperty(mockNavigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false,
+      });
       window.dispatchEvent(new Event('offline', { bubbles: true }));
     });
     await waitFor(() => {
@@ -128,7 +173,11 @@ describe('useOnlineStatus', () => {
   });
 
   it('maintains correct state across re-renders', () => {
-    mockNavigator.onLine = true;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     const { result, rerender } = renderHook(() => useOnlineStatus());
 
     expect(result.current).toBe(true);
@@ -139,7 +188,11 @@ describe('useOnlineStatus', () => {
   });
 
   it('handles rapid online/offline transitions', async () => {
-    mockNavigator.onLine = true;
+    Object.defineProperty(mockNavigator, 'onLine', {
+      writable: true,
+      configurable: true,
+      value: true,
+    });
     const { result } = renderHook(() => useOnlineStatus());
 
     act(() => {

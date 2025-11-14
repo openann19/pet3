@@ -1,21 +1,24 @@
-import { useState, useEffect } from 'react';
-import { motion, MotionView } from '@petspark/motion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { createLogger } from '@/lib/logger';
+import type { Location } from '@/lib/maps/types';
+import { calculateDistance, formatDistance, getCurrentLocation } from '@/lib/maps/utils';
+import type { Playdate } from '@/lib/playdate-types';
+import { MotionView } from '@petspark/motion';
 import {
-  MapPin,
-  NavigationArrow,
   Calendar,
   Clock,
-  X,
   List,
+  MapPin,
   MapTrifold,
+  NavigationArrow,
+  X,
 } from '@phosphor-icons/react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import type { Playdate } from '@/lib/playdate-types';
-import type { Location } from '@/lib/maps/types';
-import { getCurrentLocation, calculateDistance, formatDistance } from '@/lib/maps/utils';
 import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+
+const logger = createLogger('PlaydateMap');
 
 interface PlaydateMapProps {
   playdates: Playdate[];
@@ -120,7 +123,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
               <MapTrifold size={24} className="text-white" weight="fill" />
             </div>
             <div>
@@ -158,7 +161,7 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
 
         {viewMode === 'map' ? (
           <Card className="overflow-hidden mb-6">
-            <div className="relative w-full h-125 bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10">
+            <div className="relative w-full h-125 bg-linear-to-br from-primary/10 via-accent/10 to-secondary/10">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center max-w-2xl px-4">
                   <MapTrifold size={64} className="mx-auto mb-4 text-muted-foreground" />
@@ -179,11 +182,10 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                           transition={{ delay: index * 0.1 }}
                         >
                           <Card
-                            className={`p-3 cursor-pointer hover:shadow-lg transition-all ${
-                              selectedPlaydate?.id === playdate.id
-                                ? 'ring-2 ring-primary bg-primary/5'
-                                : 'hover:bg-accent/5'
-                            }`}
+                            className={`p-3 cursor-pointer hover:shadow-lg transition-all ${selectedPlaydate?.id === playdate.id
+                              ? 'ring-2 ring-primary bg-primary/5'
+                              : 'hover:bg-accent/5'
+                              }`}
                             onClick={() => handleSelectPlaydate(playdate)}
                           >
                             <div className="flex items-start gap-2 mb-2">
@@ -251,15 +253,14 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                   transition={{ delay: index * 0.05 }}
                 >
                   <Card
-                    className={`p-4 cursor-pointer hover:shadow-lg transition-all ${
-                      selectedPlaydate?.id === playdate.id
-                        ? 'ring-2 ring-primary bg-primary/5'
-                        : 'hover:bg-accent/5'
-                    }`}
+                    className={`p-4 cursor-pointer hover:shadow-lg transition-all ${selectedPlaydate?.id === playdate.id
+                      ? 'ring-2 ring-primary bg-primary/5'
+                      : 'hover:bg-accent/5'
+                      }`}
                     onClick={() => handleSelectPlaydate(playdate)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-linear-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0">
                         <MapPin size={24} weight="fill" className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -322,7 +323,12 @@ export default function PlaydateMap({ playdates, onSelectPlaydate, onClose }: Pl
                   <h4 className="font-semibold text-lg">{selectedPlaydate.title}</h4>
                   <p className="text-sm text-muted-foreground">{selectedPlaydate.location.name}</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() = aria-label="X"> setSelectedPlaydate(null)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedPlaydate(null)}
+                  aria-label="Close"
+                >
                   <X size={20} />
                 </Button>
               </div>

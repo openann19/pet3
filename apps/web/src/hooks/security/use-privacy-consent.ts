@@ -47,9 +47,7 @@ export type ConsentCategory =
   | 'marketing'
   | 'personalization';
 
-export interface ConsentState {
-  readonly [key: string]: boolean;
-}
+export type ConsentState = Readonly<Record<string, boolean>>;
 
 export interface ConsentRecord {
   readonly consents: ConsentState;

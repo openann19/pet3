@@ -7,8 +7,10 @@ import { MyAdoptionListings } from '@/components/adoption/MyAdoptionListings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
+import { createLogger } from '@/lib/logger';
 import { haptics } from '@/lib/haptics';
 import { Check, Funnel, Heart, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
 import { MotionView } from '@petspark/motion';
@@ -17,11 +19,13 @@ import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+const logger = createLogger('AdoptionMarketplaceView');
+
 type ViewTab = 'browse' | 'my-listings' | 'my-applications';
 
 import { useAdoptionMarketplace } from '@/hooks/adoption/use-adoption-marketplace';
 
-export default function AdoptionMarketplaceView() {
+function AdoptionMarketplaceViewContent() {
   const [activeTab, setActiveTab] = useState<ViewTab>('browse');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -132,14 +136,14 @@ export default function AdoptionMarketplaceView() {
               <div className="flex flex-wrap gap-2">
                 {filters.breed &&
                   filters.breed.length > 0 &&
-                  filters.breed.map((breed) => (
+                  filters.breed.map((breed: string) => (
                     <Badge key={breed} variant="secondary" className="gap-1">
                       {breed}
                       <X
                         size={14}
                         className="cursor-pointer hover:text-destructive"
                         onClick={() => {
-                          setFilters((prev) => {
+                          setFilters((prev: typeof filters) => {
                             const newBreed = prev.breed?.filter((b: string) => b !== breed);
                             const updated = { ...prev };
                             if (!newBreed || newBreed.length === 0) {
@@ -160,7 +164,7 @@ export default function AdoptionMarketplaceView() {
                       size={14}
                       className="cursor-pointer hover:text-destructive"
                       onClick={() => {
-                        setFilters((prev) => {
+                        setFilters((prev: typeof filters) => {
                           const updated = { ...prev };
                           delete updated.vaccinated;
                           return updated;
@@ -176,7 +180,7 @@ export default function AdoptionMarketplaceView() {
                       size={14}
                       className="cursor-pointer hover:text-destructive"
                       onClick={() => {
-                        setFilters((prev) => {
+                        setFilters((prev: typeof filters) => {
                           const updated = { ...prev };
                           delete updated.spayedNeutered;
                           return updated;
@@ -289,5 +293,19 @@ export default function AdoptionMarketplaceView() {
         />
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function AdoptionMarketplaceView() {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('AdoptionMarketplaceView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <AdoptionMarketplaceViewContent />
+    </RouteErrorBoundary>
   );
 }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { useUIConfig } from '@/hooks/use-ui-config';
-import { springConfigs } from '@/effects/reanimated/transitions';
 import { getColorTokenWithOpacity } from '@/core/tokens';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { springConfigs } from '@/effects/reanimated/transitions';
+import { useUIConfig } from '@/hooks/use-ui-config';
+import { useMemo } from 'react';
+import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 export interface UseMoodColorThemeOptions {
   text: string;
@@ -55,7 +55,8 @@ const getMoodColors = (mode: 'light' | 'dark' = 'light') => ({
 export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodColorThemeReturn {
   const { text, enabled = true } = options;
   const { theme } = useUIConfig();
-  const themeMode = theme.mode || 'light';
+  // Get theme mode from document or default to 'light'
+  const themeMode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
   const colors = useMemo(() => {
     const moodColors = getMoodColors(themeMode);

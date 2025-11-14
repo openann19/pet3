@@ -12,7 +12,9 @@ import {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseBreathingAnimationOptions {
   minScale?: number;
@@ -22,7 +24,14 @@ export interface UseBreathingAnimationOptions {
   easing?: 'ease' | 'sine' | 'cubic';
 }
 
-export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}) {
+export interface UseBreathingAnimationReturn {
+  animatedStyle: AnimatedStyle;
+  progress: SharedValue<number>;
+}
+
+export function useBreathingAnimation(
+  options: UseBreathingAnimationOptions = {}
+): UseBreathingAnimationReturn {
   const {
     minScale = 0.98,
     maxScale = 1.02,
@@ -63,7 +72,7 @@ export function useBreathingAnimation(options: UseBreathingAnimationOptions = {}
       transform: [{ scale }],
       opacity,
     };
-  });
+  }) as AnimatedStyle;
 
   return {
     animatedStyle,

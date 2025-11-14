@@ -153,7 +153,7 @@ export default function CallInterface({
       <div
         className={`relative w-full ${
           isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]'
-        } bg-gradient-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
+        } bg-linear-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
       >
         {isVideoCall && session.remoteParticipant.isVideoEnabled ? (
           <div className="absolute inset-0">
@@ -163,7 +163,7 @@ export default function CallInterface({
               playsInline
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+            <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/60" />
           </div>
         ) : (
           <AvatarPulseView
@@ -248,7 +248,7 @@ function AvatarPulseView({ avatar, name, isMuted, isActive, audioWaveform }: Ava
       <AnimatedView style={avatarStyle} className="flex flex-col items-center">
         <Avatar className="w-40 h-40 ring-4 ring-white/30 mb-6">
           <AvatarImage src={avatar} alt={name} />
-          <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-5xl font-bold">
+          <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-5xl font-bold">
             {name[0]}
           </AvatarFallback>
         </Avatar>

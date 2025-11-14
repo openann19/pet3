@@ -215,7 +215,7 @@ class AnalyticsService {
         language: navigator.language,
         screenSize: `${window.innerWidth}x${window.innerHeight}`,
       },
-      entryPoint: (this.events[0]?.properties?.['pathname'] as string | undefined) || '/',
+      entryPoint: (this.events[0]?.properties?.pathname as string | undefined) || '/',
       exitPoint: window.location.pathname,
     };
 
@@ -392,7 +392,7 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
 
     const viewedPets = userEvents
       .filter((e) => e.name === 'pet_viewed')
-      .map((e) => e.properties['petId'])
+      .map((e) => e.properties.petId)
       .filter((petId): petId is string => typeof petId === 'string');
     const mostViewedPets: string[] = Array.from(new Set(viewedPets)).slice(0, 10);
 
@@ -410,7 +410,7 @@ export async function getUserBehaviorInsights(userId: string): Promise<UserBehav
 
     const likedPets = userEvents
       .filter((e) => e.name === 'pet_liked')
-      .map((e) => e.properties['breed'])
+      .map((e) => e.properties.breed)
       .filter((breed): breed is string => typeof breed === 'string');
     const preferredPetTypes: string[] = Array.from(new Set(likedPets)).slice(0, 5);
 

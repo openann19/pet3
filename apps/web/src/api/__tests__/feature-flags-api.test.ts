@@ -14,7 +14,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -58,60 +59,62 @@ const mockVariant: ABTestVariant = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, 'http://localhost:8080');
+
+      if (req.method === 'GET' && url.pathname === '/feature-flags') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { flags: mockFlags } }));
+        return;
+      }
+
+      if (req.method === 'PATCH' && url.pathname.startsWith('/feature-flags/')) {
+        const payload = await readJson<{ updates: Partial<FeatureFlag>; modifiedBy: string }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { flag: { enabled: true, ...payload.updates } } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/ab-tests') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { tests: [mockABTest] } }));
+        return;
+      }
+
+      if (
+        req.method === 'GET' &&
+        url.pathname.includes('/ab-tests/') &&
+        url.pathname.includes('/variant')
+      ) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: { variant: mockVariant } }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/ab-tests/exposure') {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ data: { success: true } }));
+        return;
+      }
+
+      res.statusCode = 404;
       res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'GET' && url.pathname === '/feature-flags') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { flags: mockFlags } }));
-      return;
-    }
-
-    if (req.method === 'PATCH' && url.pathname.startsWith('/feature-flags/')) {
-      const payload = await readJson<{ updates: Partial<FeatureFlag>; modifiedBy: string }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { flag: { enabled: true, ...payload.updates } } }));
-      return;
-    }
-
-    if (req.method === 'GET' && url.pathname === '/ab-tests') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { tests: [mockABTest] } }));
-      return;
-    }
-
-    if (
-      req.method === 'GET' &&
-      url.pathname.includes('/ab-tests/') &&
-      url.pathname.includes('/variant')
-    ) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: { variant: mockVariant } }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/ab-tests/exposure') {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

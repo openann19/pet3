@@ -91,15 +91,17 @@ vi.mock('@/components/community/ReportDialog', () => ({
   ReportDialog: () => <div data-testid="report-dialog">Report</div>,
 }));
 
-// Mock spark
-type PartialSpark = Partial<Window['spark']>;
-(global.window as Window & { spark?: PartialSpark }).spark = {
-  user: vi.fn().mockResolvedValue({
-    id: 'user-1',
-    login: 'testuser',
-    avatarUrl: 'https://example.com/avatar.jpg',
-  }),
-};
+// Mock userService
+vi.mock('@/lib/user-service', () => ({
+  userService: {
+    user: vi.fn().mockResolvedValue({
+      id: 'user-1',
+      login: 'testuser',
+      avatarUrl: 'https://example.com/avatar.jpg',
+      email: null,
+    }),
+  },
+}));
 
 describe('PostCard', () => {
   const mockPost: Post = {

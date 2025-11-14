@@ -59,7 +59,7 @@ beforeAll(async () => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

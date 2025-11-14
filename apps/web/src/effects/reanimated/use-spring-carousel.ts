@@ -3,8 +3,8 @@
  * Smooth carousel with spring physics and snap points
  */
 
-import { useSharedValue, useAnimatedStyle, withSpring, interpolate } from 'react-native-reanimated';
 import { useCallback, useState } from 'react';
+import { useMotionValue, animate, useTransform, MotionValue } from 'framer-motion';
 
 export interface UseSpringCarouselOptions {
   itemCount: number;
@@ -18,7 +18,7 @@ export interface UseSpringCarouselOptions {
 export function useSpringCarousel(options: UseSpringCarouselOptions) {
   const { itemCount, itemWidth, gap = 16, damping = 20, stiffness = 120, onIndexChange } = options;
 
-  const translateX = useSharedValue(0);
+  const translateX = useMotionValue(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const slideWidth = itemWidth + gap;
@@ -27,18 +27,13 @@ export function useSpringCarousel(options: UseSpringCarouselOptions) {
     (index: number) => {
       const clampedIndex = Math.max(0, Math.min(itemCount - 1, index));
       const targetX = -clampedIndex * slideWidth;
-
-      translateX.value = withSpring(targetX, {
-        damping,
-        stiffness,
-      });
-
+      animate(translateX, targetX, { type: 'spring', damping, stiffness });
       setCurrentIndex(clampedIndex);
       if (onIndexChange) {
         onIndexChange(clampedIndex);
       }
     },
-    [itemCount, slideWidth, damping, stiffness, onIndexChange]
+    [itemCount, slideWidth, damping, stiffness, onIndexChange, translateX]
   );
 
   const next = useCallback(() => {
@@ -55,36 +50,30 @@ export function useSpringCarousel(options: UseSpringCarouselOptions) {
 
   const createItemStyle = useCallback(
     (itemIndex: number) => {
-      return useAnimatedStyle(() => {
-        const inputRange = [
-          (itemIndex - 1) * -slideWidth,
-          itemIndex * -slideWidth,
-          (itemIndex + 1) * -slideWidth,
-        ];
-
-        const scale = interpolate(translateX.value, inputRange, [0.85, 1, 0.85]);
-
-        const opacity = interpolate(translateX.value, inputRange, [0.6, 1, 0.6]);
-
-        const rotateY = interpolate(translateX.value, inputRange, [20, 0, -20]);
-
-        return {
-          transform: [
-            { translateX: itemIndex * slideWidth },
-            { scale },
-            { perspective: 1000 },
-            { rotateY: `${rotateY}deg` },
-          ],
-          opacity,
-        };
-      });
+      const inputRange = [
+        (itemIndex - 1) * -slideWidth,
+        itemIndex * -slideWidth,
+        (itemIndex + 1) * -slideWidth,
+      ];
+      const scale = useTransform(translateX, inputRange, [0.85, 1, 0.85]);
+      const opacity = useTransform(translateX, inputRange, [0.6, 1, 0.6]);
+      const rotateY = useTransform(translateX, inputRange, [20, 0, -20]);
+      return {
+        transform: [
+          { translateX: itemIndex * slideWidth },
+          { scale },
+          { perspective: 1000 },
+          { rotateY: rotateY },
+        ],
+        opacity,
+      };
     },
-    [slideWidth]
+    [slideWidth, translateX]
   );
 
-  const containerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+  const containerStyle = {
+    transform: [{ translateX }],
+  };
 
   return {
     containerStyle,

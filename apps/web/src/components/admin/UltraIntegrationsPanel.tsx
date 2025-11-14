@@ -1,6 +1,6 @@
 export default function UltraIntegrationsPanel() {
   return (
-    <div style={{ padding: 16 }}>
+    <div className="p-4">
       <h2>Ultra Integrations</h2>
       <ul>
         <li>

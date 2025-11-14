@@ -13,7 +13,7 @@ import {
   Extrapolation,
   type SharedValue,
 } from 'react-native-reanimated';
-import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
@@ -246,9 +246,6 @@ export function EnhancedButton({
     return sizes[size] ?? sizes.default;
   }, [size]);
 
-  const combinedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
-  const glowStyleValue = useAnimatedStyleValue(glowAnimatedStyle);
-  const loadingStyleValue = useAnimatedStyleValue(loadingSpinnerStyle);
 
   const isDisabled = disabled || loading;
 
@@ -272,7 +269,7 @@ export function EnhancedButton({
 
   return (
     <AnimatedView
-      style={combinedStyleValue}
+      style={combinedAnimatedStyle}
       className="inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -296,20 +293,20 @@ export function EnhancedButton({
         {...props}
       >
         {enableGlow && (
-          <div
-            className="absolute inset-0 pointer-events-none rounded-md"
+          <AnimatedView
             style={{
+              ...glowAnimatedStyle,
               backgroundColor: resolvedGlowColor,
-              ...glowStyleValue,
-            }}
+            } as AnimatedStyle}
+            className="absolute inset-0 pointer-events-none rounded-md"
           />
         )}
 
         <span className="relative z-10 flex items-center justify-center gap-2">
           {loading ? (
-            <div
+            <AnimatedView
+              style={loadingSpinnerStyle}
               className="h-5 w-5 rounded-full border-2 border-current border-t-transparent"
-              style={loadingStyleValue}
               aria-hidden="true"
             />
           ) : (

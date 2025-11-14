@@ -3,6 +3,7 @@
 import { communityAPI } from '@/api/community-api';
 import { PostCard } from '@/components/community/PostCard';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
 import { PostDetailView } from '@/components/community/PostDetailView';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ interface UserPostsViewProps {
   onAuthorClick?: (authorId: string) => void;
 }
 
-export default function UserPostsView({
+function UserPostsViewContent({
   userId,
   userName,
   userAvatar,
@@ -214,5 +215,19 @@ export default function UserPostsView({
         )}
       </div>
     </PageTransitionWrapper>
+  );
+}
+
+export default function UserPostsView(props: UserPostsViewProps) {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('UserPostsView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <UserPostsViewContent {...props} />
+    </RouteErrorBoundary>
   );
 }

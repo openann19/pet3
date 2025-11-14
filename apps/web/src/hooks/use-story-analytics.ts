@@ -5,7 +5,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { realtime } from '@/lib/realtime';
 import { getAnalytics, type EventName } from '@/lib/advanced-analytics';
-import type { Story } from '@/lib/stories-types';
+import type { Story } from '@petspark/shared';
 
 interface UseStoryAnalyticsOptions {
   story: Story | null;

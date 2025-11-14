@@ -7,11 +7,12 @@ vi.mock('@/lib/enhanced-auth', () => ({
   enhancedAuth: {
     initialize: vi.fn(),
     getCurrentUser: vi.fn(),
-    updateProfile: vi.fn(),
+    updateUserProfile: vi.fn(),
     updatePreferences: vi.fn(),
     logout: vi.fn(),
     hasRole: vi.fn(),
     isOwner: vi.fn(),
+    isAuthenticated: vi.fn(() => false),
   },
 }));
 
@@ -150,7 +151,7 @@ describe('useAuth', () => {
 
     vi.mocked(enhancedAuth.initialize).mockResolvedValue(undefined);
     vi.mocked(enhancedAuth.getCurrentUser).mockReturnValue(mockUser as never);
-    vi.mocked(enhancedAuth.updateProfile).mockResolvedValue(updatedUser as never);
+    vi.mocked(enhancedAuth.updateUserProfile).mockResolvedValue(updatedUser as never);
     vi.mocked(enhancedAuth.getCurrentUser)
       .mockReturnValueOnce(mockUser as never)
       .mockReturnValueOnce(updatedUser as never);
@@ -164,7 +165,7 @@ describe('useAuth', () => {
     const updated = await result.current.updateProfile({ name: 'Updated Name' });
 
     expect(updated).toEqual(updatedUser);
-    expect(enhancedAuth.updateProfile).toHaveBeenCalledWith({ name: 'Updated Name' });
+    expect(enhancedAuth.updateUserProfile).toHaveBeenCalledWith({ name: 'Updated Name' });
   });
 
   it('should update preferences', async () => {

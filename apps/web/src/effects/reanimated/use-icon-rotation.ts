@@ -1,6 +1,6 @@
 'use client';
 
-import { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
@@ -12,28 +12,26 @@ export interface UseIconRotationOptions {
 }
 
 export interface UseIconRotationReturn {
-  rotation: ReturnType<typeof useSharedValue<number>>;
+  rotation: MotionValue<number>;
   style: AnimatedStyle;
 }
 
 export function useIconRotation(options: UseIconRotationOptions = {}): UseIconRotationReturn {
   const { enabled = false, targetRotation = 360, duration = 500, enablePulse = false } = options;
 
-  const rotationValue = useSharedValue(0);
+  const rotationValue = useMotionValue(0);
 
   useEffect(() => {
     if (enabled) {
-      rotationValue.value = withTiming(targetRotation, { duration });
+      animate(rotationValue, targetRotation, { duration: duration / 1000 });
     } else {
-      rotationValue.value = withTiming(0, { duration });
+      animate(rotationValue, 0, { duration: duration / 1000 });
     }
   }, [enabled, duration, targetRotation, rotationValue, enablePulse]);
 
-  const style = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotationValue.value}deg` }],
-    };
-  }) as AnimatedStyle;
+  const style: AnimatedStyle = {
+    transform: [{ rotate: rotationValue }],
+  };
 
   return {
     rotation: rotationValue,

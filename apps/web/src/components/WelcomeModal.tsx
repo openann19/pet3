@@ -139,10 +139,10 @@ export default function WelcomeModal(): JSX.Element | null {
         <DialogDescription className="sr-only">
           Discover perfect companions for your pet with AI-powered matching, secure messaging, and a vibrant community
         </DialogDescription>
-        <div className="relative bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
+        <div className="relative bg-linear-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
           <AnimatedView
             style={bgAnimatedStyle}
-            className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"
+            className="absolute inset-0 bg-linear-to-br from-primary/20 via-transparent to-accent/20"
           />
 
           <AnimatedView
@@ -163,14 +163,14 @@ export default function WelcomeModal(): JSX.Element | null {
 
           <AnimatedView
             style={iconAnimatedStyle}
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
+            className="w-20 h-20 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
           >
             <AnimatedView style={iconPulseStyle}>
               <Heart size={40} className="text-white" weight="fill" />
             </AnimatedView>
             <AnimatedView
               style={iconGlowStyle}
-              className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent"
+              className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent"
             />
           </AnimatedView>
 
@@ -190,7 +190,7 @@ export default function WelcomeModal(): JSX.Element | null {
                 style={{ animationDelay: `${500 + idx * 150}ms` }}
               >
                 <div
-                  className={`w-16 h-16 rounded-full bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-3 shadow-lg transition-transform hover:rotate-12`}
+                  className={`w-16 h-16 rounded-full bg-linear-to-br ${feature.color} flex items-center justify-center mx-auto mb-3 shadow-lg transition-transform hover:rotate-12`}
                 >
                   <feature.icon size={32} className={feature.iconColor} weight="fill" />
                 </div>
@@ -210,7 +210,7 @@ export default function WelcomeModal(): JSX.Element | null {
               <Button
                 size="lg"
                 onClick={handleClose}
-                className="px-8 shadow-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                className="px-8 shadow-xl bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 {t.welcome.getStarted}
                 <AnimatedView style={arrowStyle} className="ml-2">

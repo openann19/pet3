@@ -85,7 +85,7 @@ export interface LearnedWeights extends MatchingWeights {
  * ML Matching Weight Adjuster
  */
 export class MLMatchingWeightAdjuster {
-  private learnedWeights: Map<string, LearnedWeights> = new Map();
+  private learnedWeights = new Map<string, LearnedWeights>();
   private readonly minSampleSize = 10; // Minimum interactions needed to learn
   private readonly maxWeightChange = 0.2; // Maximum weight adjustment per update (20%)
 

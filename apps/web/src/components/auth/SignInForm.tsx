@@ -39,11 +39,12 @@ const signInSchema = z.object({
 interface SignInFormProps {
   onSuccess: () => void;
   onSwitchToSignUp: () => void;
+  firstInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 type UserCredentials = z.infer<typeof signInSchema>;
 
-export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps): JSX.Element {
+export default function SignInForm({ onSuccess, onSwitchToSignUp, firstInputRef }: SignInFormProps): JSX.Element {
   const { t } = useApp();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -180,6 +181,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
                     disabled={isLoading}
                     autoComplete="email"
                     aria-label="Email address"
+                    ref={firstInputRef}
                   />
                 </div>
                 <FormMessage className="text-sm text-(--error) mt-1" />

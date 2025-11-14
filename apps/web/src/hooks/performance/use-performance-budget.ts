@@ -118,7 +118,7 @@ export function usePerformanceBudget(config: PerformanceBudgetConfig) {
 
   // Refs
   const checkIntervalRef = useRef<number | null>(null);
-  const metricsHistoryRef = useRef<Array<Record<string, number>>>([]);
+  const metricsHistoryRef = useRef<Record<string, number>[]>([]);
   const webVitalsRef = useRef<{
     lcp: number | null;
     fid: number | null;

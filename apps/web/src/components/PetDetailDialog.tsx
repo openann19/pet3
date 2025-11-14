@@ -28,6 +28,7 @@ import {
 import { useEffect } from 'react';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
@@ -150,10 +151,11 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
 
             <div className="relative h-100 bg-linear-to-br from-muted/50 to-muted overflow-hidden group">
               <AnimatedView key={currentIndex} style={photoStyle} className="w-full h-full">
-                <img
+                <ProgressiveImage
                   src={currentPhoto}
                   alt={`${pet.name} photo ${currentIndex + 1}`}
                   className="w-full h-full object-cover"
+                  aria-label={`${pet.name} photo ${currentIndex + 1}`}
                 />
               </AnimatedView>
 

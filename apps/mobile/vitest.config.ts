@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@mobile': path.resolve(projectRoot, './src'),
+      '@': path.resolve(projectRoot, './src'),
       '@pet/domain': path.resolve(projectRoot, '../web/src/core/domain'),
       '@petspark/shared': path.resolve(projectRoot, '../../packages/shared/src'),
     },
@@ -24,7 +25,7 @@ export default defineConfig({
     {
       name: 'mock-reduced-motion',
       enforce: 'pre', // Run before other plugins to intercept early
-      resolveId(source: string, importer?: string) {
+      resolveId(source: string) {
         // Don't intercept the mock file itself or any test files
         if (
           source.includes('test/mocks') ||
@@ -87,7 +88,12 @@ export default defineConfig({
     ],
     server: {
       deps: {
-        inline: ['@testing-library/react-native'],
+        inline: [
+          '@testing-library/react-native',
+          'react-native',
+          'react-native-reanimated',
+        ],
+        external: ['react-native'],
       },
     },
     deps: {

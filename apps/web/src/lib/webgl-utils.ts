@@ -426,7 +426,7 @@ export class WebGLContextManager {
 
     // Check cache
     const cached = this.framebufferCache.get(key);
-    if (cached && cached.width === width && cached.height === height) {
+    if (cached?.width === width && cached.height === height) {
       return cached;
     }
 

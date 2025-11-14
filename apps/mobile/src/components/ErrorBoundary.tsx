@@ -111,7 +111,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <View style={styles.container}>
           <Text style={styles.title}>Oops! Something went wrong</Text>
           {this.state.error && <Text style={styles.errorText}>{this.state.error.message}</Text>}
-          <TouchableOpacity style={styles.button} onPress={this.handleReset} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity style={styles.button} onPress={this.handleReset}>
             <Text style={styles.buttonText}>Try Again</Text>
           </TouchableOpacity>
         </View>

@@ -6,7 +6,6 @@ import {
   withRepeat,
   withSequence,
 } from 'react-native-reanimated';
-import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Microphone, X, Check } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,8 @@ export default function VoiceRecorder({
   onCancel,
   maxDuration = 120,
 }: VoiceRecorderProps) {
-    const _uiConfig = useUIConfig();
-    const [duration, setDuration] = useState(0);
+  const _uiConfig = useUIConfig();
+  const [duration, setDuration] = useState(0);
   const [waveform, setWaveform] = useState<number[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -181,17 +180,14 @@ export default function VoiceRecorder({
     transform: [{ scale: micScale.value }],
   })) as AnimatedStyle;
 
-  const containerStyleValue = useAnimatedStyleValue(containerStyle);
-  const micStyleValue = useAnimatedStyleValue(micStyle);
-
   return (
-    <div
-      style={containerStyleValue}
+    <AnimatedView
+      style={containerStyle}
       className="flex-1 flex items-center gap-3 glass-effect rounded-2xl p-3"
     >
-      <div style={micStyleValue} className="shrink-0">
+      <AnimatedView style={micStyle} className="shrink-0">
         <Microphone size={24} weight="fill" className="text-red-500" />
-      </div>
+      </AnimatedView>
 
       <div className="flex-1 space-y-2">
         <div className="flex items-center gap-2">
@@ -229,7 +225,7 @@ export default function VoiceRecorder({
       >
         <Check size={20} weight="bold" />
       </Button>
-    </div>
+    </AnimatedView>
   );
 }
 

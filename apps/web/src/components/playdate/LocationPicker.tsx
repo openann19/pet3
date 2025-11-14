@@ -180,7 +180,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
               <MapPin size={24} className="text-white" weight="fill" />
             </div>
             <div>
@@ -263,7 +263,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
                           onClick={() => handleSelectPlace(place)}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted flex items-center justify-center flex-shrink-0 border">
+                            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-background to-muted flex items-center justify-center flex-shrink-0 border">
                               {getPlaceIcon(place.type)}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -345,7 +345,7 @@ export default function LocationPicker({ value, onChange, onClose }: LocationPic
 
           <TabsContent value="map" className="mt-4">
             <Card className="overflow-hidden">
-              <div className="relative w-full h-125 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 flex items-center justify-center">
+              <div className="relative w-full h-125 bg-linear-to-br from-primary/5 via-accent/5 to-secondary/5 flex items-center justify-center">
                 <div className="text-center">
                   <MapTrifold size={64} className="mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-xl font-semibold mb-2">Interactive Map View</h3>

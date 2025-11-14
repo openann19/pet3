@@ -101,7 +101,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
         variant={isSelected ? 'default' : 'outline'}
         className={`w-full h-auto py-4 px-4 justify-between ${
           isSelected
-            ? 'bg-gradient-to-r from-primary to-accent border-primary/50'
+            ? 'bg-linear-to-r from-primary to-accent border-primary/50'
             : 'hover:bg-muted/50'
         }`}
         onClick={handleClick}

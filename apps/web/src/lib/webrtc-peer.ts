@@ -175,9 +175,9 @@ export class WebRTCPeer {
         const parsed: unknown = JSON.parse(signalData);
         if (typeof parsed === 'object' && parsed !== null) {
           const parsedObj = parsed as Record<string, unknown>;
-          if (parsedObj['type'] === 'offer') return 'offer';
-          if (parsedObj['type'] === 'answer') return 'answer';
-          if (parsedObj['candidate'] !== undefined) return 'candidate';
+          if (parsedObj.type === 'offer') return 'offer';
+          if (parsedObj.type === 'answer') return 'answer';
+          if (parsedObj.candidate !== undefined) return 'candidate';
         }
       } catch {
         // Fall through

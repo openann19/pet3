@@ -1,22 +1,22 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import * as Haptics from 'expo-haptics'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
   Modal,
-  TextInput,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
   type ViewStyle,
 } from 'react-native'
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
-import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 
 const AnimatedView = Animated.View
 
@@ -184,7 +184,7 @@ export function PremiumSelect({
 
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={handleClose}>
         <AnimatedView style={[styles.modalBackdrop, modalBackdropStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
           <AnimatedView style={[styles.modalContent, contentStyle]}>
             {searchable && (
               <View style={styles.searchContainer}>

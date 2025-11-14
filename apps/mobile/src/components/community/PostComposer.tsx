@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import {
-  View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Platform,
-  KeyboardAvoidingView,
+  View,
 } from 'react-native'
 // Stubs for unavailable imports
 const useApp = (): {
@@ -37,13 +37,13 @@ const useApp = (): {
   },
 })
 const haptics = {
-  selection: () => {},
-  error: () => {},
-  success: () => {},
-  light: () => {},
-  impact: () => {},
+  selection: () => { },
+  error: () => { },
+  success: () => { },
+  light: () => { },
+  impact: () => { },
 }
-const toast = { success: (_: string) => {}, error: (_: string) => {} }
+const toast = { success: (_: string) => { }, error: (_: string) => { } }
 
 export type PostComposerProps = {
   open: boolean
@@ -99,7 +99,7 @@ export function PostComposer({
           {remainingChars} {t.community?.charsRemaining || 'characters remaining'}
         </Text>
         <View style={styles.actions}>
-          <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> onOpenChange(false)} style={styles.cancelButton}>
+          <TouchableOpacity onPress={() => onOpenChange(false)} style={styles.cancelButton}>
             <Text style={styles.cancelText}>{t.common?.cancel || 'Cancel'}</Text>
           </TouchableOpacity>
           <TouchableOpacity

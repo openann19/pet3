@@ -15,6 +15,7 @@ export default {
   no: 'Не',
   ok: 'Добре',
   back: 'Назад',
+  switchLanguage: 'Превключи език',
   ago: 'преди',
   just_now: 'току-що',
   minutes: 'минути',
@@ -31,6 +32,3 @@ export default {
   post: 'Публикувай',
   submitting: 'Изпращане...',
 } as const;
-
-
-

@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Sparkle, Crown, Lightning, CreditCard } from '@phosphor-icons/react';
+import { logger } from '@/lib/logger';
+import { getPlanById } from '@/lib/payments-catalog';
 import { PaymentsService } from '@/lib/payments-service';
 import type { Subscription, UserEntitlements } from '@/lib/payments-types';
-import { getPlanById } from '@/lib/payments-catalog';
-import { PricingModal } from './PricingModal';
+import { userService } from '@/lib/user-service';
+import { CreditCard, Crown, Lightning, Sparkle } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
+import { PricingModal } from './PricingModal';
 
 export function SubscriptionStatusCard() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -24,7 +25,11 @@ export function SubscriptionStatusCard() {
 
   const loadSubscriptionData = async () => {
     try {
-      const user = await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       const [sub, ent] = await Promise.all([
         PaymentsService.getUserSubscription(user.id),
         PaymentsService.getUserEntitlements(user.id),

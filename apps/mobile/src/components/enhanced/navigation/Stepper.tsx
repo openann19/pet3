@@ -1,13 +1,13 @@
+import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
+import * as Haptics from 'expo-haptics'
 import React, { useCallback } from 'react'
-import { View, Text, StyleSheet, Pressable, type ViewStyle } from 'react-native'
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native'
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
-import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
 
 const AnimatedView = Animated.View
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
@@ -105,7 +105,7 @@ export function Stepper({
                 )}
               </View>
               <View style={styles.verticalStepLabel}>
-                <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleStepPress(index)} disabled={isUpcoming}>
+                <Pressable onPress={() => handleStepPress(index)} disabled={isUpcoming}>
                   <Text
                     style={[
                       styles.stepLabel,

@@ -34,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { Pet } from '@/lib/types';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import {
   getTemplatesByType,
   type PetType,
@@ -606,12 +607,11 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               {templates.map((template) => (
                 <AnimatedView
                   key={template.id}
-                  type="button"
                   onClick={() => {
                     applyTemplate(template);
                     setTimeout(() => handleNext(), 300);
                   }}
-                  className={`relative p-4 rounded-xl border-2 text-left transition-all duration-300 ${selectedTemplate?.id === template.id
+                  className={`relative p-4 rounded-xl border-2 text-left transition-all duration-300 cursor-pointer ${selectedTemplate?.id === template.id
                     ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
                     : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
                     }`}
@@ -814,7 +814,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                   style={photoPresence.animatedStyle}
                   className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
                 >
-                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                  <ProgressiveImage
+                    src={photo}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    aria-label="Pet photo preview"
+                  />
                 </AnimatedView>
               )}
             </div>

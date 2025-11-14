@@ -28,6 +28,7 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import { toast } from 'sonner';
 
 const logger = createLogger('ModerationQueue');
@@ -121,7 +122,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'approve',
@@ -150,7 +151,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'reject',
@@ -180,7 +181,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'hold_for_kyc',
@@ -282,10 +283,11 @@ export function ModerationQueue() {
                         <div className="flex gap-4">
                           <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden shrink-0">
                             {photo?.originalUrl ? (
-                              <img
+                              <ProgressiveImage
                                 src={photo.originalUrl}
                                 alt="Pet photo"
                                 className="w-full h-full object-cover"
+                                aria-label="Pet photo for moderation"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -398,10 +400,11 @@ export function ModerationQueue() {
           {detailPhoto && detailPhoto.safetyCheck && (
             <div className="space-y-6">
               <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                <img
+                <ProgressiveImage
                   src={detailPhoto.originalUrl}
                   alt="Photo for review"
                   className="w-full h-full object-contain"
+                  aria-label="Photo for moderation review"
                 />
               </div>
 

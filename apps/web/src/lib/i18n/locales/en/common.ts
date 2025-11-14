@@ -15,6 +15,7 @@ export default {
   no: 'No',
   ok: 'OK',
   back: 'Back',
+  switchLanguage: 'Switch language',
   ago: 'ago',
   just_now: 'just now',
   minutes: 'minutes',

@@ -9,9 +9,15 @@ declare module 'expo-file-system' {
     cacheDirectory: string | null;
     bundleDirectory: string | null;
     temporaryDirectory: string | null;
+    makeDirectoryAsync?: (fileUri: string, options?: { intermediates?: boolean }) => Promise<void>;
+    readAsStringAsync?: (fileUri: string, options?: { encoding?: 'utf8' | 'base64' }) => Promise<string>;
   }
 
   export const FileSystem: FileSystem;
+
+  // Support default export
+  const defaultExport: FileSystem;
+  export default defaultExport;
 
   export interface DownloadOptions {
     uri: string;

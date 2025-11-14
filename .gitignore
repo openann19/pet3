@@ -182,3 +182,8 @@ prettier.config.*.old
 *.config.tmp
 *.config.temp
 .cache/
+
+# UI Audit artifacts (screenshots, large JSON files)
+# Keep inventory and reports for documentation
+audit/artifacts/
+ci/summary.json

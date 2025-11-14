@@ -63,10 +63,10 @@ export function LocationBubble({
         )}
       >
         <div className="aspect-video w-full max-w-xs relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+          <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center">
             <MapPin size={32} className="text-primary" weight="fill" />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
           <div className="absolute bottom-2 left-2 right-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-white text-xs font-medium">
@@ -90,9 +90,9 @@ export function LocationBubble({
               <SheetTitle className="text-xl font-bold">
                 {(t.map as { location?: string })?.location || 'Location'}
               </SheetTitle>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowFullMap(false)}
                 aria-label="Close map"
               >

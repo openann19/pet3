@@ -115,11 +115,10 @@ export function mockSingleton<T extends Record<string, unknown>>(
 
   // Reset all methods to be mocks
   Object.keys(instance).forEach((key) => {
-    const value = instance[key];
+    const value = instance[key as keyof T];
     if (typeof value === 'function') {
       // Use type assertion to handle generic type indexing
-      const keyTyped = key as keyof T;
-      (instance as Record<string, unknown>)[key] = vi.fn(value as () => unknown);
+      (instance as Record<string, unknown>)[key] = vi.fn(value as (...args: unknown[]) => unknown);
     }
   });
 

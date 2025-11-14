@@ -101,7 +101,7 @@ export function MediaViewer({
         entering={FadeIn.duration(200)}
         exiting={FadeOut.duration(200)}
       >
-        <TouchableOpacity style={styles.backdropTouchable} activeOpacity={1} onPress={handleClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity style={styles.backdropTouchable} activeOpacity={1} onPress={handleClose}>
           <Animated.View
             style={[
               styles.mediaContainer,

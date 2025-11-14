@@ -40,11 +40,11 @@ const PaymentMethodItem: React.FC<PaymentMethodItemProps> = ({
         transform: [{ scale: scale.value }],
     }))
 
-    const handlePressIn = () => {
+    const handlePressIn = (): void => {
         scale.value = withSpring(0.98, springConfigs.smooth)
     }
 
-    const handlePressOut = () => {
+    const handlePressOut = (): void => {
         scale.value = withSpring(1, springConfigs.smooth)
     }
 

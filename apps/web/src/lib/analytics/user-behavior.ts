@@ -42,12 +42,12 @@ export interface FunnelStep {
  */
 export interface FunnelResult {
   readonly funnelName: string
-  readonly steps: Array<{
+  readonly steps: {
     readonly step: FunnelStep
     readonly count: number
     readonly dropoffRate: number
     readonly conversionRate: number
-  }>
+  }[]
   readonly totalConversions: number
   readonly overallConversionRate: number
 }

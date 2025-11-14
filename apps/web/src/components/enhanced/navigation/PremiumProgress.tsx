@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat } from 'react-native-reanimated';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { cn } from '@/lib/utils';
@@ -32,8 +32,8 @@ export function PremiumProgress({
   className,
   'aria-label': ariaLabel,
 }: PremiumProgressProps): React.JSX.Element {
-    const _uiConfig = useUIConfig();
-    const progressWidth = useSharedValue(0);
+  const _uiConfig = useUIConfig();
+  const progressWidth = useSharedValue(0);
   const shimmerX = useSharedValue(-100);
 
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
@@ -48,7 +48,7 @@ export function PremiumProgress({
 
   useEffect(() => {
     if (variant === 'striped') {
-      shimmerX.value = withTiming(200, { duration: 2000, repeat: Infinity });
+      shimmerX.value = withRepeat(withTiming(200, { duration: 2000 }), -1, false);
     }
   }, [variant, shimmerX]);
 

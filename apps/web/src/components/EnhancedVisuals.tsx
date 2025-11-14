@@ -385,8 +385,7 @@ export function GlowingBorder({
         animatedStyle={animatedStyle}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`absolute -inset-[1px] bg-linear-to-r from-${glowColor} via-accent to-${glowColor} rounded-inherit`}
-        style={{ filter: 'blur(4px)' }}
+        className={`absolute -inset-[1px] bg-linear-to-r from-${glowColor} via-accent to-${glowColor} rounded-inherit blur-sm`}                                         
       />
       <div className="relative bg-card rounded-inherit">{children}</div>
     </div>

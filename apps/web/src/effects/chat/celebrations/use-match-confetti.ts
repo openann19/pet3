@@ -56,7 +56,7 @@ const DEFAULT_COLORS = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '
  * ```tsx
  * const { trigger, isActive } = useMatchConfetti({
  *   particleCount: 100,
- *   onComplete: () => console.log('Confetti complete!')
+ *   onComplete: () => logger.info('Confetti complete!')
  * })
  *
  * // Trigger on match

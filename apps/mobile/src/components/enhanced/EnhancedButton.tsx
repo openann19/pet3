@@ -5,34 +5,32 @@
  * Enhanced button component with haptic feedback, animations, and success/error states
  */
 
-import React, { useCallback, useEffect } from 'react'
-import {
-  Pressable,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  View,
-  type ViewStyle,
-  type TextStyle,
-  type PressableProps,
-} from 'react-native'
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withSpring,
-} from 'react-native-reanimated'
-import Animated from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
-import { usePressBounce } from '@petspark/motion'
 import { springConfigs } from '@/effects/reanimated/transitions'
 import { colors } from '@/theme/colors'
-import { useReducedMotionSV } from '@petspark/motion'
+import { usePressBounce, useReducedMotionSV } from '@petspark/motion'
+import * as Haptics from 'expo-haptics'
+import React, { useCallback, useEffect } from 'react'
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type PressableProps,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 
-export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress' className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> {
+export interface EnhancedButtonProps extends Omit<PressableProps, 'onPress'> {
   title?: string
   children?: React.ReactNode
   onPress?: () => void | Promise<void>

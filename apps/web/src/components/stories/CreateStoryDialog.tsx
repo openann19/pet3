@@ -7,13 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { Story, StoryVisibility } from '@/lib/stories-types';
-import { STORY_MUSIC_TRACKS } from '@/lib/stories-types';
+import type { Story, StoryVisibility } from '@petspark/shared';
+import { STORY_MUSIC_TRACKS } from '@petspark/shared';
 import { ADVANCED_STORY_TEMPLATES, STORY_FILTERS } from '@/lib/story-templates';
 import type { AdvancedTemplate, StoryFilter } from '@/lib/story-templates';
 import { createStory } from '@/lib/stories-utils';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import StoryTemplateSelector from './StoryTemplateSelector';
 import StoryFilterSelector from './StoryFilterSelector';
 
@@ -238,10 +239,11 @@ export default function CreateStoryDialog({
                 <div className="space-y-4">
                   <div className="relative aspect-9/16 max-h-96 bg-black rounded-2xl overflow-hidden">
                     {mediaType === 'photo' ? (
-                      <img
+                      <ProgressiveImage
                         src={mediaPreview}
                         alt="Story preview"
                         className="w-full h-full object-contain"
+                        aria-label="Story preview image"
                       />
                     ) : (
                       <video src={mediaPreview} className="w-full h-full object-contain" controls />
@@ -251,6 +253,7 @@ export default function CreateStoryDialog({
                       variant="destructive"
                       className="absolute top-2 right-2"
                       onClick={handleRemoveMedia}
+                      aria-label="Remove media"
                     >
                       <X size={20} />
                     </Button>

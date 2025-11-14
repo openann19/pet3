@@ -142,7 +142,11 @@ async function loadEncoded(uri: string): Promise<Uint8Array> {
 
   if (!isWeb()) {
     const FileSystem = await import('expo-file-system');
-    const base64 = await FileSystem.default.readAsStringAsync(uri, {
+    const readAsStringAsync = FileSystem.default.readAsStringAsync ?? FileSystem.readAsStringAsync;
+    if (!readAsStringAsync) {
+      throw new Error('readAsStringAsync not available in FileSystem module');
+    }
+    const base64 = await readAsStringAsync(uri, {
       encoding: 'base64' as const,
     });
     const binaryString = atob(base64);
@@ -182,20 +186,41 @@ export async function applyImagePipeline(
     let h = input.height ?? baseImage.height();
     let current = baseImage;
 
+    interface SkiaPaint {
+      setColorFilter: (filter: unknown) => void;
+      setImageFilter: (filter: unknown) => void;
+      setAlphaf: (alpha: number) => void;
+    }
+
     interface SkiaCanvas {
       clear: (color: ReturnType<typeof Skia.Color>) => void;
       drawImageRect: (...args: unknown[]) => void;
+      drawImage: (image: unknown, x: number, y: number, paint?: unknown) => void;
       drawRect: (...args: unknown[]) => void;
-      [key: string]: unknown;
+      translate: (x: number, y: number) => void;
+      rotate: (radians: number) => void;
+      save: () => void;
+      restore: () => void;
+      scale: (sx: number, sy: number) => void;
     }
 
     function isSkiaCanvas(value: unknown): value is SkiaCanvas {
+      if (typeof value !== 'object' || value === null) {
+        return false;
+      }
+      const canvas = value as Record<string, unknown>;
       return (
-        typeof value === 'object' &&
-        value !== null &&
-        'clear' in value &&
-        'drawImageRect' in value &&
-        typeof (value as SkiaCanvas).clear === 'function'
+        'clear' in canvas &&
+        'drawImageRect' in canvas &&
+        'drawImage' in canvas &&
+        'translate' in canvas &&
+        'rotate' in canvas &&
+        'save' in canvas &&
+        'restore' in canvas &&
+        'scale' in canvas &&
+        typeof canvas.clear === 'function' &&
+        typeof canvas.drawImageRect === 'function' &&
+        typeof canvas.drawImage === 'function'
       );
     }
 
@@ -227,7 +252,7 @@ export async function applyImagePipeline(
             (canvas) => {
               const blackColor = Skia.Color('black');
               canvas.clear(blackColor);
-              const paint = Skia.Paint();
+              const paint = new Skia.Paint();
               canvas.drawImageRect(
                 current,
                 {
@@ -253,7 +278,7 @@ export async function applyImagePipeline(
           const sh = Math.min(op.height, h - sy);
           run(
             (canvas) => {
-              const paint = Skia.Paint();
+              const paint = new Skia.Paint();
               canvas.drawImageRect(
                 current,
                 { x: sx, y: sy, width: sw, height: sh },
@@ -281,7 +306,7 @@ export async function applyImagePipeline(
               canvas.translate(nextW / 2, nextH / 2);
               canvas.rotate(radians);
               canvas.translate(-w / 2, -h / 2);
-              const paint = Skia.Paint();
+              const paint = new Skia.Paint();
               canvas.drawImage(current, 0, 0, paint);
             },
             nextW,
@@ -342,7 +367,7 @@ export async function applyImagePipeline(
           }
 
           run((canvas) => {
-            const paint = Skia.Paint();
+            const paint = new Skia.Paint() as unknown as SkiaPaint;
             const colorFilter = Skia.ColorFilter.MakeMatrix(matrix);
             paint.setColorFilter(colorFilter);
             canvas.drawImage(current, 0, 0, paint);
@@ -353,8 +378,8 @@ export async function applyImagePipeline(
         case 'blur': {
           const r = Math.max(0, op.radius);
           run((canvas) => {
-            const paint = Skia.Paint();
-            const imageFilter = Skia.ImageFilter.MakeBlur(r, r, 0);
+            const paint = new Skia.Paint() as unknown as SkiaPaint;
+            const imageFilter = Skia.ImageFilter.MakeBlur(r, r, 'clamp' as never);
             paint.setImageFilter(imageFilter);
             canvas.drawImage(current, 0, 0, paint);
           });
@@ -365,7 +390,7 @@ export async function applyImagePipeline(
           const intensity = op.intensity ?? 1;
           const m = FILTERS[op.name](intensity);
           run((canvas) => {
-            const paint = Skia.Paint();
+            const paint = new Skia.Paint() as unknown as SkiaPaint;
             const colorFilter = Skia.ColorFilter.MakeMatrix(m);
             paint.setColorFilter(colorFilter);
             canvas.drawImage(current, 0, 0, paint);
@@ -384,7 +409,7 @@ export async function applyImagePipeline(
           const tw = Math.round(wmImg.width() * wmScale);
           const th = Math.round(wmImg.height() * wmScale);
           run((canvas) => {
-            const paint = Skia.Paint();
+            const paint = new Skia.Paint() as unknown as SkiaPaint;
             if (op.opacity !== undefined) {
               paint.setAlphaf(op.opacity);
             }
@@ -424,57 +449,77 @@ export async function applyImagePipeline(
     const FileSystemModule = await import('expo-file-system');
     const FileSystem = FileSystemModule.default ?? FileSystemModule.FileSystem ?? FileSystemModule;
     const ext = isPng ? 'png' : 'jpg';
+
+    // Type guard for FileSystem object
+    if (typeof FileSystem !== 'object' || FileSystem === null) {
+      throw new Error('FileSystem module is not available');
+    }
+
+    const fs = FileSystem as unknown as Record<string, unknown>;
     const cacheDir =
-      'cacheDirectory' in FileSystem && FileSystem.cacheDirectory
-        ? FileSystem.cacheDirectory
+      'cacheDirectory' in fs && typeof fs.cacheDirectory === 'string'
+        ? fs.cacheDirectory
         : null;
     if (!cacheDir) {
       throw new Error('File system cache directory not available');
     }
     const outPath = `${cacheDir}edit-${Date.now()}.${ext}`;
 
-    // Handle different export patterns for writeAsStringAsync
-    if ('writeAsStringAsync' in FileSystem && typeof FileSystem.writeAsStringAsync === 'function') {
-      await FileSystem.writeAsStringAsync(outPath, outB64, {
-        encoding: 'base64' as const,
-      });
+    // Type guard for writeAsStringAsync function
+    type WriteAsStringAsync = (path: string, content: string, options: { encoding: 'base64' }) => Promise<void>;
+
+    let writeFn: WriteAsStringAsync | undefined;
+    if ('writeAsStringAsync' in fs && typeof fs.writeAsStringAsync === 'function') {
+      writeFn = fs.writeAsStringAsync as WriteAsStringAsync;
     } else if (
-      'default' in FileSystem &&
-      FileSystem.default &&
-      'writeAsStringAsync' in FileSystem.default
+      'default' in fs &&
+      fs.default !== null &&
+      typeof fs.default === 'object' &&
+      'writeAsStringAsync' in fs.default &&
+      typeof (fs.default as Record<string, unknown>).writeAsStringAsync === 'function'
     ) {
-      await FileSystem.default.writeAsStringAsync(outPath, outB64, {
-        encoding: 'base64' as const,
-      });
+      writeFn = (fs.default as Record<string, unknown>).writeAsStringAsync as WriteAsStringAsync;
     } else if (
       'writeAsStringAsync' in FileSystemModule &&
       typeof FileSystemModule.writeAsStringAsync === 'function'
     ) {
-      await FileSystemModule.writeAsStringAsync(outPath, outB64, {
-        encoding: 'base64' as const,
-      });
-    } else {
+      writeFn = FileSystemModule.writeAsStringAsync as WriteAsStringAsync;
+    }
+
+    if (!writeFn) {
       throw new Error('writeAsStringAsync not available in FileSystem module');
     }
 
-    // Handle different export patterns for getInfoAsync
-    let info: { exists: boolean; uri: string; size?: number };
-    if ('getInfoAsync' in FileSystem && typeof FileSystem.getInfoAsync === 'function') {
-      info = await FileSystem.getInfoAsync(outPath);
+    await writeFn(outPath, outB64, {
+      encoding: 'base64' as const,
+    });
+
+    // Type guard for getInfoAsync function
+    type GetInfoAsync = (path: string) => Promise<{ exists: boolean; uri: string; size?: number }>;
+
+    let getInfoFn: GetInfoAsync | undefined;
+    if ('getInfoAsync' in fs && typeof fs.getInfoAsync === 'function') {
+      getInfoFn = fs.getInfoAsync as GetInfoAsync;
     } else if (
-      'default' in FileSystem &&
-      FileSystem.default &&
-      'getInfoAsync' in FileSystem.default
+      'default' in fs &&
+      fs.default !== null &&
+      typeof fs.default === 'object' &&
+      'getInfoAsync' in fs.default &&
+      typeof (fs.default as Record<string, unknown>).getInfoAsync === 'function'
     ) {
-      info = await FileSystem.default.getInfoAsync(outPath);
+      getInfoFn = (fs.default as Record<string, unknown>).getInfoAsync as GetInfoAsync;
     } else if (
       'getInfoAsync' in FileSystemModule &&
       typeof FileSystemModule.getInfoAsync === 'function'
     ) {
-      info = await FileSystemModule.getInfoAsync(outPath);
-    } else {
+      getInfoFn = FileSystemModule.getInfoAsync as GetInfoAsync;
+    }
+
+    if (!getInfoFn) {
       throw new Error('getInfoAsync not available in FileSystem module');
     }
+
+    const info = await getInfoFn(outPath);
     return {
       type: 'image',
       uri: outPath,

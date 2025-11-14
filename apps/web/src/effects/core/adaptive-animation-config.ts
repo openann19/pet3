@@ -9,6 +9,9 @@
 
 import type { DeviceHz } from '../chat/core/telemetry'
 
+// Re-export DeviceHz for convenience
+export type { DeviceHz }
+
 /**
  * Base animation configuration (for 60Hz devices)
  */

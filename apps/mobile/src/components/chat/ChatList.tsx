@@ -211,7 +211,7 @@ export function ChatList({
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
         >
-          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity style={styles.fab} onPress={handleScrollToBottom} activeOpacity={0.8}>
             <Text style={styles.fabIcon}>↓</Text>
             {badgeCount > 0 && (
               <Animated.View style={[styles.badge, badgeAnimatedStyle]}>

@@ -12,9 +12,14 @@ vi.mock('@/lib/community-service', () => ({
     getComments: vi.fn().mockResolvedValue([]),
     addComment: vi.fn().mockResolvedValue({
       id: 'comment-1',
+      postId: 'post-1',
       text: 'Test comment',
       authorId: 'user-1',
+      authorName: 'Test User',
+      status: 'active' as const,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      reactionsCount: 0,
     }),
   },
 }));
@@ -99,9 +104,14 @@ describe('CommentsSheet', () => {
     vi.mocked(communityService.getComments).mockResolvedValue([
       {
         id: 'comment-1',
+        postId: 'post-1',
         text: 'First comment',
         authorId: 'user-1',
+        authorName: 'Test User',
+        status: 'active' as const,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reactionsCount: 0,
       },
     ]);
 
@@ -154,9 +164,14 @@ describe('CommentsSheet', () => {
     const mockComments = [
       {
         id: 'comment-1',
+        postId: 'post-1',
         text: 'Parent comment',
         authorId: 'user-1',
+        authorName: 'Test User',
+        status: 'active' as const,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reactionsCount: 0,
       },
     ];
 

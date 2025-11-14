@@ -157,19 +157,164 @@ export const reportSchema = z.object({
 
 export const storyViewSchema = z.object({
   userId: z.string(),
+  userName: z.string(),
+  userAvatar: z.string().url().optional(),
   viewedAt: z.string().datetime(),
+  viewDuration: z.number().int().min(0),
+  completedView: z.boolean(),
+});
+
+export const storyReactionSchema = z.object({
+  userId: z.string(),
+  userName: z.string(),
+  userAvatar: z.string().url().optional(),
+  emoji: z.string(),
+  timestamp: z.string().datetime(),
+});
+
+export const storyTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  layoutType: z.enum(['single', 'collage', 'split', 'grid']),
+  backgroundColor: z.string().optional(),
+  backgroundGradient: z.array(z.string()).optional(),
+  frame: z.string().optional(),
+  overlayEffects: z.array(z.string()).optional(),
+});
+
+export const storyMusicSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  artist: z.string(),
+  provider: z.enum(['licensed', 'user']),
+  startTime: z.number().int().min(0),
+  duration: z.number().int().positive(),
+  coverArt: z.string().url().optional(),
+  previewUrl: z.string().url().optional(),
+});
+
+export const storyLocationSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  placeName: z.string(),
+  placeId: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+});
+
+export const storyStickerSchema = z.object({
+  id: z.string(),
+  type: z.enum(['emoji', 'gif', 'location', 'mention', 'poll', 'question']),
+  content: z.string(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+  rotation: z.number(),
+  scale: z.number().positive(),
+});
+
+export const textOverlaySchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  fontFamily: z.string(),
+  fontSize: z.number().positive(),
+  fontWeight: z.string(),
+  color: z.string(),
+  backgroundColor: z.string().optional(),
+  x: z.number(),
+  y: z.number(),
+  rotation: z.number(),
+  alignment: z.enum(['left', 'center', 'right']),
+  animation: z.enum(['fade-in', 'slide-in', 'bounce', 'typewriter']).optional(),
 });
 
 export const storySchema = z.object({
   id: z.string(),
+  userId: z.string(),
+  userName: z.string(),
+  userAvatar: z.string().url().optional(),
   petId: z.string(),
+  petName: z.string(),
+  petPhoto: z.string().url(),
+  type: z.enum(['photo', 'video', 'gif', 'boomerang']),
   mediaUrl: z.string().url(),
-  mediaType: z.enum(['image', 'video']),
+  thumbnailUrl: z.string().url().optional(),
+  caption: z.string().optional(),
   duration: z.number().int().positive(),
-  views: z.array(storyViewSchema),
-  expiresAt: z.string().datetime(),
   createdAt: z.string().datetime(),
-  status: z.enum(['active', 'expired', 'removed']),
+  expiresAt: z.string().datetime(),
+  visibility: z.enum(['everyone', 'matches-only', 'close-friends']),
+  viewCount: z.number().int().min(0),
+  views: z.array(storyViewSchema),
+  reactions: z.array(storyReactionSchema),
+  template: storyTemplateSchema.optional(),
+  music: storyMusicSchema.optional(),
+  location: storyLocationSchema.optional(),
+  stickers: z.array(storyStickerSchema).optional(),
+  textOverlays: z.array(textOverlaySchema).optional(),
+});
+
+export const storyHighlightSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  petId: z.string(),
+  title: z.string(),
+  coverImage: z.string().url(),
+  stories: z.array(storySchema),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  isPinned: z.boolean(),
+});
+
+export const storyParticipantSchema = z.object({
+  userId: z.string(),
+  userName: z.string(),
+  userAvatar: z.string().url().optional(),
+  petId: z.string(),
+  petName: z.string(),
+  petPhoto: z.string().url(),
+  joinedAt: z.string().datetime(),
+  contributionCount: z.number().int().min(0),
+});
+
+export const collaborativeStorySchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  creatorId: z.string(),
+  creatorName: z.string(),
+  participants: z.array(storyParticipantSchema),
+  stories: z.array(storySchema),
+  status: z.enum(['active', 'completed', 'archived']),
+  maxParticipants: z.number().int().positive(),
+  createdAt: z.string().datetime(),
+  expiresAt: z.string().datetime(),
+});
+
+export const storyAnalyticsSchema = z.object({
+  storyId: z.string(),
+  totalViews: z.number().int().min(0),
+  uniqueViews: z.number().int().min(0),
+  completionRate: z.number().min(0).max(1),
+  averageWatchTime: z.number().min(0),
+  reactions: z.record(z.number().int().min(0)),
+  viewsByHour: z.array(
+    z.object({
+      hour: z.number().int().min(0).max(23),
+      views: z.number().int().min(0),
+    })
+  ),
+  geographicReach: z.array(
+    z.object({
+      country: z.string(),
+      city: z.string().optional(),
+      viewCount: z.number().int().min(0),
+    })
+  ),
+  engagementRate: z.number().min(0).max(1),
+  shareCount: z.number().int().min(0),
 });
 
 export const verificationSchema = z.object({
@@ -424,6 +569,17 @@ export type AuthTokens = z.infer<typeof authTokensSchema>;
 export type Notification = z.infer<typeof notificationSchema>;
 export type Report = z.infer<typeof reportSchema>;
 export type Story = z.infer<typeof storySchema>;
+export type StoryView = z.infer<typeof storyViewSchema>;
+export type StoryReaction = z.infer<typeof storyReactionSchema>;
+export type StoryHighlight = z.infer<typeof storyHighlightSchema>;
+export type StoryTemplate = z.infer<typeof storyTemplateSchema>;
+export type StoryMusic = z.infer<typeof storyMusicSchema>;
+export type StoryLocation = z.infer<typeof storyLocationSchema>;
+export type StorySticker = z.infer<typeof storyStickerSchema>;
+export type TextOverlay = z.infer<typeof textOverlaySchema>;
+export type CollaborativeStory = z.infer<typeof collaborativeStorySchema>;
+export type StoryParticipant = z.infer<typeof storyParticipantSchema>;
+export type StoryAnalytics = z.infer<typeof storyAnalyticsSchema>;
 export type Verification = z.infer<typeof verificationSchema>;
 export type AdoptionProfile = z.infer<typeof adoptionProfileSchema>;
 export type CommunityPost = z.infer<typeof communityPostSchema>;

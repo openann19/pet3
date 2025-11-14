@@ -113,7 +113,7 @@ export function UploadAndEditScreen(): React.ReactElement {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.cancelButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+        <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Upload & Edit</Text>
@@ -154,7 +154,7 @@ export function UploadAndEditScreen(): React.ReactElement {
       ) : (
         <View style={styles.previewContainer}>
           <Text style={styles.previewText}>Media selected: {selectedImage}</Text>
-          <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> setSelectedImage(null)} style={styles.replaceButton}>
+          <TouchableOpacity onPress={() => setSelectedImage(null)} style={styles.replaceButton}>
             <Text style={styles.replaceButtonText}>Replace</Text>
           </TouchableOpacity>
         </View>

@@ -1,36 +1,35 @@
 'use client';
 
-import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from 'react-native-reanimated';
-import {
-  Heart,
-  Translate,
-  Sun,
-  Moon,
-  ShieldCheck,
-  Bell,
-  User,
-  Menu,
-  X,
-} from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation';
 import { useBounceOnTap } from '@/effects/reanimated';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import {
+  Bell,
+  Heart,
+  List as Menu,
+  Moon,
+  ShieldCheck,
+  Sun,
+  Translate,
+  User,
+  X,
+} from '@phosphor-icons/react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { Link, useLocation } from 'react-router-dom';
 
 interface TopNavBarProps {
   onAdminClick?: () => void;

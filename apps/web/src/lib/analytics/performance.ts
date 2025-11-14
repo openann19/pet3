@@ -137,7 +137,7 @@ export class PerformanceAnalytics {
   /**
    * Start frame rate monitoring
    */
-  startFrameRateMonitoring(targetHz: number = 60): void {
+  startFrameRateMonitoring(targetHz = 60): void {
     if (this.frameRateMonitor !== null) {
       return
     }
@@ -239,7 +239,7 @@ export class PerformanceAnalytics {
   /**
    * Start memory monitoring
    */
-  startMemoryMonitoring(interval: number = 5000): void {
+  startMemoryMonitoring(interval = 5000): void {
     if (this.memoryMonitor !== null) {
       return
     }

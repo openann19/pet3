@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export interface Notification {
   id: string;
@@ -198,10 +199,11 @@ function NotificationItem({
       <div className="flex gap-3">
         <div className="shrink-0">
           {notification.imageUrl ? (
-            <img
+            <ProgressiveImage
               src={notification.imageUrl}
               alt=""
               className="w-10 h-10 rounded-full object-cover"
+              aria-label={`${notification.type} notification image`}
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">

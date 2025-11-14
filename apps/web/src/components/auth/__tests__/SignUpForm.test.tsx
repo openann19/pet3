@@ -100,7 +100,7 @@ vi.mock('@/components/auth/AgeGateModal', () => ({
   default: ({ open, onVerified }: { open?: boolean; onVerified?: () => void }) =>
     open ? (
       <div data-testid="age-gate-modal">
-        <button onClick={() => onVerified()}>Verify Age</button>
+        <button onClick={() => onVerified?.()}>Verify Age</button>
       </div>
     ) : null,
 }));

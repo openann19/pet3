@@ -41,7 +41,7 @@ export class TokenBucket {
    * @param tokens Number of tokens to consume (default: 1)
    * @returns TokenBucketResult with rate limit information
    */
-  consume(tokens: number = 1): TokenBucketResult {
+  consume(tokens = 1): TokenBucketResult {
     const now = Date.now();
     this.refill(now);
 

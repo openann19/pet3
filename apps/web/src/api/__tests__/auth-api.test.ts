@@ -14,7 +14,8 @@ let server: ReturnType<typeof createServer>;
 async function readJson<T>(req: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const bufferChunk: Buffer = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+    chunks.push(bufferChunk);
   }
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? (JSON.parse(body) as T) : ({} as T);
@@ -50,93 +51,95 @@ const mockAuthResponse = {
 };
 
 beforeAll(async () => {
-  server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (!req.url || !req.method) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
-
-    const url = new URL(req.url, 'http://localhost:8080');
-
-    if (req.method === 'GET' && url.pathname === '/auth/me') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ data: mockUser }));
-      return;
-    }
-
-    if (req.method === 'POST' && url.pathname === '/auth/login') {
-      const payload = await readJson<{ email: string; password: string }>(req);
-      if (payload.email === 'test@example.com' && payload.password === 'password123') {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ data: mockAuthResponse }));
-      } else {
-        res.statusCode = 401;
-        res.end(JSON.stringify({ error: 'Invalid credentials' }));
+  server = createServer((req: IncomingMessage, res: ServerResponse) => {
+    void (async () => {
+      if (!req.url || !req.method) {
+        res.statusCode = 400;
+        res.end();
+        return;
       }
-      return;
-    }
 
-    if (req.method === 'POST' && url.pathname === '/auth/register') {
-      await readJson<{ email: string; password: string; displayName: string }>(req);
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 201;
-      res.end(JSON.stringify({ data: mockAuthResponse }));
-      return;
-    }
+      const url = new URL(req.url, 'http://localhost:8080');
 
-    if (req.method === 'POST' && url.pathname === '/auth/logout') {
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify({ data: { success: true } }));
-      return;
-    }
+      if (req.method === 'GET' && url.pathname === '/auth/me') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ data: mockUser }));
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname === '/auth/refresh') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          data: { accessToken: 'new-access-token', refreshToken: 'new-refresh-token' },
-        })
-      );
-      return;
-    }
+      if (req.method === 'POST' && url.pathname === '/auth/login') {
+        const payload = await readJson<{ email: string; password: string }>(req);
+        if (payload.email === 'test@example.com' && payload.password === 'password123') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ data: mockAuthResponse }));
+        } else {
+          res.statusCode = 401;
+          res.end(JSON.stringify({ error: 'Invalid credentials' }));
+        }
+        return;
+      }
 
-    if (req.method === 'POST' && url.pathname === '/auth/reset-password') {
-      const payload = await readJson<{ currentPassword: string; newPassword: string }>(req);
-      if (payload.currentPassword === 'wrong') {
-        res.statusCode = 401;
-        res.end(JSON.stringify({ error: 'Invalid current password' }));
-      } else {
+      if (req.method === 'POST' && url.pathname === '/auth/register') {
+        await readJson<{ email: string; password: string; displayName: string }>(req);
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 201;
+        res.end(JSON.stringify({ data: mockAuthResponse }));
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/auth/logout') {
         res.setHeader('Content-Type', 'application/json');
         res.statusCode = 200;
         res.end(JSON.stringify({ data: { success: true } }));
+        return;
       }
-      return;
-    }
 
-    if (req.method === 'POST' && url.pathname === '/auth/forgot-password') {
-      const payload = await readJson<{ email: string }>(req);
-      if (payload.email === 'invalid@example.com') {
-        res.statusCode = 404;
-        res.end(JSON.stringify({ error: 'User not found' }));
-      } else {
+      if (req.method === 'POST' && url.pathname === '/auth/refresh') {
         res.setHeader('Content-Type', 'application/json');
-        res.statusCode = 200;
-        res.end(JSON.stringify({ data: { message: 'Password reset email sent', success: true } }));
+        res.end(
+          JSON.stringify({
+            data: { accessToken: 'new-access-token', refreshToken: 'new-refresh-token' },
+          })
+        );
+        return;
       }
-      return;
-    }
 
-    res.statusCode = 404;
-    res.end();
+      if (req.method === 'POST' && url.pathname === '/auth/reset-password') {
+        const payload = await readJson<{ currentPassword: string; newPassword: string }>(req);
+        if (payload.currentPassword === 'wrong') {
+          res.statusCode = 401;
+          res.end(JSON.stringify({ error: 'Invalid current password' }));
+        } else {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          res.end(JSON.stringify({ data: { success: true } }));
+        }
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/auth/forgot-password') {
+        const payload = await readJson<{ email: string }>(req);
+        if (payload.email === 'invalid@example.com') {
+          res.statusCode = 404;
+          res.end(JSON.stringify({ error: 'User not found' }));
+        } else {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          res.end(JSON.stringify({ data: { message: 'Password reset email sent', success: true } }));
+        }
+        return;
+      }
+
+      res.statusCode = 404;
+      res.end();
+    })();
   });
 
   await new Promise<void>((resolve) => {
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        process.env['TEST_API_PORT'] = String(address.port);
+        process.env.TEST_API_PORT = String(address.port);
       }
       resolve();
     });

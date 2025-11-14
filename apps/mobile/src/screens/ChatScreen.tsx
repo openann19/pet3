@@ -15,10 +15,14 @@ import {
   CallInterface,
   IncomingCallNotification,
 } from '@mobile/components/call'
-import type { CallInfo } from '@mobile/hooks/call/useCallManager'
+import type { CallInfo } from '@mobile/hooks/call/use-call-manager'
 import HoloBackgroundNative from '@mobile/components/chrome/HoloBackground'
-import { useCallManager } from '@mobile/hooks/call/useCallManager'
+import { RouteErrorBoundary } from '@mobile/components/RouteErrorBoundary'
+import { OfflineIndicator } from '@mobile/components/OfflineIndicator'
+import { useCallManager } from '@mobile/hooks/call/use-call-manager'
+import { useNetworkStatus } from '@mobile/hooks/use-network-status'
 import { useUserStore } from '@mobile/store/user-store'
+import { getTranslations } from '@mobile/i18n/translations'
 import { colors } from '@mobile/theme/colors'
 import React, { useState, useCallback, useEffect } from 'react'
 import { StyleSheet, View, Modal, Text, Pressable } from 'react-native'
@@ -28,10 +32,15 @@ import { createLogger } from '@mobile/utils/logger'
 
 const logger = createLogger('ChatScreen')
 
-export function ChatScreen(): React.ReactElement {
+// Default language (can be made dynamic later)
+const language = 'en'
+const t = getTranslations(language)
+
+function ChatScreenContent(): React.ReactElement {
   const [messages] = useState<Message[]>([])
   const user = useUserStore((state) => state.user)
   const localUserId = user?.id ?? 'current-user'
+  const networkStatus = useNetworkStatus()
 
   // For demo purposes, use a hardcoded remote user
   // In production, this would come from the chat/room context
@@ -46,7 +55,7 @@ export function ChatScreen(): React.ReactElement {
       logger.info('Call status changed', { status })
     },
     onError: (error) => {
-      logger.error('Call error', error)
+      logger.warn('Call error', error)
     },
   })
 
@@ -86,59 +95,72 @@ export function ChatScreen(): React.ReactElement {
   }, [localUserId, remoteUserName, remoteUserPhoto, callManager])
 
   // Handle start call
-  const handleStartCall = useCallback(async () => {
-    try {
-      await callManager.startCall(
-        remoteUserId,
-        remoteUserName,
-        remoteUserPhoto ?? undefined
-      )
-    } catch (error) {
+  const handleStartCall = useCallback(() => {
+    // Handle call start asynchronously without returning promise
+    callManager.startCall(
+      remoteUserId,
+      remoteUserName,
+      remoteUserPhoto ?? undefined
+    ).catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to start call', err)
-    }
+      logger.warn(t.chat.failedToStartCall, err)
+    })
   }, [callManager, remoteUserId, remoteUserName, remoteUserPhoto])
 
   // Handle end call
-  const handleEndCall = useCallback(async () => {
-    try {
-      await callManager.endCall()
-    } catch (error) {
+  const handleEndCall = useCallback(() => {
+    // Handle call end asynchronously without returning promise
+    callManager.endCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to end call', err)
-    }
+      logger.warn(t.chat.failedToEndCall, err)
+    })
   }, [callManager])
 
   // Handle accept call
-  const handleAcceptCall = useCallback(async () => {
-    try {
-      await callManager.acceptCall()
-    } catch (error) {
+  const handleAcceptCall = useCallback(() => {
+    // Handle call accept asynchronously without returning promise
+    callManager.acceptCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to accept call', err)
-    }
+      logger.warn(t.chat.failedToAcceptCall, err)
+    })
   }, [callManager])
 
   // Handle decline call
-  const handleDeclineCall = useCallback(async () => {
-    try {
-      await callManager.declineCall()
-    } catch (error) {
+  const handleDeclineCall = useCallback(() => {
+    // Handle call decline asynchronously without returning promise
+    callManager.declineCall().catch((error) => {
       const err = error instanceof Error ? error : new Error(String(error))
-      logger.error('Failed to decline call', err)
-    }
+      logger.warn(t.chat.failedToDeclineCall, err)
+    })
   }, [callManager])
 
   return (
     <SafeAreaView style={styles.container}>
       <HoloBackgroundNative intensity={0.6} />
+      {!networkStatus.isConnected && (
+        <OfflineIndicator message={t.chat.offlineMessage} />
+      )}
       <View style={styles.chatContainer}>
         {/* Chat Header with Call Button */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Chat</Text>
+          <Text
+            style={styles.headerTitle}
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel={t.chat.title}
+          >
+            {t.chat.title}
+          </Text>
           {!callManager.isInCall && (
-            <Pressable onPress={handleStartCall} style={styles.callButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
-              <Text style={styles.callButtonText}>📹 Call</Text>
+            <Pressable
+              onPress={handleStartCall}
+              style={styles.callButton}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t.chat.callButton}
+              accessibilityHint="Starts a video call with the current chat user"
+            >
+              <Text style={styles.callButtonText}>📹 {t.chat.callButton}</Text>
             </Pressable>
           )}
         </View>
@@ -180,6 +202,20 @@ export function ChatScreen(): React.ReactElement {
         />
       )}
     </SafeAreaView>
+  )
+}
+
+export function ChatScreen(): React.ReactElement {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.warn('ChatScreen error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }}
+    >
+      <ChatScreenContent />
+    </RouteErrorBoundary>
   )
 }
 

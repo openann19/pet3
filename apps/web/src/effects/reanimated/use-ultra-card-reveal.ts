@@ -11,7 +11,9 @@ import {
   withSequence,
   interpolate,
 } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface UseUltraCardRevealOptions {
   delay?: number;
@@ -22,7 +24,18 @@ export interface UseUltraCardRevealOptions {
   rotationIntensity?: number;
 }
 
-export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}) {
+export interface UseUltraCardRevealReturn {
+  animatedStyle: AnimatedStyle;
+  progress: SharedValue<number>;
+  scale: SharedValue<number>;
+  rotateX: SharedValue<number>;
+  rotateY: SharedValue<number>;
+  translateZ: SharedValue<number>;
+}
+
+export function useUltraCardReveal(
+  options: UseUltraCardRevealOptions = {}
+): UseUltraCardRevealReturn {
   const {
     delay = 0,
     duration = 800,
@@ -80,10 +93,14 @@ export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}) {
         { translateZ: translateZ.value },
       ],
     };
-  });
+  }) as AnimatedStyle;
 
   return {
     animatedStyle,
     progress,
+    scale,
+    rotateX,
+    rotateY,
+    translateZ,
   };
 }

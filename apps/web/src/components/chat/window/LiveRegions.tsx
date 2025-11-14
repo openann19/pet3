@@ -144,7 +144,7 @@ export function LiveRegions({ children, className }: LiveRegionsProps): JSX.Elem
         if (popover) {
           const closeButton = popover.querySelector(
             '[aria-label*="close" i], [aria-label*="Close" i], button[aria-label*="close" i]'
-          ) as HTMLElement | null;
+          );
           if (closeButton) {
             closeButton.click();
             e.preventDefault();

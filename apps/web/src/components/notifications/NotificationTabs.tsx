@@ -415,11 +415,10 @@ export function NotificationTabs({
             ref={indicatorRef}
             aria-hidden
             className={cx(
-              'absolute bottom-0 h-1 rounded-full',
-              reducedMotion ? 'transition-none' : 'transition-transform duration-200',
+              'absolute bottom-0 h-1 rounded-full w-0 translate-x-0',
+              reducedMotion ? 'transition-none' : 'transition-transform duration-200',                                                                          
               'bg-[--tabs-indicator,var(--color-blue-500)]'
             )}
-            style={{ width: 0, transform: 'translateX(0px)' }}
           />
           {segments.map((seg, i) => {
             const k = seg.key;

@@ -6,29 +6,31 @@ import { MyApplicationsView } from '@/components/adoption/MyApplicationsView';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
+import { RouteErrorBoundary } from '@/components/error/RouteErrorBoundary';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import { useNetworkStatus } from '@/hooks/use-network-status';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VirtualGrid } from '@/components/virtual/VirtualGrid';
 import { useApp } from '@/contexts/AppContext';
-import { useStorage } from '@/hooks/use-storage';
-import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
-import { createLogger } from '@/lib/logger';
-import { ClipboardText, Heart, MagnifyingGlass, Plus } from '@phosphor-icons/react';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useStorage } from '@/hooks/use-storage';
+import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
+import { createLogger } from '@/lib/logger';
+import { userService } from '@/lib/user-service';
+import { ClipboardText, Heart, MagnifyingGlass, Plus } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { VirtualGrid } from '@/components/virtual/VirtualGrid';
 
 const logger = createLogger('AdoptionView');
 
 type ViewMode = 'browse' | 'my-applications' | 'my-listings';
 
-export default function AdoptionView() {
+function AdoptionViewContent() {
   const { t } = useApp();
+  const { isOnline } = useNetworkStatus();
   const [viewMode, setViewMode] = useState<ViewMode>('browse');
   const [listings, setListings] = useState<AdoptionListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function AdoptionView() {
   const [_cursor, setCursor] = useState<string | undefined>();
 
   // Animation hooks
-  const contentPresence = useAnimatePresence(!loading);
+  const contentPresence = useAnimatePresence({ isVisible: !loading });
 
   // Interactive element hooks
   const cardHover = useHoverLift();
@@ -55,7 +57,11 @@ export default function AdoptionView() {
   const loadListings = async () => {
     try {
       setLoading(true);
-      await spark.user();
+      const user = await userService.user();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
       const result = await adoptionApi.getAdoptionProfiles({ limit: 50 });
       const mappedListings = result.profiles.map(
         (p) =>
@@ -197,6 +203,7 @@ export default function AdoptionView() {
 
   return (
     <PageTransitionWrapper key="adoption-view" direction="up">
+      {!isOnline && <OfflineIndicator />}
       <main role="main" aria-label="Pet adoption section">
         <div className="space-y-6">
           <header className="flex items-center justify-between">
@@ -328,5 +335,19 @@ export default function AdoptionView() {
         </div>
       </main>
     </PageTransitionWrapper>
+  );
+}
+
+export default function AdoptionView() {
+  return (
+    <RouteErrorBoundary
+      onError={(error) => {
+        logger.error('AdoptionView error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }}
+    >
+      <AdoptionViewContent />
+    </RouteErrorBoundary>
   );
 }

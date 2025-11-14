@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 import { useAnimatedStyle } from 'react-native-reanimated';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
@@ -104,8 +104,6 @@ function Button({
     };
   }) as AnimatedStyle;
 
-  const animatedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
-
   const handleClick = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       if (disabled) {
@@ -151,7 +149,7 @@ function Button({
 
   return (
     <AnimatedView
-      style={animatedStyleValue}
+      style={combinedAnimatedStyle}
       className="inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

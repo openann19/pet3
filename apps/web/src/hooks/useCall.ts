@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStorage } from '@/hooks/use-storage';
 import type { Call, CallType, CallSession, CallHistoryItem, VideoQuality } from '@/lib/call-types';
 import {

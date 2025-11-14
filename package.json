@@ -32,7 +32,13 @@
     "spec:lock": "pnpm --filter @petspark/spec-cli exec spec lock",
     "spec:diff": "pnpm --filter @petspark/spec-cli exec spec diff",
     "spec:migrate": "pnpm --filter @petspark/spec-cli exec spec migrate",
-    "spec:new-pack": "pnpm --filter @petspark/spec-cli exec spec new-pack"
+    "spec:new-pack": "pnpm --filter @petspark/spec-cli exec spec new-pack",
+    "audit:inventory": "tsx tools/ui-audit/inventory.ts",
+    "audit:web": "pnpm --filter spark-template exec playwright test e2e/ui-audit/",
+    "audit:mobile": "pnpm --filter petspark-mobile exec detox test e2e/ui-audit/screens.spec.ts || true",
+    "audit:aggregate": "tsx tools/ui-audit/aggregate.ts",
+    "audit:reports": "tsx tools/ui-audit/generate-per-item-reports.ts",
+    "audit:all": "pnpm audit:inventory && pnpm audit:web && pnpm audit:mobile && pnpm audit:aggregate && pnpm audit:reports"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -45,6 +51,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint-plugin-sonarjs": "^0.25.1",
+    "fast-glob": "^3.3.3",
     "globals": "^16.0.0",
     "globby": "^14.0.0",
     "lint-staged": "^15.2.10",

@@ -207,13 +207,13 @@ export function CameraView({
           {/* Top controls */}
           <View style={styles.topControls}>
             {onClose && (
-              <TouchableOpacity style={styles.closeButton} onPress={onClose} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             )}
 
             {enableFlash && (
-              <TouchableOpacity style={styles.flashButton} onPress={handleToggleFlash} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+              <TouchableOpacity style={styles.flashButton} onPress={handleToggleFlash}>
                 <Text style={styles.flashButtonText}>
                   {flashMode === 'off' ? '⚡' : flashMode === 'on' ? '⚡' : '⚡'}
                 </Text>
@@ -221,7 +221,7 @@ export function CameraView({
             )}
 
             {enableCameraSwitch && (
-              <TouchableOpacity style={styles.switchButton} onPress={handleSwitchCamera} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+              <TouchableOpacity style={styles.switchButton} onPress={handleSwitchCamera}>
                 <Text style={styles.switchButtonText}>🔄</Text>
               </TouchableOpacity>
             )}

@@ -418,7 +418,7 @@ export function useWebRTC(config: WebRTCConfig) {
 
   const sendData = useCallback((data: string | Blob | ArrayBuffer): void => {
     const channel = dataChannelRef.current;
-    if (!channel || channel.readyState !== 'open') {
+    if (channel?.readyState !== 'open') {
       throw new Error('Data channel not open');
     }
 

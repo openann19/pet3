@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Heart, CheckCircle, Translate } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { haptics } from '@/lib/haptics';
 import { analytics } from '@/lib/analytics';
 import { ConsentBanner } from '@/components/gdpr/ConsentBanner';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import {
   useSharedValue,
@@ -14,9 +15,15 @@ import {
   withDelay,
   withRepeat,
   withSequence,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { createLogger } from '@/lib/logger';
+import { LEGAL_URLS } from '@petspark/config';
+import { safeText } from '@/lib/safeText';
+
+const logger = createLogger('WelcomeScreen');
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
@@ -26,15 +33,27 @@ interface WelcomeScreenProps {
   deepLinkMessage?: string;
 }
 
-const track = (name: string, props?: Record<string, string | number | boolean>) => {
-  try {
-    analytics.track(name, props);
-  } catch {
-    // Ignore analytics errors
-  }
-};
-
-export default function WelcomeScreen({
+/**
+ * WelcomeScreen Component
+ *
+ * First screen shown to users when app starts. Displays welcome message,
+ * feature highlights, and authentication options.
+ *
+ * @param onGetStarted - Callback when "Get Started" button is clicked
+ * @param onSignIn - Callback when "Sign In" button is clicked
+ * @param onExplore - Callback when "Explore" button is clicked
+ * @param isOnline - Whether app is online (default: true)
+ * @param deepLinkMessage - Optional message to display from deep link
+ *
+ * @example
+ * <WelcomeScreen
+ *   onGetStarted={() => navigate('/signup')}
+ *   onSignIn={() => navigate('/login')}
+ *   onExplore={() => navigate('/discover')}
+ *   isOnline={true}
+ * />
+ */
+function WelcomeScreenContent({
   onGetStarted,
   onSignIn,
   onExplore,
@@ -44,49 +63,73 @@ export default function WelcomeScreen({
   const { t, language } = useApp();
   const [isLoading, setIsLoading] = useState(true);
   const shouldReduceMotion = useReducedMotion();
+  const offlineAlertRef = useRef<HTMLDivElement>(null);
 
+  // Memoize track function to avoid recreating on every render
+  const track = useCallback((name: string, props?: Record<string, string | number | boolean>) => {
+    try {
+      if (analytics.isEnabled()) {
+        analytics.track(name, props);
+      }
+    } catch (error) {
+      // Log error for debugging but don't break user experience
+      logger.warn('Analytics tracking failed', {
+        eventName: name,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }, []);
+
+  // Initialize loading state and track analytics
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
     track('welcome_viewed');
-  }, []);
+    return () => clearTimeout(timer);
+  }, [track]);
 
+  // Track offline state and manage focus
   useEffect(() => {
-    if (!isOnline) track('welcome_offline_state_shown');
-  }, [isOnline]);
+    if (!isOnline) {
+      track('welcome_offline_state_shown');
+      if (offlineAlertRef.current) {
+        offlineAlertRef.current.focus();
+      }
+    }
+  }, [isOnline, track]);
 
-  const handleGetStarted = () => {
+  // Sanitize deep link message to prevent XSS
+  const safeDeepLinkMessage = deepLinkMessage ? safeText(deepLinkMessage) : null;
+
+  // Memoized event handlers
+  const handleGetStarted = useCallback(() => {
     if (!isOnline) return;
     haptics.trigger('light');
     track('welcome_get_started_clicked');
     onGetStarted();
-  };
+  }, [isOnline, onGetStarted, track]);
 
-  const handleSignIn = () => {
+  const handleSignIn = useCallback(() => {
     haptics.trigger('light');
     track('welcome_sign_in_clicked');
     onSignIn();
-  };
+  }, [onSignIn, track]);
 
-  const handleExplore = () => {
+  const handleExplore = useCallback(() => {
     haptics.trigger('light');
     track('welcome_explore_clicked');
     onExplore();
-  };
+  }, [onExplore, track]);
 
-  const handleLanguageToggle = () => {
+  const handleLanguageToggle = useCallback(() => {
     haptics.trigger('selection');
     const from = language || 'en';
     const to = language === 'en' ? 'bg' : 'en';
     track('welcome_language_changed', { from, to });
-  };
+  }, [language, track]);
 
-  const handleLegalClick = (type: 'terms' | 'privacy') => {
+  const handleLegalClick = useCallback((type: 'terms' | 'privacy') => {
     track(`welcome_${type}_opened`);
-  };
+  }, [track]);
 
   // Animation values
   const loadingOpacity = useSharedValue(0);
@@ -108,22 +151,13 @@ export default function WelcomeScreen({
   const legalOpacity = useSharedValue(0);
   const legalY = useSharedValue(20);
 
+  // Initialize animations with error handling
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isLoading) {
+      return;
+    }
 
-  useEffect(() => {
-    track('welcome_viewed');
-  }, []);
-
-  useEffect(() => {
-    if (!isOnline) track('welcome_offline_state_shown');
-  }, [isOnline]);
-
-  // Initialize animations
-  useEffect(() => {
-    if (!isLoading) {
+    try {
       loadingOpacity.value = withTiming(1, { duration: 300 });
       languageButtonOpacity.value = withTiming(1, { duration: 400 });
 
@@ -143,7 +177,7 @@ export default function WelcomeScreen({
         proofItemsOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
         proofItemsY.value = withDelay(300, withSpring(0, { damping: 20, stiffness: 300 }));
 
-        if (deepLinkMessage) {
+        if (safeDeepLinkMessage) {
           deepLinkOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
           deepLinkY.value = withDelay(600, withSpring(0, { damping: 20, stiffness: 300 }));
         }
@@ -167,7 +201,7 @@ export default function WelcomeScreen({
         titleY.value = 0;
         proofItemsOpacity.value = 1;
         proofItemsY.value = 0;
-        if (deepLinkMessage) {
+        if (safeDeepLinkMessage) {
           deepLinkOpacity.value = 1;
           deepLinkY.value = 0;
         }
@@ -180,31 +214,58 @@ export default function WelcomeScreen({
         legalOpacity.value = 1;
         legalY.value = 0;
       }
+    } catch (error) {
+      logger.warn('Animation setup failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Fallback to instant appearance
+      logoOpacity.value = 1;
+      logoScale.value = 1;
+      logoY.value = 0;
+      titleOpacity.value = 1;
+      titleY.value = 0;
+      proofItemsOpacity.value = 1;
+      proofItemsY.value = 0;
+      if (safeDeepLinkMessage) {
+        deepLinkOpacity.value = 1;
+        deepLinkY.value = 0;
+      }
+      if (!isOnline) {
+        offlineOpacity.value = 1;
+        offlineY.value = 0;
+      }
+      buttonsOpacity.value = 1;
+      buttonsY.value = 0;
+      legalOpacity.value = 1;
+      legalY.value = 0;
     }
-  }, [
-    isLoading,
-    shouldReduceMotion,
-    deepLinkMessage,
-    isOnline,
-    loadingOpacity,
-    languageButtonOpacity,
-    logoOpacity,
-    logoScale,
-    logoY,
-    logoShadow,
-    titleOpacity,
-    titleY,
-    proofItemsOpacity,
-    proofItemsY,
-    deepLinkOpacity,
-    deepLinkY,
-    offlineOpacity,
-    offlineY,
-    buttonsOpacity,
-    buttonsY,
-    legalOpacity,
-    legalY,
-  ]);
+
+    // Cleanup animations on unmount
+    return () => {
+      try {
+        cancelAnimation(logoShadow);
+        cancelAnimation(logoOpacity);
+        cancelAnimation(logoScale);
+        cancelAnimation(logoY);
+        cancelAnimation(titleOpacity);
+        cancelAnimation(titleY);
+        cancelAnimation(proofItemsOpacity);
+        cancelAnimation(proofItemsY);
+        cancelAnimation(deepLinkOpacity);
+        cancelAnimation(deepLinkY);
+        cancelAnimation(offlineOpacity);
+        cancelAnimation(offlineY);
+        cancelAnimation(buttonsOpacity);
+        cancelAnimation(buttonsY);
+        cancelAnimation(legalOpacity);
+        cancelAnimation(legalY);
+      } catch (error) {
+        logger.warn('Animation cleanup failed', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    };
+  }, [isLoading, shouldReduceMotion, safeDeepLinkMessage, isOnline]);
 
   // Animated styles
   const loadingStyle = useAnimatedStyle(() => ({
@@ -262,7 +323,7 @@ export default function WelcomeScreen({
       >
         <AnimatedView
           style={loadingStyle}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center"
+          className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center"
         >
           <Heart size={32} className="text-white" weight="fill" aria-hidden />
           <span className="sr-only">{t.common.loading}</span>
@@ -293,7 +354,7 @@ export default function WelcomeScreen({
             <AnimatedView style={titleStyle} className="flex flex-col items-center mb-12">
               <AnimatedView
                 style={logoStyle}
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center mb-6"
+                className="w-20 h-20 rounded-full bg-linear-to-br from-primary via-accent to-secondary flex items-center justify-center mb-6"
               >
                 <Heart size={40} className="text-white" weight="fill" aria-hidden />
               </AnimatedView>
@@ -319,22 +380,25 @@ export default function WelcomeScreen({
               ))}
             </AnimatedView>
 
-            {deepLinkMessage && (
+            {safeDeepLinkMessage && (
               <AnimatedView
                 style={deepLinkStyle}
                 className="mb-6 p-3 rounded-lg bg-primary/10 border border-primary/20"
                 role="note"
+                aria-live="polite"
               >
-                <p className="text-sm text-muted-foreground text-center">{deepLinkMessage}</p>
+                <p className="text-sm text-muted-foreground text-center">{safeDeepLinkMessage}</p>
               </AnimatedView>
             )}
 
             {!isOnline && (
               <AnimatedView
+                ref={offlineAlertRef}
                 style={offlineStyle}
                 className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/20"
                 role="alert"
                 aria-live="polite"
+                tabIndex={-1}
               >
                 <p className="text-sm text-destructive text-center">{t.welcome.offlineMessage}</p>
               </AnimatedView>
@@ -379,7 +443,7 @@ export default function WelcomeScreen({
               <p className="text-xs text-muted-foreground">
                 {t.welcome.legal}{' '}
                 <a
-                  href="https://pawfectmatch.app/terms"
+                  href={LEGAL_URLS.terms}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleLegalClick('terms')}
@@ -389,7 +453,7 @@ export default function WelcomeScreen({
                 </a>{' '}
                 {t.welcome.and}{' '}
                 <a
-                  href="https://pawfectmatch.app/privacy"
+                  href={LEGAL_URLS.privacy}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleLegalClick('privacy')}
@@ -405,5 +469,38 @@ export default function WelcomeScreen({
       </div>
       <ConsentBanner showOnMount={true} />
     </main>
+  );
+}
+
+/**
+ * WelcomeScreen with Error Boundary
+ * Wraps WelcomeScreenContent with error boundary for graceful error handling
+ */
+function WelcomeScreenErrorFallback(): JSX.Element {
+  return (
+    <main className="fixed inset-0 bg-background flex items-center justify-center p-6">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-4">Oops! Something went wrong</h1>
+        <p className="text-muted-foreground mb-6">
+          We encountered an unexpected error. Please try refreshing the page.
+        </p>
+        <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+      </div>
+    </main>
+  );
+}
+
+export default function WelcomeScreen(props: WelcomeScreenProps): JSX.Element {
+  return (
+    <ErrorBoundary
+      fallback={<WelcomeScreenErrorFallback />}
+      onError={(error, errorInfo) => {
+        logger.error('WelcomeScreen error', error, {
+          componentStack: errorInfo.componentStack,
+        });
+      }}
+    >
+      <WelcomeScreenContent {...props} />
+    </ErrorBoundary>
   );
 }

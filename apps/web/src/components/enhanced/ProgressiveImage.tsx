@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { AnimatePresence } from '@/effects/reanimated/animate-presence';
-import { cn } from '@/lib/utils';
-import { supportsWebP, supportsAVIF } from '@/lib/image-loader';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { supportsAVIF, supportsWebP } from '@/lib/image-loader';
+import { cn } from '@/lib/utils';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface ProgressiveImageProps {
   src: string;
@@ -22,6 +22,9 @@ interface ProgressiveImageProps {
   format?: 'webp' | 'avif' | 'auto';
   onLoad?: () => void;
   onError?: (error: Error) => void;
+  onClick?: () => void;
+  'aria-label'?: string;
+  draggable?: boolean;
 }
 
 export function ProgressiveImage({
@@ -40,9 +43,12 @@ export function ProgressiveImage({
   format = 'auto',
   onLoad,
   onError,
+  onClick,
+  'aria-label': ariaLabel,
+  draggable = false,
 }: ProgressiveImageProps) {
-    const _uiConfig = useUIConfig();
-    const [isLoaded, setIsLoaded] = useState(false);
+  const _uiConfig = useUIConfig();
+  const [isLoaded, setIsLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(placeholderSrc || src);
   const [error, setError] = useState(false);
   const [bestFormat, setBestFormat] = useState<'webp' | 'avif' | 'original'>('original');
@@ -72,6 +78,7 @@ export function ProgressiveImage({
       };
     } else {
       setBestFormat(format);
+      return () => { }; // Return cleanup function for else branch
     }
   }, [format]);
 
@@ -134,7 +141,7 @@ export function ProgressiveImage({
   useEffect(() => {
     if (priority) {
       loadImage();
-      return;
+      return () => { }; // Return cleanup function
     }
 
     const observer = new IntersectionObserver(
@@ -176,8 +183,25 @@ export function ProgressiveImage({
     opacity: imageOpacity.value,
   }));
 
+  const containerProps = onClick
+    ? {
+      onClick,
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      },
+      role: 'button',
+      tabIndex: 0,
+      className: cn('relative overflow-hidden cursor-pointer', containerClassName),
+    }
+    : {
+      className: cn('relative overflow-hidden', containerClassName),
+    };
+
   return (
-    <div className={cn('relative overflow-hidden', containerClassName)} style={{ aspectRatio }}>
+    <div {...containerProps} style={{ aspectRatio }}>
       <AnimatePresence>
         {!isLoaded && placeholderSrc && (
           <AnimatedView
@@ -191,6 +215,7 @@ export function ProgressiveImage({
               alt={alt}
               className={cn('w-full h-full object-cover', className)}
               style={{ filter: `blur(${blurAmount}px)` }}
+              aria-label={ariaLabel}
             />
           </AnimatedView>
         )}
@@ -206,6 +231,8 @@ export function ProgressiveImage({
           height={height}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          aria-label={ariaLabel}
+          draggable={draggable}
         />
       </AnimatedView>
 

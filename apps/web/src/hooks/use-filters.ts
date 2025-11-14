@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import type React from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { haptics } from '@/lib/haptics';
 
 interface FilterCategory {

@@ -3,15 +3,8 @@
  * Flowing wave effect for backgrounds and decorative elements
  */
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  interpolate,
-  Easing,
-} from 'react-native-reanimated';
 import { useEffect } from 'react';
+import { useMotionValue, animate, MotionValue } from 'framer-motion';
 
 export interface UseWaveAnimationOptions {
   amplitude?: number;
@@ -30,34 +23,43 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
     enabled = true,
   } = options;
 
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
 
   useEffect(() => {
+    let running = true;
+    function loop() {
+      if (!running) return;
+      animate(progress, 1, {
+        duration: speed / 1000,
+        ease: 'linear',
+        onComplete: () => {
+          progress.set(0);
+          if (enabled) loop();
+        },
+      });
+    }
     if (enabled) {
-      progress.value = withRepeat(
-        withTiming(1, { duration: speed, easing: Easing.linear }),
-        -1,
-        false
-      );
+      progress.set(0);
+      loop();
     } else {
-      progress.value = 0;
+      progress.set(0);
     }
-  }, [enabled, speed]);
+    return () => {
+      running = false;
+    };
+  }, [enabled, speed, progress]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const phase = progress.value * Math.PI * 2 * frequency;
-    const wave = Math.sin(phase) * amplitude;
-
-    if (direction === 'horizontal') {
-      return {
-        transform: [{ translateX: wave }],
-      };
-    } else {
-      return {
-        transform: [{ translateY: wave }],
-      };
-    }
-  });
+  const animatedStyle = {
+    get transform() {
+      const phase = progress.get() * Math.PI * 2 * frequency;
+      const wave = Math.sin(phase) * amplitude;
+      if (direction === 'horizontal') {
+        return [{ translateX: wave }];
+      } else {
+        return [{ translateY: wave }];
+      }
+    },
+  };
 
   return {
     animatedStyle,
@@ -66,28 +68,61 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
 }
 
 export function useMultiWave(waveCount = 3) {
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false
-    );
-  }, []);
+    let running = true;
+    function loop() {
+      if (!running) return;
+      animate(progress, 1, {
+        duration: 4,
+        ease: 'linear',
+        onComplete: () => {
+          progress.set(0);
+          loop();
+        },
+      });
+    }
+    progress.set(0);
+    loop();
+    return () => {
+      running = false;
+    };
+  }, [progress, waveCount]);
+
+  const interpolate = (input: number, inputRange: number[], outputRange: number[]) => {
+    // Simple linear interpolation for 3-point range
+    const i0 = inputRange[0] ?? 0;
+    const i1 = inputRange[1] ?? 0.5;
+    const i2 = inputRange[2] ?? 1;
+    const o0 = outputRange[0] ?? 0.3;
+    const o1 = outputRange[1] ?? 0.6;
+    const o2 = outputRange[2] ?? 0.3;
+    if (input <= i0) return o0;
+    if (input >= i2) return o2;
+    if (input < i1) {
+      // Between 0 and 0.5
+      const t = (input - i0) / (i1 - i0);
+      return o0 + t * (o1 - o0);
+    } else {
+      // Between 0.5 and 1
+      const t = (input - i1) / (i2 - i1);
+      return o1 + t * (o2 - o1);
+    }
+  };
 
   const createWaveStyle = (waveIndex: number, amplitude = 15) => {
-    return useAnimatedStyle(() => {
-      const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
-      const phase = progress.value * Math.PI * 2 + phaseOffset;
-      const wave = Math.sin(phase) * amplitude;
-      const opacity = interpolate(progress.value, [0, 0.5, 1], [0.3, 0.6, 0.3]);
-
-      return {
-        transform: [{ translateY: wave }, { translateX: wave * 0.5 }],
-        opacity,
-      };
-    });
+    const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
+    return {
+      get transform() {
+        const phase = progress.get() * Math.PI * 2 + phaseOffset;
+        const wave = Math.sin(phase) * amplitude;
+        return [{ translateY: wave }, { translateX: wave * 0.5 }];
+      },
+      get opacity() {
+        return interpolate(progress.get(), [0, 0.5, 1], [0.3, 0.6, 0.3]);
+      },
+    };
   };
 
   return {

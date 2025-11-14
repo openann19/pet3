@@ -86,7 +86,7 @@ describe('PremiumButton', () => {
     const { container } = render(<PremiumButton variant="gradient">Click Me</PremiumButton>);
 
     const button = container.querySelector('button');
-    expect(button).toHaveClass('bg-gradient-to-r');
+    expect(button).toHaveClass('bg-linear-to-r');
   });
 
   it('applies medium size by default', () => {

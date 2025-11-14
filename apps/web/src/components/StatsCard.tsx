@@ -39,7 +39,7 @@ export default function StatsCard({ totalMatches, totalSwipes, successRate }: St
         >
           <MotionView
             className="w-14 h-14 rounded-full bg-linear-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center mx-auto mb-3 shadow-xl"
-            whileHover={{ rotate: [0, -15, 15, -15, 0], scale: 1.1 }}
+            whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ duration: 0.5 }}
           >
             <Heart size={28} className="text-white drop-shadow-lg" weight="fill" />
@@ -83,7 +83,7 @@ export default function StatsCard({ totalMatches, totalSwipes, successRate }: St
         >
           <MotionView
             className="w-14 h-14 rounded-full bg-linear-to-br from-accent via-accent/80 to-accent/60 flex items-center justify-center mx-auto mb-3 shadow-xl"
-            animate={{ rotate: [0, 15, 0] }}
+            animate={{ rotate: 15 }}
             transition={{ duration: 2.5, repeat: Infinity, repeatType: 'reverse' }}
           >
             <Sparkle size={28} className="text-white drop-shadow-lg" weight="fill" />

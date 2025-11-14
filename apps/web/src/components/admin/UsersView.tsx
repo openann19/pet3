@@ -558,7 +558,7 @@ function StatusBadge({ status }: { status: string }) {
     banned: { variant: 'destructive', label: 'Banned' },
   };
 
-  const config = variants[status] ?? variants['active'];
+  const config = variants[status] ?? variants.active;
   if (!config) return null;
 
   return <Badge variant={config.variant}>{config.label}</Badge>;

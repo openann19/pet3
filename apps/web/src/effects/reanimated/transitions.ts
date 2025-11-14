@@ -1,13 +1,5 @@
-'use client';
 
-import {
-  withSpring,
-  withTiming,
-  withDelay,
-  Easing,
-  type WithSpringConfig,
-  type WithTimingConfig,
-} from 'react-native-reanimated';
+import { easeInOut } from 'framer-motion';
 
 export interface SpringConfig {
   damping?: number;
@@ -20,30 +12,34 @@ export interface TimingConfig {
   easing?: (value: number) => number;
 }
 
+
 export const springConfigs = {
-  gentle: { damping: 30, stiffness: 300, mass: 0.8 } as SpringConfig,
-  smooth: { damping: 25, stiffness: 400 } as SpringConfig,
-  bouncy: { damping: 15, stiffness: 500 } as SpringConfig,
-  snappy: { damping: 20, stiffness: 600 } as SpringConfig,
+  gentle: { damping: 30, stiffness: 300, mass: 0.8 },
+  smooth: { damping: 25, stiffness: 400 },
+  bouncy: { damping: 15, stiffness: 500 },
+  snappy: { damping: 20, stiffness: 600 },
 };
 
 export const timingConfigs = {
-  fast: { duration: 150, easing: Easing.ease } as TimingConfig,
-  smooth: { duration: 300, easing: Easing.inOut(Easing.ease) } as TimingConfig,
-  slow: { duration: 500, easing: Easing.inOut(Easing.ease) } as TimingConfig,
-  elastic: { duration: 400, easing: Easing.elastic(1) } as TimingConfig,
+  fast: { duration: 150, easing: easeInOut },
+  smooth: { duration: 300, easing: easeInOut },
+  slow: { duration: 500, easing: easeInOut },
+  elastic: { duration: 400, easing: easeInOut },
 };
 
 export function createSpringTransition(config: SpringConfig = springConfigs.smooth) {
-  return (value: number) => withSpring(value, config as WithSpringConfig);
+  // Not used in framer-motion web, kept for API compatibility
+  return (value: number) => value;
 }
 
 export function createTimingTransition(config: TimingConfig = timingConfigs.smooth) {
-  return (value: number) => withTiming(value, config as WithTimingConfig);
+  // Not used in framer-motion web, kept for API compatibility
+  return (value: number) => value;
 }
 
 export function createDelayedTransition(delay: number, transition: (value: number) => number) {
-  return (value: number) => withDelay(delay, transition(value));
+  // Not used in framer-motion web, kept for API compatibility
+  return (value: number) => value;
 }
 
 export const fadeIn = {

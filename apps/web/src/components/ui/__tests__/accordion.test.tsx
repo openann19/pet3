@@ -4,7 +4,7 @@
  * Comprehensive tests for Accordion component covering all variants, props, and interactions
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
@@ -22,7 +22,7 @@ describe('Accordion', () => {
   describe('Rendering', () => {
     it('should render accordion', () => {
       render(
-        <Accordion>
+        <Accordion type="single">
           <AccordionItem value="item-1">
             <AccordionTrigger>Item 1</AccordionTrigger>
             <AccordionContent>Content 1</AccordionContent>
@@ -36,7 +36,7 @@ describe('Accordion', () => {
 
     it('should render multiple accordion items', () => {
       render(
-        <Accordion>
+        <Accordion type="single">
           <AccordionItem value="item-1">
             <AccordionTrigger>Item 1</AccordionTrigger>
             <AccordionContent>Content 1</AccordionContent>
@@ -130,7 +130,7 @@ describe('Accordion', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
       render(
-        <Accordion>
+        <Accordion type="single">
           <AccordionItem value="item-1">
             <AccordionTrigger>Item 1</AccordionTrigger>
             <AccordionContent>Content 1</AccordionContent>
@@ -145,7 +145,7 @@ describe('Accordion', () => {
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
       render(
-        <Accordion>
+        <Accordion type="single">
           <AccordionItem value="item-1">
             <AccordionTrigger>Item 1</AccordionTrigger>
             <AccordionContent>Content 1</AccordionContent>
@@ -167,7 +167,7 @@ describe('Accordion', () => {
   describe('Data Attributes', () => {
     it('should have data-slot attributes', () => {
       render(
-        <Accordion>
+        <Accordion type="single">
           <AccordionItem value="item-1">
             <AccordionTrigger>Item 1</AccordionTrigger>
             <AccordionContent>Content 1</AccordionContent>

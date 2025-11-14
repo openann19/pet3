@@ -75,7 +75,7 @@ export function PremiumButton({
     ghost:
       'bg-(--btn-ghost-bg) text-(--btn-ghost-fg) hover:bg-(--btn-ghost-hover-bg) hover:text-(--btn-ghost-hover-fg) active:bg-(--btn-ghost-press-bg) active:text-(--btn-ghost-press-fg) disabled:bg-(--btn-ghost-disabled-bg) disabled:text-(--btn-ghost-disabled-fg) focus-visible:ring-2 focus-visible:ring-[var(--btn-ghost-focus-ring)]',
     gradient:
-      'bg-gradient-to-r from-[var(--btn-primary-bg)] via-[var(--btn-secondary-bg)] to-[var(--btn-primary-bg)] text-(--btn-primary-fg) hover:from-[var(--btn-primary-hover-bg)] hover:via-[var(--btn-secondary-hover-bg)] hover:to-[var(--btn-primary-hover-bg)] active:from-[var(--btn-primary-press-bg)] active:via-[var(--btn-secondary-press-bg)] active:to-[var(--btn-primary-press-bg)] disabled:from-[var(--btn-primary-disabled-bg)] disabled:via-[var(--btn-secondary-disabled-bg)] disabled:to-[var(--btn-primary-disabled-bg)] disabled:text-(--btn-primary-disabled-fg) focus-visible:ring-2 focus-visible:ring-[var(--btn-primary-focus-ring)]',
+      'bg-linear-to-r from-[var(--btn-primary-bg)] via-[var(--btn-secondary-bg)] to-[var(--btn-primary-bg)] text-(--btn-primary-fg) hover:from-[var(--btn-primary-hover-bg)] hover:via-[var(--btn-secondary-hover-bg)] hover:to-[var(--btn-primary-hover-bg)] active:from-[var(--btn-primary-press-bg)] active:via-[var(--btn-secondary-press-bg)] active:to-[var(--btn-primary-press-bg)] disabled:from-[var(--btn-primary-disabled-bg)] disabled:via-[var(--btn-secondary-disabled-bg)] disabled:to-[var(--btn-primary-disabled-bg)] disabled:text-(--btn-primary-disabled-fg) focus-visible:ring-2 focus-visible:ring-[var(--btn-primary-focus-ring)]',
   };
 
   const sizes = {

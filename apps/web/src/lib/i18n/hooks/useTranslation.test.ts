@@ -59,41 +59,41 @@ describe('useTranslation', () => {
     const { result } = renderHook(() => useTranslation());
 
     expect(result.current).toBeDefined();
-    expect(result.current['app']).toBeDefined();
-    const app = result.current['app'];
+    expect(result.current.app).toBeDefined();
+    const app = result.current.app;
     if (typeof app === 'object' && app !== null) {
-      expect(app['title']).toBe('PawfectMatch');
+      expect(app.title).toBe('PawfectMatch');
     }
-    expect(result.current['nav']).toBeDefined();
-    const nav = result.current['nav'];
+    expect(result.current.nav).toBeDefined();
+    const nav = result.current.nav;
     if (typeof nav === 'object' && nav !== null) {
-      expect(nav['discover']).toBe('Discover');
+      expect(nav.discover).toBe('Discover');
     }
   });
 
   it('should return translations for specified language', () => {
     const { result } = renderHook(() => useTranslation('en'));
 
-    const app = result.current['app'];
+    const app = result.current.app;
     if (typeof app === 'object' && app !== null) {
-      expect(app['title']).toBe('PawfectMatch');
+      expect(app.title).toBe('PawfectMatch');
     }
-    const nav = result.current['nav'];
+    const nav = result.current.nav;
     if (typeof nav === 'object' && nav !== null) {
-      expect(nav['discover']).toBe('Discover');
+      expect(nav.discover).toBe('Discover');
     }
   });
 
   it('should return Bulgarian translations when language is bg', () => {
     const { result } = renderHook(() => useTranslation('bg'));
 
-    const app = result.current['app'];
+    const app = result.current.app;
     if (typeof app === 'object' && app !== null) {
-      expect(app['title']).toBe('PawfectMatch');
+      expect(app.title).toBe('PawfectMatch');
     }
-    const nav = result.current['nav'];
+    const nav = result.current.nav;
     if (typeof nav === 'object' && nav !== null) {
-      expect(nav['discover']).toBe('Откриване');
+      expect(nav.discover).toBe('Откриване');
     }
   });
 
@@ -101,9 +101,9 @@ describe('useTranslation', () => {
     const { result } = renderHook(() => useTranslation('fr' as Language));
 
     expect(result.current).toBeDefined();
-    const app = result.current['app'];
+    const app = result.current.app;
     if (typeof app === 'object' && app !== null) {
-      expect(app['title']).toBe('PawfectMatch');
+      expect(app.title).toBe('PawfectMatch');
     }
   });
 
@@ -160,9 +160,9 @@ describe('useTranslationFunction', () => {
     const { result } = renderHook(() => useTranslationFunction('en'));
 
     expect(result.current.translations).toBeDefined();
-    const app = result.current.translations['app'];
+    const app = result.current.translations.app;
     if (typeof app === 'object' && app !== null) {
-      expect(app['title']).toBe('PawfectMatch');
+      expect(app.title).toBe('PawfectMatch');
     }
   });
 

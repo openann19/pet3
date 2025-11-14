@@ -137,15 +137,15 @@ export default function PetProfileTemplatesDialog({
           'min-h-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           'hover:scale-[1.015] active:scale-[0.99]',
           isSelected
-            ? 'bg-gradient-to-br from-primary/15 via-primary/10 to-accent/10 shadow-xl border-2 border-transparent'
-            : 'bg-card border-2 border-border/60 hover:border-primary/40 hover:shadow-lg hover:bg-card/95'
+            ? 'bg-linear-to-br from-primary/15 via-primary/10 to-accent/10 shadow-xl border-2 border-transparent'
+            : 'bg-card border-2 border-border/60 hover:border-primary/40 hover:shadow-lg hover:bg-card/95',
+          'min-h-11'
         )}
         aria-pressed={isSelected}
         aria-label={`Select ${template.name} template`}
-        style={{ minHeight: '44px' }}
       >
         {isSelected && (
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary via-accent to-primary opacity-40 blur-sm animate-in fade-in zoom-in duration-300" />
+          <div className="absolute inset-0 rounded-xl bg-linear-to-br from-primary via-accent to-primary opacity-40 blur-sm animate-in fade-in zoom-in duration-300" />
         )}
 
         <div className="relative z-10 flex items-start gap-4">
@@ -175,8 +175,7 @@ export default function PetProfileTemplatesDialog({
                     <Badge
                       key={trait}
                       variant="secondary"
-                      className="text-xs px-2 py-0.5 bg-muted/60 text-foreground/80 hover:bg-muted/80 transition-colors border border-border/40"
-                      style={{ minHeight: '24px' }}
+                      className="text-xs px-2 py-0.5 bg-muted/60 text-foreground/80 hover:bg-muted/80 transition-colors border border-border/40 min-h-6"
                     >
                       {trait}
                     </Badge>
@@ -199,8 +198,7 @@ export default function PetProfileTemplatesDialog({
                     <Badge
                       key={interest}
                       variant="outline"
-                      className="text-xs px-2 py-0.5 border-border/50 text-foreground/70 bg-background/40 hover:bg-background/60 transition-colors"
-                      style={{ minHeight: '24px' }}
+                      className="text-xs px-2 py-0.5 border-border/50 text-foreground/70 bg-background/40 hover:bg-background/60 transition-colors min-h-6"
                     >
                       {interest}
                     </Badge>
@@ -265,7 +263,7 @@ export default function PetProfileTemplatesDialog({
               <div className="h-2 w-32 bg-muted/50 rounded-full overflow-hidden">
                 <AnimatedView
                   style={progressStyle}
-                  className="h-full bg-gradient-to-r from-primary to-accent"
+                  className="h-full bg-linear-to-r from-primary to-accent"
                 />
               </div>
             </div>
@@ -286,8 +284,7 @@ export default function PetProfileTemplatesDialog({
                   <TabsTrigger
                     key={type}
                     value={type}
-                    className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground transition-all"
-                    style={{ minHeight: '44px' }}
+                    className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground transition-all min-h-11"
                   >
                     <span className="mr-1.5 text-base">{PET_TYPE_LABELS[type].emoji}</span>
                     <span className="hidden sm:inline">{PET_TYPE_LABELS[type].label}</span>
@@ -334,8 +331,7 @@ export default function PetProfileTemplatesDialog({
                 ref={closeButtonRef}
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="min-w-25"
-                style={{ minHeight: '44px' }}
+                className="min-w-25 min-h-11"
               >
                 Cancel
               </Button>
@@ -343,8 +339,7 @@ export default function PetProfileTemplatesDialog({
                 ref={confirmButtonRef}
                 onClick={handleConfirmSelection}
                 disabled={!selectedTemplate}
-                className="min-w-35 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: '44px' }}
+                className="min-w-35 bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-11"
               >
                 <Check size={18} weight="bold" className="mr-2" />
                 Use Template

@@ -7,8 +7,10 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { NextRequest } from '@/types/next-server';
-import { TokenBucket, createTokenBucket } from '../../rate-limit/token-bucket';
-import { QuotaService, createQuotaService } from '../../rate-limit/quota-service';
+import type { TokenBucket} from '../../rate-limit/token-bucket';
+import { createTokenBucket } from '../../rate-limit/token-bucket';
+import type { QuotaService} from '../../rate-limit/quota-service';
+import { createQuotaService } from '../../rate-limit/quota-service';
 import { getRequestIdentifier, rateLimitConfigs } from '../rate-limit-app-router';
 
 // Mock Request and Response for testing
@@ -18,7 +20,7 @@ class MockRequest implements Pick<NextRequest, 'headers' | 'url'> {
   url: string;
 
   constructor(
-    url: string = 'http://localhost:3000/api/test',
+    url = 'http://localhost:3000/api/test',
     headers: Record<string, string> = {},
     ip?: string
   ) {

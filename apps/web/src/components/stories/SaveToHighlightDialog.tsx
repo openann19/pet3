@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Story, StoryHighlight } from '@/lib/stories-types';
+import type { Story, StoryHighlight } from '@petspark/shared';
 import type { Pet } from '@/lib/types';
 import { createStoryHighlight } from '@/lib/stories-utils';
 import { haptics } from '@/lib/haptics';
@@ -65,10 +65,10 @@ export default function SaveToHighlightDialog({
       (current || []).map((h) =>
         h.id === selectedHighlightId
           ? {
-              ...h,
-              stories: [...h.stories, story],
-              updatedAt: new Date().toISOString(),
-            }
+            ...h,
+            stories: [...h.stories, story],
+            updatedAt: new Date().toISOString(),
+          }
           : h
       )
     );
@@ -188,19 +188,18 @@ export default function SaveToHighlightDialog({
                         key={highlight.id}
                         onClick={() => !alreadyInHighlight && handleSelectHighlight(highlight.id)}
                         disabled={alreadyInHighlight}
-                        className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
-                          alreadyInHighlight
-                            ? 'opacity-50 cursor-not-allowed bg-muted'
-                            : isSelected
-                              ? 'bg-primary/20 border-2 border-primary'
-                              : 'glass-effect hover:bg-white/20 dark:hover:bg-white/5'
-                        }`}
+                        className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${alreadyInHighlight
+                          ? 'opacity-50 cursor-not-allowed bg-muted'
+                          : isSelected
+                            ? 'bg-primary/20 border-2 border-primary'
+                            : 'glass-effect hover:bg-white/20 dark:hover:bg-white/5'
+                          }`}
                         whileHover={!alreadyInHighlight ? { scale: 1.02 } : {}}
                         whileTap={!alreadyInHighlight ? { scale: 0.98 } : {}}
                       >
                         <Avatar className="w-16 h-16 ring-2 ring-border">
                           <AvatarImage src={highlight.coverImage} alt={highlight.title} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
+                          <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
                             {highlight.title?.[0]?.toUpperCase() ?? '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -245,7 +244,7 @@ export default function SaveToHighlightDialog({
               <Button
                 onClick={handleCreateNew}
                 disabled={!newHighlightTitle.trim()}
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                className="bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 <Plus size={18} weight="bold" className="mr-2" />
                 Create Highlight
@@ -264,7 +263,7 @@ export default function SaveToHighlightDialog({
               <Button
                 onClick={handleSaveToExisting}
                 disabled={!selectedHighlightId}
-                className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                className="flex-1 bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 <BookmarkSimple size={18} weight="fill" className="mr-2" />
                 Save Story

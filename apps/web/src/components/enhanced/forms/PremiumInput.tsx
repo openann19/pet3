@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useId } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { getColorToken } from '@/core/tokens';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useUIConfig } from "@/hooks/use-ui-config";
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import { Eye, EyeSlash, X, CheckCircle, WarningCircle } from '@phosphor-icons/react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { CheckCircle, Eye, EyeSlash, WarningCircle, X } from '@phosphor-icons/react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
-import { useUIConfig } from "@/hooks/use-ui-config";
-import { getColorToken } from '@/core/tokens';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
 export interface PremiumInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -141,7 +141,7 @@ export function PremiumInput({
 
   // Use design token colors for animated styles
   // Note: For static styles, CSS variables are used in className
-  const themeMode = _uiConfig.theme.mode || 'light';
+  const themeMode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   const THEME_COLORS = {
     primary: getColorToken('accent', themeMode),
     error: getColorToken('destructive', themeMode),

@@ -13,6 +13,19 @@ import { PRODUCT_CATALOG, getPlanById } from './payments-catalog';
 import { paymentsApi } from '@/api/payments-api';
 import { createLogger } from './logger';
 
+// Re-export types for consumers
+export type {
+  Subscription,
+  AuditLogEntry,
+  RevenueMetrics,
+  SubscriptionEvent,
+  BillingIssue,
+  PlanTier,
+  PlatformStore,
+  ConsumableKey,
+  UserEntitlements,
+};
+
 const logger = createLogger('PaymentsService');
 
 export class PaymentsService {
@@ -255,6 +268,44 @@ export class PaymentsService {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Failed to get revenue metrics', err);
+      throw err;
+    }
+  }
+
+  static async refundSubscription(
+    subscriptionId: string,
+    amount: number,
+    userId: string,
+    reason: string
+  ): Promise<Subscription> {
+    try {
+      // Refunds should be handled by the backend payment provider
+      // For now, we'll update the subscription status and log the action
+      // TODO: Implement proper refund API endpoint
+
+      // Get the current subscription
+      const subscriptions = await paymentsApi.getAllSubscriptions();
+      const subscription = subscriptions.find((s) => s.id === subscriptionId);
+
+      if (!subscription) {
+        throw new Error('Subscription not found');
+      }
+
+      // Log the refund action
+      this.logAudit({
+        actorUserId: userId,
+        action: 'refund',
+        targetSubscriptionId: subscriptionId,
+        details: { amount, reason },
+        reason,
+      });
+
+      // Return the subscription (refund processing should happen on the backend)
+      // The subscription will be updated by the backend payment provider
+      return subscription;
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to refund subscription', err, { subscriptionId, amount, reason });
       throw err;
     }
   }

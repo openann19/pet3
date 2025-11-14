@@ -4,7 +4,7 @@ import type { UserProfile, Pet } from '../types';
 import { useStorage } from '../hooks/use-storage';
 import { useNavigation } from '@react-navigation/native';
 import { PricingModal, SubscriptionStatusCard, BillingIssueBanner } from '../components/payments';
-import { useSubscription } from '../hooks/payments/useSubscription';
+import { useSubscription } from '../hooks/payments/use-subscription';
 import { StoryHighlights, CreateHighlightDialog, type Highlight } from '../components/stories';
 import { useHighlights } from '../hooks/stories/useHighlights';
 

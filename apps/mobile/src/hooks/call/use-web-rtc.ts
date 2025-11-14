@@ -79,7 +79,17 @@ let mediaDevicesInstance: MediaDevices | undefined
 /**
  * Production-grade WebRTC hook for React Native
  */
-export const useWebRTC = (options: UseWebRTCOptions) => {
+export const useWebRTC = (options: UseWebRTCOptions): {
+  callState: CallState
+  toggleMute: () => void
+  toggleCamera: () => void
+  endCall: () => Promise<void>
+  handleSignalingData: (data: {
+    type: 'offer' | 'answer' | 'candidate'
+    sdp?: RTCSessionDescriptionInit
+    candidate?: RTCIceCandidateInit
+  }) => Promise<void>
+} => {
   const {
     callId,
     remoteUserId,
@@ -183,7 +193,7 @@ export const useWebRTC = (options: UseWebRTCOptions) => {
   }, [stunServers, turnServers])
 
   // Cleanup function
-  const cleanup = useCallback(async (): Promise<void> => {
+  const cleanup = useCallback((): Promise<void> => {
     try {
       // Stop local stream
       if (localStreamRef.current) {
@@ -206,9 +216,11 @@ export const useWebRTC = (options: UseWebRTCOptions) => {
       reconnectAttemptsRef.current = 0
 
       logger.info('WebRTC cleanup completed', { callId })
+      return Promise.resolve()
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error))
       logger.error('Error during cleanup', err, { callId })
+      return Promise.reject(err)
     }
   }, [callId])
 
@@ -398,7 +410,7 @@ export const useWebRTC = (options: UseWebRTCOptions) => {
       }
     }
 
-    initialize()
+    void initialize()
 
     return () => {
       mounted = false

@@ -224,7 +224,7 @@ export function AnimatedButton({
       >
         {shimmer && !disabled && (
           <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+            className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
             style={{
               ...shimmerStyle,
               backgroundSize: '200% 100%',

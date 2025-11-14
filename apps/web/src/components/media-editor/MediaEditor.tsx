@@ -4,8 +4,9 @@ import { editMedia } from '@/core/services/media/edit-media';
 import type { FilterName, ImageOperation, MediaInput } from '@/core/types/media-types';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { createLogger } from '@/lib/logger';
-import React, { useCallback, useMemo, useState } from 'react';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import React, { useCallback, useState } from 'react';
+// TODO: Replace with web-compatible gestures
+// import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 const logger = createLogger('MediaEditor');
@@ -27,17 +28,18 @@ export function MediaEditor({ source, onDone, onCancel }: MediaEditorProps): Rea
   const [filter, setFilter] = useState<FilterName>('none');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const panZoom = useMemo(() => {
-    return Gesture.Simultaneous(
-      Gesture.Pan().onChange((e) => {
-        tx.value += e.changeX;
-        ty.value += e.changeY;
-      }),
-      Gesture.Pinch().onChange((e) => {
-        scale.value *= e.scaleChange;
-      })
-    );
-  }, [scale, tx, ty]);
+  // TODO: Replace with web-compatible pan/zoom gestures
+  // const panZoom = useMemo(() => {
+  //   return Gesture.Simultaneous(
+  //     Gesture.Pan().onChange((e) => {
+  //       tx.value += e.changeX;
+  //       ty.value += e.changeY;
+  //     }),
+  //     Gesture.Pinch().onChange((e) => {
+  //       scale.value *= e.scaleChange;
+  //     })
+  //   );
+  // }, [scale, tx, ty]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: tx.value }, { translateY: ty.value }, { scale: scale.value }],
@@ -82,48 +84,28 @@ export function MediaEditor({ source, onDone, onCancel }: MediaEditorProps): Rea
   }, [onCancel]);
 
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--color-fg)' }}
-    >
-      <GestureDetector gesture={panZoom}>
-        <AnimatedView style={animatedStyle}>
-          {isWeb ? (
-            <img
-              src={source.uri}
-              alt="Media preview"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'var(--color-fg)',
-              }}
-            />
-          )}
-        </AnimatedView>
-      </GestureDetector>
+    <div className="flex flex-col h-full bg-background">
+      {/* TODO: Add GestureDetector when web gestures are implemented */}
+      <AnimatedView style={animatedStyle}>
+        {isWeb ? (
+          <img
+            src={source.uri}
+            alt="Media preview"
+            className="w-full h-full object-contain"
+            aria-label="Media preview"
+          />
+        ) : (
+          <div className="w-full h-full bg-background" />
+        )}
+      </AnimatedView>
 
       <div
-        style={{
-          padding: 12,
-          backgroundColor: '#111',
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 8,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
+        className="p-3 bg-[#111] flex flex-row gap-2 items-center flex-wrap"
       >
         {FILTERS.map((f) => (
           <ToolChip key={f} active={f === filter} onPress={() => setFilter(f)} label={f} />
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'row', gap: 8 }}>
+        <div className="ml-auto flex flex-row gap-2">
           {onCancel !== undefined && (
             <ToolButton onPress={handleCancel} label="Cancel" variant="secondary" />
           )}

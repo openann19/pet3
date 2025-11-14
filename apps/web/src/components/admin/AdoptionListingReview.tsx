@@ -15,6 +15,7 @@ import { createLogger } from '@/lib/logger';
 import { userService } from '@/lib/user-service';
 import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const logger = createLogger('AdoptionListingReview');
 
@@ -63,10 +64,11 @@ function ListingItem({ listing, isSelected, onSelect, animation }: ListingItemPr
     >
       <div className="flex items-start gap-3">
         {listing.petPhotos[0] && (
-          <img
+          <ProgressiveImage
             src={listing.petPhotos[0]}
             alt={listing.petName}
             className="w-16 h-16 rounded-lg object-cover"
+            aria-label={`Photo of ${listing.petName}`}
           />
         )}
         <div className="flex-1 min-w-0">
@@ -237,10 +239,11 @@ export function AdoptionListingReview() {
                   {selectedListing.petPhotos.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
                       {selectedListing.petPhotos.map((photo, index) => (
-                        <img
+                        <ProgressiveImage
                           key={index}
                           src={photo}
                           alt={`${selectedListing.petName} ${index + 1}`}
+                          aria-label={`${selectedListing.petName} photo ${index + 1}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}

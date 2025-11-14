@@ -251,7 +251,7 @@ export class ConflictResolver<T = unknown> {
       strategy: this.strategy,
     }
 
-    this.history.push(entry as ConflictHistoryEntry<T>)
+    this.history.push(entry)
 
     // Trim history if exceeds max size
     if (this.history.length > this.maxHistorySize) {

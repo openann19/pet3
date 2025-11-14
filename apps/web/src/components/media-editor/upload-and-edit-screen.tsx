@@ -134,36 +134,36 @@ export function UploadAndEditScreen({
   }, []);
 
   return (
-    <div style={styles['container']}>
-      <h2 style={styles['title']}>Upload & Edit</h2>
+    <div style={styles.container}>
+      <h2 style={styles.title}>Upload & Edit</h2>
 
       <DropZoneWeb onDrop={handleDrop} />
 
       {!media ? (
-        <div style={styles['row']}>
+        <div style={styles.row}>
           <Button label="Upload Photo/Video" onPress={doPick} />
         </div>
       ) : media.type === 'image' ? (
-        <div style={styles['editorWrap']}>
+        <div style={styles.editorWrap}>
           <MediaEditor
             source={media as MediaInput & { type: 'image' }}
             onDone={handleImageDone}
             {...(onCancel ? { onCancel } : {})}
           />
-          <div style={styles['actions']}>
+          <div style={styles.actions}>
             <Button label={busy ? 'Processing…' : 'Export'} onPress={runExport} disabled={busy} />
             <Button label="Replace" variant="secondary" onPress={handleReplace} />
           </div>
         </div>
       ) : (
-        <div style={styles['videoWrap']}>
+        <div style={styles.videoWrap}>
           <VideoPreview uri={media.uri} />
           <VideoTrimmer
             uri={media.uri}
             {...(media.durationSec !== undefined ? { durationSec: media.durationSec } : {})}
             onChange={onTrimChange}
           />
-          <div style={styles['actions']}>
+          <div style={styles.actions}>
             <Button label={busy ? 'Transcoding…' : 'Export'} onPress={runExport} disabled={busy} />
             <Button label="Replace" variant="secondary" onPress={handleReplace} />
           </div>
@@ -195,8 +195,8 @@ function VideoPreview({ uri }: VideoPreviewProps): React.ReactElement {
   }
 
   return (
-    <div style={styles['videoPlaceholder']}>
-      <span style={styles['videoPlaceholderText']}>Video selected</span>
+    <div style={styles.videoPlaceholder}>
+      <span style={styles.videoPlaceholderText}>Video selected</span>
     </div>
   );
 }
@@ -222,9 +222,9 @@ function Button({
     <AnimatedView
       {...(handleClick ? { onClick: handleClick } : {})}
       style={{
-        ...styles['btn'],
-        ...(variant === 'secondary' ? styles['btnSecondary'] : styles['btnPrimary']),
-        ...(disabled ? styles['btnDisabled'] : {}),
+        ...styles.btn,
+        ...(variant === 'secondary' ? styles.btnSecondary : styles.btnPrimary),
+        ...(disabled ? styles.btnDisabled : {}),
       }}
       accessibilityRole="button"
       accessibilityLabel={label}

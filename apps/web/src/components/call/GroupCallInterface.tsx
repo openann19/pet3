@@ -93,7 +93,7 @@ function ParticipantVideo({
     <AnimatedView
       style={hoverLift.animatedStyle}
       className={cn(
-        'relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20',
+        'relative rounded-2xl overflow-hidden bg-linear-to-br from-primary/20 to-accent/20',
         isSpotlight ? 'col-span-full row-span-2' : ''
       )}
       role="article"
@@ -111,14 +111,14 @@ function ParticipantVideo({
         <div className="w-full h-full flex items-center justify-center">
           <Avatar className="w-24 h-24 ring-4 ring-white/30">
             <AvatarImage src={participant.avatar} alt={participant.name} />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-3xl font-bold">
+            <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-3xl font-bold">
               {participant.name[0]}
             </AvatarFallback>
           </Avatar>
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
 
       <div className="absolute top-3 left-3 flex flex-col gap-2">
         <div className="glass-strong backdrop-blur-xl px-3 py-1.5 rounded-full">
@@ -451,7 +451,7 @@ export default function GroupCallInterface({
     >
       <AnimatedView
         className={cn(
-          'relative w-full bg-gradient-to-br from-card via-card to-card/80 rounded-3xl overflow-hidden shadow-2xl border border-border/50',
+          'relative w-full bg-linear-to-br from-card via-card to-card/80 rounded-3xl overflow-hidden shadow-2xl border border-border/50',
           isFullscreen ? 'h-full' : 'max-w-7xl h-[90vh]'
         )}
       >
@@ -753,7 +753,7 @@ function LocalParticipantVideo({
   return (
     <div
       className={cn(
-        'relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10',
+        'relative rounded-2xl overflow-hidden bg-linear-to-br from-primary/10 to-accent/10',
         isSpotlight ? 'row-span-1' : '',
         compact ? 'aspect-video' : ''
       )}
@@ -776,14 +776,14 @@ function LocalParticipantVideo({
               src={session.localParticipant.avatar}
               alt={session.localParticipant.name}
             />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-3xl font-bold">
+            <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-3xl font-bold">
               {session.localParticipant.name[0]}
             </AvatarFallback>
           </Avatar>
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
 
       <div className="absolute top-3 left-3">
         <div className="glass-strong backdrop-blur-xl px-3 py-1.5 rounded-full flex items-center gap-2">

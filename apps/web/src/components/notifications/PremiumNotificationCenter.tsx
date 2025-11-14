@@ -7,48 +7,51 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { timingConfigs } from '@/effects/reanimated/transitions';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { haptics } from '@/lib/haptics';
 import {
   BellRinging,
   Check,
-  Trash,
   DotsThreeVertical,
   SlidersHorizontal,
   Sparkle,
+  Trash,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
-import { haptics } from '@/lib/haptics';
-import { useNotifications } from './hooks/useNotifications';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { NotificationFilters } from './components/NotificationFilters';
+import { NotificationGroupList } from './components/NotificationGroupList';
+import { NotificationList } from './components/NotificationList';
+import { NotificationSettings } from './components/NotificationSettings';
 import { useNotificationActions } from './hooks/useNotificationActions';
 import { useNotificationFilters } from './hooks/useNotificationFilters';
-import { NotificationList } from './components/NotificationList';
-import { NotificationGroupList } from './components/NotificationGroupList';
-import { NotificationFilters } from './components/NotificationFilters';
-import { NotificationSettings } from './components/NotificationSettings';
+import { useNotifications } from './hooks/useNotifications';
+import type { NotificationFilter, NotificationPreferences, PremiumNotification } from './types';
 import { getNotificationIcon, getPriorityStyles } from './utils/notification-helpers';
-import type { PremiumNotification, NotificationPreferences, NotificationFilter } from './types';
+
+// Re-export types for external use
+export type { NotificationFilter, NotificationPreferences, PremiumNotification } from './types';
 
 export interface PremiumNotificationCenterProps {
   isOpen: boolean;
@@ -254,7 +257,7 @@ export function PremiumNotificationCenter({
             <ScrollArea className="h-full">
               <div className="px-6 py-4">
                 {filtersWithNotifications.view === 'grouped' &&
-                notifications.groupedNotifications.length > 0 ? (
+                  notifications.groupedNotifications.length > 0 ? (
                   <NotificationGroupList
                     groups={notifications.groupedNotifications}
                     filter={filtersWithNotifications.filter}

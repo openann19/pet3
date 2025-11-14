@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { Suspense } from 'react';
 import { MediaViewer } from '@/components/lazy-exports';
 import { ReportDialog } from './ReportDialog';
+import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 const logger = createLogger('PostDetailView');
 
@@ -145,7 +146,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
       }
 
       const userId = typeof user.id === 'string' ? user.id : '';
-      const userName = typeof user['name'] === 'string' ? user['name'] : 'User';
+      const userName = typeof user.name === 'string' ? user.name : 'User';
       const result = await communityAPI.toggleReaction(
         post.id,
         userId,
@@ -222,7 +223,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
       }
 
       const userId = typeof user.id === 'string' ? user.id : '';
-      const userName = typeof user['name'] === 'string' ? user['name'] : 'User';
+      const userName = typeof user.name === 'string' ? user.name : 'User';
       const commentData: Parameters<typeof communityAPI.createComment>[0] = {
         postId: post.id,
         text: commentText.trim(),
@@ -339,10 +340,11 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                             }}
                             className="relative aspect-square rounded-lg overflow-hidden bg-muted"
                           >
-                            <img
+                            <ProgressiveImage
                               src={url}
                               alt={`Post media ${index + 1}`}
                               className="w-full h-full object-cover"
+                              aria-label={`Post media ${index + 1}`}
                             />
                           </button>
                         );
