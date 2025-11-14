@@ -1,6 +1,6 @@
 'use client';
 
-import type { Variants } from 'framer-motion';
+import { useMotionValue, type MotionValue, type Variants } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { dialogVariants } from '../variants';
 
@@ -14,6 +14,9 @@ export interface UseModalAnimationReturn {
   variants: Variants;
   initial: 'hidden' | false;
   animate: 'visible' | 'hidden' | false;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  y: MotionValue<number>;
 }
 
 /**
@@ -25,6 +28,10 @@ export function useModalAnimation(options: UseModalAnimationOptions): UseModalAn
 
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = !prefersReducedMotion;
+
+  const opacity = useMotionValue(isVisible ? 1 : 0);
+  const scale = useMotionValue(isVisible ? 1 : 0.95);
+  const y = useMotionValue(isVisible ? 0 : 20);
 
   const variants: Variants = {
     ...dialogVariants,
@@ -41,6 +48,9 @@ export function useModalAnimation(options: UseModalAnimationOptions): UseModalAn
     variants: shouldAnimate ? variants : undefined,
     initial: shouldAnimate ? 'hidden' : false,
     animate: shouldAnimate ? (isVisible ? 'visible' : 'hidden') : false,
+    opacity,
+    scale,
+    y,
   };
 }
 

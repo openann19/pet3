@@ -16,6 +16,8 @@ export interface UseSidebarAnimationReturn {
   variants: Variants;
   widthValue: MotionValue<number>;
   opacity: MotionValue<number>;
+  widthStyle: { width: MotionValue<number> };
+  opacityStyle: { opacity: MotionValue<number> };
 }
 
 const DEFAULT_OPEN_WIDTH = 280;
@@ -84,5 +86,7 @@ export function useSidebarAnimation(
     variants,
     widthValue,
     opacity,
+    widthStyle: { width: widthValue },
+    opacityStyle: { opacity },
   };
 }

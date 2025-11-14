@@ -1,6 +1,6 @@
 'use client';
 
-import type { Variants } from 'framer-motion';
+import { useMotionValue, type MotionValue, type Variants } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { springConfigs, motionDurations } from '../variants';
 
@@ -14,6 +14,7 @@ export interface UseStaggeredItemReturn {
   variants: Variants;
   initial: 'hidden' | false;
   animate: 'visible' | false;
+  itemStyle: { opacity: MotionValue<number>; y: MotionValue<number> };
 }
 
 /**
@@ -24,6 +25,9 @@ export function useStaggeredItem(options: UseStaggeredItemOptions): UseStaggered
 
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = !prefersReducedMotion;
+
+  const opacity = useMotionValue(0);
+  const y = useMotionValue(20);
 
   const variants: Variants = {
     hidden: {
@@ -44,6 +48,7 @@ export function useStaggeredItem(options: UseStaggeredItemOptions): UseStaggered
     variants: shouldAnimate ? variants : undefined,
     initial: shouldAnimate ? 'hidden' : false,
     animate: shouldAnimate ? 'visible' : false,
+    itemStyle: { opacity, y },
   };
 }
 

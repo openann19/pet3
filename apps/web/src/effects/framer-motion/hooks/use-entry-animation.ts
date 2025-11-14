@@ -1,6 +1,6 @@
 'use client';
 
-import type { Variants } from 'framer-motion';
+import { useMotionValue, type MotionValue, type Variants } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { springConfigs, motionDurations } from '../variants';
 
@@ -17,6 +17,11 @@ export interface UseEntryAnimationReturn {
   variants: Variants;
   initial: 'hidden' | false;
   animate: 'visible' | false;
+  opacity: MotionValue<number>;
+  scale: MotionValue<number>;
+  translateY: MotionValue<number>;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
 }
 
 export function useEntryAnimation(options: UseEntryAnimationOptions = {}): UseEntryAnimationReturn {
@@ -31,6 +36,12 @@ export function useEntryAnimation(options: UseEntryAnimationOptions = {}): UseEn
 
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = enabled && !prefersReducedMotion;
+
+  const opacity = useMotionValue(initialOpacity);
+  const scale = useMotionValue(initialScale);
+  const translateY = useMotionValue(initialY);
+  const x = useMotionValue(0);
+  const y = useMotionValue(initialY);
 
   const variants: Variants = {
     hidden: {
@@ -53,6 +64,11 @@ export function useEntryAnimation(options: UseEntryAnimationOptions = {}): UseEn
     variants: shouldAnimate ? variants : undefined,
     initial: shouldAnimate ? 'hidden' : false,
     animate: shouldAnimate ? 'visible' : false,
+    opacity,
+    scale,
+    translateY,
+    x,
+    y,
   };
 }
 

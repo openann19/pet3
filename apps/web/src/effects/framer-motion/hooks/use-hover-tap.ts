@@ -19,6 +19,7 @@ export interface UseHoverTapReturn {
   handleMouseEnter: () => void;
   handleMouseLeave: () => void;
   handlePress: () => void;
+  animatedStyle: { scale: MotionValue<number> };
 }
 
 const DEFAULT_HOVER_SCALE = 1.1;
@@ -111,5 +112,6 @@ export function useHoverTap(options: UseHoverTapOptions = {}): UseHoverTapReturn
     handleMouseEnter,
     handleMouseLeave,
     handlePress,
+    animatedStyle: { scale },
   };
 }

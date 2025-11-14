@@ -14,6 +14,7 @@ export interface UseRotationOptions {
 export interface UseRotationReturn {
   rotation: MotionValue<number>;
   variants: Variants;
+  rotationStyle: { rotate: MotionValue<number> };
 }
 
 /**
@@ -57,5 +58,6 @@ export function useRotation(options: UseRotationOptions = {}): UseRotationReturn
   return {
     rotation,
     variants,
+    rotationStyle: { rotate: rotation },
   };
 }

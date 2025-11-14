@@ -19,6 +19,7 @@ export interface UseGlowPulseReturn {
   shadowRadius: MotionValue<number>;
   start: () => void;
   stop: () => void;
+  animatedStyle: { boxShadow: string };
 }
 
 const DEFAULT_DURATION = 2000;
@@ -103,5 +104,8 @@ export function useGlowPulse(options: UseGlowPulseOptions = {}): UseGlowPulseRet
     shadowRadius,
     start,
     stop,
+    animatedStyle: {
+      boxShadow: `0 0 ${shadowRadius.get()}px ${color}`,
+    },
   };
 }

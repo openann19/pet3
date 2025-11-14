@@ -13,6 +13,7 @@ export interface UseExpandCollapseReturn {
   variants: Variants;
   height: MotionValue<string>;
   opacity: MotionValue<number>;
+  heightStyle: { height: MotionValue<string>; opacity: MotionValue<number> };
 }
 
 /**
@@ -60,5 +61,6 @@ export function useExpandCollapse(options: UseExpandCollapseOptions): UseExpandC
     variants,
     height,
     opacity,
+    heightStyle: { height, opacity },
   };
 }

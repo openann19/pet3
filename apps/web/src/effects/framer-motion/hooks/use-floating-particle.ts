@@ -25,6 +25,7 @@ export interface UseFloatingParticleReturn {
   y: MotionValue<number>;
   opacity: MotionValue<number>;
   scale: MotionValue<number>;
+  style: { x: MotionValue<number>; y: MotionValue<number>; opacity: MotionValue<number>; scale: MotionValue<number> };
 }
 
 /**
@@ -103,6 +104,7 @@ export function useFloatingParticle(
     y,
     opacity: opacityValue,
     scale,
+    style: { x, y, opacity: opacityValue, scale },
   };
 }
 
