@@ -118,8 +118,6 @@ const REACTIONS: { type: ReactionType; icon: typeof Heart; label: string }[] = [
 ];
 
 function MessageBubble({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _prefersReducedMotion = useReducedMotion(),
   message,
   isOwn,
   isClusterStart,
@@ -291,11 +289,9 @@ function MessageBubble({
     } else {
       void animate(contextMenuOpacity, 0, {
         duration: timingConfigs.fast.duration ?? 0.15,
-        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
       });
       void animate(contextMenuScale, 0.95, {
         duration: timingConfigs.fast.duration ?? 0.15,
-        ease: (timingConfigs.fast.ease ?? 'easeOut') as string,
       });
     }
   }, [showContextMenu, contextMenuOpacity, contextMenuScale]);
@@ -313,6 +309,10 @@ function MessageBubble({
         stiffness: springConfigs.bouncy.stiffness ?? 500,
       });
       void animate(reactionsPickerTranslateY, 0, {
+        type: 'spring',
+        damping: springConfigs.smooth.damping ?? 25,
+        stiffness: springConfigs.smooth.stiffness ?? 400,
+      });
         type: 'spring',
         damping: springConfigs.smooth.damping ?? 25,
         stiffness: springConfigs.smooth.stiffness ?? 400,
@@ -534,7 +534,7 @@ function MessageBubble({
   const contextMenuStyle = useMotionStyle(() => {
     return {
       opacity: contextMenuOpacity.get(),
-      transform: [{ scale: contextMenuScale.get() }],
+      transform: [{ scale: contextMenuScale.get() }] as Array<Record<string, number>>,
     };
   });
 
@@ -544,7 +544,7 @@ function MessageBubble({
       transform: [
         { scale: reactionsPickerScale.get() },
         { translateY: reactionsPickerTranslateY.get() },
-      ],
+      ] as Array<Record<string, number>>,
     };
   });
 
@@ -607,7 +607,7 @@ function MessageBubble({
         { rotateX: `${tiltYVal}deg` },
         { rotateY: `${-tiltXVal}deg` },
         { translateZ: `${liftVal}px` },
-      ],
+      ] as Array<Record<string, string | number>>,
     };
   });
 
@@ -629,7 +629,7 @@ function MessageBubble({
       transform: [
         { scale: baseGlowScaleVal },
         { translateZ: `${liftVal * 1.5}px` },
-      ],
+      ] as Array<Record<string, string | number>>,
     };
   });
 
