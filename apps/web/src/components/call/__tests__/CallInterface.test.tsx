@@ -21,9 +21,13 @@ describe('CallInterface', () => {
   const mockSession: CallSession = {
     call: {
       id: 'call1',
+      roomId: 'room1',
       status: 'active',
       type: 'video',
-      participants: [],
+      initiatorId: 'user1',
+      recipientId: 'user2',
+      duration: 0,
+      quality: 'excellent',
     },
     localParticipant: {
       id: 'user1',
@@ -39,8 +43,10 @@ describe('CallInterface', () => {
       isMuted: false,
       isVideoEnabled: true,
     },
-    localStream: null,
-    remoteStream: null,
+    localStream: undefined,
+    remoteStream: undefined,
+    isMinimized: false,
+    videoQuality: 'HD',
   };
 
   beforeEach(() => {

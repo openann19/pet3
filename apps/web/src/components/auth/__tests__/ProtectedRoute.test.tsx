@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, BrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Mock dependencies
@@ -96,7 +96,7 @@ describe('ProtectedRoute', () => {
       isLoading: true,
     });
 
-    render(
+    const { getByTestId } = render(
       <TestWrapper>
         <ProtectedRoute>
           <div>Protected Content</div>
