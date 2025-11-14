@@ -43,7 +43,7 @@ export function AnimatedCard({
     if (reducedMotion) {
       opacity.set(1);
       translateY.set(0);
-      return;
+      return undefined;
     }
 
     if (delay > 0) {

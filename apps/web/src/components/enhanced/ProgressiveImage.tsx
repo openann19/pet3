@@ -62,8 +62,7 @@ export function ProgressiveImage({
           }
         })
         .catch(() => {
-          if (!isMounted) return;
-          setBestFormat('original');
+          if (isMounted) setBestFormat('original');
         });
       return () => {
         isMounted = false;
@@ -71,6 +70,7 @@ export function ProgressiveImage({
     } else {
       setBestFormat(format);
     }
+    return undefined;
   }, [format]);
 
   const getOptimizedSrc = useCallback(

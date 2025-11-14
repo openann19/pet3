@@ -14,7 +14,7 @@ import { getAriaButtonAttributes } from '@/lib/accessibility';
 const logger = createLogger('ToggleButton');
 
 export interface ToggleButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   variant?: 'primary' | 'secondary' | 'accent' | 'ghost';

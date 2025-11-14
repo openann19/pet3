@@ -106,9 +106,9 @@ export function SmartSkeleton({
         return (
           <div className="flex items-center gap-3">
             <div className={cn(baseClasses, 'rounded-full w-10 h-10 relative')}>
-              {animate && (
+              {animate && shimmerStyle && (
                 <motion.div
-                  style={shimmerStyleValue as import('framer-motion').MotionStyle}
+                  style={shimmerStyle as import('framer-motion').MotionStyle}
                   className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded-full"
                 >
                   <div />
@@ -117,9 +117,9 @@ export function SmartSkeleton({
             </div>
             <div className="flex-1 space-y-2">
               <div className={cn(baseClasses, 'h-4 rounded w-24 relative')}>
-                {animate && (
+                {animate && shimmerStyle && (
                   <motion.div
-                    style={shimmerStyleValue as import('framer-motion').MotionStyle}
+                    style={shimmerStyle as import('framer-motion').MotionStyle}
                     className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
                   >
                     <div />
@@ -127,9 +127,9 @@ export function SmartSkeleton({
                 )}
               </div>
               <div className={cn(baseClasses, 'h-3 rounded w-32 relative')}>
-                {animate && (
+                {animate && shimmerStyle && (
                   <motion.div
-                    style={shimmerStyleValue as import('framer-motion').MotionStyle}
+                    style={shimmerStyle as import('framer-motion').MotionStyle}
                     className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
                   >
                     <div />
@@ -144,9 +144,9 @@ export function SmartSkeleton({
       case 'post': {
         return (
           <div className={cn(baseClasses, 'rounded-lg p-4 space-y-4')}>
-            {animate && (
+            {animate && shimmerStyle && (
               <motion.div
-                style={shimmerStyleValue as import('framer-motion').MotionStyle}
+                style={shimmerStyle as import('framer-motion').MotionStyle}
                 className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent pointer-events-none rounded-lg"
               >
                 <div />
@@ -182,9 +182,9 @@ export function SmartSkeleton({
               height: height ?? '1em',
             }}
           >
-            {animate && (
+            {animate && shimmerStyle && (
               <motion.div
-                style={shimmerStyleValue as import('framer-motion').MotionStyle}
+                style={shimmerStyle as import('framer-motion').MotionStyle}
                 className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent rounded"
               >
                 <div />

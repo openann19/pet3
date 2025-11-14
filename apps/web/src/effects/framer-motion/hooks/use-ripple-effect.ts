@@ -19,6 +19,11 @@ export interface UseRippleEffectReturn {
   ripples: RippleState[];
   addRipple: (event: React.MouseEvent<HTMLElement>) => void;
   clearRipples: () => void;
+  color: string;
+  animatedStyle: {
+    color: string;
+    opacity: number;
+  };
 }
 
 /**
@@ -55,5 +60,7 @@ export function useRippleEffect(options: UseRippleEffectOptions = {}): UseRipple
     ripples,
     addRipple,
     clearRipples,
+    color,
+    animatedStyle: { color, opacity },
   };
 }

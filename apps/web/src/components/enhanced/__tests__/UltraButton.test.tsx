@@ -97,7 +97,7 @@ describe('UltraButton', () => {
     expect(screen.getByText('Button')).toBeInTheDocument();
 
     rerender(
-      <UltraButton size="md">Button</UltraButton>
+      <UltraButton size="default">Button</UltraButton>
     );
 
     expect(screen.getByText('Button')).toBeInTheDocument();

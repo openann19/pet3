@@ -8,7 +8,7 @@ import { useUIConfig } from "@/hooks/use-ui-config";
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { getAriaButtonAttributes } from '@/lib/accessibility';
 
-interface PremiumButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+interface PremiumButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   variant?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'gradient';
   size?: 'sm' | 'md' | 'lg';
   icon?: React.ReactNode;
