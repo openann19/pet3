@@ -45,4 +45,6 @@ export { useModalAnimation, type UseModalAnimationOptions, type UseModalAnimatio
 export { usePageTransition, type UsePageTransitionOptions, type UsePageTransitionReturn } from './use-page-transition';
 export { useNavBarAnimation, type UseNavBarAnimationOptions, type UseNavBarAnimationReturn } from './use-nav-bar-animation';
 export { useHeaderButtonAnimation, type UseHeaderButtonAnimationOptions, type UseHeaderButtonAnimationReturn } from './use-header-button-animation';
+export { useGradientAnimation, type UseGradientAnimationOptions, type UseGradientAnimationReturn } from './use-gradient-animation';
+export { useStickerAnimation, type UseStickerAnimationOptions, type UseStickerAnimationReturn, type StickerAnimationType } from './use-sticker-animation';
 

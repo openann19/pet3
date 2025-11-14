@@ -60,7 +60,7 @@ import { MessagePeek } from './MessagePeek';
 import { SmartImage } from '@/components/media/SmartImage';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { extractNumberValue } from '@/effects/reanimated';
-import { useMotionStyle } from '@/effects/reanimated/use-motion-style';
+import { useMotionStyle } from '@/effects/framer-motion/utils/use-motion-style';
 
 // Helper to get value from either MotionValue or SharedValue
 function getMotionValue(value: { get?: () => number; value?: number | { target: number } } | number, defaultValue: number): number {

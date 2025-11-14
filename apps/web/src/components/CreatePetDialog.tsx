@@ -19,7 +19,7 @@ import {
   useMotionValue,
   animate,
 } from 'framer-motion';
-import { useMotionStyle } from '@/effects/reanimated/use-motion-style';
+import { useMotionStyle } from '@/effects/framer-motion/utils/use-motion-style';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';

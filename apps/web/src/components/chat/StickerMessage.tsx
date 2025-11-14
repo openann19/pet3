@@ -4,8 +4,7 @@ import { motion, useMotionValue, animate } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
 import type { Sticker } from '@/lib/sticker-library';
 import { cn } from '@/lib/utils';
-import { useStickerAnimation } from '@/effects/reanimated/use-sticker-animation';
-import { useHoverTap } from '@/effects/framer-motion/hooks';
+import { useStickerAnimation, useHoverTap } from '@/effects/framer-motion/hooks';
 import { springConfigs } from '@/effects/framer-motion/variants';
 import { useUIConfig } from "@/hooks/use-ui-config";
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -72,17 +71,10 @@ export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessa
         onClick={hoverTap.handlePress ?? undefined}
         style={{
           scale: hoverTap.scale,
-          ...(stickerAnimation.animatedStyle.transform && {
-            rotate: stickerAnimation.animatedStyle.transform.includes('rotate') 
-              ? stickerAnimation.animatedStyle.transform.match(/rotate\(([^)]+)\)/)?.[1] 
-              : undefined,
-            x: stickerAnimation.animatedStyle.transform.includes('translateX')
-              ? stickerAnimation.animatedStyle.transform.match(/translateX\(([^)]+)\)/)?.[1]?.replace('px', '')
-              : undefined,
-            y: stickerAnimation.animatedStyle.transform.includes('translateY')
-              ? stickerAnimation.animatedStyle.transform.match(/translateY\(([^)]+)\)/)?.[1]?.replace('px', '')
-              : undefined,
-          }),
+          rotate: stickerAnimation.rotation,
+          x: stickerAnimation.translateX,
+          y: stickerAnimation.translateY,
+          opacity: stickerAnimation.opacity,
         }}
         whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
         whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
