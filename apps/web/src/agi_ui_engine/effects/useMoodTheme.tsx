@@ -1,7 +1,5 @@
-import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
-
+import { isTruthy } from '@/core/guards';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { useUIConfig } from '@/hooks/use-ui-config';

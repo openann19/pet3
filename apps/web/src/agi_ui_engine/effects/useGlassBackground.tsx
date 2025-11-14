@@ -1,6 +1,4 @@
 'use client';
-import { motion } from 'framer-motion';
-
 import { useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withTiming, Easing } from '@petspark/motion';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';

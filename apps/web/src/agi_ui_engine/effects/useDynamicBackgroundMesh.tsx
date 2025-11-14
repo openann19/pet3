@@ -1,6 +1,4 @@
 'use client';
-import { motion } from 'framer-motion';
-
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { useUIConfig } from '@/hooks/use-ui-config';
 import { useEffect } from 'react';

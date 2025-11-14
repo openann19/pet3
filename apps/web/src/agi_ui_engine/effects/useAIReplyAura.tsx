@@ -1,7 +1,5 @@
-import { isTruthy } from '@/core/guards';
 'use client';
-import { motion } from 'framer-motion';
-
+import { isTruthy } from '@/core/guards';
 import { useEffect } from 'react';
 import {
   useSharedValue,
