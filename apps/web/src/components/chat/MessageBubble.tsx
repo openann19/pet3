@@ -313,10 +313,6 @@ function MessageBubble({
         damping: springConfigs.smooth.damping ?? 25,
         stiffness: springConfigs.smooth.stiffness ?? 400,
       });
-        type: 'spring',
-        damping: springConfigs.smooth.damping ?? 25,
-        stiffness: springConfigs.smooth.stiffness ?? 400,
-      });
     } else {
       void animate(reactionsPickerOpacity, 0, {
         duration: timingConfigs.fast.duration ?? 0.15,
