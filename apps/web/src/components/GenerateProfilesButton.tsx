@@ -8,7 +8,7 @@ import { generateSamplePets } from '@/lib/seedData';
 import type { Pet } from '@/lib/types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 
 interface GenerateProfilesButtonProps {

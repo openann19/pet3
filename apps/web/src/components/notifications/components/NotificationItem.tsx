@@ -10,7 +10,7 @@ import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Check, Trash, Archive } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';

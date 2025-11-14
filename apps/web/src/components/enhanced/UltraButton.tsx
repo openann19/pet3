@@ -5,8 +5,7 @@
 
 import React, { type ReactNode, type ButtonHTMLAttributes, useCallback } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
-import { useMagneticEffect } from '@/effects/reanimated/use-magnetic-effect';
-import { useShimmer } from '@/effects/reanimated/use-shimmer';
+import { useMagneticEffect, useShimmer } from '@/effects/framer-motion/hooks';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

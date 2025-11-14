@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 
 import { useCallback } from 'react';
-import { useRippleEffect } from '@/effects/reanimated/use-ripple-effect';
+import { useRippleEffect } from '@/effects/framer-motion/hooks';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { cn } from '@/lib/utils';

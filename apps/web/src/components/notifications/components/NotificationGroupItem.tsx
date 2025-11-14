@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Archive } from '@phosphor-icons/react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { formatDistanceToNow } from 'date-fns';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';

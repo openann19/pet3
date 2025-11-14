@@ -26,6 +26,10 @@ export { useRotation, type UseRotationOptions, type UseRotationReturn } from './
 // ============================================================================
 export { useRippleEffect, type UseRippleEffectOptions, type UseRippleEffectReturn, type RippleState } from './use-ripple-effect';
 export { useMagneticHover, type UseMagneticHoverOptions, type UseMagneticHoverReturn } from './use-magnetic-hover';
+export { useMagneticEffect, type UseMagneticEffectOptions, type UseMagneticEffectReturn } from './use-magnetic-effect';
+export { useShimmer, type UseShimmerOptions, type UseShimmerReturn } from './use-shimmer';
+export { useGlowPulse, type UseGlowPulseOptions, type UseGlowPulseReturn } from './use-glow-pulse';
+export { useSidebarAnimation, type UseSidebarAnimationOptions, type UseSidebarAnimationReturn } from './use-sidebar-animation';
 
 // ============================================================================
 // COMPONENT-SPECIFIC HOOKS

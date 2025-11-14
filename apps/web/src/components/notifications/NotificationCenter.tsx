@@ -3,7 +3,7 @@ import { motion, useMotionValue, animate, AnimatePresence } from 'framer-motion'
 import { useStorage } from '@/hooks/use-storage';
 import React from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useHoverLift, useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { ButtonHTMLAttributes } from 'react';

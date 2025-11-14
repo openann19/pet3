@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { type ReactNode } from 'react'
 import { AnimatedView } from '@/hooks/use-animated-style-value'
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap'
+import { useBounceOnTap } from '@/effects/framer-motion/hooks'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value'
 import { getSpacing } from '@/lib/design-tokens'
@@ -56,21 +56,12 @@ export function NavButton({
     ? 'bg-blue-100 text-blue-700 rounded-lg px-3 py-2 font-semibold'
     : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
 
-  const animationTransforms = (animation.buttonStyle as { transform?: Record<string, unknown>[] })?.transform ?? []
-  const bounceTransforms = (bounceAnimation.animatedStyle as { transform?: Record<string, unknown>[] })?.transform ?? []
-
-  const combinedStyle: AnimatedStyle = {
-    ...(animation.buttonStyle as Record<string, unknown>),
-    transform: [...animationTransforms, ...bounceTransforms],
-  }
-
   // Use direct pixel values for min-width: 60px and 70px (spacing tokens '15' and '18' don't exist)
   const minWidthStyle = { minWidth: '60px' }
-  const smMinWidthStyle = { minWidth: '70px' }
 
   return (
     <motion.div
-      style={{ ...combinedStyle, ...minWidthStyle, [`@media (min-width: 640px)`]: smMinWidthStyle } as React.CSSProperties}
+      style={{ scale: bounceAnimation.scale, ...minWidthStyle }}
       className={cn('flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl relative', activeClasses, className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -85,7 +76,6 @@ export function NavButton({
       }}
     >
       <motion.div
-        style={enableIconAnimation ? animation.iconStyle : undefined}
         className="relative"
       >
         {icon}
@@ -93,7 +83,6 @@ export function NavButton({
       <span className={cn(getTypographyClasses('caption'), 'sm:text-xs font-semibold leading-tight')}>{label}</span>
       {isActive && showIndicator && (
         <motion.div
-          style={animation.indicatorStyle}
           className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
         >
           <div />

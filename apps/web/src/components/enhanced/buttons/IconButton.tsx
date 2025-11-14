@@ -2,9 +2,7 @@
 
 import React, { useCallback, useRef, useEffect, type ReactNode, type ButtonHTMLAttributes } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
-import { useRippleEffect } from '@/effects/reanimated/use-ripple-effect';
-import { useMagneticHover } from '@/effects/reanimated/use-magnetic-hover';
+import { useHoverLift, useRippleEffect, useMagneticHover } from '@/effects/framer-motion/hooks';
 import { springConfigs } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
@@ -123,12 +121,12 @@ export function IconButton({
     },
   };
 
-  const handleMouseEnter = useCallback(() => {
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLElement>) => {
     if (disabled) return;
     hoverLift.handleEnter();
-    magnetic.handleMouseEnter();
+    magnetic.handleMouseEnter(e);
     if (enableGlow) {
-      animate(glowOpacity, 1, {
+      void animate(glowOpacity, 1, {
         type: 'spring',
         damping: springConfigs.smooth.damping,
         stiffness: springConfigs.smooth.stiffness,
@@ -140,7 +138,7 @@ export function IconButton({
     hoverLift.handleLeave();
     magnetic.handleMouseLeave();
     if (enableGlow) {
-      animate(glowOpacity, 0, {
+      void animate(glowOpacity, 0, {
         type: 'spring',
         damping: springConfigs.smooth.damping,
         stiffness: springConfigs.smooth.stiffness,
@@ -205,13 +203,12 @@ export function IconButton({
 
   return (
     <div
-      ref={magnetic.handleRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseMove={magnetic.handleMouseMove}
       className="inline-block relative"
     >
-      <motion.div style={magnetic.animatedStyle as React.CSSProperties}>
+      <motion.div style={{ x: magnetic.translateX, y: magnetic.translateY }}>
         <motion.div
           variants={hoverLift.variants}
           initial="rest"
@@ -269,13 +266,15 @@ export function IconButton({
                   <motion.div
                     key={r.id}
                     className="absolute rounded-full pointer-events-none"
+                    initial={{ scale: 0, opacity: 1 }}
+                    animate={{ scale: 2, opacity: 0 }}
+                    transition={{ duration: 0.6 }}
                     style={{
-                      left: r.x,
-                      top: r.y,
-                      width: config.size,
-                      height: config.size,
-                      backgroundColor: ripple.color,
-                      ...(ripple.animatedStyle as React.CSSProperties),
+                      left: r.x - r.size / 2,
+                      top: r.y - r.size / 2,
+                      width: r.size,
+                      height: r.size,
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
                     } as React.CSSProperties}
                   />
                 ))}

@@ -4,7 +4,7 @@ import React, { useState, useCallback, useRef, useEffect, useId } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { motionDurations, springConfigs } from '@/effects/framer-motion/variants';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { Eye, EyeSlash, X, CheckCircle, WarningCircle } from '@phosphor-icons/react';

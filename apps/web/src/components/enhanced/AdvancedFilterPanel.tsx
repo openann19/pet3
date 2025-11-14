@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useFilters } from '@/hooks/use-filters';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { motionDurations } from '@/effects/framer-motion/variants';

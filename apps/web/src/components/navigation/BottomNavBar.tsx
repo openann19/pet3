@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation';
-import { useBounceOnTap } from '@/effects/reanimated';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 import { springConfigs, motionDurations } from '@/effects/framer-motion/variants';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';

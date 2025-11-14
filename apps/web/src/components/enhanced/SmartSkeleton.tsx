@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 // Removed useAnimatedStyleValue - using motion values directly
-import { useShimmer } from '@/effects/reanimated/use-shimmer';
+import { useShimmer } from '@/effects/framer-motion/hooks';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface SmartSkeletonProps {

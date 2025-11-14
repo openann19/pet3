@@ -22,7 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSwipeGesture } from '@/hooks/use-swipe-gesture';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
+import { useBounceOnTap } from '@/effects/framer-motion/hooks';
 import React from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { haptics } from '@/lib/haptics';

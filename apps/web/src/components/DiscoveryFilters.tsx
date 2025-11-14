@@ -13,7 +13,7 @@ import {
   ChatCircle,
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';

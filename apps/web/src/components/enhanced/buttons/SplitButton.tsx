@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, type ReactNode } from 'react';
 import { motion, useMotionValue, animate, type Variants } from 'framer-motion';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
+import { useHoverLift } from '@/effects/framer-motion/hooks';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';

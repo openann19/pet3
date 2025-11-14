@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
+import { useAnimatePresence } from '@/effects/framer-motion/hooks';
 import { useAnimatedStyleValue } from '@/hooks/use-animated-style-value';
 import type { AnimatedStyle } from '@/hooks/use-animated-style-value';
 import { MagnifyingGlass, X, Clock, TrendUp, Sparkle } from '@phosphor-icons/react';
