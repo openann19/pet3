@@ -77,7 +77,7 @@ describe('MatchingAPI', () => {
 
   it('reports a pet', async () => {
     await expect(
-      matchingAPI.report({
+      matchingAPI.reportPet({
         reporterPetId: 'pet1',
         reportedPetId: 'pet2',
         reason: 'inappropriate',

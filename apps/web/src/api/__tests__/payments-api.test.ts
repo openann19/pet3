@@ -312,25 +312,25 @@ beforeEach(() => {
   // Mock APIClient methods to return test data
   vi.spyOn(APIClient, 'get').mockImplementation(async (url: string) => {
     if (url.includes('/payments/entitlements')) {
-      return { data: { entitlements: mockEntitlements }, status: 200 };
+      return { data: { entitlements: mockEntitlements }};
     }
     if (url.includes('/payments/subscription')) {
-      return { data: { subscription: mockSubscription }, status: 200 };
+      return { data: { subscription: mockSubscription }};
     }
     if (url.includes('/payments/billing-issue')) {
-      return { data: { billingIssue: mockBillingIssue }, status: 200 };
+      return { data: { billingIssue: mockBillingIssue }};
     }
     if (url.includes('/payments/audit-logs')) {
-      return { data: { logs: [] }, status: 200 };
+      return { data: { logs: [] }};
     }
     if (url.includes('/payments/admin/subscriptions')) {
-      return { data: { subscriptions: [mockSubscription] }, status: 200 };
+      return { data: { subscriptions: [mockSubscription] }};
     }
     if (url.includes('/payments/admin/metrics')) {
-      return { data: { metrics: mockMetrics }, status: 200 };
+      return { data: { metrics: mockMetrics }};
     }
     if (url.includes('/payments/usage/counter')) {
-      return { data: { usageCounter: { type: 'swipe', count: 10, limit: 100, resetAt: new Date().toISOString() } }, status: 200 };
+      return { data: { usageCounter: { type: 'swipe', count: 10, limit: 100, resetAt: new Date().toISOString() } }};
     }
     return { data: {}, status: 404 };
   });
@@ -343,32 +343,32 @@ beforeEach(() => {
       return { data: { billingIssue: mockBillingIssue }, status: 201 };
     }
     if (url.includes('/payments/consumables/redeem')) {
-      return { data: { success: true, remaining: 4 }, status: 200 };
+      return { data: { success: true, remaining: 4 }};
     }
     if (url.includes('/payments/consumables')) {
-      return { data: { entitlements: mockEntitlements }, status: 200 };
+      return { data: { entitlements: mockEntitlements }};
     }
     if (url.includes('/payments/usage')) {
-      return { data: { success: true, remaining: 90, limit: 100 }, status: 200 };
+      return { data: { success: true, remaining: 90, limit: 100 }};
     }
     return { data: {}, status: 201 };
   });
 
   vi.spyOn(APIClient, 'put').mockImplementation(async (url: string) => {
     if (url.includes('/payments/entitlements')) {
-      return { data: { entitlements: mockEntitlements }, status: 200 };
+      return { data: { entitlements: mockEntitlements }};
     }
-    return { data: {}, status: 200 };
+    return { data: {}};
   });
 
   vi.spyOn(APIClient, 'patch').mockImplementation(async (url: string) => {
     if (url.includes('/payments/subscription')) {
-      return { data: { subscription: mockSubscription }, status: 200 };
+      return { data: { subscription: mockSubscription }};
     }
     if (url.includes('/payments/billing-issue')) {
-      return { data: { billingIssue: { ...mockBillingIssue, resolved: true } }, status: 200 };
+      return { data: { billingIssue: { ...mockBillingIssue, resolved: true } }};
     }
-    return { data: {}, status: 200 };
+    return { data: {}};
   });
 });
 
@@ -423,7 +423,6 @@ describe('PaymentsApi.getUserSubscription', () => {
   it('should return null for non-existent subscription', async () => {
     vi.spyOn(APIClient, 'get').mockResolvedValueOnce({
       data: { subscription: null },
-      status: 200,
     });
 
     const subscription = await paymentsApi.getUserSubscription('user-1');
@@ -512,7 +511,7 @@ describe('PaymentsApi.getUserBillingIssue', () => {
     const originalFetch = global.fetch;
     vi.spyOn(APIClient, 'get').mockResolvedValueOnce({
       data: { billingIssue: null },
-      status: 200,
+      
     });
 
     const issue = await paymentsApi.getUserBillingIssue('user-1');
