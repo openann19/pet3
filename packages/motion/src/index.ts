@@ -190,6 +190,22 @@ export type Transition =
       ease?: number[] | string;
     };
 
+// Define and export EasingFunction type
+export type EasingFunction = (value: number) => number
+
+// Define and export Transition type
+export type Transition =
+  | {
+      type: 'spring';
+      stiffness: number;
+      damping: number;
+      mass?: number;
+    }
+  | {
+      duration: number;
+      ease?: number[] | string;
+    };
+
 // Re-export custom primitives
 export { MotionView } from './primitives/MotionView'
 export { MotionText } from './primitives/MotionText'
