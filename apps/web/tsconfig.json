@@ -2,38 +2,19 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "types": [
-      "vite/client"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
     "baseUrl": ".",
-    "typeRoots": [
-      "../../node_modules/@types",
-      "./node_modules/@types"
-    ],
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@design-system/*": [
-        "./design-system/*"
-      ],
-      "@petspark/chat-core": [
-        "../../packages/chat-core/src/index.ts"
-      ],
-      "@petspark/config": [
-        "../../packages/config/src/index.ts"
-      ],
-      "@petspark/shared": [
-        "../../packages/shared/src/index.ts"
-      ],
-      "@petspark/spec-core": [
-        "../../packages/spec-core/src/index.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@design-system/*": ["./design-system/*"],
+      "@petspark/core": ["../../packages/core/src/index.ts"],
+      "@petspark/core/*": ["../../packages/core/src/*"],
+      "@petspark/chat-core": ["../../packages/chat-core/src/index.ts"],
+      "@petspark/config": ["../../packages/config/src/index.ts"],
+      "@petspark/shared": ["../../packages/shared/src/index.ts"],
+      "@petspark/spec-core": ["../../packages/spec-core/src/index.ts"]
     },
     "resolveJsonModule": true
   },
@@ -47,7 +28,9 @@
     "vite.config.ts",
     "design-system/**/*.ts",
     "design-system/**/*.tsx",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "../../packages/core/src/**/*.ts",
+    "../../packages/core/src/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
