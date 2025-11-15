@@ -829,7 +829,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 id="bio"
                 value={bio}
                 onChange={(e) => { setBio(e.target.value); }}
-                placeholder={`Tell us what makes ${String(name || 'your pet' ?? '')} special...`}
+                placeholder={`Tell us what makes ${String((name || 'your pet') ?? '')} special...`}
                 rows={3}
                 className="mt-1"
               />

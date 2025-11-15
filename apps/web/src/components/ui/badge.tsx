@@ -7,21 +7,22 @@ import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typogra
 
 const badgeVariants = cva(
   cn(
-    'inline-flex items-center justify-center rounded-[var(--radius-sm)] border w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:border-(--coral-primary) focus-visible:ring-[var(--coral-primary)]/50 focus-visible:ring-[3px] aria-invalid:ring-[var(--error)]/20 dark:aria-invalid:ring-[var(--error)]/40 aria-invalid:border-(--error) transition-[color,box-shadow] overflow-hidden',
-    getTypographyClasses('badge'),
+    'inline-flex items-center justify-center rounded-full border w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors overflow-hidden uppercase tracking-wide',
+    getTypographyClasses('caption'),
     getSpacingClassesFromConfig({ paddingX: 'sm', paddingY: 'xs', gap: 'xs' })
   ),
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-(--coral-primary) text-white [a&]:hover:bg-(--coral-hover)',
+        default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
         secondary:
-          'border-transparent bg-(--secondary-accent-orange) text-(--text-primary) [a&]:hover:bg-(--secondary-accent-yellow)',
+          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/90',
         destructive:
-          'border-transparent bg-(--error) text-white [a&]:hover:bg-(--coral-hover) focus-visible:ring-[var(--error)]/20 dark:focus-visible:ring-[var(--error)]/40',
-        outline: 'text-(--text-primary) border-(--border-light) [a&]:hover:bg-(--secondary-accent-orange) [a&]:hover:text-(--text-primary)',
-        success: 'border-transparent bg-(--success) text-white [a&]:hover:bg-(--success)/90',
-        warning: 'border-transparent bg-(--warning) text-(--text-primary) [a&]:hover:bg-(--warning)/90',
+          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/40',
+        outline: 'text-foreground border-border hover:bg-muted/50',
+        success: 'border-transparent bg-success text-success-foreground hover:bg-success/90',
+        warning: 'border-transparent bg-warning text-warning-foreground hover:bg-warning/90',
+        muted: 'border-transparent bg-muted text-muted-foreground',
       },
     },
     defaultVariants: {

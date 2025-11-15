@@ -108,43 +108,35 @@ const DARK_HIGH_CONTRAST_PALETTE: HighContrastPalette = {
   mutedForeground: '#CCCCCC',
 }
 
-/**
- * Get high contrast theme
- */
-export function getHighContrastTheme(
-  config: HighContrastThemeConfig = {}
-): HighContrastTheme {
-  const {
-    mode = 'auto',
-    textSize = 1.25,
-    enableReducedMotion = true,
-    customPalette,
-  } = config
-
-  // Determine active mode
-  let activeMode: HighContrastMode = mode
-  if (mode === 'auto') {
-    if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      activeMode = prefersDark ? 'dark' : 'light'
-    } else {
-      activeMode = 'light'
-    }
+function resolveActiveMode(mode: HighContrastMode): HighContrastMode {
+  if (mode !== 'auto') {
+    return mode
   }
 
-  // Get base palette
-  const basePalette =
-    activeMode === 'dark' ? DARK_HIGH_CONTRAST_PALETTE : LIGHT_HIGH_CONTRAST_PALETTE
+  if (typeof window === 'undefined') {
+    return 'light'
+  }
 
-  // Merge with custom palette
-  const palette: HighContrastPalette = {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  return prefersDark ? 'dark' : 'light'
+}
+
+function selectPalette(mode: HighContrastMode, customPalette?: Partial<HighContrastPalette>): HighContrastPalette {
+  const basePalette =
+    mode === 'dark' ? DARK_HIGH_CONTRAST_PALETTE : LIGHT_HIGH_CONTRAST_PALETTE
+
+  return {
     ...basePalette,
     ...customPalette,
   }
+}
 
-  // Generate CSS variables
-  const cssVariables: Record<string, string> = {
-    // Colors
+function buildCssVariables(
+  palette: HighContrastPalette,
+  textSize: TextSizeMultiplier,
+  enableReducedMotion: boolean
+): Record<string, string> {
+  return {
     '--hc-background': palette.background,
     '--hc-foreground': palette.foreground,
     '--hc-primary': palette.primary,
@@ -158,34 +150,44 @@ export function getHighContrastTheme(
     '--hc-info': palette.info,
     '--hc-muted': palette.muted,
     '--hc-muted-foreground': palette.mutedForeground,
-
-    // Text size
     '--hc-text-size': `${textSize}`,
     '--hc-text-size-px': `${16 * textSize}px`,
-
-    // Focus indicators
     '--hc-focus-width': '3px',
     '--hc-focus-style': 'solid',
     '--hc-focus-offset': '2px',
     '--hc-focus-radius': '2px',
-
-    // Borders
     '--hc-border-width': '2px',
     '--hc-border-radius': '4px',
-
-    // Shadows (enhanced for high contrast)
     '--hc-shadow-sm': '0 2px 4px rgba(0, 0, 0, 0.3)',
     '--hc-shadow-md': '0 4px 8px rgba(0, 0, 0, 0.4)',
     '--hc-shadow-lg': '0 8px 16px rgba(0, 0, 0, 0.5)',
     '--hc-shadow-xl': '0 16px 32px rgba(0, 0, 0, 0.6)',
-
-    // Reduced motion
     '--hc-transition-duration': enableReducedMotion ? '0s' : '200ms',
     '--hc-transition-timing': enableReducedMotion ? 'linear' : 'ease-in-out',
   }
+}
 
-  // Generate CSS class name
-  const className = `high-contrast high-contrast-${activeMode} high-contrast-text-${textSize}`
+function buildClassName(mode: HighContrastMode, textSize: TextSizeMultiplier): string {
+  return `high-contrast high-contrast-${mode} high-contrast-text-${textSize}`
+}
+
+/**
+ * Get high contrast theme
+ */
+export function getHighContrastTheme(
+  config: HighContrastThemeConfig = {}
+): HighContrastTheme {
+  const {
+    mode = 'auto',
+    textSize = 1.25,
+    enableReducedMotion = true,
+    customPalette,
+  } = config
+
+  const activeMode = resolveActiveMode(mode)
+  const palette = selectPalette(activeMode, customPalette)
+  const cssVariables = buildCssVariables(palette, textSize, enableReducedMotion)
+  const className = buildClassName(activeMode, textSize)
 
   logger.debug('High contrast theme generated', {
     mode: activeMode,

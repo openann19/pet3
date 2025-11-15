@@ -134,7 +134,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
   }): React.JSX.Element => {
     if (renderResult) {
       return (
-        <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSelect(result.item, query)} style={styles.resultItem}>
+        <Pressable onPress={() => handleSelect(result.item, query)} style={styles.resultItem}>
           {renderResult(result.item, query)}
         </Pressable>
       )
@@ -142,20 +142,20 @@ export function SmartSearch<T extends Record<string, unknown>>({
 
     const displayValue = String(result.item[result.matchedKey] || '')
     return (
-      <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSelect(result.item, query)} style={styles.resultItem}>
+      <Pressable onPress={() => handleSelect(result.item, query)} style={styles.resultItem}>
         <Text style={styles.resultText}>{displayValue}</Text>
       </Pressable>
     )
   }
 
   const renderHistoryItem = ({ item: historyQuery }: { item: string }): React.JSX.Element => (
-    <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleHistoryClick(historyQuery)} style={styles.historyItem}>
+    <Pressable onPress={() => handleHistoryClick(historyQuery)} style={styles.historyItem}>
       <Text style={styles.historyText}>{historyQuery}</Text>
     </Pressable>
   )
 
   const renderTrendingItem = ({ item: trending }: { item: string }): React.JSX.Element => (
-    <Pressable onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleHistoryClick(trending)} style={styles.trendingItem}>
+    <Pressable onPress={() => handleHistoryClick(trending)} style={styles.trendingItem}>
       <Text style={styles.trendingText}>{trending}</Text>
     </Pressable>
   )

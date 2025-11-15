@@ -68,7 +68,7 @@ export function useAnimatedStyleValue(animatedStyle: AnimatedStyle): CSSProperti
           try {
             const cssStyle = convertReanimatedStyleToCSS(styleObj as Parameters<typeof convertReanimatedStyleToCSS>[0]);
             if (cssStyle && typeof cssStyle === 'object' && !Array.isArray(cssStyle)) {
-              setStyle(cssStyle as CSSProperties);
+              setStyle(cssStyle);
             } else {
               setStyle({});
             }

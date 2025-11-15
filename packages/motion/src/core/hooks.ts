@@ -1,11 +1,10 @@
 /**
  * Core Animation Hooks
- * Platform-agnostic hooks for animation management
+ * Platform-agnostic hooks for animation management - Web Implementation
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
-import { useSharedValue, type SharedValue } from 'react-native-reanimated'
-import { AccessibilityInfo, Platform } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMotionValue, type MotionValue } from 'framer-motion'
 
 import type { ReducedMotionConfig } from './types'
 import { performanceBudgets } from './constants'
@@ -13,33 +12,37 @@ import { performanceBudgets } from './constants'
 /**
  * Hook to track reduced motion preference
  */
-export function useReducedMotion(): SharedValue<boolean> {
-  const isReducedMotion = useSharedValue(false)
+export function useReducedMotion(): MotionValue<boolean> {
+  const isReducedMotion = useMotionValue(false)
   
   useEffect(() => {
-    const checkReducedMotion = async () => {
-      try {
-        const reducedMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled()
-        isReducedMotion.value = reducedMotionEnabled
-      } catch (err) {
-        // Fail gracefully, assume reduced motion is disabled
-        isReducedMotion.value = false 
-      }
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      // Server-side or unsupported environment
+      isReducedMotion.set(false)
+      return undefined
     }
-    
-    // Initial check
-    checkReducedMotion()
-    
-    // Subscribe to changes
-    const subscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      (enabled) => {
-        isReducedMotion.value = enabled
+
+    try {
+      // Check CSS media query for reduced motion preference
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+      isReducedMotion.set(mediaQuery.matches)
+      
+      // Listen for changes
+      const handleChange = ((event: unknown) => {
+        const mqEvent = event as MediaQueryListEvent
+        isReducedMotion.set(mqEvent.matches)
+      }) as EventListener
+      
+      // Use modern API
+      mediaQuery.addEventListener?.('change', handleChange)
+      
+      return () => {
+        mediaQuery.removeEventListener?.('change', handleChange)
       }
-    )
-    
-    return () => {
-      subscription.remove()
+    } catch (err) {
+      // Fail gracefully, assume reduced motion is disabled
+      isReducedMotion.set(false)
+      return undefined
     }
   }, [isReducedMotion])
   
@@ -50,27 +53,27 @@ export function useReducedMotion(): SharedValue<boolean> {
  * Hook to track animation performance metrics
  */
 export function useAnimationPerformance() {
-  const frameDrops = useSharedValue(0)
-  const currentFPS = useSharedValue(0)
+  const frameDrops = useMotionValue(0)
+  const currentFPS = useMotionValue(0)
   
   const reset = useCallback(() => {
-    frameDrops.value = 0
-    currentFPS.value = 0
+    frameDrops.set(0)
+    currentFPS.set(0)
   }, [frameDrops, currentFPS])
   
   const recordFrameDrop = useCallback(() => {
-    frameDrops.value += 1
+    frameDrops.set(frameDrops.get() + 1)
   }, [frameDrops])
   
   const updateFPS = useCallback((fps: number) => {
-    currentFPS.value = fps
+    currentFPS.set(fps)
   }, [currentFPS])
   
   const metrics = useMemo(() => ({
     frameDrops,
     currentFPS,
-    isPerformant: currentFPS.value >= performanceBudgets.targetFPS * (1 - performanceBudgets.dropThreshold),
-    dropRate: frameDrops.value / performanceBudgets.targetFPS,
+    isPerformant: currentFPS.get() >= performanceBudgets.targetFPS * (1 - performanceBudgets.dropThreshold),
+    dropRate: frameDrops.get() / performanceBudgets.targetFPS,
   }), [frameDrops, currentFPS])
   
   return {
@@ -85,35 +88,35 @@ export function useAnimationPerformance() {
  * Hook to manage animation complexity budgets
  */
 export function useAnimationBudget() {
-  const activeComplexAnimations = useSharedValue(0)
-  const activeParticles = useSharedValue(0)
+  const activeComplexAnimations = useMotionValue(0)
+  const activeParticles = useMotionValue(0)
   
   const incrementComplexAnimations = useCallback(() => {
-    activeComplexAnimations.value += 1
+    activeComplexAnimations.set(activeComplexAnimations.get() + 1)
   }, [activeComplexAnimations])
   
   const decrementComplexAnimations = useCallback(() => {
-    activeComplexAnimations.value = Math.max(0, activeComplexAnimations.value - 1)
+    activeComplexAnimations.set(Math.max(0, activeComplexAnimations.get() - 1))
   }, [activeComplexAnimations])
   
   const updateParticleCount = useCallback((count: number) => {
-    activeParticles.value = count
+    activeParticles.set(count)
   }, [activeParticles])
   
   const canAddComplexAnimation = useCallback(() => {
-    return activeComplexAnimations.value < performanceBudgets.complexityBudget
+    return activeComplexAnimations.get() < performanceBudgets.complexityBudget
   }, [activeComplexAnimations])
   
   const canAddParticles = useCallback((count: number) => {
-    return (activeParticles.value + count) <= performanceBudgets.particleBudget
+    return (activeParticles.get() + count) <= performanceBudgets.particleBudget
   }, [activeParticles])
   
   return {
     metrics: {
       activeComplexAnimations,
       activeParticles,
-      complexityBudgetAvailable: performanceBudgets.complexityBudget - activeComplexAnimations.value,
-      particleBudgetAvailable: performanceBudgets.particleBudget - activeParticles.value,
+      complexityBudgetAvailable: performanceBudgets.complexityBudget - activeComplexAnimations.get(),
+      particleBudgetAvailable: performanceBudgets.particleBudget - activeParticles.get(),
     },
     incrementComplexAnimations,
     decrementComplexAnimations,
@@ -131,16 +134,30 @@ export function useAnimationConfig() {
   const { metrics: perfMetrics } = useAnimationPerformance()
   const { metrics: budgetMetrics } = useAnimationBudget()
   
+  // Use state to track the current reduced motion value
+  const [reducedMotionState, setReducedMotionState] = useState(false)
+  
+  useEffect(() => {
+    const unsubscribe = isReducedMotion.on('change', (value) => {
+      setReducedMotionState(value)
+    })
+    
+    // Set initial value
+    setReducedMotionState(isReducedMotion.get())
+    
+    return unsubscribe
+  }, [isReducedMotion])
+  
   // Compute animation configuration based on current state
   const config: ReducedMotionConfig = useMemo(() => ({
-    enabled: isReducedMotion.value,
-    durationMultiplier: isReducedMotion.value ? 0.5 : 1,
-    disableSpringPhysics: isReducedMotion.value || !perfMetrics.isPerformant,
-    simplifyEffects: isReducedMotion.value || !perfMetrics.isPerformant || budgetMetrics.activeComplexAnimations.value >= performanceBudgets.complexityBudget,
+    enabled: reducedMotionState,
+    durationMultiplier: reducedMotionState ? 0.5 : 1,
+    disableSpringPhysics: reducedMotionState || !perfMetrics.isPerformant,
+    simplifyEffects: reducedMotionState || !perfMetrics.isPerformant || budgetMetrics.activeComplexAnimations.get() >= performanceBudgets.complexityBudget,
   }), [
-    isReducedMotion.value,
+    reducedMotionState,
     perfMetrics.isPerformant,
-    budgetMetrics.activeComplexAnimations.value
+    budgetMetrics.activeComplexAnimations,
   ])
   
   return config

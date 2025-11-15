@@ -120,7 +120,7 @@ export function LostFoundManagement() {
                     className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       String(selectedAlert?.id === alert.id
                                                 ? 'border-primary bg-primary/5'
-                                                : 'border-border hover:border-primary/50' ?? '')
+                                                : 'border-border hover:border-primary/50')
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -190,7 +190,7 @@ export function LostFoundManagement() {
                         <ProgressiveImage
                           key={index}
                           src={photo}
-                          alt={`${String(selectedAlert.petSummary.name ?? '')} ${String(index + 1 ?? '')}`}
+                            alt={`${String(selectedAlert.petSummary.name)} ${String(index + 1)}`}
                           className="w-full aspect-square object-cover rounded-lg"
                           aria-label={`${selectedAlert.petSummary.name} photo ${index + 1}`}
                         />

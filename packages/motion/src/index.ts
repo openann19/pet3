@@ -165,20 +165,19 @@ export type AnimatedProps = Record<string, unknown>
 // Animated export for backward compatibility - use MotionView/MotionText instead
 // These are deprecated and will be removed in a future version
 export const Animated = {
-  View: MotionView,
-  Text: MotionText,
+  View: MotionView as any,
+  Text: MotionText as any,
   Image: motion.img,
-  ScrollView: MotionScrollView,
+  ScrollView: MotionScrollView as any,
 }
 
 // Direct Framer Motion exports for web
 export { motion }
 
-// Define and export EasingFunction type
-export type EasingFunction = (value: number) => number
+// Define custom animation types (avoid conflicts with Framer Motion)
+export type PetSparkEasingFunction = (value: number) => number
 
-// Define and export Transition type
-export type Transition =
+export type PetSparkTransition =
   | {
       type: 'spring';
       stiffness: number;
@@ -190,31 +189,12 @@ export type Transition =
       ease?: number[] | string;
     };
 
-// Define and export EasingFunction type
-export type EasingFunction = (value: number) => number
-
-// Define and export Transition type
-export type Transition =
-  | {
-      type: 'spring';
-      stiffness: number;
-      damping: number;
-      mass?: number;
-    }
-  | {
-      duration: number;
-      ease?: number[] | string;
-    };
-
-// Re-export custom primitives
-export { MotionView } from './primitives/MotionView'
-export { MotionText } from './primitives/MotionText'
-export { MotionScrollView } from './primitives/MotionScrollView'
-
-// Import for Animated export
+// Import and re-export custom primitives
 import { MotionView } from './primitives/MotionView'
 import { MotionText } from './primitives/MotionText'
 import { MotionScrollView } from './primitives/MotionScrollView'
+
+export { MotionView, MotionText, MotionScrollView }
 import { motion } from 'framer-motion'
 
 // Re-export custom hooks/recipes
@@ -280,7 +260,9 @@ export type { ViewStyle, TextStyle, ImageStyle } from 'react-native'
 // Framer Motion direct exports (web only - use with platform checks)
 // Note: These are conditionally available based on platform
 // Use type guards or platform checks when using these
-export type { Variants, Transition, HTMLMotionProps } from 'framer-motion'
+export type { Variants, HTMLMotionProps } from 'framer-motion'
+// Export Transition from framer-motion with alias to avoid conflict
+export type { Transition as FramerTransition } from 'framer-motion'
 // For runtime exports, import directly from 'framer-motion' when needed
 // This avoids TypeScript issues with conditional exports
 
@@ -316,7 +298,7 @@ export type {
   TransitionPreset,
   AnimationConfig,
   AnimationType,
-  EasingFunction,
+  EasingFunction as PetSparkEasingFunctionFromTypes,
   MouseEvent,
   TouchEvent,
   GestureEvent,

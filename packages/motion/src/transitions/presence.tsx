@@ -7,6 +7,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { motion } from '../tokens'
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion'
+import { isTruthy } from '../utils/guards'
 
 export interface PresenceProps {
   visible?: boolean

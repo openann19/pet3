@@ -3,7 +3,8 @@
  * Convert Reanimated style objects to Framer Motion variants and styles
  */
 
-import type { Variants, CSSProperties } from 'framer-motion'
+import type { Variants } from 'framer-motion'
+import type { CSSProperties } from 'react'
 import { convertTransformToStyle } from '../framer-api/useMotionStyle'
 
 /**
@@ -63,14 +64,14 @@ export function convertReanimatedStyleToCSS(
   }
 
   if (styleValue.transform && Array.isArray(styleValue.transform)) {
-    const transformStyle = convertTransformToStyle(styleValue.transform)
+    const transformStyle = convertTransformToStyle(styleValue.transform as any)
     Object.assign(css, transformStyle)
   }
 
   // Copy other properties
   for (const [key, value] of Object.entries(styleValue)) {
     if (!['opacity', 'transform', 'backgroundColor', 'color', 'width', 'height'].includes(key)) {
-      css[key as keyof CSSProperties] = value as string | number
+      (css as any)[key] = value as string | number
     }
   }
 
@@ -100,16 +101,16 @@ export function convertStyleToVariant(
     const translateYMatch = transformStr.match(/translateY\(([^)]+)\)/)
     const rotateMatch = transformStr.match(/rotate\(([^)]+)\)/)
 
-    if (scaleMatch) {
+    if (scaleMatch && scaleMatch[1]) {
       variant.scale = parseFloat(scaleMatch[1])
     }
-    if (translateXMatch) {
+    if (translateXMatch && translateXMatch[1]) {
       variant.x = parseFloat(translateXMatch[1])
     }
-    if (translateYMatch) {
+    if (translateYMatch && translateYMatch[1]) {
       variant.y = parseFloat(translateYMatch[1])
     }
-    if (rotateMatch) {
+    if (rotateMatch && rotateMatch[1]) {
       variant.rotate = parseFloat(rotateMatch[1])
     }
   }

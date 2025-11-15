@@ -11,8 +11,7 @@ import { useCallback, useEffect } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
 import { springConfigs, timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
-import { makeRng } from '@petspark/shared'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { makeRng, isTruthy, isDefined } from '../utils/guards';
 
 export type MediaType = 'image' | 'video' | 'voice'
 

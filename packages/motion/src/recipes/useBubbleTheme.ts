@@ -11,7 +11,7 @@ import { useCallback, useEffect } from 'react'
 import { useSharedValue, useAnimatedStyle, withTiming, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
 import { timingConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy, isDefined } from '../utils/guards';
 
 export type SenderType = 'user' | 'bot' | 'system'
 export type MessageType = 'ai-answer' | 'error' | 'system-alert' | 'default'

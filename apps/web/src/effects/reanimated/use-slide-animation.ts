@@ -2,7 +2,8 @@
 
 
 import { useEffect } from 'react';
-import { useMotionValue, animate, MotionValue } from 'framer-motion';
+import type { MotionValue } from 'framer-motion';
+import { useMotionValue, animate } from 'framer-motion';
 import { springConfigs, timingConfigs } from './transitions';
 import type { AnimatedStyle } from './animated-view';
 

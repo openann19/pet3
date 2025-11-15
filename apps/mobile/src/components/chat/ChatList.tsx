@@ -24,7 +24,7 @@ import Animated, {
 import { useLiquidDots } from '../../effects/chat/typing/use-liquid-dots'
 import { MagneticScrollFab } from './MagneticScrollFab'
 import { MessageBubble, type Message } from './MessageBubble'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../utils/shared';
 
 /**
  * Typing dot component
@@ -118,7 +118,16 @@ export function ChatList({
     onScrollToBottom?.()
   }, [messages.length, onScrollToBottom])
 
-  // Scroll FAB effect
+  // Animated styles for FAB
+  const fabAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: showScrollFab ? 1 : 0.8 }],
+    opacity: showScrollFab ? 1 : 0,
+  }))
+
+  const badgeAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: badgeCount > previousBadgeCountRef.current ? 1.2 : 1 }],
+  }))
+
   // Typing indicator liquid dots
   const typingDots = useLiquidDots({
     enabled: isTyping,
@@ -127,9 +136,24 @@ export function ChatList({
     dotSpacing: 8,
   })
 
-  // Render message item
+  // Render message item with clustering logic (like web)
   const renderMessage = useCallback(
-    ({ item }: { item: Message }) => {
+    ({ item, index }: { item: Message; index: number }) => {
+      const isOwn = item.senderId === currentUserId
+      const prevMessage = index > 0 ? messages[index - 1] : null
+      const nextMessage = index < messages.length - 1 ? messages[index + 1] : null
+      
+      // Clustering logic (messages from same user within time window)
+      const isClusterStart = !prevMessage || 
+        prevMessage.senderId !== item.senderId ||
+        (new Date(item.createdAt || item.timestamp || '').getTime() - 
+         new Date(prevMessage.createdAt || prevMessage.timestamp || '').getTime()) > 300000 // 5 minutes
+      
+      const isClusterEnd = !nextMessage || 
+        nextMessage.senderId !== item.senderId ||
+        (new Date(nextMessage.createdAt || nextMessage.timestamp || '').getTime() - 
+         new Date(item.createdAt || item.timestamp || '').getTime()) > 300000 // 5 minutes
+
       return (
         <Animated.View
           entering={FadeIn.duration(200).springify()}
@@ -138,15 +162,19 @@ export function ChatList({
         >
           <MessageBubble
             message={item}
-            currentUserId={currentUserId}
+            isOwn={isOwn}
+            isClusterStart={isClusterStart}
+            isClusterEnd={isClusterEnd}
+            index={index}
+            isNew={false} // Could be enhanced with real-time detection
             {...(onReact ? { onReact } : {})}
             {...(onReply ? { onReply } : {})}
-            {...(onLongPress ? { onLongPress } : {})}
+            showTimestamp={isClusterEnd}
           />
         </Animated.View>
       )
     },
-    [currentUserId, onReact, onReply, onLongPress]
+    [currentUserId, messages, onReact, onReply]
   )
 
   // Key extractor

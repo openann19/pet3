@@ -5,9 +5,10 @@ import { useEffect, useCallback } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useSharedValue, useAnimatedStyle, withTiming, withSpring, animate } from '@petspark/motion';
+import type { MotionValue, Transition } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import { AnimatedView, type AnimatedStyle as ViewAnimatedStyle } from '@/effects/reanimated/animated-view';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { Motion } from '@/core/tokens/motion';
@@ -64,7 +65,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
+        'fixed inset-0 z-50 bg-background/80 backdrop-blur-md drop-shadow-lg text-foreground',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         className
@@ -74,6 +75,11 @@ function DialogOverlay({
   );
 }
 
+const runAnimation = (
+  value: MotionValue<number>,
+  animation: { target: number; transition?: Transition }
+) => animate(value, animation.target, animation.transition ?? { duration: 0.3 });
+
 function DialogContent({
   className,
   children,
@@ -82,33 +88,38 @@ function DialogContent({
   ...props
 }: DialogContentProps): React.JSX.Element {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.95);
-  const y = useSharedValue(20);
+  const opacity = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(0.95);
+  const y = useSharedValue<number>(20);
 
   useEffect(() => {
     if (prefersReducedMotion) {
-      opacity.value = 1;
-      scale.value = 1;
-      y.value = 0;
+      opacity.set(1);
+      scale.set(1);
+      y.set(0);
       return;
     }
     const opacityTransition = withTiming(1, {
       duration: Motion.components.modal.open.duration,
     });
-    animate(opacity, opacityTransition.target, opacityTransition.transition);
+    runAnimation(opacity, opacityTransition);
     const scaleTransition = withSpring(1, springConfigs.smooth);
-    animate(scale, scaleTransition.target, scaleTransition.transition);
+    runAnimation(scale, scaleTransition);
     const yTransition = withSpring(0, springConfigs.smooth);
-    animate(y, yTransition.target, yTransition.transition);
+    runAnimation(y, yTransition);
   }, [opacity, scale, y, prefersReducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const transform = [
+      { scale: scale.get() },
+      { translateY: y.get() },
+    ] as Record<string, number>[];
+
     return {
       opacity: opacity.get(),
-      transform: [{ scale: scale.get() }, { translateY: y.get() }],
+      transform,
     };
-  });
+  }) as ViewAnimatedStyle;
 
   const handleClose = useCallback((): void => {
     if (hapticFeedback) {
@@ -126,7 +137,7 @@ function DialogContent({
         className={cn(
           'fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)]',
           'translate-x-[-50%] translate-y-[-50%]',
-          'rounded-2xl border border-(--color-neutral-6) bg-(--color-bg-overlay) shadow-lg',
+          'rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-black/30',
           'focus:outline-none',
           'data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -142,18 +153,17 @@ function DialogContent({
         </AnimatedView>
         {showCloseButton && (
           <DialogPrimitive.Close
-        className={cn(
-          'absolute rounded-xs opacity-70 min-w-[44px] min-h-[44px]',
-          'ring-offset-background',
-          prefersReducedMotion ? '' : 'transition-opacity duration-200',
-          'hover:opacity-100 focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
-          'focus-visible:outline-none disabled:pointer-events-none',
-          'text-(--text-muted) hover:text-(--text-primary)',
-          '[&_svg]:pointer-events-none [&_svg]:shrink-0',
-          "[&_svg:not([class*='size-'])]:size-4",
-          getSpacingClassesFromConfig({ marginY: 'lg', marginX: 'lg' }),
-          getSpacingClassesFromConfig({ padding: 'xs' })
-        )}
+            className={cn(
+              'absolute rounded-full opacity-70 min-w-[44px] min-h-[44px]',
+              'ring-offset-background',
+              prefersReducedMotion ? '' : 'transition-opacity duration-200',
+              'hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'focus-visible:outline-none disabled:pointer-events-none',
+              'text-muted-foreground hover:text-foreground bg-muted/20 backdrop-blur-sm',
+              '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+              "[&_svg:not([class*='size-'])]:size-4",
+              getSpacingClassesFromConfig({ marginY: 'lg', marginX: 'lg', padding: 'xs' })
+            )}
             onClick={handleClose}
             {...getAriaButtonAttributes({ label: 'Close dialog' })}
           >
@@ -218,7 +228,7 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        'text-(--text-muted)',
+        'text-muted-foreground',
         getTypographyClasses('caption'),
         className
       )}

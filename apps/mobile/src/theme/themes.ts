@@ -1,6 +1,6 @@
 /**
  * Theme system with multiple themes
- * Location: src/theme/themes.ts
+ * Location: apps/mobile/src/theme/themes.ts
  */
 
 export interface ThemeColors {
@@ -30,38 +30,39 @@ export const themes: Record<string, Theme> = {
     id: 'default-light',
     name: 'Default Light',
     colors: {
+      // Soft warm background + clear elevated surfaces
       background: '#FFF9F0',
-      foreground: '#FFF9F0',
+      foreground: '#FFF2E1', // slightly stronger surface than background
       primary: '#FF715B',
       secondary: '#FFE4B2',
       accent: '#FFD580',
       card: '#FFFFFF',
-      textPrimary: '#222222',
-      textSecondary: '#666666',
+      textPrimary: '#1F2933',
+      textSecondary: '#6B7280',
       border: '#E5E5E5',
-      success: '#28C76F',
-      danger: '#FF715B',
-      warning: '#FFC107',
-      info: '#FF715B',
+      success: '#22C55E',
+      danger: '#EF4444',
+      warning: '#F59E0B',
+      info: '#0EA5E9',
     },
   },
   'default-dark': {
     id: 'default-dark',
     name: 'Default Dark',
     colors: {
-      background: '#121212',
-      foreground: '#1E1E1E',
+      background: '#0D1117',
+      foreground: '#161B22',
       primary: '#E89D5C',
       secondary: '#8B7355',
       accent: '#FF6B6B',
-      card: '#1E1E1E',
-      textPrimary: '#FFFFFF',
-      textSecondary: '#B0B0B0',
-      border: '#333333',
-      success: '#66BB6A',
-      danger: '#EF5350',
-      warning: '#FFB74D',
-      info: '#42A5F5',
+      card: '#161B22',
+      textPrimary: '#F0F6FC',
+      textSecondary: '#8B949E',
+      border: '#30363D',
+      success: '#3FB950',
+      danger: '#F85149',
+      warning: '#D29922',
+      info: '#58A6FF',
     },
   },
   'neon-cyber': {

@@ -1,4 +1,7 @@
-import { isTruthy, isDefined } from '@/core/guards';
+import { isTruthy, isDefined } from '@petspark/shared';
+
+// Web-compatible HeadersInit type
+type HeadersInit = Record<string, string> | Headers | [string, string][];
 
 /**
  * Unified API Client

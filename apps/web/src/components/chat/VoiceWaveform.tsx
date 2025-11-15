@@ -52,7 +52,7 @@ export function VoiceWaveform({
   const playheadStyle = useAnimatedStyle(() => {
     return {
       position: 'absolute',
-      left: `${String(playheadProgress.value * 100 ?? '')}%`,
+      left: `${String(playheadProgress.value * 100)}%`,
       top: 0,
       bottom: 0,
       width: 2,

@@ -240,7 +240,7 @@ export function AdoptionListingReview() {
                         <img
                           key={index}
                           src={photo}
-                          alt={`${String(selectedListing.petName ?? '')} ${String(index + 1 ?? '')}`}
+                            alt={`${String(selectedListing.petName)} ${String(index + 1)}`}
                           className="w-full aspect-square object-cover rounded-lg"
                         />
                       ))}

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
@@ -11,6 +11,9 @@
       "@mobile": ["apps/mobile/src/index.ts"],
       "@pet/domain/*": ["apps/web/src/core/domain/*"],
       "@petspark/shared": ["packages/shared/src/index.ts"],
+      "@petspark/shared/*": ["packages/shared/src/*"],
+      "@petspark/core": ["packages/core/src/index.ts"],
+      "@petspark/core/*": ["packages/core/src/*"],
       "@shared/types": ["packages/shared/src/types/index.ts"],
       "@shared/utils": ["packages/shared/src/utils/index.ts"],
       "@ui-mobile": ["packages/ui-mobile/index.ts"],

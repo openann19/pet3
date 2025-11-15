@@ -19,7 +19,7 @@ const DEFAULT_ENABLED = true;
 const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   send: {
     count: 12,
-    colors: ['var(--color-accent-secondary-9)', '#8B5CF6', '#10B981'],
+    colors: ['hsl(var(--accent))', 'hsl(var(--secondary))', 'hsl(var(--success))'],
     minSize: 4,
     maxSize: 10,
     minLifetime: 500,
@@ -32,7 +32,7 @@ const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   },
   delete: {
     count: 8,
-    colors: ['var(--color-error-9)', '#DC2626'],
+    colors: ['hsl(var(--destructive))', 'hsl(var(--destructive) / 0.8)'],
     minSize: 6,
     maxSize: 14,
     minLifetime: 400,
@@ -45,7 +45,7 @@ const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   },
   reaction: {
     count: 6,
-    colors: ['#F59E0B', '#F97316', '#EC4899'],
+    colors: ['hsl(var(--warning))', 'hsl(var(--info))', 'hsl(var(--accent))'],
     minSize: 8,
     maxSize: 16,
     minLifetime: 600,
@@ -58,7 +58,7 @@ const EVENT_CONFIGS: Record<ParticleEventType, Partial<ParticleConfig>> = {
   },
   'ai-reply': {
     count: 10,
-    colors: ['#8B5CF6', '#EC4899', '#06B6D4'],
+    colors: ['hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--primary))'],
     minSize: 5,
     maxSize: 12,
     minLifetime: 700,

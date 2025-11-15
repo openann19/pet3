@@ -87,7 +87,7 @@ function ParticipantVideo({
     return {
       transform: [{ scale: pulseScale.value }],
     };
-  }) as ReturnType<typeof useAnimatedStyle>;
+  });
 
   return (
     <AnimatedView
@@ -179,7 +179,7 @@ function SpeakingIndicator(): JSX.Element {
     return {
       transform: [{ scale: scaleValue }],
     };
-  }) as ReturnType<typeof useAnimatedStyle>;
+  });
 
   return (
     <AnimatedView
@@ -853,7 +853,7 @@ function ParticipantsPanel({
       transform: [{ translateX: slideX.value }],
       opacity: opacity.value,
     };
-  }) as ReturnType<typeof useAnimatedStyle>;
+  });
 
   return (
     <AnimatedView
@@ -946,7 +946,7 @@ function ActiveIndicator(): JSX.Element {
       transform: [{ scale: scale.value }],
       opacity: opacity.value,
     };
-  }) as ReturnType<typeof useAnimatedStyle>;
+  });
 
   return (
     <AnimatedView
@@ -973,7 +973,7 @@ function ConnectingIndicator(): JSX.Element {
     return {
       transform: [{ scale: scale.value }],
     };
-  }) as ReturnType<typeof useAnimatedStyle>;
+  });
 
   return (
     <AnimatedView

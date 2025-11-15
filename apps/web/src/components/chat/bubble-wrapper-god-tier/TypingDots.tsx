@@ -14,7 +14,7 @@ export interface TypingDotsProps {
 
 export function TypingDots({
   dotSize = 6,
-  dotColor = '#aaa',
+  dotColor = 'hsl(var(--muted-foreground))',
   className,
   enabled = true,
 }: TypingDotsProps): React.JSX.Element {

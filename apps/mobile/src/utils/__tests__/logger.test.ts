@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Logger, LogLevel, createLogger, log } from '../logger'
+import { logger, LogLevel, createLogger, log } from '../logger'
 import type { LogEntry } from '../logger'
 
 describe('Logger', () => {

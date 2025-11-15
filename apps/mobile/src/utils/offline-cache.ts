@@ -12,6 +12,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createLogger } from './logger'
+import { isTruthy } from '@petspark/shared'
 import { secureStorage } from './secure-storage'
 import type { MMKVConstructor, MMKVInstance, MMKVModule } from '@/types/mmkv'
 import { importOptional } from './optional-imports'
@@ -28,6 +29,7 @@ function isMMKVModule(module: unknown): module is MMKVModule {
 // Lazy load MMKV (optional dependency)
 let MMKV: MMKVConstructor | null = null
 let kv: MMKVInstance | null = null
+let useAsyncStorageFallback = false
 
 async function getOrCreateEncryptionKey(): Promise<string> {
   try {

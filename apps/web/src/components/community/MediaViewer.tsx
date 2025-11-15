@@ -722,7 +722,7 @@ export function MediaViewer({
                     >
                       <img
                         src={currentMedia.url}
-                        alt={`Post media ${String(currentIndex + 1 ?? '')}`}
+                          alt={`Post media ${String(currentIndex + 1)}`}
                         className="max-w-full max-h-full object-contain select-none"
                         draggable={false}
                       />
@@ -784,7 +784,7 @@ export function MediaViewer({
                     className={`h-2 rounded-full transition-all duration-300 ${
                       index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
                     }`}
-                    aria-label={`View ${String(media[index]?.type === 'video' ? 'video' : 'photo' ?? '')} ${String(index + 1 ?? '')}`}
+                      aria-label={`View ${String(media[index]?.type === 'video' ? 'video' : 'photo')} ${String(index + 1)}`}
                   />
                 ))}
               </div>

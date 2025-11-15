@@ -54,6 +54,8 @@ import { VirtualList, VirtualGrid } from '@/components/virtual';
 import { usePullToRefresh } from '@/components/community/features/pull-to-refresh';
 import { useTrendingTags } from '@/components/community/features/trending-tags';
 import { usePostActions } from '@/components/community/features/post-actions';
+import { getTypographyClasses } from '@/lib/typography';
+import { cn } from '@/lib/utils';
 
 const logger = createLogger('CommunityView');
 
@@ -506,10 +508,15 @@ function CommunityViewContent(): JSX.Element {
         {/* Header */}
         <AnimatedView style={headerTransition.style} className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            <h1
+              className={cn(
+                'bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent',
+                getTypographyClasses('heading1')
+              )}
+            >
               {t.community?.title ?? 'Community'}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className={cn('mt-1', getTypographyClasses('bodySmall'))}>
               {activeTab === 'feed'
                 ? (t.community?.feed ?? 'Share and discover pet moments')
                 : (t.adoption?.subtitle ?? 'Find your perfect companion')}
@@ -585,7 +592,7 @@ function CommunityViewContent(): JSX.Element {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <TrendUp size={20} className="text-accent" weight="bold" />
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className={getTypographyClasses('subheading')}>
                       {t.community?.trending ?? 'Trending Today'}
                     </h3>
                     <Fire size={16} className="text-destructive ml-auto" weight="fill" />
@@ -626,10 +633,10 @@ function CommunityViewContent(): JSX.Element {
                       <AnimatedView style={emptyStateStyle} className="text-8xl mb-6">
                         🐾
                       </AnimatedView>
-                      <h3 className="text-2xl font-bold text-foreground mb-2">
+                      <h3 className={getTypographyClasses('heading2')}>
                         {t.community?.noPosts ?? 'No posts yet'}
                       </h3>
-                      <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                      <p className={getTypographyClasses('body')}>
                         {feedTab === 'following'
                           ? (t.community?.noFollowingPosts ??
                             'Follow some pets to see their posts here!')
@@ -706,10 +713,10 @@ function CommunityViewContent(): JSX.Element {
                   <AnimatedView style={emptyStateStyle} className="text-8xl mb-6">
                     🏠
                   </AnimatedView>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                  <h3 className={getTypographyClasses('heading2')}>
                     {t.adoption?.noProfiles ?? 'No pets available for adoption'}
                   </h3>
-                  <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  <p className={getTypographyClasses('body')}>
                     {t.adoption?.noProfilesDesc ??
                       'Check back soon for pets looking for their forever homes.'}
                   </p>

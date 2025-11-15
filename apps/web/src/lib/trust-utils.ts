@@ -129,9 +129,9 @@ export function generateRatings(petId: string, count = 5): Rating[] {
     ratings.push({
       id: `rating-${String(petId ?? '')}-${String(i ?? '')}`,
       petId,
-      reviewerId: `reviewer-${String(i ?? '')}`,
+        reviewerId: `reviewer-${String(i)}`,
       reviewerName,
-      reviewerAvatar: `https://i.pravatar.cc/150?img=${String((i % 70) + 1 ?? '')}`,
+        reviewerAvatar: `https://i.pravatar.cc/150?img=${String((i % 70) + 1)}`,
       rating,
       comment,
       helpful: Math.floor(Math.random() * 15),

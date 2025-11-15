@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { AccessibilityInfo } from 'react-native'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../../utils/shared';
 
 export interface AnnounceNewMessageProps {
   lastText: string | null

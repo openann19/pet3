@@ -1,52 +1,30 @@
 import { createLogger } from './logger';
 import { generateCorrelationId } from './utils';
+import type {
+  ConnectionState,
+  EventHandler,
+  QueuedMessage,
+  WebSocketManagerOptions,
+  WebSocketMessage,
+  WebSocketNamespace,
+} from './websocket-types';
+import { extractError } from './websocket-types';
 
 const logger = createLogger('websocket-manager');
-
-const extractError = (value: unknown): Error =>
-  value instanceof Error ? value : new Error(String(value));
-
-type WebSocketNamespace = '/chat' | '/presence' | '/notifications';
-
-interface WebSocketMessage {
-  id: string;
-  namespace: WebSocketNamespace;
-  event: string;
-  data: unknown;
-  timestamp: number;
-  correlationId: string;
-}
-
-interface QueuedMessage extends WebSocketMessage {
-  retries: number;
-  maxRetries: number;
-}
-
-type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
-
-interface WebSocketManagerOptions {
-  url: string;
-  reconnectInterval?: number;
-  maxReconnectAttempts?: number;
-  heartbeatInterval?: number;
-  messageTimeout?: number;
-}
-
-type EventHandler = (data: unknown) => void;
 
 export class WebSocketManager {
   private url: string;
   private state: ConnectionState = 'disconnected';
   private messageQueue: QueuedMessage[] = [];
-  private eventHandlers: Map<string, Set<EventHandler>> = new Map<string, Set<EventHandler>>();
+  private eventHandlers: Map<string, Set<EventHandler>> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts: number;
   private reconnectInterval: number;
   private heartbeatInterval: number;
   private messageTimeout: number;
-  private heartbeatTimer: number | undefined = undefined;
-  private reconnectTimer: number | undefined = undefined;
-  private pendingAcknowledgments: Map<string, number> = new Map<string, number>();
+  private heartbeatTimer?: number;
+  private reconnectTimer?: number;
+  private pendingAcknowledgments: Map<string, number> = new Map();
   private ws: WebSocket | null = null;
 
   constructor(options: WebSocketManagerOptions) {
@@ -58,67 +36,22 @@ export class WebSocketManager {
   }
 
   connect(accessToken?: string): void {
-    if (this.state === 'connected' || this.state === 'connecting') {
+    if (this.isConnectingOrConnected()) {
       return;
     }
 
     this.state = 'connecting';
-    logger.info('Connecting', { url: this.url, token: `${accessToken.substring(0, 10)}...` });
+    this.logConnectionAttempt(accessToken);
 
-    // Attempt to establish WebSocket connection
     try {
-      // Check if WebSocket is available (browser environment)
-      if (typeof WebSocket !== 'undefined') {
-        const ws = new WebSocket(`${this.url}?token=${encodeURIComponent(accessToken)}`);
-        this.ws = ws;
-
-        ws.onopen = () => {
-          this.state = 'connected';
-          this.reconnectAttempts = 0;
-          logger.info('WebSocket connected successfully');
-          this.startHeartbeat();
-          this.flushMessageQueue();
-          this.emit('connection', { status: 'connected' });
-        };
-
-        ws.onerror = (event) => {
-          const err = extractError((event as { error?: unknown }).error);
-          logger.error('WebSocket connection error', {
-            message: err.message,
-            stack: err.stack,
-          });
-          this.state = 'disconnected';
-          this.emit('connection', { status: 'error', error: err });
-          this.reconnect();
-        };
-
-        ws.onclose = () => {
-          logger.warn('WebSocket connection closed');
-          this.state = 'disconnected';
-          this.ws = null;
-          this.emit('connection', { status: 'disconnected' });
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnect();
-          }
-        };
-      } else {
-        // Fallback: simulate connection for environments without WebSocket
-        logger.warn('WebSocket not available, using simulated connection');
-        this.state = 'connected';
-        this.reconnectAttempts = 0;
-        this.startHeartbeat();
-        this.flushMessageQueue();
-        this.emit('connection', { status: 'connected' });
+      if (typeof WebSocket === 'undefined') {
+        this.simulateConnection();
+        return;
       }
+
+      this.establishBrowserConnection(accessToken);
     } catch (error) {
-      const normalizedError = extractError(error);
-      logger.error('Failed to establish WebSocket connection', {
-        message: normalizedError.message,
-        stack: normalizedError.stack,
-      });
-      this.state = 'disconnected';
-      this.emit('connection', { status: 'error', error: normalizedError });
-      this.reconnect();
+      this.handleConnectionFailure(error);
     }
   }
 
@@ -278,49 +211,80 @@ export class WebSocketManager {
     }
   }
 
-  /**
-   * Get access token from APIClient
-   */
-  private getAccessToken(): string | null {
-    // Access token is stored in APIClient memory
-    // We need to get it from the auth service or APIClient
-    // For now, return null and let the caller provide it
-    return this.accessToken
+  private logConnectionAttempt(accessToken?: string): void {
+    const preview = accessToken ? `${accessToken.slice(0, 10)}…` : 'anonymous';
+    logger.info('Connecting', { url: this.url, tokenPreview: preview });
   }
 
-  /**
-   * Handle authentication error - refresh token and reconnect
-   */
-  private async handleAuthError(): Promise<void> {
-    if (this.refreshInProgress) {
-      return
-    }
+  private isConnectingOrConnected(): boolean {
+    return this.state === 'connected' || this.state === 'connecting';
+  }
 
-    this.refreshInProgress = true
-    logger.info('WebSocket auth error, attempting token refresh')
+  private establishBrowserConnection(accessToken?: string): void {
+    const ws = new WebSocket(this.buildConnectionUrl(accessToken));
+    this.ws = ws;
 
-    try {
-      // Token refresh is handled by APIClient automatically
-      // We just need to get the new token and reconnect
-      // The token refresh happens when APIClient makes a request
-      // For WebSocket, we'll reconnect with a fresh token
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for refresh
-      
-      // Get fresh token (this would come from auth service)
-      const newToken = this.getAccessToken()
-      if (newToken) {
-        this.reconnectAttempts = 0 // Reset attempts after successful refresh
-        this.connect(newToken)
-      } else {
-        logger.error('Failed to get new access token after refresh')
-        this.emit('connection', { status: 'auth_failed' })
-      }
-    } catch (error) {
-      logger.error('Failed to refresh token for WebSocket', { error: error instanceof Error ? error : new Error(String(error)) })
-      this.emit('connection', { status: 'auth_failed' })
-    } finally {
-      this.refreshInProgress = false
+    ws.onopen = () => this.onWebSocketOpen();
+    ws.onerror = (event) => this.onWebSocketError(event);
+    ws.onclose = () => this.onWebSocketClose();
+  }
+
+  private onWebSocketOpen(): void {
+    this.state = 'connected';
+    this.reconnectAttempts = 0;
+    logger.info('WebSocket connected successfully');
+    this.startHeartbeat();
+    this.flushMessageQueue();
+    this.emit('connection', { status: 'connected' });
+  }
+
+  private onWebSocketError(event: Event): void {
+    const candidateError = (event as ErrorEvent).error ?? new Error('Unknown WebSocket error');
+    const normalizedError = extractError(candidateError);
+    logger.error('WebSocket connection error', {
+      message: normalizedError.message,
+      stack: normalizedError.stack,
+    });
+    this.state = 'disconnected';
+    this.emit('connection', { status: 'error', error: normalizedError });
+    this.reconnect();
+  }
+
+  private onWebSocketClose(): void {
+    logger.warn('WebSocket connection closed');
+    this.state = 'disconnected';
+    this.ws = null;
+    this.emit('connection', { status: 'disconnected' });
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnect();
     }
+  }
+
+  private simulateConnection(): void {
+    logger.warn('WebSocket not available, using simulated connection');
+    this.state = 'connected';
+    this.reconnectAttempts = 0;
+    this.startHeartbeat();
+    this.flushMessageQueue();
+    this.emit('connection', { status: 'connected' });
+  }
+
+  private handleConnectionFailure(error: unknown): void {
+    const normalizedError = extractError(error);
+    logger.error('Failed to establish WebSocket connection', {
+      message: normalizedError.message,
+      stack: normalizedError.stack,
+    });
+    this.state = 'disconnected';
+    this.emit('connection', { status: 'error', error: normalizedError });
+    this.reconnect();
+  }
+
+  private buildConnectionUrl(accessToken?: string): string {
+    if (!accessToken) {
+      return this.url;
+    }
+    return `${this.url}?token=${encodeURIComponent(accessToken)}`;
   }
 
   private reconnect(): void {
@@ -342,7 +306,7 @@ export class WebSocketManager {
 
     this.reconnectTimer = window.setTimeout(() => {
       logger.info('Attempting reconnection');
-      this.connect('reconnect-token');
+      this.connect();
     }, backoffDelay);
   }
 

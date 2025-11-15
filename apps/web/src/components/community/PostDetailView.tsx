@@ -340,11 +340,11 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
                             }}
                             className="relative aspect-square rounded-lg overflow-hidden bg-muted"
                           >
-                            <ProgressiveImage
-                              src={url}
-                              alt={`Post media ${String(index + 1 ?? '')}`}
-                              className="w-full h-full object-cover"
-                              aria-label={`Post media ${index + 1}`}
+                              <ProgressiveImage
+                                src={url}
+                                alt={`Post media ${String(index + 1)}`}
+                                className="w-full h-full object-cover"
+                                aria-label={`Post media ${index + 1}`}
                             />
                           </button>
                         );

@@ -168,6 +168,36 @@ export function injectTokenCSSVariables(mode: ThemeMode): void {
     root.style.setProperty(cssVarName, String(value));
   });
 
+  root.style.setProperty('--color-background', themeColors.background);
+  root.style.setProperty('--color-foreground', themeColors.foreground);
+  root.style.setProperty('--color-card', themeColors.card);
+  root.style.setProperty('--color-card-foreground', themeColors.cardForeground);
+  root.style.setProperty('--color-popover', themeColors.popover);
+  root.style.setProperty('--color-popover-foreground', themeColors.popoverForeground);
+  root.style.setProperty('--color-primary', themeColors.primary);
+  root.style.setProperty('--color-primary-foreground', themeColors.primaryForeground);
+  root.style.setProperty('--color-secondary', themeColors.secondary);
+  root.style.setProperty('--color-secondary-foreground', themeColors.secondaryForeground);
+  root.style.setProperty('--color-muted', themeColors.muted);
+  root.style.setProperty('--color-muted-foreground', themeColors.mutedForeground);
+  root.style.setProperty('--color-accent', themeColors.accent);
+  root.style.setProperty('--color-accent-foreground', themeColors.accentForeground);
+  root.style.setProperty('--color-destructive', themeColors.destructive);
+  root.style.setProperty('--color-destructive-foreground', themeColors.destructiveForeground);
+  root.style.setProperty('--color-success', themeColors.success);
+  root.style.setProperty('--color-success-foreground', themeColors.successForeground);
+  root.style.setProperty('--color-warning', themeColors.warning);
+  root.style.setProperty('--color-warning-foreground', themeColors.warningForeground);
+  root.style.setProperty('--color-info', themeColors.info);
+  root.style.setProperty('--color-info-foreground', themeColors.infoForeground);
+  root.style.setProperty('--color-border', themeColors.border);
+  root.style.setProperty('--color-input', themeColors.input);
+  root.style.setProperty('--color-ring', themeColors.ring);
+  root.style.setProperty('--color-surface', themeColors.surface);
+  root.style.setProperty('--color-text-primary', themeColors.textPrimary);
+  root.style.setProperty('--color-text-secondary', themeColors.textSecondary);
+  root.style.setProperty('--color-text-muted', themeColors.textMuted);
+
   // Inject spacing tokens (design token naming)
   // Note: theme.css defines --size-* variables for Tailwind, so we keep --spacing-*
   // for design token usage to avoid conflicts

@@ -23,7 +23,7 @@ function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.L
       data-slot="tabs-list"
       role="tablist"
       className={cn(
-        'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg',
+        'inline-flex h-9 w-fit items-center justify-center rounded-xl border border-border bg-muted/60 text-muted-foreground shadow-sm',
         getSpacingClassesFromConfig({ padding: 'xs' }),
         className
       )}
@@ -38,8 +38,10 @@ function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsPrimitiv
       data-slot="tabs-trigger"
       role="tab"
       className={cn(
-        "data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-md border border-transparent whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        getTypographyClasses('caption'),
+        'inline-flex h-[calc(100%-2px)] flex-1 items-center justify-center rounded-lg border border-transparent text-foreground transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm',
+        'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:border-border',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        getTypographyClasses('bodyMuted'),
         getSpacingClassesFromConfig({ gap: 'xs', paddingX: 'sm', paddingY: 'xs' }),
         className
       )}
@@ -53,7 +55,7 @@ function TabsContent({ className, ...props }: ComponentProps<typeof TabsPrimitiv
     <TabsPrimitive.Content
       data-slot="tabs-content"
       role="tabpanel"
-      className={cn('flex-1 outline-none', className)}
+      className={cn('flex-1 outline-none border border-transparent data-[state=inactive]:pointer-events-none', className)}
       {...props}
     />
   );

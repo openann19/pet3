@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/browser';
 const logger = createLogger('Sentry');
 
 // Sentry configuration from environment (optional)
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 const SENTRY_ENVIRONMENT = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT || 'development';
 const SENTRY_TRACES_SAMPLE_RATE = import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE
   ? parseFloat(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE)

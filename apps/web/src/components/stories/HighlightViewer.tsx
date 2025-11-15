@@ -147,13 +147,11 @@ export default function HighlightViewer({
                 transition={{ delay: index * 0.03 }}
                 aria-label={`View story ${index + 1}: ${story.caption || 'Untitled story'}`}
               >
-                <img
-                  src={story.thumbnailUrl || story.mediaUrl}
-                  alt={story.caption || `Story ${String(index + 1 ?? '')}`}
-                  className="w-full h-full object-cover"
-                />
-
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <img
+                    src={story.thumbnailUrl || story.mediaUrl}
+                    alt={story.caption || `Story ${String(index + 1)}`}
+                    className="w-full h-full object-cover"
+                  />                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {story.caption && (
                   <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

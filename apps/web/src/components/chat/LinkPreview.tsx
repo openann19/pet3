@@ -60,12 +60,12 @@ export function LinkPreview({
       <AnimatedView style={skeletonStyle} className="absolute inset-0">
         <div className="flex gap-3 p-3">
           {image && (
-            <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            <div className="w-20 h-20 bg-muted rounded animate-pulse" />
           )}
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
+            <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+            <div className="h-3 bg-muted rounded w-full animate-pulse" />
+            <div className="h-3 bg-muted rounded w-2/3 animate-pulse" />
           </div>
         </div>
       </AnimatedView>
@@ -77,7 +77,7 @@ export function LinkPreview({
             href={safeUrl}
             target="_blank"
             rel="noopener noreferrer nofollow ugc"
-            className="flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
+            className="flex gap-3 p-3 hover:bg-muted/50 transition-colors rounded-lg"
           >
             {image && (
               <SmartImage

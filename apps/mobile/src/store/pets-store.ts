@@ -42,11 +42,11 @@ export const usePetsStore = create<PetsStore>(set => ({
       const likedPets = new Set(state.likedPets)
       likedPets.add(petId)
       return { likedPets }
-    }); },
+    }),
   reset: () =>
-    { set({
+    set({
       availablePets: [],
       swipedPets: new Set(),
       likedPets: new Set(),
-    }); },
+    }),
 }))

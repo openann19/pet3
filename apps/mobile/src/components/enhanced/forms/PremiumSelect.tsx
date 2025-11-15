@@ -185,7 +185,7 @@ export function PremiumSelect({
 
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={handleClose}>
         <AnimatedView style={[styles.modalBackdrop, modalBackdropStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} / className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
           <AnimatedView style={[styles.modalContent, contentStyle]}>
             {searchable && (
               <View style={styles.searchContainer}>

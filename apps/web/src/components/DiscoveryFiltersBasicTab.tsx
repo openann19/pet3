@@ -18,6 +18,8 @@ import {
     type PetSize,
 } from '@/components/discovery/discovery-preferences';
 
+import { getTypographyClasses } from '@/lib/typography';
+
 interface BasicTabProps {
     draft: DiscoveryPreferences;
     onDraftChange(next: DiscoveryPreferences): void;
@@ -33,7 +35,7 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
     const toggleSize = (size: PetSize) => {
         const sizes = draft.sizes.includes(size)
-            ? draft.sizes.filter((s) => s !== size)
+            ? draft.sizes.filter((s: PetSize) => s !== size)
             : [...draft.sizes, size];
 
         onDraftChange({ ...draft, sizes });
@@ -44,7 +46,7 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
             (value: string) => {
                 const current = draft[field] ?? [];
                 const next = current.includes(value)
-                    ? current.filter((item) => item !== value)
+                    ? current.filter((item: string) => item !== value)
                     : [...current, value];
 
                 onDraftChange({ ...draft, [field]: next });
@@ -61,12 +63,12 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
             <div className="space-y-6 py-2">
                 {/* Age range */}
                 <div>
-                    <Label className="mb-4 block text-base font-semibold">Age Range</Label>
+                    <Label className={`mb-4 block ${getTypographyClasses('subheading')}`}>Age Range</Label>
                     <div className="space-y-4">
                         <div>
                             <div className="mb-2 flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Minimum Age</span>
-                                <span className="text-sm font-medium">
+                                <span className={`${getTypographyClasses('bodySmall')} text-muted-foreground`}>Minimum Age</span>
+                                <span className={getTypographyClasses('bodyMedium')}>
                                     {minAge} {minAge === 1 ? 'year' : 'years'}
                                 </span>
                             </div>
@@ -80,8 +82,8 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
                         </div>
                         <div>
                             <div className="mb-2 flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Maximum Age</span>
-                                <span className="text-sm font-medium">
+                                <span className={`${getTypographyClasses('bodySmall')} text-muted-foreground`}>Maximum Age</span>
+                                <span className={getTypographyClasses('bodyMedium')}>
                                     {maxAge} {maxAge === 1 ? 'year' : 'years'}
                                 </span>
                             </div>
@@ -100,11 +102,11 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Size */}
                 <div>
-                    <Label className="mb-3 block text-base font-semibold">
+                    <Label className={`mb-3 block ${getTypographyClasses('subheading')}`}>
                         Size Preferences
                     </Label>
                     <div className="flex flex-wrap gap-2">
-                        {ALL_SIZES.map((size) => {
+                        {ALL_SIZES.map((size: PetSize) => {
                             const isSelected = draft.sizes.includes(size);
                             return (
                                 <Badge
@@ -125,12 +127,12 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Distance */}
                 <div>
-                    <Label className="mb-4 block text-base font-semibold">
+                    <Label className={`mb-4 block ${getTypographyClasses('subheading')}`}>
                         Maximum Distance
                     </Label>
                     <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Within</span>
-                        <span className="text-sm font-medium">
+                        <span className={`text-sm ${getTypographyClasses('bodySmall')}`}>Within</span>
+                        <span className={getTypographyClasses('bodyMedium')}>
                             {maxDistance} miles
                         </span>
                     </div>
@@ -148,19 +150,19 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Personality */}
                 <div>
-                    <Label className="mb-3 block text-base font-semibold">
+                    <Label className={`mb-3 block ${getTypographyClasses('subheading')}`}>
                         Personality Traits{' '}
                         {personalitiesCount > 0 && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className={`text-xs ${getTypographyClasses('bodySmall')}`}>
                                 ({personalitiesCount} selected)
                             </span>
                         )}
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 text-xs ${getTypographyClasses('bodySmall')}`}>
                         Find pets with these personality traits
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {ALL_PERSONALITIES.map((trait) => {
+                        {ALL_PERSONALITIES.map((trait: string) => {
                             const isSelected = draft.personalities.includes(trait);
                             return (
                                 <Badge
@@ -181,19 +183,19 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Interests */}
                 <div>
-                    <Label className="mb-3 block text-base font-semibold">
+                    <Label className={`mb-3 block ${getTypographyClasses('subheading')}`}>
                         Interests{' '}
                         {interestsCount > 0 && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className={`text-xs ${getTypographyClasses('bodySmall')}`}>
                                 ({interestsCount} selected)
                             </span>
                         )}
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 text-xs ${getTypographyClasses('bodySmall')}`}>
                         Find pets who enjoy these activities
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {ALL_INTERESTS.map((interest) => {
+                        {ALL_INTERESTS.map((interest: string) => {
                             const isSelected = draft.interests.includes(interest);
                             return (
                                 <Badge
@@ -214,19 +216,19 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Looking for */}
                 <div>
-                    <Label className="mb-3 block text-base font-semibold">
+                    <Label className={`mb-3 block ${getTypographyClasses('subheading')}`}>
                         Looking For{' '}
                         {lookingForCount > 0 && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className={`text-xs ${getTypographyClasses('bodySmall')}`}>
                                 ({lookingForCount} selected)
                             </span>
                         )}
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 text-xs ${getTypographyClasses('bodySmall')}`}>
                         Find pets seeking these connections
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {ALL_LOOKING_FOR.map((goal) => {
+                        {ALL_LOOKING_FOR.map((goal: string) => {
                             const isSelected = draft.lookingFor.includes(goal);
                             return (
                                 <Badge
@@ -247,15 +249,15 @@ export function DiscoveryFiltersBasicTab({ draft, onDraftChange }: BasicTabProps
 
                 {/* Min compatibility */}
                 <div>
-                    <Label className="mb-4 block text-base font-semibold">
+                    <Label className={`mb-4 block ${getTypographyClasses('subheading')}`}>
                         Minimum Compatibility Score
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 text-xs ${getTypographyClasses('bodySmall')}`}>
                         Only show pets with at least this compatibility
                     </p>
                     <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Minimum Score</span>
-                        <span className="text-sm font-medium">
+                        <span className={`text-sm ${getTypographyClasses('bodySmall')}`}>Minimum Score</span>
+                        <span className={getTypographyClasses('bodyMedium')}>
                             {minCompatibility}%
                         </span>
                     </div>

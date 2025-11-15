@@ -4,7 +4,6 @@
  */
 
 import { createLogger } from './logger';
-import type { WorkerTaskError, MediaErrorContext } from './media-errors';
 import { WorkerTaskError as WorkerTaskErrorClass, createErrorContext } from './media-errors';
 
 const logger = createLogger('WorkerPool');

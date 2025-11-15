@@ -155,7 +155,7 @@ export function SmartReply({
         <button
           key={suggestion.id}
           onClick={() => handleSelect(suggestion)}
-          className="px-3 py-1.5 text-sm rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          className="px-3 py-1.5 text-sm rounded-full bg-muted hover:bg-muted/80 transition-colors"
           disabled={loading}
           aria-label={`Smart reply: ${suggestion.translated ?? suggestion.text}`}
         >

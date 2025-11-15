@@ -1,5 +1,6 @@
 import { createLogger } from './logger';
 import { getStorageItem } from './cache/local-storage';
+import { APIClient } from './api-client';
 import type { ConsentPreferences } from '@petspark/shared';
 import { DEFAULT_CONSENT_PREFERENCES } from '@petspark/shared';
 
@@ -54,7 +55,15 @@ function hasAnalyticsConsent(): boolean {
   return preferences.analytics === true;
 }
 
+interface QueuedEvent {
+  eventName: string
+  properties?: EventProperties
+  timestamp: number
+}
+
 class Analytics {
+  private eventQueue: QueuedEvent[] = []
+  private flushInterval: number | null = null
   track(eventName: string, properties?: EventProperties): void {
     if (typeof window === 'undefined') {
       return;
@@ -104,20 +113,6 @@ class Analytics {
           error instanceof Error ? error : new Error(String(error));
         logger.error('Failed to clear analytics data', errorObj);
       }
-    }
-
-    // Queue event for batch sending
-    this.eventQueue.push({
-      eventName,
-      properties,
-      timestamp: Date.now()
-    })
-
-    // Flush immediately if queue is getting large
-    if (this.eventQueue.length >= 10) {
-      this.flushEvents().catch((error) => {
-        logger.error('Failed to flush analytics events', error instanceof Error ? error : new Error(String(error)))
-      })
     }
   }
 
@@ -169,11 +164,4 @@ if (typeof window !== 'undefined') {
   })
 }
 
-declare global {
-  interface Window {
-    spark_analytics?: {
-      track: (eventName: string, properties?: EventProperties) => void;
-      clear?: () => void;
-    };
-  }
-}
+// Global types are defined in env.d.ts

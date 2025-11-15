@@ -129,7 +129,7 @@ export function PremiumAvatar({
       {variant === 'glow' && (
         <AnimatedView
           style={{
-            ...(glowStyle as AnimatedStyle),
+            ...(glowStyle),
             position: 'absolute',
             width: config.size + 8,
             height: config.size + 8,

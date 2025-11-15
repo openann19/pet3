@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { getTypographyClasses } from '@/lib/typography';
 
 import {
     type CropSize,
@@ -55,11 +56,11 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
             <div className="space-y-6 py-2">
                 {/* Crop size */}
                 <div>
-                    <Label className="mb-4 flex items-center gap-2 text-base font-semibold">
+                    <Label className={`mb-4 flex items-center gap-2 ${getTypographyClasses('subheading')}`}>
                         <Camera size={18} weight="bold" />
                         Photo Crop Size
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 ${getTypographyClasses('bodySmall')}`}>
                         Filter profiles by photo aspect ratio
                     </p>
                     <div className="grid grid-cols-2 gap-2">
@@ -81,7 +82,7 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
                                 )}
                             >
                                 <div className="mb-1 text-2xl">{icon}</div>
-                                <div className="text-sm font-medium">{label}</div>
+                                <div className={getTypographyClasses('bodyMedium')}>{label}</div>
                             </button>
                         ))}
                     </div>
@@ -91,11 +92,11 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
 
                 {/* Photo quality */}
                 <div>
-                    <Label className="mb-4 flex items-center gap-2 text-base font-semibold">
+                    <Label className={`mb-4 flex items-center gap-2 ${getTypographyClasses('subheading')}`}>
                         <Sparkle size={18} weight="bold" />
                         Photo Quality
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 ${getTypographyClasses('bodySmall')}`}>
                         Prefer high-quality or verified photos
                     </p>
                     <div className="flex flex-col gap-2">
@@ -129,7 +130,7 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
                                             : 'border-border hover:border-primary/50',
                                     )}
                                 >
-                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                    <div className={`flex items-center gap-2 ${getTypographyClasses('bodyMedium')}`}>
                                         {isSelected && (
                                             <CheckCircle
                                                 size={16}
@@ -139,7 +140,7 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
                                         )}
                                         {label}
                                     </div>
-                                    <div className="mt-1 text-xs text-muted-foreground">{desc}</div>
+                                    <div className={`mt-1 ${getTypographyClasses('bodySmall')}`}>{desc}</div>
                                 </button>
                             );
                         })}
@@ -150,14 +151,14 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
 
                 {/* Video content */}
                 <div>
-                    <Label className="mb-4 flex items-center gap-2 text-base font-semibold">
+                    <Label className={`mb-4 flex items-center gap-2 ${getTypographyClasses('subheading')}`}>
                         <VideoCamera size={18} weight="bold" />
                         Video Content
                     </Label>
                     <div className="flex items-center justify-between rounded-lg border bg-card p-4">
                         <div>
-                            <div className="text-sm font-medium">Has Video</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <div className={getTypographyClasses('bodyMedium')}>Has Video</div>
+                            <div className={`mt-1 ${getTypographyClasses('bodySmall')}`}>
                                 Only show profiles with video content
                             </div>
                         </div>
@@ -172,16 +173,16 @@ export function DiscoveryFiltersMediaTab({ draft, onDraftChange }: MediaTabProps
 
                 {/* Min photos */}
                 <div>
-                    <Label className="mb-4 flex items-center gap-2 text-base font-semibold">
+                    <Label className={`mb-4 flex items-center gap-2 ${getTypographyClasses('subheading')}`}>
                         <Camera size={18} weight="bold" />
                         Minimum Photos
                     </Label>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className={`mb-3 ${getTypographyClasses('bodySmall')}`}>
                         Profiles must have at least this many photos
                     </p>
                     <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Minimum</span>
-                        <span className="text-sm font-medium">
+                        <span className={getTypographyClasses('bodySmall')}>Minimum</span>
+                        <span className={getTypographyClasses('bodyMedium')}>
                             {mediaFilters.minPhotos} photo{mediaFilters.minPhotos !== 1 ? 's' : ''}
                         </span>
                     </div>

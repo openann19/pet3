@@ -24,7 +24,7 @@ export interface TypingDotsProps {
 }
 
 const DEFAULT_DOT_SIZE = 6;
-const DEFAULT_DOT_COLOR = '#aaa';
+const DEFAULT_DOT_COLOR = 'hsl(var(--muted-foreground))';
 const DEFAULT_GAP = 4;
 const DEFAULT_ANIMATION_DURATION = 1200;
 

@@ -27,7 +27,7 @@ export function TypingIndicator({ users }: TypingIndicatorProps): JSX.Element {
         </AvatarFallback>
       </Avatar>
       <WebBubbleWrapper showTyping isIncoming>
-        <LiquidDots enabled dotColor="#9ca3af" />
+        <LiquidDots enabled dotColor="hsl(var(--muted-foreground))" />
       </WebBubbleWrapper>
     </AnimatedView>
   );

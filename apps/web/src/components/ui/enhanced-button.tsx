@@ -12,7 +12,7 @@ import {
   interpolate,
   animate,
 } from '@petspark/motion';
-import { AnimatedView, useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
+import { AnimatedView, type AnimatedStyle as ViewAnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
@@ -21,8 +21,14 @@ import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { getTypographyClasses } from '@/lib/typography';
+import type { MotionValue, Transition } from 'framer-motion';
 
 const logger = createLogger('EnhancedButton');
+
+const runAnimation = (
+  value: MotionValue<number>,
+  animation: { target: number; transition?: Transition }
+) => animate(value, animation.target, animation.transition);
 
 export interface EnhancedButtonProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -67,11 +73,28 @@ export function EnhancedButton({
   });
 
   // Glow effect
-  const glowOpacity = useSharedValue(0);
-  const glowProgress = useSharedValue(0);
+  const glowOpacity = useSharedValue<number>(0);
+  const glowProgress = useSharedValue<number>(0);
 
   // Loading spinner rotation
-  const loadingRotation = useSharedValue(0);
+  const loadingRotation = useSharedValue<number>(0);
+
+  const resolvedGlowColor = useMemo(() => {
+    if (glowColor) {
+      return glowColor;
+    }
+
+    const glowColors: Record<NonNullable<EnhancedButtonProps['variant']>, string> = {
+      default: 'rgba(255, 113, 91, 0.35)',
+      destructive: 'rgba(248, 81, 73, 0.4)',
+      outline: 'rgba(15, 23, 42, 0.25)',
+      secondary: 'rgba(255, 184, 77, 0.35)',
+      ghost: 'rgba(148, 163, 184, 0.25)',
+      link: 'rgba(88, 166, 255, 0.35)',
+    };
+
+    return glowColors[variant] ?? glowColors.default;
+  }, [glowColor, variant]);
 
   // Combined animation style
   const combinedAnimatedStyle = useAnimatedStyle(() => {
@@ -82,12 +105,12 @@ export function EnhancedButton({
     return {
       transform: [{ scale: hoverScale * tapScale }, { translateY: hoverY }],
     };
-  });
+  }) as ViewAnimatedStyle;
 
   // Glow animation style
-  const glowAnimatedStyle = useAnimatedStyle(() => {
+  const glowOverlayStyle = useAnimatedStyle(() => {
     if (!enableGlow) {
-      return { opacity: 0 };
+      return { opacity: 0, backgroundColor: resolvedGlowColor };
     }
 
     const opacity = interpolate(
@@ -99,8 +122,9 @@ export function EnhancedButton({
 
     return {
       opacity: glowOpacity.get() * opacity,
+      backgroundColor: resolvedGlowColor,
     };
-  });
+  }) as ViewAnimatedStyle;
 
   // Loading spinner animation
   useEffect(() => {
@@ -110,17 +134,15 @@ export function EnhancedButton({
         easing: (t) => t,
       });
       const repeatTransition = withRepeat(timingTransition, -1, false);
-      animate(loadingRotation, repeatTransition.target, repeatTransition.transition);
+      runAnimation(loadingRotation, repeatTransition);
     } else {
-      animate(loadingRotation, 0, { duration: 0 });
+      runAnimation(loadingRotation, { target: 0, transition: { duration: 0 } });
     }
   }, [loading, loadingRotation]);
 
-  const loadingSpinnerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${loadingRotation.get()}deg` }],
-    };
-  });
+  const loadingSpinnerStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${loadingRotation.get()}deg` }],
+  })) as ViewAnimatedStyle;
 
   // Start glow animation when enabled
   useEffect(() => {
@@ -130,13 +152,13 @@ export function EnhancedButton({
         easing: (t) => t,
       });
       const repeatTransition = withRepeat(timingTransition, -1, true);
-      animate(glowProgress, repeatTransition.target, repeatTransition.transition);
+      runAnimation(glowProgress, repeatTransition);
       const opacityTransition = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      runAnimation(glowOpacity, opacityTransition);
     } else {
       const opacityTransition = withTiming(0, timingConfigs.fast);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
-      glowProgress.value = 0;
+      runAnimation(glowOpacity, opacityTransition);
+      glowProgress.set(0);
     }
   }, [enableGlow, reducedMotion, glowOpacity, glowProgress]);
 
@@ -161,7 +183,7 @@ export function EnhancedButton({
             withSpring(1, springConfigs.bouncy),
             withSpring(0.6, springConfigs.smooth)
           );
-          animate(glowOpacity, sequence.target, sequence.transition);
+          runAnimation(glowOpacity, sequence);
         }
 
         onClick?.(e);
@@ -196,7 +218,7 @@ export function EnhancedButton({
 
     if (enableGlow) {
       const opacityTransition = withSpring(1, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      runAnimation(glowOpacity, opacityTransition);
     }
   }, [disabled, loading, reducedMotion, enableHoverLift, enableGlow, hoverLift, glowOpacity]);
 
@@ -211,68 +233,51 @@ export function EnhancedButton({
 
     if (enableGlow) {
       const opacityTransition = withSpring(0.3, springConfigs.smooth);
-      animate(glowOpacity, opacityTransition.target, opacityTransition.transition);
+      runAnimation(glowOpacity, opacityTransition);
     }
   }, [disabled, loading, reducedMotion, enableHoverLift, enableGlow, hoverLift, glowOpacity]);
 
   // Variant styles using design tokens
   const variantClasses = useMemo(() => {
-    const variants = {
+    const focusRing = 'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring';
+    const disabledState = 'disabled:bg-muted/40 disabled:text-muted-foreground/70 disabled:shadow-none';
+
+    const variants: Record<NonNullable<EnhancedButtonProps['variant']>, string> = {
       default:
-        'bg-(--btn-primary-bg) text-(--btn-primary-fg) shadow-lg hover:shadow-xl disabled:bg-(--btn-primary-disabled-bg) disabled:text-(--btn-primary-disabled-fg) disabled:shadow-none focus-visible:ring-2 focus-visible:ring-[var(--btn-primary-focus-ring)] focus-visible:ring-offset-2',
+        cn(
+          'group relative inline-flex min-h-[52px] items-center justify-center overflow-hidden rounded-2xl bg-primary px-6 py-3 text-primary-foreground shadow-[0px_8px_20px_rgba(255,113,91,0.35)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-[0px_15px_35px_rgba(255,113,91,0.35)]',
+          focusRing
+        ),
       destructive:
-        'bg-(--btn-destructive-bg) text-(--btn-destructive-fg) shadow-lg hover:shadow-xl disabled:bg-(--btn-destructive-disabled-bg) disabled:text-(--btn-destructive-disabled-fg) disabled:shadow-none focus-visible:ring-2 focus-visible:ring-[var(--btn-destructive-focus-ring)] focus-visible:ring-offset-2',
-      outline:
-        'border-[1.5px] border-(--btn-outline-border) bg-(--btn-outline-bg) text-(--btn-outline-fg) shadow-sm hover:shadow-lg hover:bg-(--btn-outline-hover-bg) hover:text-(--btn-outline-hover-fg) hover:border-(--btn-outline-hover-border) disabled:bg-(--btn-outline-disabled-bg) disabled:text-(--btn-outline-disabled-fg) disabled:border-(--btn-outline-disabled-border) disabled:shadow-none focus-visible:ring-2 focus-visible:ring-[var(--btn-outline-focus-ring)] focus-visible:ring-offset-2',
+        cn('bg-destructive text-destructive-foreground shadow-lg hover:shadow-xl hover:bg-destructive/90', focusRing, 'focus-visible:ring-destructive'),
+      outline: cn('border border-border bg-transparent text-foreground shadow-sm hover:bg-muted/60 hover:text-foreground', focusRing),
       secondary:
-        'bg-(--btn-secondary-bg) text-(--btn-secondary-fg) shadow-lg hover:shadow-xl disabled:bg-(--btn-secondary-disabled-bg) disabled:text-(--btn-secondary-disabled-fg) disabled:shadow-none focus-visible:ring-2 focus-visible:ring-[var(--btn-secondary-focus-ring)] focus-visible:ring-offset-2',
-      ghost:
-        'bg-(--btn-ghost-bg) text-(--btn-ghost-fg) hover:bg-(--btn-ghost-hover-bg) hover:text-(--btn-ghost-hover-fg) disabled:bg-(--btn-ghost-disabled-bg) disabled:text-(--btn-ghost-disabled-fg) focus-visible:ring-2 focus-visible:ring-[var(--btn-ghost-focus-ring)] focus-visible:ring-offset-2',
-      link: 'text-(--btn-link-fg) underline-offset-4 hover:underline hover:text-(--btn-link-hover-fg) disabled:text-(--btn-link-disabled-fg) disabled:no-underline bg-transparent focus-visible:ring-2 focus-visible:ring-[var(--btn-link-focus-ring)] focus-visible:ring-offset-2',
+        cn('bg-secondary text-secondary-foreground shadow-lg hover:shadow-xl hover:bg-secondary/90', focusRing),
+      ghost: cn('bg-transparent text-foreground hover:bg-muted/40', focusRing),
+      link: cn('text-primary underline-offset-4 hover:underline bg-transparent shadow-none px-0', focusRing),
     };
 
-    return variants[variant] ?? variants.default;
+    return cn(variants[variant] ?? variants.default, disabledState);
   }, [variant]);
 
   // Size styles with typography tokens
   const sizeClasses = useMemo(() => {
-    const sizes = {
+    const sizes: Record<NonNullable<EnhancedButtonProps['size']>, string> = {
       default: cn('h-11 px-4 py-2 min-h-[44px] min-w-[44px]', getTypographyClasses('body')),
-      sm: cn('h-9 px-3 py-1.5 rounded-md gap-1.5 min-h-[44px] min-w-[44px]', getTypographyClasses('caption')),
-      lg: cn('h-14 px-6 py-3 rounded-md min-h-[44px] min-w-[44px]', getTypographyClasses('h3')),
+      sm: cn('h-9 px-3 py-1.5 rounded-lg gap-1.5 min-h-[44px] min-w-[44px]', getTypographyClasses('bodyMuted')),
+      lg: cn('h-14 px-6 py-3 rounded-xl min-h-[44px] min-w-[44px]', getTypographyClasses('h3')),
       icon: 'size-11 min-w-[44px] min-h-[44px] p-0',
     };
 
     return sizes[size] ?? sizes.default;
   }, [size]);
 
-  const combinedStyleValue = useAnimatedStyleValue(combinedAnimatedStyle);
-  const glowStyleValue = useAnimatedStyleValue(glowAnimatedStyle);
-  const loadingStyleValue = useAnimatedStyleValue(loadingSpinnerStyle);
-
   const isDisabled = disabled || loading;
 
   // Determine glow color based on variant
-  const resolvedGlowColor = useMemo(() => {
-    if (glowColor) {
-      return glowColor;
-    }
-
-    const glowColors = {
-      default: 'rgba(37, 99, 235, 0.4)',
-      destructive: 'rgba(220, 38, 38, 0.4)',
-      outline: 'rgba(100, 116, 139, 0.3)',
-      secondary: 'rgba(100, 116, 139, 0.4)',
-      ghost: 'rgba(100, 116, 139, 0.2)',
-      link: 'rgba(37, 99, 235, 0.3)',
-    };
-
-    return glowColors[variant] ?? glowColors.default;
-  }, [glowColor, variant]);
-
   return (
     <AnimatedView
-      style={combinedStyleValue}
+      style={combinedAnimatedStyle}
       className="inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -282,7 +287,7 @@ export function EnhancedButton({
         onClick={handleClick}
         disabled={isDisabled}
         className={cn(
-          'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium',
+          'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-medium',
           'disabled:pointer-events-none disabled:cursor-default',
           'outline-none',
           '[&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-5 shrink-0 [&_svg]:shrink-0',
@@ -296,20 +301,17 @@ export function EnhancedButton({
         {...props}
       >
         {enableGlow && (
-          <div
-            className="absolute inset-0 pointer-events-none rounded-md"
-            style={{
-              backgroundColor: resolvedGlowColor,
-              ...glowStyleValue,
-            }}
+          <AnimatedView
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={glowOverlayStyle}
           />
         )}
 
         <span className="relative z-10 flex items-center justify-center gap-2">
           {loading ? (
-            <div
+            <AnimatedView
               className="h-5 w-5 rounded-full border-2 border-current border-t-transparent"
-              style={loadingStyleValue}
+              style={loadingSpinnerStyle}
               aria-hidden="true"
             />
           ) : (

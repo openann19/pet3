@@ -13,7 +13,7 @@ import {
 } from '../../effects/reanimated/use-sticker-animation'
 import { springConfigs } from '../../effects/reanimated/transitions'
 import * as Haptics from 'expo-haptics'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../utils/shared';
 
 export interface StickerMessageProps {
   sticker: Sticker

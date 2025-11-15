@@ -12,7 +12,7 @@ import { useSharedValue, useAnimatedStyle, type SharedValue } from 'react-native
 import { createSpringAnimation, createTimingAnimation, createDelayedAnimation, stopAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
 import type { BaseAnimationConfig } from '../core/types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy, isDefined } from '../utils/guards';
 
 export interface UseBubbleEntryOptions extends BaseAnimationConfig {
   /**
@@ -394,14 +394,17 @@ export function useBubbleEntry(
   ])
 
   // Create animated style
-  const style = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value }
-    ],
-    opacity: opacity.value,
-  }))
+  const style = useAnimatedStyle(() => {
+    const transforms: any[] = []
+    if (translateX.value !== 0) transforms.push({ translateX: translateX.value })
+    if (translateY.value !== 0) transforms.push({ translateY: translateY.value })
+    if (scale.value !== 1) transforms.push({ scale: scale.value })
+    
+    return {
+      transform: transforms as any,
+      opacity: opacity.value,
+    }
+  })
 
   // Initialize and auto-trigger
   useEffect(() => {

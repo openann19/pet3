@@ -11,6 +11,7 @@ import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TabBarIcon } from '../components/navigation/TabBarIcon'
 import { AdoptScreen } from '../screens/AdoptScreen'
+import { AdoptionMarketplaceScreen } from '../screens/AdoptionMarketplaceScreen'
 import { ChatScreen } from '../screens/ChatScreen'
 import { CommunityScreen } from '../screens/CommunityScreen'
 import { FeedScreen } from '../screens/FeedScreen'
@@ -27,6 +28,7 @@ const TAB_ICONS: Record<keyof RootTabParamList, string> = {
   Chat: '💬',
   Matches: '❤️',
   Adopt: '🐾',
+  AdoptionMarketplace: '🏠',
   Community: '👥',
   Profile: '👤',
 }
@@ -122,6 +124,19 @@ export function EnhancedTabNavigator(): React.JSX.Element {
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <TabBarIcon focused={focused} color={color} size={size} icon={TAB_ICONS.Adopt} />
+          ),
+        }}
+        listeners={{
+          tabPress: handleTabPress,
+        }}
+      />
+      <Tab.Screen
+        name="AdoptionMarketplace"
+        component={AdoptionMarketplaceScreen}
+        options={{
+          title: 'Marketplace',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon focused={focused} color={color} size={size} icon={TAB_ICONS.AdoptionMarketplace} />
           ),
         }}
         listeners={{

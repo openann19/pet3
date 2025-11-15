@@ -1,21 +1,26 @@
 /**
- * Wave Animation (Web Adapter)
- * Delegates to shared motion hook for parity and reduced-motion handling.
+ * Wave Animation (Web - Framer Motion)
+ * Simple wave animation using Framer Motion for web platform.
  */
 
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  interpolate,
-  Easing,
-} from '@petspark/motion';
+import { useMotionValue, animate, type MotionValue } from 'framer-motion';
 import { useEffect } from 'react';
 
-export const useWaveAnimation = useSharedWaveAnimation
+export interface UseWaveAnimationOptions {
+  amplitude?: number;
+  frequency?: number;
+  speed?: number;
+  direction?: 'horizontal' | 'vertical';
+  enabled?: boolean;
+}
 
-export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
+export interface UseWaveAnimationReturn {
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  progress: MotionValue<number>;
+}
+
+export function useWaveAnimation(options: UseWaveAnimationOptions = {}): UseWaveAnimationReturn {
   const {
     amplitude = 20,
     frequency = 2,
@@ -24,68 +29,79 @@ export function useWaveAnimation(options: UseWaveAnimationOptions = {}) {
     enabled = true,
   } = options;
 
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   useEffect(() => {
-    if (enabled) {
-      progress.value = withRepeat(
-        withTiming(1, { duration: speed, easing: Easing.linear }),
-        -1,
-        false
-      );
-    } else {
-      progress.value = 0;
-    }
-  }, [enabled, speed]);
+    if (!enabled) return;
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const phase = progress.value * Math.PI * 2 * frequency;
-    const wave = Math.sin(phase) * amplitude;
+    const controls = animate(progress, 1, {
+      duration: speed / 1000,
+      repeat: Infinity,
+      ease: 'linear',
+      onUpdate: (latest) => {
+        const phase = latest * Math.PI * 2 * frequency;
+        const wave = Math.sin(phase) * amplitude;
+        
+        if (direction === 'horizontal') {
+          x.set(wave);
+          y.set(0);
+        } else {
+          x.set(0);
+          y.set(wave);
+        }
+      },
+    });
 
-    if (direction === 'horizontal') {
-      return {
-        transform: [{ translateX: wave }],
-      };
-    } else {
-      return {
-        transform: [{ translateY: wave }],
-      };
-    }
-  });
+    return () => controls.stop();
+  }, [enabled, speed, frequency, amplitude, direction, progress, x, y]);
 
   return {
-    animatedStyle,
+    x,
+    y,
     progress,
   };
 }
 
 export function useMultiWave(waveCount = 3) {
-  const progress = useSharedValue(0);
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false
-    );
-  }, []);
-
-  const createWaveStyle = (waveIndex: number, amplitude = 15) => {
-    return useAnimatedStyle(() => {
-      const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
-      const phase = progress.value * Math.PI * 2 + phaseOffset;
-      const wave = Math.sin(phase) * amplitude;
-      const opacity = interpolate(progress.value, [0, 0.5, 1], [0.3, 0.6, 0.3]);
-
-      return {
-        transform: [{ translateY: wave }, { translateX: wave * 0.5 }],
-        opacity,
-      };
+    const controls = animate(progress, 1, {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'linear',
     });
+
+    return () => controls.stop();
+  }, [progress]);
+
+  const createWaveMotionValues = (waveIndex: number, amplitude = 15) => {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const opacity = useMotionValue(0.3);
+
+    useEffect(() => {
+      const unsubscribe = progress.on('change', (latest) => {
+        const phaseOffset = (waveIndex * Math.PI * 2) / waveCount;
+        const phase = latest * Math.PI * 2 + phaseOffset;
+        const wave = Math.sin(phase) * amplitude;
+        const opacityValue = 0.3 + Math.sin(latest * Math.PI * 2) * 0.15;
+
+        x.set(wave * 0.5);
+        y.set(wave);
+        opacity.set(opacityValue);
+      });
+
+      return unsubscribe;
+    }, [x, y, opacity, waveIndex, amplitude]);
+
+    return { x, y, opacity };
   };
 
   return {
-    createWaveStyle,
+    createWaveMotionValues,
     progress,
   };
 }

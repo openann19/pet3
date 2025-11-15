@@ -16,7 +16,7 @@ import { useGlassMorphZoom } from '../../effects/chat/media/use-glass-morph-zoom
 import { useStickerPhysics } from '../../effects/chat/media/use-sticker-physics'
 import { ChromaticAberrationFX } from '../../effects/chat/shaders/chromatic-aberration'
 import { createLogger } from '../../utils/logger'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../utils/shared';
 
 const logger = createLogger('MediaViewer')
 

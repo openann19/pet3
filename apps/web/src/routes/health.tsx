@@ -4,32 +4,34 @@ import type { LoaderFunctionArgs } from 'react-router-dom';
 
 const logger = createLogger('HealthCheck');
 
+interface HealthCheck {
+  status: 'healthy' | 'unhealthy';
+  message?: string;
+  latency?: number;
+}
+
 interface HealthStatus {
   status: 'healthy' | 'unhealthy';
   timestamp: string;
   version: string;
   environment: string;
-  checks?: {
-    [key: string]: {
-      status: 'healthy' | 'unhealthy';
-      message?: string;
-      latency?: number;
-    };
-  };
+  checks?: Record<string, HealthCheck>;
 }
 
 /**
  * Health check endpoint for liveness probe
  * Returns 200 if the application is running
  */
-export async function healthzLoader(_args: LoaderFunctionArgs): Promise<Response> {
+export function healthzLoader(_args: LoaderFunctionArgs): Response {
   const startTime = Date.now();
+  const version = ENV.VITE_APP_VERSION ?? '0.0.0';
+  const environment = ENV.VITE_ENVIRONMENT ?? 'development';
   
   const health: HealthStatus = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: ENV.VITE_APP_VERSION || '0.0.0',
-    environment: ENV.VITE_ENVIRONMENT || 'development',
+    version,
+    environment,
   };
 
   const latency = Date.now() - startTime;
@@ -49,46 +51,59 @@ export async function healthzLoader(_args: LoaderFunctionArgs): Promise<Response
  * Readiness check endpoint
  * Returns 200 if the application is ready to serve traffic
  */
-export async function readyzLoader(_args: LoaderFunctionArgs): Promise<Response> {
-  const startTime = Date.now();
-  const checks: HealthStatus['checks'] = {};
-
-  // Check environment configuration
-  const envCheck = {
-    status: 'healthy' as const,
-    message: 'Environment variables validated',
-  };
-  checks.environment = envCheck;
-
-  // Check if mocks are disabled in production
-  if (ENV.VITE_ENVIRONMENT === 'production') {
+function checkMocks(): HealthCheck | undefined {
+  const environment = ENV.VITE_ENVIRONMENT;
+  if (environment === 'production') {
     if (ENV.VITE_USE_MOCKS === 'true') {
-      checks.mocks = {
+      return {
         status: 'unhealthy',
         message: 'Mocks enabled in production',
       };
-    } else {
-      checks.mocks = {
-        status: 'healthy',
-        message: 'Mocks disabled',
-      };
     }
-  }
-
-  // Check required services (non-blocking)
-  if (ENV.VITE_ENVIRONMENT === 'production') {
-    checks.services = {
+    return {
       status: 'healthy',
-      message: 'Service credentials configured',
+      message: 'Mocks disabled',
     };
-    
-    if (!ENV.VITE_SENTRY_DSN) {
-      checks.services = {
+  }
+  return undefined;
+}
+
+function checkServices(): HealthCheck | undefined {
+  const environment = ENV.VITE_ENVIRONMENT;
+  if (environment === 'production') {
+    const sentryDsn = ENV.VITE_SENTRY_DSN;
+    if (!sentryDsn) {
+      return {
         status: 'unhealthy',
         message: 'Sentry DSN missing',
       };
     }
+    return {
+      status: 'healthy',
+      message: 'Service credentials configured',
+    };
   }
+  return undefined;
+}
+
+export function readyzLoader(_args: LoaderFunctionArgs): Response {
+  const startTime = Date.now();
+  const checks: HealthStatus['checks'] = {};
+  const version = ENV.VITE_APP_VERSION ?? '0.0.0';
+  const environment = ENV.VITE_ENVIRONMENT ?? 'development';
+
+  // Check environment configuration
+  checks.environment = {
+    status: 'healthy' as const,
+    message: 'Environment variables validated',
+  };
+
+  // Check mocks and services
+  const mocksCheck = checkMocks();
+  if (mocksCheck) checks.mocks = mocksCheck;
+
+  const servicesCheck = checkServices();
+  if (servicesCheck) checks.services = servicesCheck;
 
   const latency = Date.now() - startTime;
   const allHealthy = Object.values(checks).every(check => check.status === 'healthy');
@@ -96,8 +111,8 @@ export async function readyzLoader(_args: LoaderFunctionArgs): Promise<Response>
   const readiness: HealthStatus = {
     status: allHealthy ? 'healthy' : 'unhealthy',
     timestamp: new Date().toISOString(),
-    version: ENV.VITE_APP_VERSION || '0.0.0',
-    environment: ENV.VITE_ENVIRONMENT || 'development',
+    version,
+    environment,
     checks: {
       ...checks,
       latency: {

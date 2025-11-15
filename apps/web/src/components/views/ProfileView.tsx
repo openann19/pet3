@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { useStorage } from '@/hooks/useStorage'
+import { useStorage } from '@/hooks/use-storage'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useMotionVariants, useStaggeredContainer, useHoverLift, useBounceOnTap, useGlowPulse, useIconRotation } from '@/effects/reanimated'
 import { Plus, PawPrint, Pencil, Heart } from '@phosphor-icons/react'
@@ -144,7 +144,7 @@ export default function ProfileView() {
               <Button 
                 size="lg" 
                 onClick={() => { setShowCreateDialog(true); }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Plus size={20} weight="bold" className="mr-2" />
                 {t.profile.createProfileBtn}
@@ -214,7 +214,7 @@ export default function ProfileView() {
             {userPets?.length} {userPets?.length === 1 ? t.profile.subtitle : t.profile.subtitlePlural}
           </p>
         </div>
-        <Button onClick={() => { setShowCreateDialog(true); }} className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Button onClick={() => { setShowCreateDialog(true); }} className="shrink-0 px-6 py-3 rounded-xl font-semibold shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           <Plus size={18} weight="bold" className="mr-1 sm:mr-2" />
           <span className="text-sm">{t.profile.addPet}</span>
         </Button>

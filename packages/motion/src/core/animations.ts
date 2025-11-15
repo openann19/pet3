@@ -15,7 +15,7 @@ import {
 
 import { springs, timings, reducedMotion } from './constants'
 import type { SpringConfig, TimingConfig, TransitionConfig } from './types'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy, isDefined } from '../utils/guards';
 
 const linearEasing = (value: number): number => Easing.linear(value)
 const easeEasing = (value: number): number => Easing.ease(value)

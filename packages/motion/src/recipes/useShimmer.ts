@@ -1,6 +1,7 @@
 import { useSharedValue, withTiming, useAnimatedStyle, withRepeat } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import { useReducedMotionSV } from '../reduced-motion'
+import { isTruthy } from '../utils/guards'
 
 export interface UseShimmerOptions {
   width?: number

@@ -35,6 +35,9 @@ const schema = z
     VITE_USE_MOCKS: z.enum(['true', 'false']).default('false'),
     VITE_ENABLE_MAPS: z.coerce.boolean().default(false),
     VITE_MAPBOX_TOKEN: z.string().optional(), // public token; optional unless maps enabled in prod
+    VITE_APP_VERSION: z.string().min(1).default('0.0.0'),
+    VITE_ENVIRONMENT: z.enum(['development', 'staging', 'production']).default('development'),
+    VITE_SENTRY_DSN: z.string().url('Invalid Sentry DSN').optional(),
   })
   .superRefine((vals, ctx) => {
     if (isProd && vals.VITE_ENABLE_MAPS && !vals.VITE_MAPBOX_TOKEN) {
@@ -63,13 +66,17 @@ type Env = z.infer<typeof schema>;
 export type Environment = Env;
 
 // Use parsed result if successful, otherwise use defaults in development
-export const env = parsed.success ? parsed.data : schema.parse({
-  VITE_API_URL: 'http://localhost:3000',
-  VITE_WS_URL: 'ws://localhost:3001',
-  VITE_API_TIMEOUT: '30000',
-  VITE_USE_MOCKS: 'false',
-  VITE_ENABLE_MAPS: 'false',
-});
+export const env = parsed.success
+  ? parsed.data
+  : schema.parse({
+      VITE_API_URL: 'http://localhost:3000',
+      VITE_WS_URL: 'ws://localhost:3001',
+      VITE_API_TIMEOUT: '30000',
+      VITE_USE_MOCKS: 'false',
+      VITE_ENABLE_MAPS: 'false',
+      VITE_APP_VERSION: '0.0.0',
+      VITE_ENVIRONMENT: 'development',
+    });
 export const ENV = env;
 
 export const flags = {

@@ -8,7 +8,7 @@ function Card({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card"
       className={cn(
-        'bg-white text-card-foreground flex flex-col rounded-3xl border border-border/60 transition-colors duration-200',
+        'flex flex-col rounded-2xl border border-border bg-card text-card-foreground transition-colors duration-300 shadow-sm',
         getSpacingClassesFromConfig({ gap: 'xl' }),
         className
       )}
@@ -23,7 +23,8 @@ function CardHeader({ className, ...props }: ComponentProps<'div'>) {
       data-slot="card-header"
       className={cn(
         '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
-        getSpacingClassesFromConfig({ gap: 'sm', paddingX: '2xl' }),
+        'bg-card',
+        getSpacingClassesFromConfig({ gap: 'sm', paddingX: '2xl', paddingY: 'xl' }),
         className
       )}
       {...props}
@@ -36,7 +37,7 @@ function CardTitle({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-title"
       className={cn(
-        getTypographyClasses('subtitle'),
+        getTypographyClasses('h3'),
         className
       )}
       {...props}
@@ -50,7 +51,7 @@ function CardDescription({ className, ...props }: ComponentProps<'div'>) {
       data-slot="card-description"
       className={cn(
         'text-muted-foreground',
-        getTypographyClasses('caption'),
+        getTypographyClasses('bodyMuted'),
         className
       )}
       {...props}
@@ -73,7 +74,7 @@ function CardContent({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-content"
       className={cn(
-        getSpacingClassesFromConfig({ paddingX: 'xl' }),
+        getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'lg' }),
         className
       )}
       {...props}
@@ -86,8 +87,8 @@ function CardFooter({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-footer"
       className={cn(
-        'flex items-center [.border-t]:pt-6',
-        getSpacingClassesFromConfig({ paddingX: 'xl' }),
+        'flex items-center bg-card/80 [.border-t]:pt-6',
+        getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'lg' }),
         className
       )}
       {...props}

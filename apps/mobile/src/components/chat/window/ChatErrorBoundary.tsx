@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../../utils/shared';
 
 export interface ChatErrorBoundaryProps {
   children: React.ReactNode

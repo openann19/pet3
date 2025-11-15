@@ -118,7 +118,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'approve',
@@ -147,7 +147,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'reject',
@@ -177,7 +177,7 @@ export function ModerationQueue() {
       const { userService } = await import('@/lib/user-service');
       const user = await userService.user();
       if (!user) throw new Error('Not authenticated');
-      const moderatorName = typeof user['name'] === 'string' ? user['name'] : 'Moderator';
+      const moderatorName = typeof user.name === 'string' ? user.name : 'Moderator';
       await moderationService.makeDecision(
         selectedTask.id,
         'hold_for_kyc',

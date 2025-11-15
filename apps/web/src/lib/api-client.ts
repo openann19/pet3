@@ -135,8 +135,6 @@ class APIClientImpl {
     } catch (error) {
       logger.error('Failed to persist auth tokens', { error });
     }
-
-    return null
   }
 
   private clearTokens(): void {
@@ -145,6 +143,36 @@ class APIClientImpl {
 
     localStorage.removeItem(APIClientImpl.ACCESS_TOKEN_KEY);
     localStorage.removeItem(APIClientImpl.REFRESH_TOKEN_KEY);
+  }
+
+  private async getCSRFToken(): Promise<string | null> {
+    try {
+      // First try meta tag (fastest)
+      const metaTag = document.querySelector('meta[name="csrf-token"]')!
+      if (metaTag?.content) {
+        return metaTag.content
+      }
+
+      // If no meta tag, fetch from dedicated endpoint
+      const response = await fetch(`${this.baseUrl}/api/v1/csrf-token`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json() as { token: string }
+        return data.token
+      }
+
+      logger.warn('CSRF token endpoint returned error', { status: response.status })
+      return null
+    } catch (error) {
+      logger.error('Failed to get CSRF token', { error })
+      return null
+    }
   }
 
   private async refreshAccessToken(): Promise<void> {
@@ -215,7 +243,7 @@ class APIClientImpl {
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       try {
-        const requestHeaders = this.prepareHeaders(requestInit.headers);
+        const requestHeaders = await this.prepareHeaders(requestInit.headers);
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           ...requestInit,
           headers: requestHeaders,
@@ -229,7 +257,7 @@ class APIClientImpl {
           const retryHeaders = await this.prepareHeaders(requestInit.headers)
           const retryResponse = await fetch(`${String(this.baseUrl ?? '')}${String(endpoint ?? '')}`, {
             ...requestInit,
-            headers: this.prepareHeaders(requestInit.headers),
+            headers: retryHeaders,
             signal: controller.signal,
           });
 

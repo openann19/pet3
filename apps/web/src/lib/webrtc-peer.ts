@@ -9,6 +9,7 @@ import SimplePeer from 'simple-peer';
 import { createLogger } from './logger';
 import type { WebRTCSignalData } from './realtime';
 import { realtime } from './realtime';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('WebRTCPeer');
 
@@ -76,59 +77,66 @@ export class WebRTCPeer {
     this.config = config;
   }
 
+  private setupPeerEventHandlers(peer: SimplePeer.Instance): void {
+    // Handle signaling data (offer/answer/candidate)
+    peer.on('signal', (signalData: SimplePeer.SignalData) => {
+      this.sendSignal(signalData).catch((error) => {
+        logger.error(
+          'Failed to send signal',
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            callId: this.config.callId,
+          }
+        );
+      });
+    });
+
+    // Handle remote stream
+    peer.on('stream', (remoteStream: MediaStream) => {
+      logger.info('Remote stream received', { callId: this.config.callId });
+      this.config.onRemoteStream(remoteStream);
+    });
+
+    // Handle connection state changes - don't resolve/reject here, let connect method handle it
+    peer.on('connect', () => {
+      logger.info('Peer connection established', { callId: this.config.callId });
+      this.config.onConnectionStateChange?.('connected');
+    });
+
+    peer.on('close', () => {
+      logger.info('Peer connection closed', { callId: this.config.callId });
+      this.config.onConnectionStateChange?.('disconnected');
+    });
+
+    peer.on('error', (error: Error) => {
+      logger.error('Peer connection error', error, { callId: this.config.callId });
+      this.config.onConnectionStateChange?.('failed');
+    });
+  }
+
+  private createPeer(): SimplePeer.Instance {
+    const iceServers = getIceServers();
+
+    const peer = new SimplePeer({
+      initiator: this.config.isInitiator,
+      trickle: true,
+      stream: this.config.localStream,
+      config: {
+        iceServers,
+      },
+    });
+
+    this.setupPeerEventHandlers(peer);
+    return peer;
+  }
+
   /**
    * Initialize the peer connection and start signaling
    */
   async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const iceServers = getIceServers();
-
-        this.peer = new SimplePeer({
-          initiator: this.config.isInitiator,
-          trickle: true,
-          stream: this.config.localStream,
-          config: {
-            iceServers,
-          },
-        });
-
-        // Handle signaling data (offer/answer/candidate)
-        this.peer.on('signal', (signalData: SimplePeer.SignalData) => {
-          this.sendSignal(signalData).catch((error) => {
-            logger.error(
-              'Failed to send signal',
-              error instanceof Error ? error : new Error(String(error)),
-              {
-                callId: this.config.callId,
-              }
-            );
-          });
-        });
-
-        // Handle remote stream
-        this.peer.on('stream', (remoteStream: MediaStream) => {
-          logger.info('Remote stream received', { callId: this.config.callId });
-          this.config.onRemoteStream(remoteStream);
-        });
-
-        // Handle connection state changes
-        this.peer.on('connect', () => {
-          logger.info('Peer connection established', { callId: this.config.callId });
-          this.config.onConnectionStateChange?.('connected');
-          resolve();
-        });
-
-        this.peer.on('close', () => {
-          logger.info('Peer connection closed', { callId: this.config.callId });
-          this.config.onConnectionStateChange?.('disconnected');
-        });
-
-        this.peer.on('error', (error: Error) => {
-          logger.error('Peer connection error', error, { callId: this.config.callId });
-          this.config.onConnectionStateChange?.('failed');
-          reject(error);
-        });
+        this.peer = this.createPeer();
 
         // Set up signaling listener
         this.setupSignalingListener();
@@ -138,6 +146,17 @@ export class WebRTCPeer {
         if (!this.config.isInitiator) {
           this.config.onConnectionStateChange?.('connecting');
         }
+
+        // Resolve when connected
+        this.peer.on('connect', () => {
+          resolve();
+        });
+
+        // Reject on error
+        this.peer.on('error', (error: Error) => {
+          reject(error);
+        });
+
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         logger.error('Failed to create peer connection', err, { callId: this.config.callId });
@@ -257,7 +276,7 @@ export class WebRTCPeer {
       this.cleanupListener = null;
     }
 
-    if (isTruthy(this.peer)) {
+    if (this.peer !== null) {
       try {
         this.peer.destroy();
       } catch (error) {

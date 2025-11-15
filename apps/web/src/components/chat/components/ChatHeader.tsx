@@ -13,6 +13,7 @@ import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { TypingIndicator as TypingIndicatorComponent } from './TypingIndicator';
 import type { ChatRoom } from '@/lib/chat-types';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { getTypographyClasses } from '@/lib/typography';
 
 export interface ChatHeaderProps {
   room: ChatRoom;
@@ -60,7 +61,7 @@ export function ChatHeader({
         </Avatar>
 
         <div className="flex-1">
-          <h2 className="font-bold text-foreground">{room.matchedPetName}</h2>
+          <h2 className={getTypographyClasses('subheading')}>{room.matchedPetName}</h2>
           {typingUsers.length > 0 && <TypingIndicatorComponent users={typingUsers} />}
         </div>
 

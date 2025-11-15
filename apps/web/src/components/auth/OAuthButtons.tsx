@@ -10,6 +10,7 @@ import { useApp } from '@/contexts/AppContext';
 import { analytics } from '@/lib/analytics';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
+import { isTruthy } from '@petspark/shared';
 
 // Google Logo SVG component
 const GoogleLogo = ({ size = 20 }: { size?: number }) => (

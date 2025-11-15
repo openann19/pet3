@@ -81,6 +81,11 @@ export const queryKeys = {
     applications: () => ['adoption', 'applications'] as const,
     petApplications: (petId: string) => ['adoption', 'pet-applications', petId] as const,
     process: (applicationId: string) => ['adoption', 'process', applicationId] as const,
+    marketplaceListings: (filters?: unknown) => ['adoption', 'marketplace-listings', filters] as const,
+    userListings: (userId: string) => ['adoption', 'user-listings', userId] as const,
+  },
+  auth: {
+    currentUser: () => ['auth', 'current-user'] as const,
   },
   stories: {
     highlights: (userId: string) => ['stories', 'highlights', userId] as const,

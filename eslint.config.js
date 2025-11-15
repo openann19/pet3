@@ -60,14 +60,14 @@ export default [
       'max-lines': ['error', { max: 300, skipComments: true, skipBlankLines: true }],
       'max-lines-per-function': ['error', { max: 60, skipComments: true, skipBlankLines: true }],
       'sonarjs/no-duplicate-string': 'warn',
-      // Ban framer-motion (use Reanimated only)
+      // Block legacy imports and enforce architecture
       'no-restricted-imports': [
         'error',
         {
           paths: [
             {
-              name: 'framer-motion',
-              message: 'Use Reanimated only. Framer Motion is banned.',
+              name: 'react-native-reanimated',
+              message: 'Use @petspark/motion façade instead of direct Reanimated imports',
             },
           ],
         },
@@ -86,6 +86,63 @@ export default [
       ],
     },
     settings: { react: { version: 'detect' } },
+  },
+
+  // Web app: enforce motion façade and design system
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    ignores: [
+      '**/*.test.{ts,tsx}',
+      '**/*.spec.{ts,tsx}',
+      '**/e2e/**',
+      '**/test/**',
+      '**/__tests__/**',
+      'apps/web/src/theme/**', // Allow raw colors in theme files
+      'apps/web/src/tokens/**', // Allow raw colors in token files
+      'apps/web/design-system/**', // Allow raw colors in design system
+    ],
+    rules: {
+      // Block direct framer-motion in web (use @petspark/motion façade)
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'framer-motion',
+              message: 'Use @petspark/motion façade instead of direct framer-motion imports in apps/web',
+            },
+            {
+              name: 'react-native-reanimated',
+              message: 'Reanimated is not allowed in apps/web; use @petspark/motion',
+            },
+          ],
+        },
+      ],
+      // Block raw hex colors in JSX className strings
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+          message: 'Sanitize via safe renderer; avoid raw HTML.',
+        },
+        {
+          selector: 'Program > Comment[value=/eslint-disable/]',
+          message: 'ESLint disable comments are banned. Fix the underlying issue instead.',
+        },
+        {
+          selector: 'JSXAttribute[name.name="className"] Literal[value=/#[0-9a-fA-F]{3,8}/]',
+          message: 'Use design system tokens instead of raw hex colors in className',
+        },
+        {
+          selector: 'JSXAttribute[name.name="style"] Property[key.name="color"][value.value=/#[0-9a-fA-F]{3,8}/]',
+          message: 'Use design system tokens instead of raw hex colors in style objects',
+        },
+        {
+          selector: 'JSXAttribute[name.name="style"] Property[key.name="backgroundColor"][value.value=/#[0-9a-fA-F]{3,8}/]',
+          message: 'Use design system tokens instead of raw hex colors in style objects',
+        },
+      ],
+    },
   },
 
   // Type-aware pass ONLY for selected globs (uses project service for caching)

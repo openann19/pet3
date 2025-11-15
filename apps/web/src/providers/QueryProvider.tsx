@@ -20,98 +20,102 @@ interface QueryProviderProps {
 
 const logger = createLogger('web.QueryProvider');
 
+function setupNetworkManagement(): (() => void) | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const handleOnline = (): void => {
+    const isOnline = true;
+    onlineManager.setOnline(isOnline);
+    logger.debug('Network connection restored', {
+      event: 'network-status-change',
+      isOnline,
+    });
+  };
+
+  const handleOffline = (): void => {
+    const isOnline = false;
+    onlineManager.setOnline(isOnline);
+    logger.warn('Network connection lost', {
+      event: 'network-status-change',
+      isOnline,
+    });
+  };
+
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
+  onlineManager.setOnline(window.navigator.onLine);
+
+  return () => {
+    window.removeEventListener('online', handleOnline);
+    window.removeEventListener('offline', handleOffline);
+  };
+}
+
+function setupFocusManagement(): (() => void) | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const handleFocus = (): void => {
+    focusManager.setFocused(true);
+    logger.debug('Window gained focus', {
+      event: 'focus-change',
+      isFocused: true,
+    });
+  };
+
+  const handleBlur = (): void => {
+    focusManager.setFocused(false);
+    logger.debug('Window lost focus', {
+      event: 'focus-change',
+      isFocused: false,
+    });
+  };
+
+  window.addEventListener('focus', handleFocus);
+  window.addEventListener('blur', handleBlur);
+  focusManager.setFocused(document.hasFocus());
+
+  return () => {
+    window.removeEventListener('focus', handleFocus);
+    window.removeEventListener('blur', handleBlur);
+  };
+}
+
+function setupBackgroundSync(): (() => void) | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const syncInterval = window.setInterval(() => {
+    const isOnline = window.navigator.onLine;
+    const isVisible =
+      typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
+
+    if (!isOnline || !isVisible) {
+      return;
+    }
+
+    logger.debug('Running background query sync', {
+      event: 'background-sync',
+    });
+
+    void queryClient.invalidateQueries({
+      refetchType: 'active',
+    });
+  }, backgroundSyncConfig.syncInterval);
+
+  return () => {
+    window.clearInterval(syncInterval);
+  };
+}
+
 export function QueryProvider({ children }: QueryProviderProps): React.JSX.Element {
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const handleOnline = (): void => {
-      const isOnline = true;
-      onlineManager.setOnline(isOnline);
-      logger.debug('Network connection restored', {
-        event: 'network-status-change',
-        isOnline,
-      });
-    };
-
-    const handleOffline = (): void => {
-      const isOnline = false;
-      onlineManager.setOnline(isOnline);
-      logger.warn('Network connection lost', {
-        event: 'network-status-change',
-        isOnline,
-      });
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    onlineManager.setOnline(window.navigator.onLine);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const handleFocus = (): void => {
-      focusManager.setFocused(true);
-      logger.debug('Window gained focus', {
-        event: 'focus-change',
-        isFocused: true,
-      });
-    };
-
-    const handleBlur = (): void => {
-      focusManager.setFocused(false);
-      logger.debug('Window lost focus', {
-        event: 'focus-change',
-        isFocused: false,
-      });
-    };
-
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('blur', handleBlur);
-    focusManager.setFocused(document.hasFocus());
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('blur', handleBlur);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const syncInterval = window.setInterval(() => {
-      const isOnline = window.navigator.onLine;
-      const isVisible =
-        typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
-
-      if (!isOnline || !isVisible) {
-        return;
-      }
-
-      logger.debug('Running background query sync', {
-        event: 'background-sync',
-      });
-
-      void queryClient.invalidateQueries({
-        refetchType: 'active',
-      });
-    }, backgroundSyncConfig.syncInterval);
-
-    return () => {
-      window.clearInterval(syncInterval);
-    };
-  }, []);
+  useEffect(setupNetworkManagement, []);
+  useEffect(setupFocusManagement, []);
+  useEffect(setupBackgroundSync, []);
 
   const persistOptions = useMemo(
     () => ({

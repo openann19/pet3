@@ -19,6 +19,7 @@
 import { Platform } from 'react-native'
 import Constants from 'expo-constants'
 import { createLogger } from './logger'
+import { isTruthy } from '@petspark/shared'
 import { cacheGet, cacheSet } from './offline-cache'
 import { getAuthToken } from './secure-storage'
 import { telemetry } from './telemetry'
@@ -600,7 +601,7 @@ export const matchingApi = {
     }
 
     const query = params.toString()
-    const endpoint = `/matching/available${String(query ? `?${String(query ?? '')}` : '' ?? '')}`
+    const endpoint = `/matching/available${query ? `?${String(query)}` : ''}`
 
     const result = await apiClient.get<MatchingApiResponse>(endpoint, {
       cacheKey: `matching:available:${String(query ?? '')}`,

@@ -8,11 +8,14 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react'
-import { useSharedValue, useAnimatedStyle, type SharedValue } from 'react-native-reanimated'
+import { useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS, type SharedValue } from 'react-native-reanimated'
+
+// Type helper for transform arrays to avoid React Native type strictness
+type TransformArray = any[]
 import type { ParticleBaseConfig } from '../core/types'
 import { createSpringAnimation, createTimingAnimation, stopAnimation } from '../core/animations'
 import { useReducedMotion } from '../core/hooks'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy, isDefined } from '../utils/guards';
 
 export interface UseFloatingParticleOptions extends ParticleBaseConfig {
   /**
@@ -269,7 +272,7 @@ export function useFloatingParticle(
       { translateX: x.value },
       { translateY: y.value },
       { scale: scale.value }
-    ],
+    ] as TransformArray,
     opacity: opacityValue.value,
   }))
 

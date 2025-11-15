@@ -1,5 +1,3 @@
-import 'react-native-reanimated';
-
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { BrowserRouter } from 'react-router-dom';
@@ -43,6 +41,9 @@ let refreshRateCleanup: (() => void) | null = null;
 if (typeof window !== 'undefined') {
   try {
     refreshRateCleanup = detectRefreshRate();
+    if (refreshRateCleanup) {
+      window.addEventListener('beforeunload', refreshRateCleanup);
+    }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     rootLogger.error('Refresh rate detection failed', err);

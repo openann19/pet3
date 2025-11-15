@@ -6,7 +6,6 @@
 
 import { registerServiceWorker } from './pwa/service-worker-registration'
 import { errorTracking, trackWebVitals } from './error-tracking'
-import { ConsentManager } from '@/components/compliance'
 import { createLogger } from './logger'
 
 const logger = createLogger('WorldwideScaleInit')

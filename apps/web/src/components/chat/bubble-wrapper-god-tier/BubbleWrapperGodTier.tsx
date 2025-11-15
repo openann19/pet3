@@ -86,8 +86,8 @@ export function BubbleWrapperGodTier({
     enabled: enabled && isDeleting,
     colors:
       deleteContext === 'admin-delete'
-        ? ['var(--color-error-9)', '#DC2626', '#991B1B']
-        : ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'],
+        ? ['hsl(var(--destructive))', 'hsl(var(--destructive) / 0.8)', 'hsl(var(--destructive) / 0.6)']
+        : ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--success))'],
     particleCount: deleteContext === 'admin-delete' ? 20 : 15,
   });
 

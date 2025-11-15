@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { LayoutChangeEvent } from 'react-native'
+
+// Type helper for transform arrays to avoid React Native type strictness
+type TransformArray = any[]
 import { useReducedMotionSV } from '../reduced-motion'
 import { motion } from '../tokens'
 
@@ -148,7 +151,7 @@ export function useMagnetic(radius = 80, strength = 0.15): UseMagneticReturn {
       return {} // No transform when reduced motion is enabled
     }
     return {
-      transform: [{ translateX: tx.value }, { translateY: ty.value }],
+      transform: [{ translateX: tx.value }, { translateY: ty.value }] as TransformArray,
     }
   })
 

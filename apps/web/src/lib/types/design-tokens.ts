@@ -142,11 +142,14 @@ export interface ColorThemeTokens {
   successForeground: string;
   warning: string;
   warningForeground: string;
+  info: string;
+  infoForeground: string;
   border: string;
   input: string;
   ring: string;
   surface: string;
   textPrimary: string;
+  textSecondary: string;
   textMuted: string;
 }
 

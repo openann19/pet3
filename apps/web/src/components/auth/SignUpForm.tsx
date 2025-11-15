@@ -22,12 +22,12 @@ import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typogra
 
 const logger = createLogger('SignUpForm')
 
-type SignUpFormProps = {
+interface SignUpFormProps {
   onSuccess: () => void
   onSwitchToSignIn: () => void
 }
 
-type SignUpData = {
+interface SignUpData {
   name: string
   email: string
   password: string
@@ -194,7 +194,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
 
       <form onSubmit={handleSubmit} className={getSpacingClassesFromConfig({ spaceY: 'lg' })}>
         <div className="space-y-1">
-          <Label htmlFor="name" className="block text-sm font-medium mb-1">
+          <Label htmlFor="name" className="block text-sm font-medium mb-1 text-foreground">
             {t.auth?.name || 'Full Name'}
           </Label>
           <div className="relative">
@@ -211,18 +211,18 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
                 setName(e.target.value)
                 setErrors(prev => ({ ...prev, name: '' }))
               }}
-              className={`pl-10 h-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : ''}`}
+              className={cn('h-12 pl-10', errors.name ? 'border-destructive' : '')}
               disabled={isLoading}
               autoComplete="name"
             />
           </div>
           {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.name}</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="email" className="block text-sm font-medium mb-1">
+          <Label htmlFor="email" className="block text-sm font-medium mb-1 text-foreground">
             {t.auth?.email || 'Email'}
           </Label>
           <div className="relative">
@@ -239,18 +239,18 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
                 setEmail(e.target.value)
                 setErrors(prev => ({ ...prev, email: '' }))
               }}
-              className={`pl-10 h-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : ''}`}
+              className={cn('h-12 pl-10', errors.email ? 'border-destructive' : '')}
               disabled={isLoading}
               autoComplete="email"
             />
           </div>
           {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.email}</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="password" className="block text-sm font-medium mb-1">
+          <Label htmlFor="password" className="block text-sm font-medium mb-1 text-foreground">
             {t.auth?.password || 'Password'}
           </Label>
           <div className="relative">
@@ -267,7 +267,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
                 setPassword(e.target.value)
                 setErrors(prev => ({ ...prev, password: '' }))
               }}
-              className={`pl-10 pr-12 h-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.password ? 'border-red-500' : ''}`}
+              className={cn('h-12 pl-10 pr-12', errors.password ? 'border-destructive' : '')}
               disabled={isLoading}
               autoComplete="new-password"
             />
@@ -286,12 +286,12 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
             </Button>
           </div>
           {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.password}</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+          <Label htmlFor="confirmPassword" className="block text-sm font-medium mb-1 text-foreground">
             {t.auth?.confirmPassword || 'Confirm Password'}
           </Label>
           <div className="relative">
@@ -308,7 +308,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
                 setConfirmPassword(e.target.value)
                 setErrors(prev => ({ ...prev, confirmPassword: '' }))
               }}
-              className={`pl-10 pr-12 h-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+              className={cn('h-12 pl-10 pr-12', errors.confirmPassword ? 'border-destructive' : '')}
               disabled={isLoading}
               autoComplete="new-password"
             />
@@ -327,7 +327,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
             </Button>
           </div>
           {errors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.confirmPassword}</p>
           )}
         </div>
 
@@ -346,14 +346,14 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
             />
             <label
               htmlFor="terms"
-              className="text-sm text-muted-foreground leading-tight cursor-pointer"
+              className="cursor-pointer text-sm text-muted-foreground leading-tight"
             >
               {t.auth?.agreeToTerms || 'I agree to the'}{' '}
               <a
                 href="https://github.com/site/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded"
+                className="rounded text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 onClick={(e) => { e.stopPropagation(); }}
               >
                 {t.auth?.terms || 'Terms of Service'}
@@ -363,7 +363,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
                 href="https://github.com/site/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded"
+                className="rounded text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 onClick={(e) => { e.stopPropagation(); }}
               >
                 {t.auth?.privacyPolicy || 'Privacy Policy'}
@@ -371,7 +371,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
             </label>
           </div>
           {errors.terms && (
-            <p className="text-red-500 text-sm mt-1">{errors.terms}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.terms}</p>
           )}
         </div>
 

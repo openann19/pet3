@@ -9,6 +9,9 @@
 
 import { useCallback } from 'react'
 import { useSharedValue, useAnimatedStyle, withSpring, interpolate, Extrapolation, type SharedValue } from 'react-native-reanimated'
+
+// Type helper for transform arrays to avoid React Native type strictness
+type TransformArray = any[]
 import { springConfigs } from '../shared-transitions'
 import { useReducedMotionSV } from '../reduced-motion'
 
@@ -111,7 +114,7 @@ export function useBubbleTilt(
           { perspective },
           { rotateX: '0deg' },
           { rotateY: '0deg' }
-        ]
+        ] as TransformArray
       }
     }
 
@@ -140,7 +143,7 @@ export function useBubbleTilt(
         { perspective },
         { rotateX: `${String(rotateX.value ?? '')}deg` },
         { rotateY: `${String(rotateY.value ?? '')}deg` }
-      ],
+      ] as TransformArray,
       shadowBlur,
       shadowSpread,
       shadowOpacity,

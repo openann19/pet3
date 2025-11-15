@@ -3,9 +3,10 @@
  * Hooks that work with Framer Motion on web, providing compatibility with Reanimated patterns
  */
 
-import { useMotionValue, useTransform, animate, type MotionValue } from 'framer-motion'
+import { useMotionValue, useTransform, animate, type MotionValue, type AnimationPlaybackControls } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
-import type { Transition, CSSProperties } from 'framer-motion'
+import type { Transition } from 'framer-motion'
+import type { CSSProperties } from 'react'
 import {
   convertSpringToFramer,
   convertTimingToFramer,
@@ -39,7 +40,7 @@ export function animateWithSpring(
   motionValue: MotionValue<number>,
   target: number,
   config?: ReanimatedSpringConfig
-): Promise<void> {
+): AnimationPlaybackControls {
   const transition = convertSpringToFramer(config)
   return animate(motionValue, target, transition)
 }
@@ -52,7 +53,7 @@ export function animateWithTiming(
   motionValue: MotionValue<number>,
   target: number,
   config?: ReanimatedTimingConfig
-): Promise<void> {
+): AnimationPlaybackControls {
   const transition = convertTimingToFramer(config)
   return animate(motionValue, target, transition)
 }
@@ -66,7 +67,7 @@ export function animateWithDelay(
   target: number,
   delay: number,
   transition: Transition
-): Promise<void> {
+): AnimationPlaybackControls {
   const delayedTransition = withDelayTransition(delay, transition)
   return animate(motionValue, target, delayedTransition)
 }
@@ -81,7 +82,7 @@ export function animateWithRepeat(
   transition: Transition,
   repeat?: number,
   reverse?: boolean
-): Promise<void> {
+): AnimationPlaybackControls {
   const repeatTransition = withRepeatTransition(
     transition,
     repeat,

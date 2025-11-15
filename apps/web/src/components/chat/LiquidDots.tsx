@@ -30,7 +30,7 @@ export interface LiquidDotsProps {
 export function LiquidDots({
   enabled = true,
   dotSize = 6,
-  dotColor = '#6b7280',
+  dotColor = 'hsl(var(--muted-foreground))',
   className,
   dots = 3,
   seed = 'liquid-dots'

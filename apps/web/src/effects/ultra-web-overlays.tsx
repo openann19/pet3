@@ -115,7 +115,7 @@ export function AmbientAuroraBackground({
           key={i}
           className="absolute inset-[-20%] rounded-[48px]"
           style={{
-            filter: `blur(${String(blur + i * 8 ?? '')}px) hue-rotate(${String(i * hueRotate ?? '')}deg)`,
+            filter: `blur(${String(blur + i * 8)}px) hue-rotate(${String(i * hueRotate)}deg)`,
             opacity: intensity * (0.18 + i * 0.06),
             mixBlendMode: 'screen',
             background:
@@ -125,7 +125,7 @@ export function AmbientAuroraBackground({
               'radial-gradient(28% 48% at 75% 75%, rgba(244,114,182,0.6), transparent 60%)',
             animation: reduceMotion
               ? undefined
-              : `aurora-rotate ${String(28 + i * 6 ?? '')}s linear infinite`,
+                : `aurora-rotate ${String(28 + i * 6)}s linear infinite`,
             transform: 'scale(1.2)',
           }}
         />

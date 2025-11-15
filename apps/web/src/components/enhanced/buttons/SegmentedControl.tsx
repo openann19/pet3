@@ -121,9 +121,9 @@ export function SegmentedControl({
   );
 
   const sizes = {
-    sm: cn('px-2 py-1 min-h-[44px]', getTypographyClasses('caption')),
+    sm: cn('px-2 py-1 min-h-[40px]', getTypographyClasses('caption')),
     md: cn('px-3 py-1.5 min-h-[44px]', getTypographyClasses('body')),
-    lg: cn('px-4 py-2 min-h-[44px]', getTypographyClasses('body')),
+    lg: cn('px-4 py-2 min-h-[48px]', getTypographyClasses('body')),
   };
 
   return (
@@ -132,8 +132,8 @@ export function SegmentedControl({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        'relative inline-flex rounded-xl bg-(--surface) p-1',
-        'border border-(--border)',
+        'relative inline-flex rounded-2xl border border-border bg-muted/40 p-1 shadow-inner shadow-border/20',
+        prefersReducedMotion ? '' : 'transition-all duration-200',
         className
       )}
     >
@@ -145,7 +145,7 @@ export function SegmentedControl({
           width: indicatorWidth,
         }}
         className={cn(
-          'absolute top-1 bottom-1 bg-(--background) rounded-lg shadow-sm',
+          'absolute top-1 bottom-1 rounded-xl bg-card shadow-md shadow-primary/20',
           prefersReducedMotion ? '' : 'transition-all duration-200'
         )}
       />
@@ -159,12 +159,12 @@ export function SegmentedControl({
             role="tab"
             aria-selected={isSelected}
             className={cn(
-              'relative z-10 flex items-center justify-center rounded-lg font-medium',
+              'relative z-10 flex items-center justify-center rounded-xl font-medium text-foreground',
               prefersReducedMotion ? '' : 'transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--background)',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               getSpacingClassesFromConfig({ gap: 'sm' }),
               sizes[size],
-              isSelected ? 'text-(--text-primary)' : 'text-(--text-muted) hover:text-(--text-primary)'
+              isSelected ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {option.icon && <span aria-hidden="true">{option.icon}</span>}

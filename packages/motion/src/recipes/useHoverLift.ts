@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 import { useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-native-reanimated'
+
+// Type helper for transform arrays to avoid React Native type strictness
+type TransformArray = any[]
 import { motion } from '../tokens'
 import { useReducedMotionSV, getReducedMotionDuration } from '../reduced-motion'
+import { isTruthy } from '../utils/guards'
 
 const isWeb = typeof window !== 'undefined' && 'onmouseover' in window
 
@@ -52,7 +56,7 @@ export function useHoverLift(px = 8, scale = 1.03): UseHoverLiftReturn {
   }, [])
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: y.value }, { scale: s.value }],
+    transform: [{ translateY: y.value }, { scale: s.value }] as TransformArray,
   }))
 
   if (isWeb) {

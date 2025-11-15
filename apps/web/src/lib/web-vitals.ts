@@ -1,4 +1,4 @@
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 /**
  * Web Vitals Integration
@@ -26,7 +26,7 @@ let longTaskCount = 0;
 /**
  * Report metrics once per session
  */
-function reportMetrics(): void {
+function reportToAnalytics(): void {
   if (typeof window === 'undefined') return;
 
   const sessionDuration = Date.now() - metrics.sessionStart;
@@ -62,92 +62,120 @@ function reportMetrics(): void {
   }
 }
 
-/**
- * Initialize Web Vitals collection
- */
-export function initWebVitals(): void {
-  if (typeof window === 'undefined') return;
+function setupLongTaskObserver(): void {
+  if ('PerformanceObserver' in window) {
+    try {
+      const longTaskObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.entryType === 'longtask') {
+            longTaskCount++;
+          }
+        }
+      });
+      longTaskObserver.observe({ entryTypes: ['longtask'] });
+    } catch {
+      // Long Task Observer not supported
+    }
+  }
+}
 
-  // Use Performance API for basic metrics
+function setupLCObserver(): void {
+  if ('PerformanceObserver' in window) {
+    try {
+      const lcpObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
+          renderTime?: number;
+          loadTime?: number;
+        };
+        if (lastEntry) {
+          metrics.lcp = lastEntry.renderTime ?? lastEntry.loadTime ?? lastEntry.startTime;
+        }
+      });
+      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+    } catch {
+      // LCP Observer not supported
+    }
+  }
+}
+
+function setupCLSObserver(): void {
+  if ('PerformanceObserver' in window) {
+    try {
+      let clsValue = 0;
+      const clsObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as LayoutShift[]) {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        }
+        metrics.cls = clsValue;
+      });
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
+    } catch {
+      // CLS Observer not supported
+    }
+  }
+}
+
+function setupFIDObserver(): void {
+  if ('PerformanceObserver' in window) {
+    try {
+      const fidObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as PerformanceEventTiming[]) {
+          if (entry.processingStart && entry.startTime) {
+            metrics.fid = entry.processingStart - entry.startTime;
+          }
+        }
+      });
+      fidObserver.observe({ entryTypes: ['first-input'] });
+    } catch {
+      // FID Observer not supported
+    }
+  }
+}
+
+function setupBasicMetrics(): void {
   try {
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     if (navigation) {
       metrics.ttfb = navigation.responseStart - navigation.requestStart;
       metrics.fcp = navigation.domContentLoadedEventEnd - navigation.fetchStart;
     }
+  } catch {
+    // Silently fail
+  }
+}
 
-    // Long Task Observer
-    if ('PerformanceObserver' in window) {
-      try {
-        const longTaskObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            if (entry.entryType === 'longtask') {
-              longTaskCount++;
-            }
-          }
-        });
-        longTaskObserver.observe({ entryTypes: ['longtask'] });
-      } catch {
-        // Long Task Observer not supported
-      }
+function setupWebVitalsObservers(): void {
+  setupLongTaskObserver();
+  setupLCObserver();
+  setupCLSObserver();
+  setupFIDObserver();
+}
 
-      // LCP Observer
-      try {
-        const lcpObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
-            renderTime?: number;
-            loadTime?: number;
-          };
-          if (lastEntry) {
-            metrics.lcp = lastEntry.renderTime ?? lastEntry.loadTime ?? lastEntry.startTime;
-          }
-        });
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-      } catch {
-        // LCP Observer not supported
-      }
+function setupUnloadListener(): void {
+  // Report metrics before page unload
+  window.addEventListener('beforeunload', () => {
+    reportToAnalytics();
+  });
 
-      // CLS Observer
-      try {
-        let clsValue = 0;
-        const clsObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries() as LayoutShift[]) {
-            if (!entry.hadRecentInput) {
-              clsValue += entry.value;
-            }
-          }
-          metrics.cls = clsValue;
-        });
-        clsObserver.observe({ entryTypes: ['layout-shift'] });
-      } catch {
-        // CLS Observer not supported
-      }
+  // Also report after a delay to capture late metrics
+  setTimeout(() => {
+    reportToAnalytics();
+  }, 10000);
+}
 
-      // FID Observer
-      try {
-        const fidObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries() as PerformanceEventTiming[]) {
-            if (entry.processingStart && entry.startTime) {
-              metrics.fid = entry.processingStart - entry.startTime;
-            }
-          }
-        });
-        fidObserver.observe({ entryTypes: ['first-input'] });
-      } catch {
-        // FID Observer not supported
-      }
-    }
+/**
+ * Initialize Web Vitals collection
+ */
+export function initWebVitals(): void {
+  if (typeof window === 'undefined') return;
 
-    // Report metrics before page unload
-    window.addEventListener('beforeunload', () => {
-      reportMetrics();
-    });
-
-    // Also report after a delay to capture late metrics
-    setTimeout(() => {
-      reportMetrics();
-    }, 10000);
+  try {
+    setupBasicMetrics();
+    setupWebVitalsObservers();
+    setupUnloadListener();
   } catch {
     // Silently fail if Performance API is unavailable
   }

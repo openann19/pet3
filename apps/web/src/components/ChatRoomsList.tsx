@@ -3,6 +3,8 @@ import { ChatCircle, Check, Checks } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { ChatRoom } from '@/lib/chat-types';
 import { formatMessageTime } from '@/lib/chat-utils';
+import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
+import { cn } from '@/lib/utils';
 
 interface ChatRoomsListProps {
   rooms: ChatRoom[];
@@ -13,7 +15,12 @@ interface ChatRoomsListProps {
 export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: ChatRoomsListProps) {
   if (rooms.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center min-h-[60vh] text-center',
+          getSpacingClassesFromConfig({ paddingX: 'lg' })
+        )}
+      >
         <MotionView
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -36,7 +43,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-2xl font-bold mb-2"
+          className={cn(getTypographyClasses('h2'), 'mb-2')}
         >
           No Conversations Yet
         </MotionView>
@@ -44,7 +51,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-muted-foreground max-w-md"
+          className={cn(getTypographyClasses('body'), 'text-muted-foreground max-w-md')}
         >
           Start chatting with your matches to plan playdates and get to know each other!
         </MotionView>
@@ -96,7 +103,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <Avatar
-                      className={`w-14 h-14 ${hasUnread ? 'ring-2 ring-primary' : 'ring-2 ring-white/30'}`}
+                      className={cn('w-14 h-14 ring-2', hasUnread ? 'ring-primary' : 'ring-border/40')}
                     >
                       <AvatarImage src={room.matchedPetPhoto} alt={room.matchedPetName || 'Pet'} />
                       <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
@@ -125,13 +132,13 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <h3
-                      className={`font-semibold truncate ${hasUnread ? 'text-foreground' : 'text-foreground/90'}`}
+                      className={cn('truncate', hasUnread ? 'text-foreground' : 'text-foreground/90', getTypographyClasses('bodyMediumBold'))}
                     >
                       {room.matchedPetName || 'Unknown Pet'}
                     </h3>
                     {room.lastMessage && (
                       <span
-                        className={`text-xs shrink-0 ml-2 ${hasUnread ? 'text-primary font-semibold' : 'text-muted-foreground'}`}
+                        className={cn('shrink-0 ml-2', hasUnread ? 'text-primary' : 'text-muted-foreground', getTypographyClasses('bodySmall'))}
                       >
                         {formatMessageTime(
                           room.lastMessage.timestamp || room.lastMessage.createdAt
@@ -154,7 +161,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                             </span>
                           )}
                         <p
-                          className={`text-sm truncate ${hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+                          className={cn('truncate', hasUnread ? 'text-foreground' : 'text-muted-foreground', getTypographyClasses('bodySmall'))}
                         >
                           {room.lastMessage.type === 'text'
                             ? room.lastMessage.content
@@ -166,7 +173,7 @@ export default function ChatRoomsList({ rooms, onSelectRoom, selectedRoomId }: C
                         </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground italic flex-1 truncate">
+                      <p className={cn('text-muted-foreground italic flex-1 truncate', getTypographyClasses('bodySmall'))}>
                         Say hello! 👋
                       </p>
                     )}

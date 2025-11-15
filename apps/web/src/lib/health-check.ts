@@ -8,13 +8,11 @@ export interface HealthStatus {
   timestamp: string;
   version: string;
   environment: string;
-  checks?: {
-    [key: string]: {
+  checks?: Record<string, {
       status: 'healthy' | 'unhealthy';
       message?: string;
       latency?: number;
-    };
-  };
+    }>;
 }
 
 /**

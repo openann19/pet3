@@ -1,6 +1,7 @@
 'use client';
 
-import { useAnimatedStyle, useSharedValue } from '@petspark/motion';
+import type { useAnimatedStyle} from '@petspark/motion';
+import { useSharedValue } from '@petspark/motion';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   spawnParticlesData,

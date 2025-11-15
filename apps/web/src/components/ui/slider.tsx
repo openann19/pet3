@@ -41,8 +41,8 @@ function Slider({
         data-slot="slider-track"
         className={cn(
           'relative grow overflow-visible rounded-full',
-          'bg-muted/80 backdrop-blur-sm',
-          'shadow-inner',
+          'bg-muted/70 backdrop-blur-sm',
+          'shadow-inner shadow-border/20',
           'transition-all duration-300',
           'group-hover:bg-muted',
           'data-[orientation=horizontal]:h-2.5 data-[orientation=horizontal]:w-full',
@@ -53,8 +53,8 @@ function Slider({
           data-slot="slider-range"
           className={cn(
             'absolute rounded-full',
-            'bg-linear-to-r from-primary via-primary/95 to-accent',
-            'shadow-lg shadow-primary/25',
+            'bg-linear-to-r from-primary via-primary to-accent',
+            'shadow-lg shadow-primary/30',
             'transition-all duration-300',
             'group-hover:shadow-xl group-hover:shadow-primary/30',
             'data-[orientation=horizontal]:h-full',
@@ -83,13 +83,13 @@ function Slider({
           key={index}
           className={cn(
             'block size-5 shrink-0 rounded-full',
-            'border-2 border-primary',
-            'bg-background',
+            'border-2 border-primary/80',
+            'bg-card',
             'shadow-xl shadow-primary/30',
             'transition-all duration-200 ease-out',
             'hover:scale-125 hover:shadow-2xl hover:shadow-primary/40 hover:border-primary/80',
             'active:scale-110 active:shadow-lg',
-            'focus-visible:scale-125 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 focus-visible:shadow-2xl',
+            'focus-visible:scale-125 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:shadow-2xl',
             'disabled:pointer-events-none disabled:opacity-50',
             'relative overflow-hidden',
             'cursor-grab active:cursor-grabbing'

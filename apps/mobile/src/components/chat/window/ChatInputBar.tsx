@@ -87,7 +87,7 @@ export function ChatInputBar({
       onSend(inputValue.trim(), 'text')
       setInputValue('')
       setIsTyping(false)
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
         typingTimeoutRef.current = null
       }
@@ -99,7 +99,7 @@ export function ChatInputBar({
       setInputValue(text)
       setIsTyping(true)
 
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
 
@@ -113,7 +113,7 @@ export function ChatInputBar({
 
   useEffect(() => {
     return () => {
-      if (isTruthy(typingTimeoutRef.current)) {
+      if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
     }

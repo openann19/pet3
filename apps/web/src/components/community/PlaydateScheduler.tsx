@@ -115,7 +115,7 @@ export default function PlaydateScheduler({
             case 'completed':
                 return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
             case 'cancelled':
-                return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
+                return 'text-muted-foreground bg-muted';
         }
     };
 

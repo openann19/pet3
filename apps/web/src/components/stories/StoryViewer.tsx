@@ -426,7 +426,7 @@ export default function StoryViewer({
                 aria-valuenow={idx === currentIndex ? progress : idx < currentIndex ? 100 : 0}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Story ${String(idx + 1 ?? '')} of ${String(stories.length ?? '')}`}
+                  aria-label={`Story ${String(idx + 1)} of ${String(stories.length)}`}
               >
                 <AnimatedView
                   className="h-full bg-white"

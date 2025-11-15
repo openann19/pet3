@@ -24,6 +24,9 @@ const typeCheckedIgnorePatterns = [
   '**/stylelint.config.*',
   '**/vite.config.*',
   '**/vitest.config.*',
+  '**/test/**',
+  '**/tests/**',
+  '**/__tests__/**',
 ];
 
 const tsTypeCheckedConfigs = tseslint.configs.recommendedTypeChecked.map((config) => ({
@@ -271,15 +274,100 @@ export default tseslint.config(
     },
   },
   {
+    files: [
+      'src/test/**/*.{ts,tsx,js,jsx}',
+      'tests/**/*.{ts,tsx,js,jsx}',
+      'src/test/mocks/**/*.{ts,tsx,js,jsx}',
+      'src/test/templates/**/*.{ts,tsx,js,jsx}',
+      'src/test/utilities/**/*.{ts,tsx,js,jsx}',
+      'src/test/utils/**/*.{ts,tsx,js,jsx}',
+      'src/test/pages/**/*.{ts,tsx,js,jsx}',
+      'src/test/setup.ts',
+    ],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parser: tseslint.parser,
+      parserOptions: {
+        project: null,
+        tsconfigRootDir: __dirname,
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      'max-lines': 'off',
+      'max-lines-per-function': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['tailwind-plugin-linear-gradient.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: globals.node,
+      parserOptions: {
+        project: null,
+        tsconfigRootDir: undefined,
+      },
+    },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      'import/no-cycle': 'off',
+      'import/no-self-import': 'off',
+      'import/no-unresolved': 'off',
+    },
+  },
+  {
+    files: ['vitest.config.ts'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      parser: tseslint.parser,
+      globals: globals.node,
+      parserOptions: {
+        project: null,
+        tsconfigRootDir: undefined,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'import/no-unresolved': 'off',
+    },
+  },
+  {
+    files: ['tests/accessibility.spec.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: null,
+        tsconfigRootDir: undefined,
+      },
+    },
+    rules: {
+      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+    },
+  },
+  {
     files: ['**/*.d.ts'],
     rules: {
       '@typescript-eslint/consistent-type-imports': 'off',
     },
   },
-  {
-    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
-    rules: {
-      'no-console': 'off',
-    },
-  }
 );

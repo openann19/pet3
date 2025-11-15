@@ -1,4 +1,18 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import { 
+  Heart, 
+  ChatCircle, 
+  Users, 
+  Sparkle, 
+  Sun, 
+  Moon, 
+  Palette, 
+  ShieldCheck, 
+  Translate,
+  MapPin,
+  User
+} from '@phosphor-icons/react'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import LoadingState from '@/components/LoadingState'
 import { useApp } from '@/contexts/AppContext'
@@ -8,7 +22,7 @@ import { errorTracking } from '@/lib/error-tracking'
 import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
 import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
-import { useStorage } from '@/hooks/useStorage'
+import { useStorage } from '@/hooks/use-storage'
 import { haptics } from '@/lib/haptics'
 import type { Playdate } from '@/lib/playdate-types'
 import '@/lib/profile-generator-helper'; // Expose generateProfiles to window
@@ -42,17 +56,17 @@ const AdminConsole = lazy(() => import('@/components/AdminConsole'))
 const AuthScreen = lazy(() => import('@/components/AuthScreen'))
 const PetsDemoPage = lazy(() => import('@/components/demo/PetsDemoPage'))
 const GenerateProfilesButton = lazy(() => import('@/components/GenerateProfilesButton'))
-const PremiumNotificationBell = lazy(() => import('@/components/notifications/PremiumNotificationBell'))
+const PremiumNotificationBell = lazy(() => import('@/components/notifications/PremiumNotificationBell').then(module => ({ default: module.PremiumNotificationBell })))
 const UltraThemeSettings = lazy(() => import('@/components/settings/UltraThemeSettings'))
 const StatsCard = lazy(() => import('@/components/StatsCard'))
-const SyncStatusIndicator = lazy(() => import('@/components/SyncStatusIndicator'))
+const SyncStatusIndicator = lazy(() => import('@/components/SyncStatusIndicator').then(module => ({ default: module.SyncStatusIndicator })))
 const WelcomeScreen = lazy(() => import('@/components/WelcomeScreen'))
 const QuickActionsMenu = lazy(() => import('@/components/QuickActionsMenu'))
 const BottomNavBar = lazy(() => import('@/components/navigation/BottomNavBar'))
-const BillingIssueBanner = lazy(() => import('@/components/payments/BillingIssueBanner'))
-const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'))
+const BillingIssueBanner = lazy(() => import('@/components/payments/BillingIssueBanner').then(module => ({ default: module.BillingIssueBanner })))
+const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt').then(module => ({ default: module.InstallPrompt })))
 const SeedDataInitializer = lazy(() => import('@/components/SeedDataInitializer'))
-const OfflineIndicator = lazy(() => import('@/components/network/OfflineIndicator'))
+const OfflineIndicator = lazy(() => import('@/components/network/OfflineIndicator').then(module => ({ default: module.OfflineIndicator })))
 type AppState = 'welcome' | 'auth' | 'main'
 
 function App() {
@@ -171,7 +185,7 @@ function App() {
 
   useEffect(() => {
     // Initialize performance monitoring in production
-    if (import.meta.env['NODE_ENV'] === 'production') {
+    if (import.meta.env.NODE_ENV === 'production') {
       void Promise.all([
         import('@/lib/monitoring/performance'),
         import('@/lib/logger')
@@ -287,7 +301,7 @@ function App() {
           <div className="flex items-center justify-between h-14 sm:h-16">
             <AnimatedView 
               className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
-              style={logoButtonHover.animatedStyle}
+              style={{ scale: logoButtonHover.scale, y: logoButtonHover.translateY }}
               onMouseEnter={logoButtonHover.handleEnter}
               onMouseLeave={logoButtonHover.handleLeave}
             >
@@ -306,7 +320,7 @@ function App() {
             </AnimatedView>
             <AnimatedView 
               className="flex items-center gap-1 sm:gap-2"
-              style={headerButtonsContainer.containerStyle}
+              style={{ opacity: headerButtonsContainer.opacity, x: headerButtonsContainer.x }}
             >
               <AnimatedView 
                 style={headerButton1.buttonStyle}
@@ -506,9 +520,9 @@ function App() {
               className={`${String(NAV_BUTTON_BASE_CLASSES ?? '')} relative cursor-pointer ${
                 String(currentView === 'lost-found'
                                                                     ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
-                                                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60' ?? '')
+                                                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60')
               }`}
-              style={lostFoundAnimation.buttonStyle}
+              style={{ scale: lostFoundAnimation.scale, y: lostFoundAnimation.translateY }}
               onMouseEnter={lostFoundAnimation.handleHover}
               onMouseLeave={lostFoundAnimation.handleLeave}
               onClick={() => {
@@ -517,14 +531,14 @@ function App() {
                 setCurrentView('lost-found')
               }}
             >
-              <AnimatedView style={lostFoundAnimation.iconStyle}>
+              <AnimatedView style={{ scale: lostFoundAnimation.iconScale, rotate: lostFoundAnimation.iconRotation }}>
                 <MapPin size={22} weight={currentView === 'lost-found' ? 'fill' : 'regular'} />
               </AnimatedView>
               <span className="text-[10px] sm:text-xs font-semibold leading-tight">{t.nav['lost-found'] || 'Lost & Found'}</span>
               {currentView === 'lost-found' && (
                 <AnimatedView
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
-                  style={lostFoundAnimation.indicatorStyle}
+                  style={{ opacity: lostFoundAnimation.indicatorOpacity, width: lostFoundAnimation.indicatorWidth }}
                 >
                   <div />
                 </AnimatedView>
@@ -556,19 +570,19 @@ function App() {
 
       {showGenerateProfiles && (
         <AnimatedView
-          style={generateProfilesModal.style}
+          style={{ opacity: generateProfilesModal.opacity, scale: generateProfilesModal.scale, y: generateProfilesModal.y }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowGenerateProfiles(false); }}
         >
           <AnimatedView
-            style={generateProfilesContent.style}
+            style={{ opacity: generateProfilesContent.opacity, scale: generateProfilesContent.scale, y: generateProfilesContent.y }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="bg-card p-6 rounded-2xl shadow-2xl max-w-md w-full border border-border/50"
           >
             <Suspense fallback={<LoadingState />}>
               <GenerateProfilesButton />
             </Suspense>
-            <AnimatedView style={closeButtonBounce.animatedStyle}>
+            <AnimatedView style={{ scale: closeButtonBounce.scale }}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -582,12 +596,12 @@ function App() {
       )}
       {showStats && totalSwipes > 0 && (
         <AnimatedView
-          style={statsModal.style}
+          style={{ opacity: statsModal.opacity, scale: statsModal.scale, y: statsModal.y }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowStats(false); }}
         >
           <AnimatedView
-            style={statsContent.style}
+            style={{ opacity: statsContent.opacity, scale: statsContent.scale, y: statsContent.y }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="max-w-2xl w-full"
           >
@@ -598,7 +612,7 @@ function App() {
                 successRate={successRate}
               />
             </Suspense>
-            <AnimatedView style={closeButtonBounce.animatedStyle}>
+            <AnimatedView style={{ scale: closeButtonBounce.scale }}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -613,12 +627,12 @@ function App() {
 
       {showMap && (
         <AnimatedView
-          style={mapModal.style}
+          style={{ opacity: mapModal.opacity, scale: mapModal.scale, y: mapModal.y }}
           className="fixed inset-0 z-50"
         >
           <Suspense fallback={<LoadingState />}>
             <AnimatedView
-              style={mapContent.style}
+              style={{ opacity: mapContent.opacity, scale: mapContent.scale, y: mapContent.y }}
               className="h-full w-full"
             >
               <PlaydateMap
@@ -632,7 +646,7 @@ function App() {
 
       {showAdminConsole && (
         <AnimatedView
-          style={adminModal.style}
+          style={{ opacity: adminModal.opacity, scale: adminModal.scale, y: adminModal.y }}
           className="fixed inset-0 z-50 bg-background"
         >
           <AnimatedView

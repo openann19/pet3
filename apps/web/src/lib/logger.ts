@@ -19,6 +19,9 @@ interface LogRecord {
   args: unknown[];
   ts: number;
   context?: string;
+  data?: unknown;
+  error?: Error;
+  timestamp: string;
 }
 
 type LogHandler = (record: LogRecord) => void | Promise<void>;
@@ -45,7 +48,7 @@ function resolveSentry(): Promise<SentryInstance | null> {
     return sentryInitPromise;
   }
 
-  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
   if (!dsn) {
     sentryInitPromise = Promise.resolve(null);
     return sentryInitPromise;
@@ -230,6 +233,7 @@ class Logger {
       message,
       args,
       ts: Date.now(),
+      timestamp: new Date().toISOString(),
       ...(this.context ? { context: this.context } : {}),
     };
 

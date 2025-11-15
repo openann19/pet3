@@ -1,13 +1,22 @@
+/**
+ * Base color convenience export for mobile
+ * Location: apps/mobile/src/theme/colors.ts
+ */
+
+import { allThemes, defaultThemeId } from './themes'
+
+const base = allThemes[defaultThemeId].colors
+
 export const colors = {
-  background: '#FFF9F0',
-  card: '#FFFFFF',
-  surface: '#FFF9F0',
-  border: '#E5E5E5',
-  textPrimary: '#222222',
-  textSecondary: '#666666',
-  primary: '#FF715B',
-  accent: '#FFD580',
-  success: '#28C76F',
-  warning: '#FFC107',
-  danger: '#FF715B',
+  background: base.background,
+  card: base.card,
+  surface: base.foreground, // slightly elevated surface vs background
+  border: base.border,
+  textPrimary: base.textPrimary,
+  textSecondary: base.textSecondary,
+  primary: base.primary,
+  accent: base.accent,
+  success: base.success,
+  warning: base.warning,
+  danger: base.danger,
 } as const

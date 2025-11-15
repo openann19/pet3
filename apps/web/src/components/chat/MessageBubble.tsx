@@ -378,20 +378,20 @@ function MessageBubble({
           .match(/[\p{Emoji}]/gu)
           ?.map(() => {
             const colors = [
-              '#FF6B6B',
-              '#4ECDC4',
-              '#45B7D1',
-              '#FFA07A',
-              '#98D8C8',
-              '#FFD93D',
-              '#FF6B35',
+              'hsl(var(--primary))',
+              'hsl(var(--secondary))',
+              'hsl(var(--accent))',
+              'hsl(var(--success))',
+              'hsl(var(--warning))',
+              'hsl(var(--info))',
+              'hsl(var(--muted))',
             ];
-            return colors[Math.floor(Math.random() * colors.length)] ?? '#FF6B6B';
+            return colors[Math.floor(Math.random() * colors.length)] ?? 'hsl(var(--primary))';
           })
           .filter((color): color is string => color !== undefined) ?? [
-            '#FF6B6B',
-            '#4ECDC4',
-            '#45B7D1',
+            'hsl(var(--primary))',
+            'hsl(var(--secondary))',
+            'hsl(var(--accent))',
           ];
 
         particleExplosion.triggerExplosion(centerX, centerY, emojiColors);

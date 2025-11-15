@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
+import { isTruthy } from '../../utils/shared'
 // Stubs for unavailable imports
 function useKV<T>(_key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   // Ignore key for mobile stub
@@ -91,7 +92,7 @@ export default function AdvancedChatWindow({
     >
       <View style={styles.header}>
         {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)">
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
             <Text style={styles.backText}>{'<'} Back</Text>
           </TouchableOpacity>
         )}
@@ -131,7 +132,7 @@ export default function AdvancedChatWindow({
           placeholder="Type a message..."
           editable={true}
         />
-        <TouchableOpacity onPress={() = className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)"> handleSendMessage(inputValue)} style={styles.sendButton}>
+        <TouchableOpacity onPress={() => handleSendMessage(inputValue)} style={styles.sendButton}>
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>

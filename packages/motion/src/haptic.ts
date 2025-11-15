@@ -1,11 +1,15 @@
-import logger from '@/core/logger';
+// Logger available in apps but not in packages
+const logger = {
+  warn: (message: string, ...args: any[]) => console.warn(message, ...args),
+  error: (message: string, ...args: any[]) => console.error(message, ...args)
+};
 
 /**
  * Cross-platform haptic feedback utilities
  * Safely handles Expo Haptics with availability checks for iOS/Android
  */
 
-let Haptics: typeof import('expo-haptics') | undefined
+let Haptics: any | undefined
 let isHapticsAvailable = false
 
 // Lazy load Expo Haptics to avoid import issues on web

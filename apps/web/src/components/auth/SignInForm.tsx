@@ -18,12 +18,12 @@ import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typogra
 
 const logger = createLogger('SignInForm')
 
-type SignInFormProps = {
+interface SignInFormProps {
   onSuccess: () => void
   onSwitchToSignUp: () => void
 }
 
-type UserCredentials = {
+interface UserCredentials {
   email: string
   password: string
 }
@@ -107,6 +107,10 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
     haptics.trigger('selection')
     analytics.track('forgot_password_clicked')
     toast.info(t.auth?.forgotPasswordInfo || 'Password reset link would be sent to your email')
+  }
+
+  const handleLegalClick = (type: 'terms' | 'privacy') => {
+    analytics.track(`sign_in_${String(type)}`)
   }
 
   return (
@@ -289,6 +293,30 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
             >
               {t.auth?.signUp || 'Sign up'}
             </Button>
+          </p>
+          <p className={getTypographyClasses('body-sm')}>
+            <a
+              href="https://github.com/site/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { handleLegalClick('terms') }}
+              className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label="Terms of Service"
+            >
+              {t.auth?.terms || 'Terms of Service'}
+            </a>
+          </p>
+          <p className={getTypographyClasses('body-sm')}>
+            <a
+              href="https://github.com/site/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { handleLegalClick('privacy') }}
+              className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label="Privacy Policy"
+            >
+              {t.auth?.privacyPolicy || 'Privacy Policy'}
+            </a>
           </p>
         </div>
       </form>

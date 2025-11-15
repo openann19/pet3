@@ -17,6 +17,7 @@ import {
 import { DiscoveryFiltersBasicTab } from '@/components/discovery/DiscoveryFiltersBasicTab';
 import { DiscoveryFiltersMediaTab } from '@/components/discovery/DiscoveryFiltersMediaTab';
 import { DiscoveryFiltersAdvancedTab } from '@/components/discovery/DiscoveryFiltersAdvancedTab';
+import { getTypographyClasses } from '@/lib/typography';
 
 export default function DiscoveryFilters() {
   const [storedPrefs, setStoredPrefs] = useStorage<DiscoveryPreferences>(
@@ -86,7 +87,7 @@ export default function DiscoveryFilters() {
 
       <SheetContent className="flex h-full flex-col overflow-hidden sm:max-w-md">
         <SheetHeader className="shrink-0">
-          <SheetTitle className="flex items-center gap-2 text-2xl">
+          <SheetTitle className={`flex items-center gap-2 ${getTypographyClasses('heading2')}`}>
             <MotionView
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{

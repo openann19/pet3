@@ -1,61 +1,97 @@
-export const typographyScale = {
+interface TypographyConfig {
+  fontSize: string;
+  lineHeight: string;
+  fontWeight: string;
+  letterSpacing: string;
+  maxLines: string;
+}
+
+const TYPOGRAPHY_VARIANTS = ['display', 'h1', 'h2', 'h3', 'body', 'bodyMuted', 'caption'] as const;
+
+export type TypographyVariant = (typeof TYPOGRAPHY_VARIANTS)[number];
+
+export const typographyScale: Record<TypographyVariant, TypographyConfig> = {
   display: {
-    fontSize: 'text-[clamp(2.25rem,3vw,3rem)]',
-    lineHeight: 'leading-[1.2]',
-    fontWeight: 'font-[700]',
+    fontSize: 'text-[clamp(2.5rem,4vw,3.5rem)]',
+    lineHeight: 'leading-[1.05]',
+    fontWeight: 'font-semibold',
     letterSpacing: 'tracking-tight',
     maxLines: 'line-clamp-2',
   },
   h1: {
-    fontSize: 'text-[clamp(1.75rem,2.5vw,2.25rem)]',
-    lineHeight: 'leading-[1.3]',
-    fontWeight: 'font-[600]',
+    fontSize: 'text-[clamp(2rem,3vw,2.75rem)]',
+    lineHeight: 'leading-[1.15]',
+    fontWeight: 'font-semibold',
     letterSpacing: 'tracking-tight',
     maxLines: 'line-clamp-2',
   },
   h2: {
-    fontSize: 'text-[clamp(1.5rem,2.1vw,2rem)]',
-    lineHeight: 'leading-[1.35]',
+    fontSize: 'text-[clamp(1.75rem,2.5vw,2.25rem)]',
+    lineHeight: 'leading-tight',
     fontWeight: 'font-semibold',
-    letterSpacing: 'tracking-normal',
+    letterSpacing: 'tracking-tight',
     maxLines: 'line-clamp-2',
   },
   h3: {
-    fontSize: 'text-[1.25rem] sm:text-[1.5rem]',
-    lineHeight: 'leading-[1.4]',
+    fontSize: 'text-[1.375rem] sm:text-[1.5rem]',
+    lineHeight: 'leading-snug',
     fontWeight: 'font-medium',
-    letterSpacing: 'tracking-normal',
+    letterSpacing: 'tracking-tight',
     maxLines: 'line-clamp-2',
   },
   body: {
-    fontSize: 'text-base',
-    lineHeight: 'leading-[1.5]',
+    fontSize: 'text-base sm:text-lg',
+    lineHeight: 'leading-relaxed',
     fontWeight: 'font-normal',
     letterSpacing: 'tracking-normal',
     maxLines: 'line-clamp-none',
   },
-  'body-sm': {
-    fontSize: 'text-[0.875rem]',
-    lineHeight: 'leading-[1.4]',
+  bodyMuted: {
+    fontSize: 'text-[0.95rem] sm:text-base',
+    lineHeight: 'leading-relaxed',
     fontWeight: 'font-normal',
     letterSpacing: 'tracking-normal',
     maxLines: 'line-clamp-none',
   },
   caption: {
-    fontSize: 'text-[0.75rem]',
-    lineHeight: 'leading-[1.4]',
-    fontWeight: 'font-normal',
-    letterSpacing: 'tracking-normal',
+    fontSize: 'text-xs sm:text-sm',
+    lineHeight: 'leading-snug',
+    fontWeight: 'font-medium',
+    letterSpacing: 'tracking-wide',
     maxLines: 'line-clamp-none',
   },
-  button: {
-    fontSize: 'text-sm sm:text-base',
-    lineHeight: 'leading-[1.4]',
-    fontWeight: 'font-medium',
-    letterSpacing: 'tracking-normal',
-    maxLines: 'line-clamp-2',
-  },
-} as const;
+};
+
+const typographyAliases: Record<string, TypographyVariant> = {
+  title: 'h1',
+  subtitle: 'h2',
+  'section-title': 'h2',
+  'section-subtitle': 'body',
+  'card-title': 'h3',
+  'card-title-sm': 'body',
+  'card-subtitle': 'bodyMuted',
+  'card-description': 'bodyMuted',
+  'card-meta': 'bodyMuted',
+  meta: 'bodyMuted',
+  hint: 'caption',
+  badge: 'caption',
+  eyebrow: 'caption',
+  overline: 'caption',
+  label: 'bodyMuted',
+  'form-label': 'bodyMuted',
+  button: 'body',
+  'body-sm': 'bodyMuted',
+  'body-small': 'bodyMuted',
+  'body-muted': 'bodyMuted',
+  hero: 'display',
+  heading: 'h1',
+  'heading-lg': 'h1',
+  'heading-md': 'h2',
+  'heading-sm': 'h3',
+  stat: 'h2',
+  'stat-label': 'bodyMuted',
+  kicker: 'caption',
+};
 
 export const spacingScale = {
   xs: '4px',
@@ -137,11 +173,18 @@ export const spacingTailwindClasses = {
 
 export const minTouchTarget = '44px';
 
-export function getTypographyClasses(variant: keyof typeof typographyScale) {
-  const config = typographyScale[variant];
-  if (!config) {
-    return '';
+type TypographyVariantInput = TypographyVariant | keyof typeof typographyAliases;
+
+function resolveTypographyVariant(variant: TypographyVariantInput): TypographyVariant {
+  if ((typographyScale as Record<string, TypographyConfig>)[variant]) {
+    return variant as TypographyVariant;
   }
+  return typographyAliases[variant] ?? 'body';
+}
+
+export function getTypographyClasses(variant: TypographyVariantInput) {
+  const resolved = resolveTypographyVariant(variant);
+  const config = typographyScale[resolved];
   return `${config.fontSize} ${config.lineHeight} ${config.fontWeight} ${config.letterSpacing} ${config.maxLines} break-words`;
 }
 

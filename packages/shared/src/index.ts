@@ -1,5 +1,6 @@
 export * from './device/quality'
 export * from './geo/kalman'
+export * from './guards'
 export * from './motion'
 export * from './rng'
 export * from './types/stories-types'
@@ -14,8 +15,8 @@ export * from './guards'
 export * from './chat'
 export * from './gdpr'
 
-// Re-export motion facade (relative import for now)
-export * from '../../motion/src/index'
+// Motion package should be imported separately as @petspark/motion
+// Removed circular re-export to avoid conflicts
 
 // Re-export core API types
 export type { ApiClientConfig, ApiResponse, ApiError } from './api/types'

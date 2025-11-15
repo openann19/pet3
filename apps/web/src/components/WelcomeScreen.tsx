@@ -247,9 +247,9 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
           variants={loadingVariants}
           initial="hidden"
           animate="visible"
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center"                                          
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-primary to-accent shadow-lg shadow-primary/30"
         >
-          <Heart size={32} className="text-white" weight="fill" aria-hidden="true" />
+          <Heart size={32} className="text-primary-foreground" weight="fill" aria-hidden="true" />
           <span className="sr-only">{t.common.loading}</span>
         </motion.div>
       </div>
@@ -314,12 +314,12 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
                 initial="hidden"
                 animate={shouldReduceMotion ? "visible" : ["visible", "pulsing"]}
                 className={cn(
-                  'w-20 h-20 rounded-full bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center shadow-2xl',
+                  'flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-primary via-accent to-secondary shadow-2xl shadow-primary/40',
                   getSpacingClassesFromConfig({ marginY: 'xl' })
                 )}
                 aria-hidden="true"
               >
-                <Heart size={40} className="text-white" weight="fill" aria-hidden="true" />                                                                            
+                <Heart size={40} className="text-primary-foreground" weight="fill" aria-hidden="true" />
               </motion.div>
 
               <h1 className={cn(
@@ -476,8 +476,8 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => { handleLegalClick('terms'); }}
-                  className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded underline"
-                  aria-label="Terms of Service"                       
+                  className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label="Terms of Service"
                 >
                   {t.welcome.terms}
                 </a>
@@ -487,8 +487,8 @@ export default function WelcomeScreen({ onGetStarted, onSignIn, onExplore, isOnl
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => { handleLegalClick('privacy'); }}
-                  className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded underline"
-                  aria-label="Privacy Policy"                       
+                  className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label="Privacy Policy"
                 >
                   {t.welcome.privacy}
                 </a>

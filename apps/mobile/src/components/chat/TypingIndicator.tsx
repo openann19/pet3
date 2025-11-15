@@ -18,7 +18,7 @@ interface TypingUser {
   userAvatar?: string
 }
 import { useReducedMotionSV } from '@/effects/core/use-reduced-motion-sv'
-import { isTruthy } from '@petspark/shared';
+import { isTruthy } from '../../utils/shared';
 
 const AnimatedView = Animated.createAnimatedComponent(View)
 

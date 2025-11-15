@@ -70,7 +70,7 @@ function AnimatedMarker({
       >
         <div
           className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
-          style={{ backgroundColor: category?.color || '#ec4899' }}
+          style={{ backgroundColor: category?.color || 'hsl(var(--primary))' }}
         >
           {category?.icon || '📍'}
         </div>
@@ -283,7 +283,7 @@ export default function MapView() {
   }, [showList, sidebarX]);
 
   useEffect(() => {
-    if (selectedMarker && selectedMarker.type === 'place') {
+    if (selectedMarker?.type === 'place') {
       detailSheetY.value = withSpring(0, { damping: 30, stiffness: 300 });
     } else {
       detailSheetY.value = withSpring(100, { damping: 30, stiffness: 300 });
@@ -351,7 +351,7 @@ export default function MapView() {
                   >
                     <div
                       className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-xl backdrop-blur-sm border-2 border-white"
-                      style={{ backgroundColor: category?.color || '#ec4899' }}
+                      style={{ backgroundColor: category?.color || 'hsl(var(--primary))' }}
                     >
                       {category?.icon || '📍'}
                     </div>

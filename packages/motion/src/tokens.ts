@@ -1,5 +1,5 @@
 import { Easing } from 'react-native-reanimated'
-import type { EasingFunction } from './index'
+import type { PetSparkEasingFunction } from './index'
 
 /**
  * Production Motion Tokens
@@ -7,13 +7,13 @@ import type { EasingFunction } from './index'
  */
 
 // Helper for easing functions that may not exist on web
-const createPolyEasing = (power: number): EasingFunction => {
+const createPolyEasing = (power: number): PetSparkEasingFunction => {
   if (typeof Easing.poly === 'function') {
     // poly returns EasingFunction directly
     const result = Easing.poly(power)
     // Ensure we return an EasingFunction, not a factory
     if (typeof result === 'function') {
-      return result as EasingFunction
+      return result as PetSparkEasingFunction
     }
   }
   // Fallback for web - use bezier which returns EasingFunction directly
@@ -21,7 +21,7 @@ const createPolyEasing = (power: number): EasingFunction => {
     const result = Easing.bezier(0.25, 0.1, 0.25, 1)
     // Ensure we return an EasingFunction, not a factory
     if (typeof result === 'function') {
-      return result as EasingFunction
+      return result as PetSparkEasingFunction
     }
   }
   // Ultimate fallback - create a simple cubic easing

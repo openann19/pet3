@@ -6,6 +6,7 @@
  */
 
 import { createLogger } from './logger';
+import { isTruthy } from './utils';
 
 const logger = createLogger('StorageService');
 

@@ -12,10 +12,10 @@ function Checkbox({ className, ...props }: ComponentProps<typeof CheckboxPrimiti
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        'peer size-[18px] shrink-0 rounded border border-(--border-light) bg-white transition-colors duration-200 outline-none',
-        'data-[state=checked]:bg-(--coral-primary) data-[state=checked]:border-(--coral-primary) data-[state=checked]:text-white',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral-primary)] focus-visible:ring-offset-2',
-        'aria-invalid:border-destructive',
+        'peer size-[18px] shrink-0 rounded-md border border-border bg-card transition-colors duration-200 outline-none text-primary-foreground',
+        'data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-primary-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/30',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
@@ -27,7 +27,7 @@ function Checkbox({ className, ...props }: ComponentProps<typeof CheckboxPrimiti
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current transition-all duration-200 data-[state=checked]:scale-100 data-[state=unchecked]:scale-0"
+        className="flex items-center justify-center text-current transition-transform duration-200 data-[state=checked]:scale-100 data-[state=unchecked]:scale-0"
         aria-hidden="true"
       >
         <Check className="size-3.5" aria-hidden="true" />

@@ -11,13 +11,13 @@ const logger = createLogger('CDNConfig')
 export interface CDNConfig {
   baseUrl: string
   imageOptimization: {
-    formats: Array<'avif' | 'webp' | 'jpeg' | 'png'>
+    formats: ('avif' | 'webp' | 'jpeg' | 'png')[]
     quality: number[]
     sizes: number[]
     defaultQuality: number
   }
   videoOptimization: {
-    formats: Array<'mp4' | 'webm'>
+    formats: ('mp4' | 'webm')[]
     quality: number[]
   }
   enableCache: boolean
@@ -108,7 +108,7 @@ export function prefetchCriticalAssets(assets: string[]): void {
     const link = document.createElement('link')
     link.rel = 'prefetch'
     link.href = asset.startsWith('http') ? asset : `${CDN_CONFIG.baseUrl}${asset}`
-    link.as = asset.match(/\.(jpg|jpeg|png|webp|avif)$/i) ? 'image' : 'fetch'
+    link.as = (/\.(jpg|jpeg|png|webp|avif)$/i.exec(asset)) ? 'image' : 'fetch'
     document.head.appendChild(link)
   })
 
