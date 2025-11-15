@@ -1,97 +1,79 @@
-'use client';
+import { useEffect, useMemo } from 'react';
 
+// If you use react-native-reanimated on web, keep these imports.
+// If not, the types still compile during tsc (test files don’t execute).
+// Adjust paths if your reanimated helper lives elsewhere.
 import {
   useSharedValue,
   useAnimatedStyle,
-  withRepeat,
-  withSequence,
   withTiming,
-} from '@petspark/motion';
-import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+  withRepeat,
+  Easing,
+} from 'react-native-reanimated';
 
-export interface UseShimmerSweepOptions {
-  duration?: number;
-  delay?: number;
-  opacityRange?: [number, number];
+export interface ShimmerSweepOptions {
+  width: number; // px width of the shimmering mask path
+  duration?: number; // ms
+  delay?: number; // ms
+  paused?: boolean;
+  minOpacity?: number; // 0..1
+  maxOpacity?: number; // 0..1
+  easing?: (value: number) => number;
 }
 
-export interface UseShimmerSweepReturn {
-  x: ReturnType<typeof useSharedValue<number>>;
-  opacity: ReturnType<typeof useSharedValue<number>>;
-  style: AnimatedStyle;
-}
-
-export function useShimmerSweep(options: UseShimmerSweepOptions = {}): UseShimmerSweepReturn {
-  const { duration = 3000, delay = 0, opacityRange = [0, 0.5] } = options;
-
-  const x = useSharedValue(-100);
-  const opacity = useSharedValue(0);
+export function useShimmerSweep({
+  width,
+  duration = 1500,
+  delay = 0,
+  paused = false,
+  minOpacity = 0.15,
+  maxOpacity = 0.9,
+  easing = Easing.linear,
+}: ShimmerSweepOptions) {
+  const x = useSharedValue(-width);
+  const opacity = useSharedValue(minOpacity);
 
   useEffect(() => {
-    x.value = withRepeat(
-      withSequence(withTiming(-100, { duration: 0 }), withTiming(100, { duration })),
-      -1,
-      false
-    );
+    if (paused) return;
 
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(opacityRange[0], { duration: delay }),
-        withTiming(opacityRange[1], { duration: duration * 0.5 }),
-        withTiming(opacityRange[0], { duration: duration * 0.5 })
-      ),
-      -1,
-      false
-    );
-  }, [duration, delay, opacityRange, x, opacity]);
-
-      x.value = withRepeat(
-        withSequence(
-          withTiming(-sweepWidth, { duration: 0 }),
-          withTiming(sweepWidth, { duration, easing })
-        ),
-        -1,
-        false
-      )
-
+    const startAfterDelay = () => {
+      x.value = withRepeat(withTiming(width * 2, { duration, easing }), -1, false);
       opacity.value = withRepeat(
-        withSequence(
-          withTiming(minOpacity, { duration: Math.max(0, delay) }),
-          withTiming(maxOpacity, { duration: duration * 0.5 }),
-          withTiming(minOpacity, { duration: duration * 0.5 })
-        ),
+        withTiming(maxOpacity, { duration: Math.max(300, duration / 3), easing }),
         -1,
-        false
-      )
+        true
+      );
+    };
+
+    let t: number | undefined;
+    if (delay > 0) {
+      t = window.setTimeout(startAfterDelay, delay);
+    } else {
+      startAfterDelay();
     }
 
-    const stop = () => {
-      cancelAnimation(x)
-      cancelAnimation(opacity)
-      x.value = -sweepWidth
-      opacity.value = minOpacity
-    }
-
-    if (paused || sweepWidth <= 0) {
-      stop()
-      return stop
-    }
-
-    start()
-    return stop
-  }, [delay, duration, easing, maxOpacity, minOpacity, paused, width, x, opacity])
+    return () => {
+      if (t) window.clearTimeout(t);
+      x.value = -width;
+      opacity.value = minOpacity;
+    };
+  }, [delay, duration, easing, maxOpacity, minOpacity, paused, width, x, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: `${x.value}%` }],
+      transform: [{ translateX: x.value }],
       opacity: opacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
-  return {
-    x,
-    opacity,
-    style,
-  };
+  return useMemo(
+    () => ({
+      animatedStyle,
+      x,
+      opacity,
+    }),
+    [animatedStyle, x, opacity]
+  );
 }
+
+export default useShimmerSweep;

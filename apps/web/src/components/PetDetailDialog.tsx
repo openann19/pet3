@@ -457,7 +457,6 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
           </AnimatedView>
         ) : null}
       </DialogContent>
-  )}
     </Dialog>
   );
 }

@@ -1,13 +1,6 @@
+// apps/web/src/components/EnhancedVisuals.tsx
+import React, { useState, type ReactNode } from 'react';
 import { MotionView } from '@petspark/motion';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-} from '@petspark/motion';
-import React from 'react';
-import type { ReactNode } from 'react';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EnhancedVisuals');
@@ -15,44 +8,24 @@ const logger = createLogger('EnhancedVisuals');
 interface EnhancedCardProps {
   children: ReactNode;
   className?: string;
+  /**
+   * Optional delay in milliseconds before card animates in.
+   */
   delay?: number;
 }
 
 export function EnhancedCard({ children, className = '', delay = 0 }: EnhancedCardProps) {
-  const opacity = useSharedValue(0);
-  const y = useSharedValue(20);
-  const hoverY = useSharedValue(0);
-
-  React.useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 500 });
-      y.value = withTiming(0, { duration: 500 });
-    }, delay);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [delay, opacity, y]);
-
-  const handleMouseEnter = React.useCallback(() => {
-    hoverY.value = withTiming(-4, { duration: 200 });
-  }, []);
-
-  const handleMouseLeave = React.useCallback(() => {
-    hoverY.value = withTiming(0, { duration: 200 });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: y.value + hoverY.value }],
-  }));
-
   return (
-    <AnimatedView
-      style={animatedStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <MotionView
       className={className}
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        delay: delay / 1000,
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1], // sleek ease-out
+      }}
+      whileHover={{ y: -4, scale: 1.02 }}
     >
       {children}
     </MotionView>
@@ -72,29 +45,6 @@ export function FloatingActionButton({
   label,
   className = '',
 }: FloatingActionButtonProps) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0);
-  const hoverScale = useSharedValue(1);
-
-  React.useEffect(() => {
-    opacity.value = withTiming(1, { duration: 200 });
-    const timeoutId = setTimeout(() => {
-      scale.value = withTiming(1, { duration: 300 });
-    }, 200);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [opacity, scale]);
-
-  const handleMouseEnter = React.useCallback(() => {
-    hoverScale.value = withTiming(1.05, { duration: 200 });
-  }, []);
-
-  const handleMouseLeave = React.useCallback(() => {
-    hoverScale.value = withTiming(1, { duration: 200 });
-  }, []);
-
   const handleClick = React.useCallback(() => {
     try {
       onClick();
@@ -104,21 +54,21 @@ export function FloatingActionButton({
     }
   }, [onClick]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value * hoverScale.value }],
-  }));
-
   return (
-    <AnimatedView
-      style={animatedStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <MotionView
       onClick={handleClick}
-      className={`fixed bottom-24 right-6 z-50 h-14 flex items-center gap-3 bg-linear-to-r from-primary to-accent text-white px-6 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 ${className}`}
+      className={`fixed bottom-24 right-6 z-50 flex h-14 items-center gap-3 rounded-full bg-linear-to-r from-primary to-accent px-6 text-white shadow-2xl transition-all duration-300 ${className}`}
+      initial={{ opacity: 0, scale: 0.85, y: 12 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{
+        scale: 1.06,
+        boxShadow: '0 28px 60px rgba(0,0,0,0.45)',
+      }}
+      whileTap={{ scale: 0.96 }}
     >
       <span className="text-xl">{icon}</span>
-      {label && <span className="font-semibold text-sm">{label}</span>}
+      {label && <span className="text-sm font-semibold">{label}</span>}
     </MotionView>
   );
 }
@@ -129,62 +79,30 @@ interface PulseIndicatorProps {
 }
 
 export function PulseIndicator({ color = 'bg-primary', size = 'md' }: PulseIndicatorProps) {
-  const sizeClasses = {
+  const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
     sm: 'w-2 h-2',
     md: 'w-3 h-3',
     lg: 'w-4 h-4',
   };
 
-  const scale1 = useSharedValue(1);
-  const opacity1 = useSharedValue(1);
-  const scale2 = useSharedValue(1);
-  const opacity2 = useSharedValue(0.5);
-
-  React.useEffect(() => {
-    // Pulse animation for first circle
-    scale1.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-    opacity1.value = withRepeat(
-      withSequence(withTiming(0.8, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      true
-    );
-
-    // Pulse animation for second circle
-    scale2.value = withRepeat(
-      withSequence(withTiming(1.8, { duration: 2000 }), withTiming(1, { duration: 2000 })),
-      -1,
-      true
-    );
-    opacity2.value = withRepeat(
-      withSequence(withTiming(0, { duration: 2000 }), withTiming(0.5, { duration: 2000 })),
-      -1,
-      true
-    );
-  }, []);
-
-  const animatedStyle1 = useAnimatedStyle(() => ({
-    transform: [{ scale: scale1.value }],
-    opacity: opacity1.value,
-  }));
-
-  const animatedStyle2 = useAnimatedStyle(() => ({
-    transform: [{ scale: scale2.value }],
-    opacity: opacity2.value,
-  }));
+  const baseSize = sizeClasses[size] ?? sizeClasses.md;
 
   return (
     <div className="relative inline-flex">
-      <AnimatedView
-        style={animatedStyle1}
-        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
+      {/* Core dot */}
+      <MotionView
+        className={`${baseSize} ${color} rounded-full`}
+        initial={{ scale: 1, opacity: 1 }}
+        animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <AnimatedView
-        style={animatedStyle2}
-        className={`absolute inset-0 ${String(color ?? '')} rounded-full opacity-30`}
+      {/* Outer halo */}
+      <MotionView
+        className={`absolute inset-0 ${color} rounded-full`}
+        initial={{ scale: 1, opacity: 0.35 }}
+        animate={{ scale: [1, 1.9, 1], opacity: [0.35, 0, 0.35] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ filter: 'blur(4px)' }}
       />
     </div>
   );
@@ -219,31 +137,18 @@ interface ShimmerProps {
   className?: string;
 }
 
+/**
+ * Simple shimmer sweep over static content.
+ */
 export function Shimmer({ children, className = '' }: ShimmerProps) {
-  const translateX = useSharedValue(-100);
-
-  React.useEffect(() => {
-    translateX.value = withRepeat(
-      withSequence(
-        withTiming(200, { duration: 2000 }),
-        withTiming(-100, { duration: 0 }),
-        withTiming(200, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
   return (
-    <div className={`relative overflow-hidden ${String(className ?? '')}`}>
+    <div className={`relative overflow-hidden ${className}`}>
       {children}
-      <AnimatedView
-        style={[animatedStyle, { pointerEvents: 'none' }]}
-        className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
+      <MotionView
+        className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-white/18 to-transparent"
+        initial={{ x: '-120%' }}
+        animate={{ x: ['-120%', '120%'] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
       />
     </div>
   );
@@ -256,34 +161,26 @@ interface CounterBadgeProps {
 }
 
 export function CounterBadge({ count, max = 99, variant = 'primary' }: CounterBadgeProps) {
+  if (count === 0) return null;
+
   const displayCount = count > max ? `${max}+` : count;
 
-  const variantClasses = {
+  const variantClasses: Record<'primary' | 'secondary' | 'accent', string> = {
     primary: 'bg-primary text-primary-foreground',
     secondary: 'bg-secondary text-secondary-foreground',
     accent: 'bg-accent text-accent-foreground',
   };
 
-  const scale = useSharedValue(count === 0 ? 1 : 0);
-
-  React.useEffect(() => {
-    if (count > 0) {
-      scale.value = withTiming(1, { duration: 200 });
-    } else {
-      scale.value = withTiming(0, { duration: 200 });
-    }
-  }, [count]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  if (count === 0) return null;
+  const colorClass = variantClasses[variant] ?? variantClasses.primary;
 
   return (
     <MotionView
-      animatedStyle={animatedStyle}
-      className={`absolute -top-1 -right-1 h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ${variantClasses[variant]}`}
+      key={displayCount}
+      className={`absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold shadow-lg ${colorClass}`}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      layout
     >
       {displayCount}
     </MotionView>
@@ -295,60 +192,32 @@ interface LoadingDotsProps {
   color?: string;
 }
 
-function useDotAnimation(delay: number) {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0.5);
-
-  React.useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      translateY.value = withRepeat(
-        withSequence(withTiming(-8, { duration: 300 }), withTiming(0, { duration: 300 })),
-        -1,
-        true
-      );
-      opacity.value = withRepeat(
-        withSequence(withTiming(1, { duration: 300 }), withTiming(0.5, { duration: 300 })),
-        -1,
-        true
-      );
-    }, delay);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [delay, translateY]);
-
-  return useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
-}
-
 export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsProps) {
-  const sizeClasses = {
+  const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
     sm: 'w-1.5 h-1.5',
     md: 'w-2 h-2',
     lg: 'w-3 h-3',
   };
 
-  const dot1Style = useDotAnimation(0);
-  const dot2Style = useDotAnimation(150);
-  const dot3Style = useDotAnimation(300);
+  const baseSize = sizeClasses[size] ?? sizeClasses.md;
+  const delays = [0, 0.15, 0.3];
 
   return (
     <div className="flex items-center justify-center gap-1.5">
-      <AnimatedView
-        style={dot1Style}
-        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
-      />
-      <AnimatedView
-        style={dot2Style}
-        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
-      />
-      <AnimatedView
-        style={dot3Style}
-        className={`${String(sizeClasses[size] ?? '')} ${String(color ?? '')} rounded-full`}
-      />
+      {delays.map((delay, index) => (
+        <MotionView
+          key={index}
+          className={`${baseSize} ${color} rounded-full`}
+          initial={{ scale: 0.8, opacity: 0.3 }}
+          animate={{ scale: [0.8, 1.3, 0.8], opacity: [0.3, 1, 0.3] }}
+          transition={{
+            duration: 0.7,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -356,37 +225,45 @@ export function LoadingDots({ size = 'md', color = 'bg-primary' }: LoadingDotsPr
 interface GlowingBorderProps {
   children: ReactNode;
   className?: string;
+  /**
+   * Tailwind color token suffix, e.g. "primary", "accent", "secondary"
+   */
   glowColor?: string;
 }
 
+/**
+ * Premium hover glow wrapper around cards / tiles.
+ * - Subtle lift + scale on hover
+ * - Soft neon border glow
+ */
 export function GlowingBorder({
   children,
   className = '',
   glowColor = 'primary',
 }: GlowingBorderProps) {
-  const opacity = useSharedValue(0);
+  const [hovered, setHovered] = useState(false);
 
-  const handleMouseEnter = React.useCallback(() => {
-    opacity.value = withTiming(0.5, { duration: 300 });
-  }, []);
-
-  const handleMouseLeave = React.useCallback(() => {
-    opacity.value = withTiming(0, { duration: 300 });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+  const fromClass = `from-${glowColor}`;
+  const toClass = `to-${glowColor}`;
 
   return (
-    <div className={`relative ${String(className ?? '')}`}>
-      <AnimatedView
-        style={[animatedStyle, { filter: 'blur(4px)' }]}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={`absolute -inset-[1px] bg-linear-to-r from-${String(glowColor ?? '')} via-accent to-${String(glowColor ?? '')} rounded-inherit`}
+    <MotionView
+      className={`relative rounded-2xl ${className}`}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      initial={{ y: 0, scale: 1 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {/* Glow overlay */}
+      <MotionView
+        className={`pointer-events-none absolute -inset-[1px] rounded-inherit bg-linear-to-r ${fromClass} via-accent ${toClass}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: hovered ? 0.55 : 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        style={{ filter: 'blur(6px)' }}
       />
-      <div className="relative bg-card rounded-inherit">{children}</div>
-    </div>
+      <div className="relative rounded-inherit bg-card">{children}</div>
+    </MotionView>
   );
 }

@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { waitFor } from '@testing-library/react';
+import { renderHookWithQueryClient } from '@/test-utils/react-query';
 import { useUser, useUpdateUser, useUserPets } from '../use-user';
 import { authAPI, petAPI } from '@/lib/api-services';
+
+const mockedAuthAPI = vi.mocked(authAPI);
+const mockedPetAPI = vi.mocked(petAPI);
 
 vi.mock('@/lib/api-services', () => ({
   authAPI: {
@@ -13,18 +15,6 @@ vi.mock('@/lib/api-services', () => ({
     list: vi.fn(),
   },
 }));
-
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
-}
 
 describe('useUser', () => {
   beforeEach(() => {
@@ -38,26 +28,22 @@ describe('useUser', () => {
       displayName: 'Test User',
     };
 
-    vi.mocked(authAPI.getCurrentUser).mockResolvedValue(mockUser as never);
+    mockedAuthAPI.getCurrentUser.mockResolvedValue(mockUser as never);
 
-    const { result } = renderHook(() => useUser(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUser());
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
     expect(result.current.data).toEqual(mockUser);
-    expect(vi.mocked(authAPI.getCurrentUser)).toHaveBeenCalled();
+    expect(mockedAuthAPI.getCurrentUser.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should handle error', async () => {
-    vi.mocked(authAPI.getCurrentUser).mockRejectedValue(new Error('Failed to fetch'));
+    mockedAuthAPI.getCurrentUser.mockRejectedValue(new Error('Failed to fetch'));
 
-    const { result } = renderHook(() => useUser(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUser());
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
@@ -79,16 +65,9 @@ describe('useUpdateUser', () => {
       displayName: 'Test User',
     };
 
-    const updatedUser = {
-      ...mockUser,
-      displayName: 'Updated User',
-    };
+    mockedAuthAPI.getCurrentUser.mockResolvedValue(mockUser as never);
 
-    vi.mocked(authAPI.getCurrentUser).mockResolvedValue(mockUser as never);
-
-    const { result } = renderHook(() => useUpdateUser(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUpdateUser());
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
@@ -113,28 +92,24 @@ describe('useUserPets', () => {
       { id: 'pet-2', name: 'Buddy', species: 'cat' },
     ];
 
-    vi.mocked(petAPI.list).mockResolvedValue({
+    mockedPetAPI.list.mockResolvedValue({
       items: mockPets,
     } as never);
 
-    const { result } = renderHook(() => useUserPets(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUserPets());
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
     expect(result.current.data).toEqual(mockPets);
-    expect(petAPI.list).toHaveBeenCalled();
+    expect(mockedPetAPI.list.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should handle error', async () => {
-    vi.mocked(petAPI.list).mockRejectedValue(new Error('Failed to fetch'));
+    mockedPetAPI.list.mockRejectedValue(new Error('Failed to fetch'));
 
-    const { result } = renderHook(() => useUserPets(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUserPets());
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);

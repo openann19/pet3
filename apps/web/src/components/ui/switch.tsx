@@ -1,41 +1,40 @@
-"use client"
+'use client';
 
-import type { ComponentProps } from "react"
-import * as SwitchPrimitive from "@radix-ui/react-switch"
+import * as React from 'react';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
+import { cn } from '@/lib/utils';
 
-import { cn } from "@/lib/utils"
-import { getAriaButtonAttributes } from "@/lib/accessibility"
-
-function Switch({
-  className,
-  ...props
-}: ComponentProps<typeof SwitchPrimitive.Root>) {
-  const switchAria = getAriaButtonAttributes({
-    label: props['aria-label'] || 'Toggle switch',
-    pressed: props['aria-checked'] === 'true' || props['data-state'] === 'checked',
-    disabled: props.disabled,
-  });
-
-  return (
-    <SwitchPrimitive.Root
-      data-slot="switch"
-      role="switch"
-      className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=checked]:shadow-md data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30",
-        className
-      )}
-      {...switchAria}
-      {...props}
-    >
-      <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
-        className={cn(
-          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full shadow-sm ring-0 transition-all duration-200 data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=checked]:scale-110 data-[state=unchecked]:translate-x-0 data-[state=unchecked]:scale-100"
-        )}
-        aria-hidden="true"
-      />
-    </SwitchPrimitive.Root>
-  )
+export interface SwitchProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>,
+    'checked' | 'onCheckedChange'
+  > {
+  checked: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-export { Switch }
+const Switch = React.forwardRef<
+  React.ElementRef<typeof SwitchPrimitives.Root>,
+  SwitchProps
+>(({ className, checked, onCheckedChange, ...props }, ref) => (
+  <SwitchPrimitives.Root
+    ref={ref}
+    checked={checked}
+    onCheckedChange={onCheckedChange}
+    className={cn(
+      'peer inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent bg-input shadow-sm transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      className,
+    )}
+    {...props}
+  >
+    <SwitchPrimitives.Thumb
+      className={cn(
+        'pointer-events-none block h-[14px] w-[14px] rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-[16px] data-[state=unchecked]:translate-x-0',
+      )}
+    />
+  </SwitchPrimitives.Root>
+));
+
+Switch.displayName = SwitchPrimitives.Root.displayName;
+
+export { Switch };

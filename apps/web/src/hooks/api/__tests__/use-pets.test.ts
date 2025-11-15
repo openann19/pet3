@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { waitFor } from '@testing-library/react';
+import { renderHookWithQueryClient } from '@/test-utils/react-query';
 import { usePets, usePet, useCreatePet, useUpdatePet, useDeletePet } from '../use-pets';
 import { petAPI } from '@/lib/api-services';
+
+const mockedPetAPI = vi.mocked(petAPI);
 
 vi.mock('@/lib/api-services', () => ({
   petAPI: {
@@ -14,18 +15,6 @@ vi.mock('@/lib/api-services', () => ({
     delete: vi.fn(),
   },
 }));
-
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
-}
 
 describe('usePets', () => {
   beforeEach(() => {
@@ -38,38 +27,34 @@ describe('usePets', () => {
       { id: 'pet-2', name: 'Buddy', species: 'cat' },
     ];
 
-    vi.mocked(petAPI.list).mockResolvedValue({
+    mockedPetAPI.list.mockResolvedValue({
       items: mockPets,
     } as never);
 
-    const { result } = renderHook(() => usePets(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => usePets());
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
     expect(result.current.data).toEqual(mockPets);
-    expect(petAPI.list).toHaveBeenCalled();
+    expect(mockedPetAPI.list.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should fetch pets with params', async () => {
     const mockPets = [{ id: 'pet-1', name: 'Fluffy', species: 'dog' }];
 
-    vi.mocked(petAPI.list).mockResolvedValue({
+    mockedPetAPI.list.mockResolvedValue({
       items: mockPets,
     } as never);
 
-    const { result } = renderHook(() => usePets({ ownerId: 'user-1' }), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => usePets({ ownerId: 'user-1' }));
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(petAPI.list).toHaveBeenCalledWith({ ownerId: 'user-1' });
+    expect(mockedPetAPI.list.mock.calls[0]).toEqual([{ ownerId: 'user-1' }]);
   });
 });
 
@@ -81,27 +66,23 @@ describe('usePet', () => {
   it('should fetch pet by ID', async () => {
     const mockPet = { id: 'pet-1', name: 'Fluffy', species: 'dog' };
 
-    vi.mocked(petAPI.getById).mockResolvedValue(mockPet as never);
+    mockedPetAPI.getById.mockResolvedValue(mockPet as never);
 
-    const { result } = renderHook(() => usePet('pet-1'), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => usePet('pet-1'));
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
     expect(result.current.data).toEqual(mockPet);
-    expect(petAPI.getById).toHaveBeenCalledWith('pet-1');
+    expect(mockedPetAPI.getById.mock.calls[0]).toEqual(['pet-1']);
   });
 
   it('should not fetch when ID is null', () => {
-    const { result } = renderHook(() => usePet(null), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => usePet(null));
 
     expect(result.current.isFetching).toBe(false);
-    expect(petAPI.getById).not.toHaveBeenCalled();
+    expect(mockedPetAPI.getById.mock.calls.length).toBe(0);
   });
 });
 
@@ -114,11 +95,9 @@ describe('useCreatePet', () => {
     const mockPet = { id: 'pet-1', name: 'Fluffy', species: 'dog' };
     const createData = { name: 'Fluffy', species: 'dog' };
 
-    vi.mocked(petAPI.create).mockResolvedValue(mockPet as never);
+    mockedPetAPI.create.mockResolvedValue(mockPet as never);
 
-    const { result } = renderHook(() => useCreatePet(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useCreatePet());
 
     await result.current.mutateAsync(createData);
 
@@ -126,7 +105,7 @@ describe('useCreatePet', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(petAPI.create).toHaveBeenCalledWith(createData);
+    expect(mockedPetAPI.create.mock.calls[0]).toEqual([createData]);
   });
 });
 
@@ -139,11 +118,9 @@ describe('useUpdatePet', () => {
     const mockPet = { id: 'pet-1', name: 'Updated Fluffy', species: 'dog' };
     const updateData = { name: 'Updated Fluffy' };
 
-    vi.mocked(petAPI.update).mockResolvedValue(mockPet as never);
+    mockedPetAPI.update.mockResolvedValue(mockPet as never);
 
-    const { result } = renderHook(() => useUpdatePet(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useUpdatePet());
 
     await result.current.mutateAsync({
       id: 'pet-1',
@@ -154,7 +131,7 @@ describe('useUpdatePet', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(petAPI.update).toHaveBeenCalledWith('pet-1', updateData);
+    expect(mockedPetAPI.update.mock.calls[0]).toEqual(['pet-1', updateData]);
   });
 });
 
@@ -164,11 +141,9 @@ describe('useDeletePet', () => {
   });
 
   it('should delete pet', async () => {
-    vi.mocked(petAPI.delete).mockResolvedValue({ success: true } as never);
+    mockedPetAPI.delete.mockResolvedValue({ success: true } as never);
 
-    const { result } = renderHook(() => useDeletePet(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useDeletePet());
 
     await result.current.mutateAsync('pet-1');
 
@@ -176,6 +151,6 @@ describe('useDeletePet', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(petAPI.delete).toHaveBeenCalledWith('pet-1');
+    expect(mockedPetAPI.delete.mock.calls[0]).toEqual(['pet-1']);
   });
 });

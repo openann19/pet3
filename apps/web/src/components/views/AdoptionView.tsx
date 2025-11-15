@@ -6,19 +6,14 @@ import { MyApplicationsView } from '@/components/adoption/MyApplicationsView';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { useStorage } from '@/hooks/use-storage';
 import type { AdoptionListing } from '@/lib/adoption-marketplace-types';
 import { createLogger } from '@/lib/logger';
 import { ClipboardText, Heart, MagnifyingGlass, Plus } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
-import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { MotionView, Presence } from '@petspark/motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { VirtualGrid } from '@/components/virtual/VirtualGrid';
@@ -41,20 +36,17 @@ export default function AdoptionView() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [_cursor, setCursor] = useState<string | undefined>();
 
-  // Animation hooks
-  const contentPresence = useAnimatePresence(!loading);
-
-  // Interactive element hooks
-  const cardHover = useHoverLift();
-
   useEffect(() => {
-    loadListings();
-    loadUserApplicationsCount();
+    void loadListings();
+    void loadUserApplicationsCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadListings = async () => {
     try {
       setLoading(true);
+      // If spark.user is a global, it remains; otherwise inject from context.
+      // @ts-expect-error spark is a global in this app
       await spark.user();
       const result = await adoptionApi.getAdoptionProfiles({ limit: 50 });
       const mappedListings = result.profiles.map(
@@ -100,7 +92,7 @@ export default function AdoptionView() {
             viewsCount: 0,
             applicationsCount: 0,
             featured: false,
-          }) as AdoptionListing
+          }) as AdoptionListing,
       );
       setListings(mappedListings);
       setCursor(result.nextCursor);
@@ -115,6 +107,7 @@ export default function AdoptionView() {
 
   const loadUserApplicationsCount = async () => {
     try {
+      // @ts-expect-error spark is a global in this app
       const user = await spark.user();
       const applications = await adoptionApi.getUserApplications(user.id);
       setUserApplicationsCount(applications.length);
@@ -126,36 +119,36 @@ export default function AdoptionView() {
     }
   };
 
-  const handleToggleFavorite = useCallback((listingId: string) => {
-    setFavorites((currentFavorites) => {
-      const current = Array.isArray(currentFavorites) ? currentFavorites : [];
-      if (current.includes(listingId)) {
-        return current.filter((id) => id !== listingId);
-      } else {
+  const handleToggleFavorite = useCallback(
+    (listingId: string) => {
+      setFavorites((currentFavorites) => {
+        const current = Array.isArray(currentFavorites) ? currentFavorites : [];
+        if (current.includes(listingId)) return current.filter((id) => id !== listingId);
         return [...current, listingId];
-      }
-    });
-  }, [setFavorites]);
+      });
+    },
+    [setFavorites],
+  );
 
   const handleSelectListing = useCallback((listing: AdoptionListing) => {
     setSelectedListing(listing);
     setShowDetailDialog(true);
   }, []);
 
-  // Memoize render item callback for VirtualGrid
-  const renderListingCard = useCallback((listing: AdoptionListing) => (
-    <AdoptionListingCard
-      listing={listing}
-      onSelect={handleSelectListing}
-      onFavorite={handleToggleFavorite}
-      isFavorited={Array.isArray(favorites) && favorites.includes(listing.id)}
-    />
-  ), [favorites, handleSelectListing, handleToggleFavorite]);
+  const renderListingCard = useCallback(
+    (listing: AdoptionListing) => (
+      <AdoptionListingCard
+        listing={listing}
+        onSelect={handleSelectListing}
+        onFavorite={handleToggleFavorite}
+        isFavorited={Array.isArray(favorites) && favorites.includes(listing.id)}
+      />
+    ),
+    [favorites, handleSelectListing, handleToggleFavorite],
+  );
 
-  // Memoize key extractor
   const listingKeyExtractor = useCallback((listing: AdoptionListing) => listing.id, []);
 
-  // Memoize filtered listings to prevent unnecessary recalculations
   const filteredListings = useMemo(() => {
     let list = listings.filter((l) => l.status === 'active');
 
@@ -166,16 +159,19 @@ export default function AdoptionView() {
     }
 
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       list = list.filter(
         (l) =>
-          l.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          l.petBreed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          l.location.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          l.location.country.toLowerCase().includes(searchQuery.toLowerCase())
+          l.petName.toLowerCase().includes(q) ||
+          l.petBreed.toLowerCase().includes(q) ||
+          l.location.city.toLowerCase().includes(q) ||
+          l.location.country.toLowerCase().includes(q),
       );
     }
 
-    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   }, [listings, activeTab, favorites, searchQuery]);
 
   if (viewMode === 'my-applications') {
@@ -188,7 +184,7 @@ export default function AdoptionView() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">{t.common.loading}</p>
         </div>
       </div>
@@ -211,11 +207,7 @@ export default function AdoptionView() {
             </div>
 
             <nav className="flex items-center gap-2" aria-label="Adoption actions">
-              <Button
-                onClick={() => setViewMode('my-applications')}
-                variant="outline"
-                className="gap-2"
-              >
+              <Button onClick={() => setViewMode('my-applications')} variant="outline" className="gap-2">
                 <ClipboardText size={20} weight="fill" />
                 {t.adoption?.myApplications || 'My Applications'}
                 {userApplicationsCount > 0 && (
@@ -233,10 +225,7 @@ export default function AdoptionView() {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1 relative w-full">
-              <MagnifyingGlass
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                size={20}
-              />
+              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
                 placeholder={'Search by pet name, breed, location...'}
                 value={searchQuery}
@@ -248,66 +237,66 @@ export default function AdoptionView() {
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <TabsList>
-                <TabsTrigger value="all">
-                  All {listings.length > 0 && `(${listings.length})`}
-                </TabsTrigger>
+                <TabsTrigger value="all">All {listings.length > 0 && `(${listings.length})`}</TabsTrigger>
                 <TabsTrigger value="available">
                   {t.adoption?.available || 'Available'} {availableCount > 0 && `(${availableCount})`}
                 </TabsTrigger>
                 <TabsTrigger value="favorites">
-                  Favorites{' '}
-                  {Array.isArray(favorites) && favorites.length > 0 && `(${favorites.length})`}
+                  Favorites {Array.isArray(favorites) && favorites.length > 0 && `(${favorites.length})`}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
           <div className="h-[calc(100vh-320px)]">
-            {contentPresence.shouldRender && !loading && (
-              <AnimatedView style={contentPresence.animatedStyle}>
-                {filteredListings.length === 0 ? (
-                  <AnimatedView
-                    key="empty"
-                    className="flex flex-col items-center justify-center py-16"
-                  >
-                    <Heart size={64} className="text-muted-foreground mb-4" weight="thin" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      {activeTab === 'favorites'
-                        ? 'No Favorites Yet'
-                        : searchQuery
-                          ? 'No Results Found'
-                          : 'No Pets Available'}
-                    </h3>
-                    <p className="text-muted-foreground text-center max-w-md">
-                      {activeTab === 'favorites'
-                        ? 'Start adding pets to your favorites to see them here.'
-                        : searchQuery
-                          ? 'Try adjusting your search terms or filters.'
-                          : 'Check back soon for new pets looking for their forever homes.'}
-                    </p>
-                  </AnimatedView>
-                ) : (
-                  <VirtualGrid
-                    items={filteredListings}
-                    renderItem={renderListingCard}
-                    columns={3}
-                    itemHeight={400}
-                    gap={24}
-                    overscan={5}
-                    containerClassName="h-full"
-                    keyExtractor={listingKeyExtractor}
-                  />
-                )}
-              </AnimatedView>
-            )}
+            <Presence visible={!loading}>
+              {!loading && (
+                <MotionView
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                >
+                  {filteredListings.length === 0 ? (
+                    <MotionView key="empty" className="flex flex-col items-center justify-center py-16">
+                      <Heart size={64} className="text-muted-foreground mb-4" weight="thin" />
+                      <h3 className="text-lg font-semibold mb-2">
+                        {activeTab === 'favorites'
+                          ? 'No Favorites Yet'
+                          : searchQuery
+                            ? 'No Results Found'
+                            : 'No Pets Available'}
+                      </h3>
+                      <p className="text-muted-foreground text-center max-w-md">
+                        {activeTab === 'favorites'
+                          ? 'Start adding pets to your favorites to see them here.'
+                          : searchQuery
+                            ? 'Try adjusting your search terms or filters.'
+                            : 'Check back soon for new pets looking for their forever homes.'}
+                      </p>
+                    </MotionView>
+                  ) : (
+                    <VirtualGrid
+                      items={filteredListings}
+                      renderItem={renderListingCard}
+                      columns={3}
+                      itemHeight={400}
+                      gap={24}
+                      overscan={5}
+                      containerClassName="h-full"
+                      keyExtractor={listingKeyExtractor}
+                    />
+                  )}
+                </MotionView>
+              )}
+            </Presence>
           </div>
 
           <CreateAdoptionListingDialog
             open={showCreateDialog}
             onOpenChange={setShowCreateDialog}
             onSuccess={() => {
-              loadListings();
-              loadUserApplicationsCount();
+              void loadListings();
+              void loadUserApplicationsCount();
             }}
           />
 
@@ -316,13 +305,11 @@ export default function AdoptionView() {
             open={showDetailDialog}
             onOpenChange={(open) => {
               setShowDetailDialog(open);
-              if (!open) {
-                setSelectedListing(null);
-              }
-              loadUserApplicationsCount();
+              if (!open) setSelectedListing(null);
+              void loadUserApplicationsCount();
             }}
             onApplicationSubmitted={() => {
-              loadUserApplicationsCount();
+              void loadUserApplicationsCount();
             }}
           />
         </div>

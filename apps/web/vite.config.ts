@@ -7,7 +7,6 @@ import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import type { PluginOption, UserConfig } from 'vite';
-import { isTruthy, isDefined } from '@/core/guards';
 import { securityHeadersPlugin } from './vite-plugin-security-headers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,29 +27,6 @@ const loadOptionalPlugin = async (specifier: string): Promise<PluginOption | nul
     throw error;
   }
 };
-
-// Plugin to transform JSX in .js files before import analysis
-const transformJSXInJSPlugin = (): PluginOption => ({
-  name: 'transform-jsx-in-js',
-  enforce: 'pre',
-  shouldTransformCachedModule({ id }) {
-    // Ensure react-native-reanimated .js files are always transformed
-    return id.includes('react-native-reanimated') && id.endsWith('.js');
-  },
-  transform(code, id) {
-    // Transform JSX in .js files from react-native-reanimated BEFORE import analysis
-    if (
-      id.includes('react-native-reanimated') &&
-      id.endsWith('.js') &&
-      code.includes('<') &&
-      code.includes('>')
-    ) {
-      // Return null to let React plugin handle it, but ensure it runs before import analysis
-      return null;
-    }
-    return null;
-  },
-});
 
 // Plugin to stub react-native-gesture-handler for web (not available in web environment)
 const stubGestureHandlerPlugin = (): PluginOption => ({
@@ -490,7 +466,6 @@ export default defineConfig(async (): Promise<UserConfig> => {
     resolveReactNativePlugin(),
     resolveWorkspacePackagePlugin(),
     react({}),
-    transformJSXInJSPlugin(),
     handleJSXImportAnalysisPlugin(),
     tailwindcss(),
     securityHeadersPlugin(),
@@ -511,7 +486,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
   ]);
 
   for (const plugin of optionalPlugins) {
-    if (isTruthy(plugin)) {
+    if (plugin) {
       plugins.push(plugin);
     }
   }
@@ -528,10 +503,6 @@ export default defineConfig(async (): Promise<UserConfig> => {
       alias: {
         '@': path.resolve(projectRoot, './src'),
         'react-native': 'react-native-web',
-        'react-native-reanimated': path.resolve(
-          projectRoot,
-          './src/lib/reanimated-web-simple.ts'
-        ),
       },
       conditions: ['import', 'module', 'browser', 'default'],
       extensions: [
@@ -548,11 +519,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
       dedupe: ['react', 'react-dom'],
     },
     esbuild: {
-      include: [
-        /src\/.*\.[jt]sx?$/,
-        /node_modules\/react-native-reanimated\/.*\.js$/,
-        /packages\/shared\/src\/.*\.ts$/,
-      ],
+      include: [/src\/.*\.[jt]sx?$/, /packages\/shared\/src\/.*\.ts$/],
       loader: 'tsx',
       jsx: 'automatic',
     },
@@ -571,12 +538,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
       },
     },
     optimizeDeps: {
-      exclude: [
-        'react-native',
-        'react-native-reanimated',
-        'react-native-gesture-handler',
-        'nsfwjs',
-      ],
+      exclude: ['react-native', 'react-native-gesture-handler', 'nsfwjs'],
       include: ['react-native-web', 'react', 'react-dom', '@petspark/shared'],
       esbuildOptions: {
         loader: {
@@ -654,10 +616,6 @@ export default defineConfig(async (): Promise<UserConfig> => {
               }
               if (id.includes('react-router')) {
                 return 'react-vendor';
-              }
-              // Reanimated vendor - separate chunk for animation library
-              if (id.includes('react-native-reanimated')) {
-                return 'reanimated-vendor';
               }
               // UI libraries
               if (id.includes('@radix-ui')) {

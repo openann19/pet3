@@ -2,6 +2,17 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Overlays } from '../Overlays';
 
+// Mock the UI config hook so it doesn't call useUIContext inside tests
+vi.mock('@/hooks/use-ui-config', () => ({
+  useUIConfig: () => ({
+    chatOverlays: {
+      enabled: true,
+      enableReactions: true,
+      enableConfetti: true,
+    },
+  }),
+}));
+
 // Mock the burst components
 vi.mock('../ConfettiBurst', () => ({
   ConfettiBurst: ({

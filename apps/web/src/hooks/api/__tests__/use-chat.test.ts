@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { waitFor } from '@testing-library/react';
+import { renderHookWithQueryClient } from '@/test-utils/react-query';
 import { useChatMessages, useSendMessage, useMarkAsRead } from '../use-chat';
 import { chatAPI } from '@/lib/api-services';
+
+const mockedChatAPI = vi.mocked(chatAPI);
 
 vi.mock('@/lib/api-services', () => ({
   chatAPI: {
@@ -12,18 +13,6 @@ vi.mock('@/lib/api-services', () => ({
     markAsRead: vi.fn(),
   },
 }));
-
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
-}
 
 describe('useChatMessages', () => {
   beforeEach(() => {
@@ -36,37 +25,31 @@ describe('useChatMessages', () => {
       { id: 'msg-2', content: 'World', createdAt: new Date().toISOString() },
     ];
 
-    vi.mocked(chatAPI.getMessages).mockResolvedValue({
+    mockedChatAPI.getMessages.mockResolvedValue({
       items: mockMessages,
     } as never);
 
-    const { result } = renderHook(() => useChatMessages('room-1'), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useChatMessages('room-1'));
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
     expect(result.current.data).toBeDefined();
-    expect(chatAPI.getMessages).toHaveBeenCalledWith('room-1', undefined);
+    expect(mockedChatAPI.getMessages.mock.calls[0]).toEqual(['room-1', undefined]);
   });
 
   it('should not fetch when roomId is null', () => {
-    const { result } = renderHook(() => useChatMessages(null), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useChatMessages(null));
 
     expect(result.current.isFetching).toBe(false);
-    expect(chatAPI.getMessages).not.toHaveBeenCalled();
+    expect(mockedChatAPI.getMessages.mock.calls.length).toBe(0);
   });
 
   it('should handle error', async () => {
-    vi.mocked(chatAPI.getMessages).mockRejectedValue(new Error('Failed to fetch'));
+    mockedChatAPI.getMessages.mockRejectedValue(new Error('Failed to fetch'));
 
-    const { result } = renderHook(() => useChatMessages('room-1'), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useChatMessages('room-1'));
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
@@ -88,13 +71,11 @@ describe('useSendMessage', () => {
       createdAt: new Date().toISOString(),
     };
 
-    vi.mocked(chatAPI.sendMessage).mockResolvedValue(mockMessage as never);
+    mockedChatAPI.sendMessage.mockResolvedValue(mockMessage as never);
 
-    const { result } = renderHook(() => useSendMessage(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useSendMessage());
 
-    await result.current.mutateAsync({
+    await result.current.sendMessage({
       chatRoomId: 'room-1',
       content: 'Test message',
     });
@@ -103,24 +84,24 @@ describe('useSendMessage', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(chatAPI.sendMessage).toHaveBeenCalledWith('room-1', 'Test message');
+    expect(mockedChatAPI.sendMessage.mock.calls[0]).toEqual(['room-1', 'Test message']);
   });
 
   it('should handle error', async () => {
-    vi.mocked(chatAPI.sendMessage).mockRejectedValue(new Error('Failed to send'));
+    mockedChatAPI.sendMessage.mockRejectedValue(new Error('Failed to send'));
 
-    const { result } = renderHook(() => useSendMessage(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useSendMessage());
 
     await expect(
-      result.current.mutateAsync({
+      result.current.sendMessage({
         chatRoomId: 'room-1',
         content: 'Test message',
       })
-    ).rejects.toThrow();
+    ).rejects.toThrow('Failed to send');
 
-    expect(result.current.isError).toBe(true);
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
   });
 });
 
@@ -130,13 +111,11 @@ describe('useMarkAsRead', () => {
   });
 
   it('should mark message as read', async () => {
-    vi.mocked(chatAPI.markAsRead).mockResolvedValue({ success: true } as never);
+    mockedChatAPI.markAsRead.mockResolvedValue({ success: true } as never);
 
-    const { result } = renderHook(() => useMarkAsRead(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useMarkAsRead());
 
-    await result.current.mutateAsync({
+    await result.current.markAsRead({
       chatRoomId: 'room-1',
       messageId: 'msg-1',
     });
@@ -145,23 +124,23 @@ describe('useMarkAsRead', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(chatAPI.markAsRead).toHaveBeenCalledWith('room-1', 'msg-1');
+    expect(mockedChatAPI.markAsRead.mock.calls[0]).toEqual(['room-1', 'msg-1']);
   });
 
   it('should handle error', async () => {
-    vi.mocked(chatAPI.markAsRead).mockRejectedValue(new Error('Failed to mark as read'));
+    mockedChatAPI.markAsRead.mockRejectedValue(new Error('Failed to mark as read'));
 
-    const { result } = renderHook(() => useMarkAsRead(), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHookWithQueryClient(() => useMarkAsRead());
 
     await expect(
-      result.current.mutateAsync({
+      result.current.markAsRead({
         chatRoomId: 'room-1',
         messageId: 'msg-1',
       })
-    ).rejects.toThrow();
+    ).rejects.toThrow('Failed to mark as read');
 
-    expect(result.current.isError).toBe(true);
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
   });
 });

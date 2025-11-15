@@ -2,17 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useHoverLift } from './use-hover-lift';
 
-describe('useHoverLift', () => {
+describe('useHoverLift defaults', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useHoverLift());
 
     expect(result.current.scale).toBeDefined();
     expect(result.current.translateY).toBeDefined();
-    expect(result.current.animatedStyle).toBeDefined();
+    expect(result.current.variants).toBeDefined();
     expect(result.current.handleEnter).toBeDefined();
     expect(result.current.handleLeave).toBeDefined();
   });
+});
 
+describe('useHoverLift interactions', () => {
   it('should handle enter event', () => {
     const { result } = renderHook(() => useHoverLift());
 
@@ -20,8 +22,8 @@ describe('useHoverLift', () => {
       result.current.handleEnter();
     });
 
-    expect(result.current.scale.value).toBeGreaterThan(1);
-    expect(result.current.translateY.value).toBeLessThan(0);
+    expect(result.current.scale.get()).toBeGreaterThan(1);
+    expect(result.current.translateY.get()).toBeLessThan(0);
   });
 
   it('should handle leave event', () => {
@@ -32,10 +34,12 @@ describe('useHoverLift', () => {
       result.current.handleLeave();
     });
 
-    expect(result.current.scale.value).toBe(1);
-    expect(result.current.translateY.value).toBe(0);
+    expect(result.current.scale.get()).toBe(1);
+    expect(result.current.translateY.get()).toBe(0);
   });
+});
 
+describe('useHoverLift custom options', () => {
   it('should use custom scale value', () => {
     const { result } = renderHook(() =>
       useHoverLift({
@@ -47,7 +51,7 @@ describe('useHoverLift', () => {
       result.current.handleEnter();
     });
 
-    expect(result.current.scale.value).toBeGreaterThan(1);
+    expect(result.current.scale.get()).toBeGreaterThan(1);
   });
 
   it('should use custom translateY value', () => {
@@ -61,6 +65,6 @@ describe('useHoverLift', () => {
       result.current.handleEnter();
     });
 
-    expect(result.current.translateY.value).toBeLessThan(0);
+    expect(result.current.translateY.get()).toBeLessThan(0);
   });
 });

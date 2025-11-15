@@ -4,6 +4,11 @@
 
 import { useEffect, useState } from 'react';
 
+// Local helper to avoid depending on some missing util.
+function isTruthy<T>(value: T | null | undefined | false | 0 | '' | 0n): value is T {
+  return Boolean(value);
+}
+
 import { useSharedValue, type SharedValue } from '@petspark/motion';
 
 // Type definitions for optional React Native AccessibilityInfo

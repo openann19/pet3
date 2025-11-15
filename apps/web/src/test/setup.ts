@@ -67,7 +67,8 @@ vi.mock('@/effects/reanimated/transitions', async () => {
 //========== TEST WRAPPER UTILITIES ==========
 // Mock contexts - wrap in act() to handle React state updates
 vi.mock('@/contexts/AppContext', () => ({
-  AppProvider: ({ children }: { children: React.ReactNode }) => React.createElement('div', { 'data-testid': 'app-provider' }, children),
+  AppProvider: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'app-provider' }, children),
   useApp: () => ({
     theme: 'light',
     toggleTheme: vi.fn(),
@@ -80,7 +81,13 @@ vi.mock('@/contexts/AppContext', () => ({
     t: {
       app: { title: 'PetSpark' },
       common: { loading: 'Loading...', error: 'Error', cancel: 'Cancel', save: 'Save' },
-      chat: { createProfile: 'Create Profile', createProfileDesc: 'Create your profile first', title: 'Chat', selectConversation: 'Select a conversation', selectConversationDesc: 'Choose a conversation to start chatting' },
+      chat: {
+        createProfile: 'Create Profile',
+        createProfileDesc: 'Create your profile first',
+        title: 'Chat',
+        selectConversation: 'Select a conversation',
+        selectConversationDesc: 'Choose a conversation to start chatting',
+      },
       discover: { title: 'Discover', noMorePets: 'No more pets', loading: 'Loading pets...' },
       matches: { title: 'Matches', noMatches: 'No matches yet' },
       profile: { myPets: 'My Pets' },
@@ -88,9 +95,9 @@ vi.mock('@/contexts/AppContext', () => ({
       adoption: { title: 'Adoption' },
       community: { title: 'Community' },
       lostfound: { title: 'Lost & Found' },
-      errors: { operationFailed: 'Operation failed' }
-    }
-  })
+      errors: { operationFailed: 'Operation failed' },
+    },
+  }),
 }));
 
 // Mock missing native modules
@@ -184,7 +191,6 @@ MockFileReader.DONE = 2;
 
 global.FileReader = MockFileReader;
 
-
 // Mock other common browser APIs
 Object.defineProperty(window, 'scrollTo', { value: vi.fn(), writable: true });
 Object.defineProperty(window, 'scroll', { value: vi.fn(), writable: true });
@@ -192,10 +198,7 @@ Object.defineProperty(Element.prototype, 'scrollTo', { value: vi.fn(), writable:
 
 // Mock HTMLCanvasElement methods
 // Use type assertion to handle multiple context types
-HTMLCanvasElement.prototype.getContext = vi.fn((
-  _contextId?: string,
-  _options?: unknown
-) => {
+HTMLCanvasElement.prototype.getContext = vi.fn((_contextId?: string, _options?: unknown) => {
   const mockContext = {
     fillRect: vi.fn(),
     clearRect: vi.fn(),
@@ -222,7 +225,12 @@ HTMLCanvasElement.prototype.getContext = vi.fn((
     rect: vi.fn(),
     clip: vi.fn(),
   };
-  return mockContext as unknown as CanvasRenderingContext2D | ImageBitmapRenderingContext | WebGLRenderingContext | WebGL2RenderingContext | null;
+  return mockContext as unknown as
+    | CanvasRenderingContext2D
+    | ImageBitmapRenderingContext
+    | WebGLRenderingContext
+    | WebGL2RenderingContext
+    | null;
 }) as typeof HTMLCanvasElement.prototype.getContext;
 
 // Mock HTMLMediaElement methods
@@ -319,7 +327,7 @@ vi.mock('@/lib/haptics', () => {
       }
       // Return a deterministic mock function for any missing methods
       return vi.fn(() => undefined);
-    }
+    },
   });
 
   return {
@@ -598,10 +606,13 @@ vi.mock('react-native-reanimated', () => {
       ease: (t: number) => t,
       quad: (t: number) => t * t,
       cubic: (t: number) => t * t * t,
-      sin: (t: number) => Math.sin(t * Math.PI / 2),
+      sin: (t: number) => Math.sin((t * Math.PI) / 2),
       circle: (t: number) => 1 - Math.sqrt(1 - t * t),
-      exp: (t: number) => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),
-      back: (s = 1.70158) => (t: number) => t * t * ((s + 1) * t - s),
+      exp: (t: number) => (t === 0 ? 0 : Math.pow(2, 10 * (t - 1))),
+      back:
+        (s = 1.70158) =>
+        (t: number) =>
+          t * t * ((s + 1) * t - s),
       bounce: (t: number) => t,
       elastic: (bounciness?: number) => (t: number) => t,
       bezier: (x1: number, y1: number, x2: number, y2: number) => (t: number) => t,
@@ -630,7 +641,6 @@ vi.mock('react-native-reanimated', () => {
   };
 });
 
-
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
 
@@ -643,8 +653,11 @@ afterEach(() => {
 
   // Reset analytics mock state (if analytics mock is used)
   // Note: Analytics mock is created per test, but we clear any global state here
-  if (typeof window !== 'undefined' && (window as typeof window & { __analyticsEvents?: unknown[] }).__analyticsEvents) {
-    ((window as typeof window & { __analyticsEvents: unknown[] }).__analyticsEvents).length = 0;
+  if (
+    typeof window !== 'undefined' &&
+    (window as typeof window & { __analyticsEvents?: unknown[] }).__analyticsEvents
+  ) {
+    (window as typeof window & { __analyticsEvents: unknown[] }).__analyticsEvents.length = 0;
   }
 
   // Reset QueryClient mock state
@@ -689,9 +702,9 @@ if (typeof TouchEvent === 'undefined') {
         super(type, eventInitDict);
 
         // Create TouchList from touches array if provided
-        const touchesArray = (eventInitDict?.touches!) || [];
-        const targetTouchesArray = (eventInitDict?.targetTouches!) || [];
-        const changedTouchesArray = (eventInitDict?.changedTouches!) || [];
+        const touchesArray = eventInitDict?.touches! || [];
+        const targetTouchesArray = eventInitDict?.targetTouches! || [];
+        const changedTouchesArray = eventInitDict?.changedTouches! || [];
 
         // Create TouchList objects
         const createTouchList = (touches: Touch[]): TouchList => {
@@ -932,84 +945,11 @@ vi.mock('@/lib/websocket-manager', () => ({
 // Tests that need UIProvider should wrap components with it
 // Tests that don't need it can use vi.unmock if needed
 vi.mock('@/contexts/UIContext', async () => {
-  const actual = await vi.importActual<typeof import('@/contexts/UIContext')>('@/contexts/UIContext');
+  const actual =
+    await vi.importActual<typeof import('@/contexts/UIContext')>('@/contexts/UIContext');
 
   // Use actual implementation - tests should wrap with UIProvider when needed
   return actual;
-});
-
-// Mock query client
-vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual('@tanstack/react-query');
-
-  // Create a mock query result that has all the expected properties
-  const createMockQueryResult = (overrides = {}) => ({
-    data: undefined,
-    error: null,
-    isLoading: false,
-    isFetching: false,
-    isSuccess: false,
-    isError: false,
-    isPending: false,
-    status: 'pending' as const,
-    fetchStatus: 'idle' as const,
-    refetch: vi.fn(() => Promise.resolve({ data: undefined })),
-    ...overrides,
-  });
-
-  // Create a mock mutation result that has all the expected properties
-  const createMockMutationResult = (overrides = {}) => ({
-    data: undefined,
-    error: null,
-    isLoading: false,
-    isSuccess: false,
-    isError: false,
-    isPending: false,
-    status: 'idle' as const,
-    mutate: vi.fn(),
-    mutateAsync: vi.fn(() => Promise.resolve()),
-    reset: vi.fn(),
-    ...overrides,
-  });
-
-  return {
-    ...actual,
-    useQuery: vi.fn(() => createMockQueryResult()),
-    useMutation: vi.fn(() => createMockMutationResult()),
-    useQueryClient: vi.fn(() => ({
-      invalidateQueries: vi.fn(),
-      setQueryData: vi.fn(),
-      getQueryData: vi.fn(),
-      removeQueries: vi.fn(),
-    })),
-    QueryClient: class MockQueryClient {
-      invalidateQueries = vi.fn();
-      setQueryData = vi.fn();
-      getQueryData = vi.fn();
-      removeQueries = vi.fn();
-      clear = vi.fn();
-      mount = vi.fn();
-      unmount = vi.fn();
-      isFetching = vi.fn(() => 0);
-      isMutating = vi.fn(() => 0);
-      getQueryCache = vi.fn(() => ({
-        find: vi.fn(),
-        findAll: vi.fn(),
-        notify: vi.fn(),
-        onFocus: vi.fn(),
-        onOnline: vi.fn(),
-      }));
-      getMutationCache = vi.fn(() => ({
-        find: vi.fn(),
-        findAll: vi.fn(),
-        notify: vi.fn(),
-      }));
-      constructor(_options?: unknown) {
-        // Mock constructor
-      }
-    },
-    QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
-  };
 });
 
 // Mock @petspark/motion
@@ -1165,7 +1105,11 @@ vi.mock('@petspark/motion', () => {
 
 // Mock @/effects/reanimated/animated-view
 vi.mock('@/effects/reanimated/animated-view', () => {
-  const AnimatedView = ({ children, style, ...props }: {
+  const AnimatedView = ({
+    children,
+    style,
+    ...props
+  }: {
     children?: React.ReactNode;
     style?: Record<string, unknown>;
     [key: string]: unknown;

@@ -41,7 +41,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { differenceInDays, format, isPast } from 'date-fns';
-import { Presence, motion, MotionView } from '@petspark/motion';
+import { Presence, MotionView } from '@petspark/motion';
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useKV } from '@/hooks/use-storage';
@@ -267,14 +267,12 @@ export default function PlaydateScheduler({
     [setPlaydates]
   );
 
-  // Animation hooks
-  const containerEntry = useEntryAnimation({ initialOpacity: 0 })
-  const createFormPresence = useAnimatePresence({ isVisible: showCreateForm })
-
   return (
-    <AnimatedView
+    <MotionView
       className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-auto"
-      style={containerEntry.animatedStyle}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
     >
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
@@ -348,12 +346,12 @@ export default function PlaydateScheduler({
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-125">
-                  <Presence>
+                  <Presence visible={showCreateForm}>
                     {showCreateForm && (
                       <MotionView
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
                         className="mb-6 p-4 rounded-lg border bg-card/50"
                       >
                         <h3 className="text-lg font-semibold mb-4">Create Playdate</h3>
@@ -494,131 +492,134 @@ export default function PlaydateScheduler({
                             </Button>
                           </div>
                         </div>
-                    </AnimatedView>
-                  )}
-
-                    {matchPlaydates.filter(
-                      (p) => p.status !== 'completed' && p.status !== 'cancelled'
-                    ).length === 0 ? (
-                      <div className="text-center py-12">
-                        <Calendar size={48} className="mx-auto text-muted-foreground mb-3" />
-                        <p className="text-muted-foreground">No upcoming playdates</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Schedule one to meet up!
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {matchPlaydates
-                          .filter((p) => p.status !== 'completed' && p.status !== 'cancelled')
-                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                          .map((playdate, index) => {
-                            const daysUntil = differenceInDays(new Date(playdate.date), new Date());
-                            const isPastDate = isPast(new Date(playdate.date));
-
-                            return (
-                              <AnimatedView
-                                key={playdate.id}
-                                className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
-                                style={cardEntry.animatedStyle}
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                      {getPlaydateIcon(playdate.type)}
-                                    </div>
-                                    <div>
-                                      <h4 className="font-semibold">{playdate.title}</h4>
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                        <Calendar size={14} />
-                                        {format(new Date(playdate.date), 'EEE, MMM dd, yyyy')}
-                                        {!isPastDate &&
-                                          (daysUntil === 0
-                                            ? ' • Today!'
-                                            : daysUntil === 1
-                                              ? ' • Tomorrow'
-                                              : ` • ${daysUntil} days away`)}
-                                      </div>
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Clock size={14} />
-                                        {playdate.startTime} - {playdate.endTime}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge className={getStatusColor(playdate.status)}>
-                                    {playdate.status}
-                                  </Badge>
-                                </div>
-
-                                <div className="flex items-start gap-2 text-sm mb-3">
-                                  <MapPin
-                                    size={16}
-                                    className="text-muted-foreground mt-0.5 shrink-0"
-                                  />
-                                  <div>
-                                    <p className="font-medium">{playdate.location.name}</p>
-                                    <p className="text-muted-foreground">
-                                      {playdate.location.address}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {playdate.description && (
-                                  <p className="text-sm text-muted-foreground mb-3">
-                                    {playdate.description}
-                                  </p>
-                                )}
-
-                                <div className="flex flex-col gap-2">
-                                  <div className="flex gap-2">
-                                    {playdate.status === 'pending' && (
-                                      <Button
-                                        size="sm"
-                                        onClick={() => { handleConfirmPlaydate(playdate.id); }}
-                                        className="flex-1"
-                                      >
-                                        <Check size={16} className="mr-2" />
-                                        Confirm
-                                      </Button>
-                                    )}
-                                    {playdate.status !== 'cancelled' && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => { handleCancelPlaydate(playdate.id); }}
-                                        className="flex-1"
-                                      >
-                                        <X size={16} className="mr-2" />
-                                        Cancel
-                                      </Button>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      onClick={() => { handleGetDirections(playdate); }}
-                                      className="flex-1"
-                                    >
-                                      <NavigationArrow size={16} className="mr-2" weight="bold" />
-                                      Directions
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      onClick={() => { handleShareLocation(playdate); }}
-                                      className="flex-1"
-                                    >
-                                      <ShareNetwork size={16} className="mr-2" weight="bold" />
-                                      Share
-                                    </Button>
-                                  </div>
-                                </div>
-                              </MotionView>
-                            );
-                          })}
-                      </div>
+                      </MotionView>
                     )}
+                  </Presence>
+
+                  {matchPlaydates.filter(
+                    (p) => p.status !== 'completed' && p.status !== 'cancelled'
+                  ).length === 0 ? (
+                    <div className="text-center py-12">
+                      <Calendar size={48} className="mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground">No upcoming playdates</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Schedule one to meet up!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {matchPlaydates
+                        .filter((p) => p.status !== 'completed' && p.status !== 'cancelled')
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map((playdate, index) => {
+                          const daysUntil = differenceInDays(new Date(playdate.date), new Date());
+                          const isPastDate = isPast(new Date(playdate.date));
+
+                          return (
+                            <MotionView
+                              key={playdate.id}
+                              className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                              initial={{ opacity: 0, y: 12 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05, type: 'spring', stiffness: 120, damping: 18 }}
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                    {getPlaydateIcon(playdate.type)}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">{playdate.title}</h4>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                      <Calendar size={14} />
+                                      {format(new Date(playdate.date), 'EEE, MMM dd, yyyy')}
+                                      {!isPastDate &&
+                                        (daysUntil === 0
+                                          ? ' • Today!'
+                                          : daysUntil === 1
+                                            ? ' • Tomorrow'
+                                            : ` • ${daysUntil} days away`)}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Clock size={14} />
+                                      {playdate.startTime} - {playdate.endTime}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge className={getStatusColor(playdate.status)}>
+                                  {playdate.status}
+                                </Badge>
+                              </div>
+
+                              <div className="flex items-start gap-2 text-sm mb-3">
+                                <MapPin
+                                  size={16}
+                                  className="text-muted-foreground mt-0.5 shrink-0"
+                                />
+                                <div>
+                                  <p className="font-medium">{playdate.location.name}</p>
+                                  <p className="text-muted-foreground">
+                                    {playdate.location.address}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {playdate.description && (
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  {playdate.description}
+                                </p>
+                              )}
+
+                              <div className="flex flex-col gap-2">
+                                <div className="flex gap-2">
+                                  {playdate.status === 'pending' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => { handleConfirmPlaydate(playdate.id); }}
+                                      className="flex-1"
+                                    >
+                                      <Check size={16} className="mr-2" />
+                                      Confirm
+                                    </Button>
+                                  )}
+                                  {playdate.status !== 'cancelled' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => { handleCancelPlaydate(playdate.id); }}
+                                      className="flex-1"
+                                    >
+                                      <X size={16} className="mr-2" />
+                                      Cancel
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => { handleGetDirections(playdate); }}
+                                    className="flex-1"
+                                  >
+                                    <NavigationArrow size={16} className="mr-2" weight="bold" />
+                                    Directions
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => { handleShareLocation(playdate); }}
+                                    className="flex-1"
+                                  >
+                                    <ShareNetwork size={16} className="mr-2" weight="bold" />
+                                    Share
+                                  </Button>
+                                </div>
+                              </div>
+                            </MotionView>
+                          );
+                        })}
+                    </div>
+                  )}
                 </ScrollArea>
               </CardContent>
             </Card>
@@ -644,18 +645,14 @@ export default function PlaydateScheduler({
                       {matchPlaydates
                         .filter((p) => p.status === 'completed' || p.status === 'cancelled')
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .map((playdate, index) => {
-                          const historyCardEntry = useEntryAnimation({ 
-                            initialY: 20, 
-                            delay: index * 50 
-                          })
-                          
-                          return (
-                            <AnimatedView
-                              key={playdate.id}
-                              className="p-4 rounded-lg border bg-card opacity-75"
-                              style={historyCardEntry.animatedStyle}
-                            >
+                        .map((playdate, index) => (
+                          <MotionView
+                            key={playdate.id}
+                            className="p-4 rounded-lg border bg-card opacity-75"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 0.9, y: 0 }}
+                            transition={{ delay: index * 0.04, type: 'spring', stiffness: 110, damping: 16 }}
+                          >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -677,9 +674,8 @@ export default function PlaydateScheduler({
                               <MapPin size={14} />
                               {playdate.location.name}
                             </div>
-                          </AnimatedView>
-                          )
-                        })}
+                          </MotionView>
+                        ))}
                     </div>
                   )}
                 </ScrollArea>
