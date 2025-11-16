@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, MotionView } from '@petspark/motion';
+import { MotionView } from '@petspark/motion';
 import { X, MagnifyingGlass, NavigationArrow, Star } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,7 @@ import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { forwardGeocode } from '@/lib/maps/geocoding';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface VenuePickerProps {
   open: boolean;
