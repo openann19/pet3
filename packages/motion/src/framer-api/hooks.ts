@@ -22,7 +22,7 @@ import { convertTransformToStyle } from './useMotionStyle'
  * Includes .value property for Reanimated-style access
  * The getter returns T, the setter accepts either a direct value or an animation object from withSpring/withTiming
  */
-export type SharedValue<T extends number | string> = Omit<MotionValue<T>, 'value'> & {
+export type SharedValue<T extends number | string | boolean> = Omit<MotionValue<T>, 'value'> & {
   get value(): T
   // Use T & number to widen literal types to number while maintaining type safety
   set value(newValue: (T extends number ? number : T) | { target: T extends number ? number : T; transition: Transition })
@@ -33,7 +33,7 @@ export type SharedValue<T extends number | string> = Omit<MotionValue<T>, 'value
  * Returns a MotionValue that can be animated
  * Wraps MotionValue to provide .value getter/setter for Reanimated compatibility                                                                               
  */
-export function useSharedValue<T extends number | string>(
+export function useSharedValue<T extends number | string | boolean>(
   initial: T
 ): SharedValue<T> {
   const motionValue = useMotionValue(initial)
@@ -366,5 +366,37 @@ export function withDecay(
       ease: [0.2, 0, 0.2, 1], // Approximate decay
     },
   }
+}
+
+/**
+ * interpolateColor - Interpolate between colors
+ * Simple implementation for web compatibility
+ */
+export function interpolateColor(
+  value: number,
+  inputRange: number[],
+  outputRange: string[]
+): string {
+  // Simple implementation - just return the closest color
+  // For more sophisticated color interpolation, use a color library
+  if (value <= inputRange[0] || inputRange.length === 0 || outputRange.length === 0) {
+    return outputRange[0] ?? 'transparent'
+  }
+  if (value >= inputRange[inputRange.length - 1]) {
+    return outputRange[outputRange.length - 1] ?? 'transparent'
+  }
+  
+  // Find the range
+  for (let i = 0; i < inputRange.length - 1; i++) {
+    const currentInput = inputRange[i]
+    const nextInput = inputRange[i + 1]
+    if (currentInput !== undefined && nextInput !== undefined && value >= currentInput && value <= nextInput) {
+      // For simplicity, return the output color at current index
+      // A full implementation would interpolate RGB values
+      return outputRange[i] ?? 'transparent'
+    }
+  }
+  
+  return outputRange[0] ?? 'transparent'
 }
 

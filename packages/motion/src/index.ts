@@ -31,6 +31,7 @@ export {
   animateWithDelay,
   animateWithRepeat,
   useAnimateValue,
+  interpolateColor,
   type SharedValue,
 } from './framer-api/hooks'
 
