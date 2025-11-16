@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { db, type QueryOptions } from '@/lib/database';
 import { logger } from '@/lib/logger';
 import {
+import { isTruthy } from '@petspark/shared';
   ArrowsClockwise,
   CheckCircle,
   Database,

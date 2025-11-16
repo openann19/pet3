@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import {
+import { isTruthy } from '@petspark/shared';
   Easing,
   useAnimatedStyle,
   useSharedValue,

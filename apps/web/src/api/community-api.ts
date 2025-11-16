@@ -2,6 +2,7 @@ import type { PostStatus } from '@/core/domain/community';
 import { canReceiveComments, isValidPostStatusTransition } from '@/core/domain/community';
 import { APIClient } from '@/lib/api-client';
 import type {
+import { isTruthy } from '@petspark/shared';
   Comment,
   CreateCommentData,
   CreatePostData,

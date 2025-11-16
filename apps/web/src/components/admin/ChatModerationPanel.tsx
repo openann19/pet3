@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
+import { isTruthy } from '@petspark/shared';
   Select,
   SelectContent,
   SelectItem,

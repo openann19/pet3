@@ -1,6 +1,7 @@
 'use client';;
 import { memo, useEffect, useState, useCallback } from 'react';
 import {
+import { isTruthy } from '@petspark/shared';
   useSharedValue,
   useAnimatedStyle,
   withSpring,

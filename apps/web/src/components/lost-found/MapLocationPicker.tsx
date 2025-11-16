@@ -1,6 +1,7 @@
 'use client';;
 import { useState, useEffect, useCallback } from 'react';
 import {
+import { isTruthy } from '@petspark/shared';
   useSharedValue,
   useAnimatedStyle,
   withRepeat,

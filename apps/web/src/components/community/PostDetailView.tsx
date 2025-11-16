@@ -15,6 +15,7 @@ import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { userService } from '@/lib/user-service';
 import {
+import { isTruthy } from '@petspark/shared';
   ArrowLeft,
   BookmarkSimple,
   ChatCircle,

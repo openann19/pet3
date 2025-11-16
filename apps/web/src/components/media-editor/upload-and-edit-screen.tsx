@@ -9,6 +9,7 @@ import { motion, useMotionValue, animate } from 'framer-motion';
 import { DropZoneWeb } from './drop-zone-web';
 import { MediaEditor } from './MediaEditor';
 import { VideoTrimmer } from './video-trimmer';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('UploadAndEditScreen');
 

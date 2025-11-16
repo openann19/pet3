@@ -11,6 +11,7 @@ import { CreditCard, Crown, Lightning, Sparkle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { PricingModal } from './PricingModal';
+import { isTruthy } from '@petspark/shared';
 
 export function SubscriptionStatusCard() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);

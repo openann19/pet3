@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Bell, BellRinging } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import {
+import { isTruthy } from '@petspark/shared';
   useSharedValue,
   useAnimatedStyle,
   withTiming,

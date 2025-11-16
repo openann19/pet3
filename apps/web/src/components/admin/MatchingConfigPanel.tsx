@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import type { MatchingConfig } from '@/core/domain/matching-config';
 import {
+import { isTruthy } from '@petspark/shared';
   DEFAULT_MATCHING_WEIGHTS,
   WEIGHT_SAFE_RANGES,
   DEFAULT_HARD_GATES,

@@ -10,6 +10,7 @@
  */
 
 import { createLogger } from './logger';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('mobile-accessibility');
 
