@@ -5,6 +5,7 @@ import { useReactionAnimation } from '@/hooks/use-reaction-animation';
 import { type AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import { isTruthy } from '@petspark/shared';
 
 export interface AnimatedReactionProps {
   emoji: string;

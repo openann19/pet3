@@ -10,6 +10,7 @@ import { generateULID } from './utils';
 import { APIClient } from './api-client';
 import { ENDPOINTS } from './endpoints';
 import type { Notification, User, Match } from './contracts';
+import { isTruthy } from '@petspark/shared';
 
 const logger = createLogger('EnhancedNotifications');
 

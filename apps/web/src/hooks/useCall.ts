@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useStorage } from '@/hooks/use-storage';
 import type { Call, CallType, CallSession, CallHistoryItem, VideoQuality } from '@/lib/call-types';
 import {
+import { isTruthy } from '@petspark/shared';
   createCall,
   requestMediaPermissions,
   stopMediaStream,

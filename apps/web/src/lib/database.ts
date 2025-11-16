@@ -1,6 +1,7 @@
 import type { QueryFilter } from './types/database-query';
 import { isQueryOperator } from './types/database-query';
 import { generateULID } from './utils';
+import { isTruthy } from '@petspark/shared';
 
 export interface DBRecord {
   id: string;

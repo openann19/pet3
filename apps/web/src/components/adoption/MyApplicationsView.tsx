@@ -11,6 +11,7 @@ import { createLogger } from '@/lib/logger';
 import { userService } from '@/lib/user-service';
 import { MotionView } from '@petspark/motion';
 import {
+import { isTruthy } from '@petspark/shared';
   ArrowLeft,
   CheckCircle,
   ClipboardText,

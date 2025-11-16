@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStorage } from '@/hooks/use-storage';
 import type {
+import { isTruthy } from '@petspark/shared';
   CallType,
   CallParticipant,
   GroupCallSession,

@@ -12,6 +12,7 @@ import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal';
 import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt';
 import { useBubbleVariant } from '@/hooks/use-bubble-variant';
 import {
+import { isTruthy } from '@petspark/shared';
   useDeleteBubbleAnimation,
   type DeleteAnimationContext,
 } from '@/hooks/use-delete-bubble-animation';

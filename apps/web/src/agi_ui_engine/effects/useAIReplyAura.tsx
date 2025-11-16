@@ -11,6 +11,7 @@ import {
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from '@/hooks/use-ui-config';
+import { isTruthy } from '@petspark/shared';
 
 export interface UseAIReplyAuraReturn {
   animatedStyle: AnimatedStyle;

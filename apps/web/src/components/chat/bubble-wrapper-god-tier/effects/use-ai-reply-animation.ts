@@ -1,6 +1,7 @@
 'use client';
 
 import {
+import { isTruthy } from '@petspark/shared';
   useSharedValue,
   useAnimatedStyle,
   withRepeat,

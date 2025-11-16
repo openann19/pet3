@@ -3,6 +3,7 @@ import { useStorage } from '@/hooks/use-storage';
 import { motion, MotionView } from '@petspark/motion';
 import { Plus, Check } from '@phosphor-icons/react';
 import {
+import { isTruthy } from '@petspark/shared';
   Dialog,
   DialogContent,
   DialogDescription,
