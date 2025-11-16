@@ -19,6 +19,49 @@ export interface MessageReactionsBarProps {
   className?: string;
 }
 
+function ReactionPopoverContent({ emoji, reactions }: { emoji: string; reactions: MessageReaction[] }): React.JSX.Element {
+  return (
+    <PopoverContent className="w-64 p-3">
+      <div className="space-y-2">
+        <p className={cn(getTypographyClasses('caption'), 'font-medium mb-2')}>
+          {emoji} Reactions
+        </p>
+        {reactions.map((reaction, index) => (
+          <div key={`${reaction.userId}-${index}`} className="flex items-center gap-2">
+            <Avatar className="size-6">
+              <AvatarImage src={reaction.userAvatar ?? undefined} alt={reaction.userName ?? 'User'} />
+              <AvatarFallback className="text-[10px]">
+                {reaction.userName?.[0] ?? '?'}
+              </AvatarFallback>
+            </Avatar>
+            <span className={cn(getTypographyClasses('body'), 'text-sm flex-1')}>
+              {reaction.userName ?? 'Unknown'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </PopoverContent>
+  );
+}
+
+function ReactionButton({ emoji, count, onClick }: { emoji: string; count: number; onClick: () => void }): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1 px-2 py-1 rounded-full',
+        'bg-white/10 hover:bg-white/20',
+        'transition-colors cursor-pointer',
+        'text-xs'
+      )}
+    >
+      <span>{emoji}</span>
+      {count > 1 && <span className="font-semibold">{count}</span>}
+    </button>
+  );
+}
+
 export function MessageReactionsBar({
   reactions,
   onReactionClick,
@@ -29,10 +72,8 @@ export function MessageReactionsBar({
       (acc, reaction) => {
         const emoji = reaction.emoji;
         if (!emoji) return acc;
-        if (!acc[emoji]) {
-          acc[emoji] = [];
-        }
-        acc[emoji].push(reaction);
+        acc[emoji] ??= [];
+        acc[emoji]?.push(reaction);
         return acc;
       },
       {} as Record<string, MessageReaction[]>
@@ -40,7 +81,7 @@ export function MessageReactionsBar({
   }, [reactions]);
 
   if (reactions.length === 0) {
-    return null;
+    return <></>;
   }
 
   return (
@@ -48,42 +89,9 @@ export function MessageReactionsBar({
       {Object.entries(groupedReactions).map(([emoji, reactionList]) => (
         <Popover key={emoji}>
           <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onReactionClick?.(emoji)}
-              className={cn(
-                'inline-flex items-center gap-1 px-2 py-1 rounded-full',
-                'bg-white/10 hover:bg-white/20',
-                'transition-colors cursor-pointer',
-                'text-xs'
-              )}
-            >
-              <span>{emoji}</span>
-              {reactionList.length > 1 && (
-                <span className="font-semibold">{reactionList.length}</span>
-              )}
-            </button>
+            <ReactionButton emoji={emoji} count={reactionList.length} onClick={() => onReactionClick?.(emoji)} />
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-3">
-            <div className="space-y-2">
-              <p className={cn(getTypographyClasses('caption'), 'font-medium mb-2')}>
-                {emoji} Reactions
-              </p>
-              {reactionList.map((reaction, index) => (
-                <div key={`${reaction.userId}-${index}`} className="flex items-center gap-2">
-                  <Avatar className="size-6">
-                    <AvatarImage src={reaction.userAvatar ?? undefined} alt={reaction.userName ?? 'User'} />
-                    <AvatarFallback className="text-[10px]">
-                      {reaction.userName?.[0] ?? '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className={cn(getTypographyClasses('body'), 'text-sm flex-1')}>
-                    {reaction.userName ?? 'Unknown'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
+          <ReactionPopoverContent emoji={emoji} reactions={reactionList} />
         </Popover>
       ))}
     </div>

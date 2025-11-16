@@ -14,13 +14,13 @@ import {
   MotionView,
   usePressMotion,
 } from '@petspark/motion';
-import type { Transition } from 'framer-motion';
+import type { FramerTransition as Transition } from '@petspark/motion';
 import { type AnimatedStyle as ViewAnimatedStyle } from '@/effects/reanimated/animated-view';                                                                   
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
-import { Button, type buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import type { VariantProps } from 'class-variance-authority';
 
 const logger = createLogger('EnhancedButton');

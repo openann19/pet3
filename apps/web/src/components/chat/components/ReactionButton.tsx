@@ -24,8 +24,8 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
 
   useEffect(() => {
     if (containerRef.current) {
-      const buttonElement = containerRef.current.querySelector('[role="button"]')!;
-      if (buttonElement) {
+      const buttonElement = containerRef.current.querySelector('[role="button"]');
+      if (buttonElement && buttonElement instanceof HTMLElement) {
         ensure(buttonElement);
       }
     }

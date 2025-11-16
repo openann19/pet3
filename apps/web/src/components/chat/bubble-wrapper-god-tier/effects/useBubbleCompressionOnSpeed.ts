@@ -31,8 +31,8 @@ export function useBubbleCompressionOnSpeed(
     maxCompression = DEFAULT_MAX_COMPRESSION,
   } = options;
 
-  const scaleY = useSharedValue(1);
-  const marginBottom = useSharedValue(4);
+  const scaleY = useSharedValue<number>(1);
+  const marginBottom = useSharedValue<number>(4);
   const lastMessageTimeRef = useRef<number>(Date.now());
   const messageCountRef = useRef<number>(0);
 

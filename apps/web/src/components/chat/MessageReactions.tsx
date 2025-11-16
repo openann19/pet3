@@ -7,7 +7,6 @@ import type { MessageReaction } from '@/lib/chat-types';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, MotionView } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { haptics } from '@/lib/haptics';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -130,9 +129,9 @@ function ReactionButton({
   reactions,
   onClick,
 }: ReactionButtonProps): React.JSX.Element {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const hoverScale = useSharedValue(1);
+  const scale = useSharedValue<number>(0);
+  const opacity = useSharedValue<number>(0);
+  const hoverScale = useSharedValue<number>(1);
 
   useEffect(() => {
     // Entrance animation
@@ -147,11 +146,14 @@ function ReactionButton({
   });
 
   const buttonStyle = useAnimatedStyle(() => {
+    const scaleVal = scale.value;
+    const hoverScaleVal = hoverScale.value;
+    const bounceScaleVal = bounce.scale.get();
     return {
-      transform: [{ scale: scale.value * hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: scaleVal * hoverScaleVal * bounceScaleVal }],
       opacity: opacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
   const handleMouseEnter = useCallback(() => {
     hoverScale.value = withSpring(1.1, springConfigs.smooth);
@@ -212,9 +214,9 @@ function AddReactionButton({
   availableReactions,
   onSelectReaction,
 }: AddReactionButtonProps): React.JSX.Element {
-  const hoverScale = useSharedValue(1);
-  const pickerScale = useSharedValue(0.9);
-  const pickerOpacity = useSharedValue(0);
+  const hoverScale = useSharedValue<number>(1);
+  const pickerScale = useSharedValue<number>(0.9);
+  const pickerOpacity = useSharedValue<number>(0);
 
   const bounce = useBounceOnTap({
     onPress: () => { onTogglePicker(!showPicker); },
@@ -223,17 +225,19 @@ function AddReactionButton({
   });
 
   const buttonStyle = useAnimatedStyle(() => {
+    const hoverScaleVal = hoverScale.value;
+    const bounceScaleVal = bounce.scale.get();
     return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: hoverScaleVal * bounceScaleVal }],
     };
-  }) as AnimatedStyle;
+  });
 
   const pickerStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: pickerScale.value }],
       opacity: pickerOpacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
   useEffect(() => {
     if (showPicker) {
@@ -295,7 +299,7 @@ interface EmojiButtonProps {
 }
 
 function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
-  const hoverScale = useSharedValue(1);
+  const hoverScale = useSharedValue<number>(1);
 
   const bounce = useBounceOnTap({
     onPress: onClick,
@@ -304,10 +308,12 @@ function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
   });
 
   const buttonStyle = useAnimatedStyle(() => {
+    const hoverScaleVal = hoverScale.value;
+    const bounceScaleVal = bounce.scale.get();
     return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: hoverScaleVal * bounceScaleVal }],
     };
-  }) as AnimatedStyle;
+  });
 
   const handleMouseEnter = useCallback(() => {
     hoverScale.value = withSpring(1.2, springConfigs.smooth);

@@ -6,6 +6,7 @@
 
 export * from './api';
 export * from './billing/billing-types';
+export { BillingClient, billingClient, type BillingClientOptions } from './billing/billing-client';
 export * from './contracts/calls';
 export * from './stories/stories-types';
 export * from './stories/stories-client';

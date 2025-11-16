@@ -54,12 +54,16 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
 }
 
 export function SendButtonIcon(): JSX.Element {
-  const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translateX = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(1);
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { scale: scale.value }],
-  })) as AnimatedStyle;
+  const iconStyle = useAnimatedStyle(() => {
+    const translateXVal = translateX.value;
+    const scaleVal = scale.value;
+    return {
+      transform: [{ translateX: translateXVal, scale: scaleVal }],
+    };
+  });
 
   return (
     <MotionView

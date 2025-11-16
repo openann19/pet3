@@ -34,8 +34,21 @@ interface AppMainContentProps {
 }
 
 export function AppMainContent({ currentView, navigation, animations }: AppMainContentProps) {
+  const viewLabels: Record<View, string> = {
+    discover: 'Discover pets',
+    matches: 'Matches',
+    chat: 'Chat',
+    community: 'Community',
+    adoption: 'Adoption',
+    'lost-found': 'Lost and Found',
+    profile: 'Profile',
+  };
+
   return (
-    <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10">
+    <main 
+      className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10"
+      aria-label={viewLabels[currentView] || 'Main content'}
+    >
       <Suspense
         fallback={
           <MotionView animatedStyle={animations.loadingTransition.style}>

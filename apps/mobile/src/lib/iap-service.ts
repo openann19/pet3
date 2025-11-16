@@ -129,7 +129,6 @@ class IAPService {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const IAP = require('react-native-iap')
       this.iap = IAP
-      this.IAPModule = IAP
 
       await IAP.initConnection()
       this.isInitialized = true

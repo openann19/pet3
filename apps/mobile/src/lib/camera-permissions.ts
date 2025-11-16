@@ -51,11 +51,11 @@ export function requestCameraPermissions(): Promise<boolean> {
         },
       ]
     )
-    return false
+    return Promise.resolve(false)
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
     logger.error('Failed to request camera permissions', err)
-    return false
+    return Promise.resolve(false)
   }
 }
 
@@ -74,10 +74,10 @@ export function checkCameraPermissions(): Promise<boolean> {
     logger.warn(
       'checkCameraPermissions() is deprecated in expo-camera SDK 51+. Use useCameraPermissions() hook in components instead.'
     )
-    return false
+    return Promise.resolve(false)
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
     logger.error('Failed to check camera permissions', err)
-    return false
+    return Promise.resolve(false)
   }
 }

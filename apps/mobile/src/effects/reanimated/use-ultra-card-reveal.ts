@@ -79,11 +79,11 @@ export function useUltraCardReveal(options: UseUltraCardRevealOptions = {}) {
       transform: [
         { perspective },
         { scale: scale.value },
-        { rotateX: `${String(rotateX.value ?? '')}deg` },
-        { rotateY: `${String(rotateY.value ?? '')}deg` },
+        { rotateX: `${String(rotateX.value)}deg` },
+        { rotateY: `${String(rotateY.value)}deg` },
         { translateZ: translateZ.value },
       ],
-    }
+    } as ReturnType<typeof useAnimatedStyle>
   }) as AnimatedStyle
 
   return {

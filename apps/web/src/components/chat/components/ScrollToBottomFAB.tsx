@@ -7,8 +7,9 @@ import { MotionView } from "@petspark/motion";
 
 import { PaperPlaneRight } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
 export interface ScrollToBottomFABProps {
   isVisible: boolean;
@@ -30,18 +31,21 @@ export function ScrollToBottomFAB({
         return null;
       }
 
+  const style = useAnimatedStyleValue(animatedStyle);
+  const badgeStyle = badgeAnimatedStyle ? useAnimatedStyleValue(badgeAnimatedStyle) : undefined;
+
   return (
-    <MotionView style={animatedStyle} className="fixed bottom-24 right-6 z-40">
+    <MotionView style={style} className="fixed bottom-24 right-6 z-40">
       <Button
-        size="icon"
-        className="rounded-full shadow-lg bg-primary hover:bg-primary/90"
+        size="sm"
+        className="rounded-full shadow-lg bg-primary hover:bg-primary/90 w-10 h-10 p-0"
         onClick={onClick}
         aria-label="Scroll to bottom"
       >
         <PaperPlaneRight size={20} weight="fill" />
-        {badgeCount > 0 && badgeAnimatedStyle && (
+        {badgeCount > 0 && badgeStyle && (
           <MotionView
-            style={badgeAnimatedStyle}
+            style={badgeStyle}
             className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
           >
             <span>{badgeCount}</span>

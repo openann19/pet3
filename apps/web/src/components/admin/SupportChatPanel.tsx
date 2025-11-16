@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -145,7 +145,7 @@ export default function SupportChatPanel() {
       setNewMessage('');
 
       await adminApi.createAuditLog({
-        adminId: currentUser?.id || 'admin',
+        adminId: currentUser?.id ?? 'admin',
         action: 'support_ticket_message',
         targetType: 'support_ticket',
         targetId: selectedTicket.id,
@@ -170,7 +170,7 @@ export default function SupportChatPanel() {
       toast.success(`Ticket ${status}`);
 
       await adminApi.createAuditLog({
-        adminId: currentUser?.id || 'admin',
+        adminId: currentUser?.id ?? 'admin',
         action: 'support_ticket_status_update',
         targetType: 'support_ticket',
         targetId: selectedTicket.id,
@@ -277,7 +277,7 @@ export default function SupportChatPanel() {
               />
               <Input
                 placeholder="Search tickets..."
-                value={filter.search || ''}
+                value={filter.search ?? ''}
                 onChange={(e) => { setFilter({ ...filter, search: e.target.value }); }}
                 className="pl-10"
               />
@@ -401,7 +401,7 @@ export default function SupportChatPanel() {
                     <div>
                       <span className="text-muted-foreground">Assigned to:</span>{' '}
                       <span className="font-medium">
-                        {selectedTicket.assignedToName || selectedTicket.assignedTo}
+                        {selectedTicket.assignedToName ?? selectedTicket.assignedTo}
                       </span>
                     </div>
                   )}
@@ -424,7 +424,7 @@ export default function SupportChatPanel() {
                           {message.userName.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`flex-1 ${String(message.isAdmin ? 'text-right' : '' ?? '')}`}>
+                      <div className={`flex-1 ${message.isAdmin ? 'text-right' : ''}`}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-sm">{message.userName}</span>
                           {message.isAdmin && (
@@ -472,8 +472,8 @@ export default function SupportChatPanel() {
                       });
                     }}
                     disabled={!newMessage.trim() || sendingMessage}
-                    size="icon"
-                    className="h-20"
+                    size="sm"
+                    className="h-20 w-20 p-0 flex items-center justify-center"
                     aria-label="Send message"
                   >
                     <PaperPlaneTilt size={20} />

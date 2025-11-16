@@ -33,7 +33,7 @@ export function PresenceGlow({
   pulseDuration = DEFAULT_PULSE_DURATION,
 }: PresenceGlowProps): React.JSX.Element {
     const _uiConfig = useUIConfig();
-    const glowOpacity = useSharedValue(0);
+    const glowOpacity = useSharedValue<number>(0);
 
   useEffect(() => {
     if (isTruthy(isActive)) {

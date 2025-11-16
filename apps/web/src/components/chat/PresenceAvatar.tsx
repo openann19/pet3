@@ -32,7 +32,7 @@ export function PresenceAvatar({
 }: PresenceAvatarProps) {
     const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
-  const rot = useSharedValue(0);
+  const rot = useSharedValue<number>(0);
 
   const dur = getReducedMotionDuration(3600, reduced);
   useMemo(() => {
@@ -45,7 +45,7 @@ export function PresenceAvatar({
   const ring = useAnimatedStyle(() => ({
     transform: [{ rotate: `${String(rot.value ?? '')}deg` }],
     opacity: status === 'offline' ? 0 : 1,
-  })) as AnimatedStyle;
+  }));
 
   const ringColors =
     status === 'online'

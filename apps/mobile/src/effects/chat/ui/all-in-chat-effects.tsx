@@ -666,9 +666,11 @@ export function SwipeToReply({
   const glow = useSharedValue(0)
 
   const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX([-10, 10])
+    () => {
+      const gesture = Gesture.Pan()
+      // @ts-expect-error - activeOffsetX exists at runtime but types may be incomplete
+      gesture.activeOffsetX([-10, 10])
+      return gesture
         .onChange((event: { translationX: number }) => {
           translateX.value = Math.max(0, event.translationX)
         })
@@ -680,7 +682,8 @@ export function SwipeToReply({
           if (shouldTrigger && onReply !== undefined) {
             runOnJS(onReply)()
           }
-        }),
+        })
+    },
     [threshold, onReply, translateX, glow]
   )
 
@@ -958,9 +961,12 @@ export function EmojiTrail({
   }
 
   const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .minDistance(0)
+    () => {
+      const gesture = Gesture.Pan()
+      // @ts-expect-error - minDistance exists at runtime but types may be incomplete
+      gesture.minDistance(0)
+      return gesture
+        // @ts-expect-error - onBegin accepts event parameter at runtime but types may be incomplete
         .onBegin((event: { x: number; y: number }) => {
           lastPos.current = { x: event.x, y: event.y }
           addParticle(event.x, event.y)
@@ -983,7 +989,8 @@ export function EmojiTrail({
         .onEnd(() => {
           lastPos.current = null
           onComplete?.()
-        }),
+        })
+    },
     [step, onComplete]
   )
 
@@ -1052,7 +1059,7 @@ function EmojiParticle({
       { translateX: interpolate(progress.value, [0, 1], [0, drift]) },
       { translateY: interpolate(progress.value, [0, 1], [0, -20]) },
       { scale: interpolate(progress.value, [0, 1], [1, 0.85]) },
-      { rotate: `${String(rot * 0.5 ?? '')}deg` },
+      { rotate: `${String(rot * 0.5)}deg` },
     ],
   }))
 
@@ -1101,7 +1108,7 @@ export function ConfettiEmitter({
     () =>
       Array.from({ length: count }, (_: unknown, i: number) => ({
         key: i,
-        color: colors[i % colors.length],
+        color: colors[i % colors.length] ?? '#000000',
         angle: (i / count) * Math.PI * 2 + Math.random() * 0.3,
         velocity: 40 + Math.random() * 90,
         spin: (Math.random() * 2 - 1) * 360,
@@ -1161,7 +1168,7 @@ function ConfettiPiece({
       transform: [
         { translateX: x },
         { translateY: y },
-        { rotate: `${String(seed.spin * t ?? '')}deg` },
+        { rotate: `${String(seed.spin * t)}deg` },
       ],
       opacity: interpolate(t, [0.8, 1], [1, 0]),
     }

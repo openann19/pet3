@@ -39,12 +39,12 @@ export function useThreadLayoutAnimator(
     staggerDelay = DEFAULT_STAGGER_DELAY,
   } = options;
 
-  const height = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(-20);
-  const [messageOpacities] = useState(() => Array.from({ length: 10 }, () => useSharedValue(0)));
+  const height = useSharedValue<number>(0);
+  const opacity = useSharedValue<number>(0);
+  const translateY = useSharedValue<number>(-20);
+  const [messageOpacities] = useState(() => Array.from({ length: 10 }, () => useSharedValue<number>(0)));
   const [messageTranslateYs] = useState(() =>
-    Array.from({ length: 10 }, () => useSharedValue(-10))
+    Array.from({ length: 10 }, () => useSharedValue<number>(-10))
   );
 
   useEffect(() => {

@@ -13,18 +13,10 @@ export interface UndoDeleteChipProps {
   className?: string;
 }
 
-export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDeleteChipProps) {
-    const _uiConfig = useUIConfig();
-    const [isVisible, setIsVisible] = useState(true);
-  const translateX = useSharedValue(-100);
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
-
-  const handleUndo = useCallback(() => {
-    haptics.selection();
-    setIsVisible(false);
-    onUndo();
-  }, [onUndo]);
+function useUndoDeleteAnimation(isVisible: boolean) {
+  const translateX = useSharedValue<number>(-100);
+  const opacity = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(0.8);
 
   useEffect(() => {
     if (isVisible) {
@@ -38,24 +30,29 @@ export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDelet
     }
   }, [isVisible, translateX, opacity, scale]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, duration);
+  return useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value, scale: scale.value }],
+    opacity: opacity.value,
+  }));
+}
 
+export function UndoDeleteChip({ onUndo, duration = 5000, className }: UndoDeleteChipProps) {
+  const _uiConfig = useUIConfig();
+  const [isVisible, setIsVisible] = useState(true);
+  const animatedStyle = useUndoDeleteAnimation(isVisible);
+
+  const handleUndo = useCallback(() => {
+    haptics.selection();
+    setIsVisible(false);
+    onUndo();
+  }, [onUndo]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(false), duration);
     return () => clearTimeout(timer);
   }, [duration]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }, { scale: scale.value }],
-      opacity: opacity.value,
-    };
-  });
-
-  if (!isVisible) {
-    return null;
-  }
+  if (!isVisible) return null;
 
   return (
     <MotionView

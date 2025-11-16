@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 /**
  * Chat Header Component
  *
@@ -35,18 +35,27 @@ export function ChatHeader({
   const _uiConfig = useUIConfig();
   const animation = useEntryAnimation({ initialY: -20, delay: 0 });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = animation.scale.get();
+    const translateY = animation.translateY.get();
+    return {
+      opacity: animation.opacity.get(),
+      transform: [{ scale, translateY }],
+    };
+  });
+
   return (
     <MotionView
-      style={animation.animatedStyle}
+      style={animatedStyle}
       className="glass-strong border-b border-white/20 p-4 shadow-xl backdrop-blur-2xl"
     >
       <div className="flex items-center gap-3">
         {onBack && (
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={onBack}
-            className="md:hidden"
+            className="md:hidden w-10 h-10 p-0"
             aria-label="Back to chat list"
           >
             <ArrowLeft size={20} />
@@ -69,8 +78,8 @@ export function ChatHeader({
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
-              className="shrink-0"
+              size="sm"
+              className="shrink-0 w-10 h-10 p-0"
               aria-label="Chat options menu"
             >
               <DotsThree size={24} weight="bold" />

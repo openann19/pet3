@@ -1,4 +1,4 @@
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import type { LostAlert } from '@/lib/lost-found-types';

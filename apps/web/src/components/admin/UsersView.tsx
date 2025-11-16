@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStorage } from '@/hooks/use-storage';
@@ -31,9 +31,10 @@ import {
   Warning,
 } from '@phosphor-icons/react';
 import type { VariantProps } from 'class-variance-authority';
-import { MotionView } from '@petspark/motion';
+import { MotionView, useAnimatedStyle } from '@petspark/motion';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 
 const logger = createLogger('UsersView');
 
@@ -265,8 +266,17 @@ export default function UsersView() {
               delay: index * 30
             })
             
+            const entryStyle = useAnimatedStyle(() => {
+              const scale = entry.scale.get();
+              const translateY = entry.translateY.get();
+              return {
+                opacity: entry.opacity.get(),
+                transform: [{ scale, translateY }] as Record<string, number>[],
+              };
+            })
+            
             return (
-              <MotionView key={user.id} style={entry.animatedStyle}>
+              <MotionView key={user.id} style={entryStyle}>
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -431,7 +441,7 @@ export default function UsersView() {
             )}
             {(selectedUser?.status === 'suspended' || selectedUser?.status === 'banned') && (
               <Button
-                variant="default"
+                variant="secondary"
                 onClick={() => {
                   if (!selectedUser) return;
                   void handleReactivateUser(selectedUser.id).catch((error) => {
@@ -460,21 +470,21 @@ export default function UsersView() {
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              Reset password for {selectedUser?.name || selectedUser?.email}
+              Reset password for {selectedUser?.name ?? selectedUser?.email}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="flex gap-2">
               <Button
-                variant={resetPasswordMode === 'email' ? 'default' : 'outline'}
+                variant={resetPasswordMode === 'email' ? 'secondary' : 'outline'}
                 onClick={() => { setResetPasswordMode('email'); }}
                 className="flex-1"
               >
                 Send Reset Email
               </Button>
               <Button
-                variant={resetPasswordMode === 'manual' ? 'default' : 'outline'}
+                variant={resetPasswordMode === 'manual' ? 'secondary' : 'outline'}
                 onClick={() => { setResetPasswordMode('manual'); }}
                 className="flex-1"
               >

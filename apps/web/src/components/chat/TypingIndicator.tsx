@@ -1,17 +1,13 @@
 'use client';;
 import { useEffect, useMemo } from 'react';
 import {
-  useSharedValue,
+  useMotionValue,
   useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  withDelay,
+  animate,
   MotionView,
 } from '@petspark/motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { TypingUser } from '@/lib/chat-types';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { timingConfigs } from '@/effects/reanimated/transitions';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -25,37 +21,32 @@ interface TypingDotProps {
 
 function TypingDot({ index }: TypingDotProps): JSX.Element {
     const _uiConfig = useUIConfig();
-    const opacity = useSharedValue(0.3);
-  const translateY = useSharedValue(0);
+    const opacity = useMotionValue(0.3);
+  const translateY = useMotionValue(0);
 
   useEffect(() => {
     const delay = index * 200;
 
-    opacity.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(withTiming(1, { duration: 300 }), withTiming(0.3, { duration: 300 })),
-        -1,
-        false
-      )
-    );
-
-    translateY.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(withTiming(-3, { duration: 300 }), withTiming(0, { duration: 300 })),
-        -1,
-        false
-      )
-    );
+    setTimeout(() => {
+      animate(opacity, [0.3, 1, 0.3], {
+        duration: 600,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+      animate(translateY, [0, -3, 0], {
+        duration: 600,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      });
+    }, delay);
   }, [index, opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
+      opacity: opacity.get(),
+      transform: [{ translateY: translateY.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   return <MotionView style={animatedStyle} className="w-1 h-1 bg-primary rounded-full" />;
 }
@@ -64,20 +55,20 @@ export default function TypingIndicator({ users }: TypingIndicatorProps): JSX.El
   if (users.length === 0) return null;
 
   const displayUsers = useMemo(() => users.slice(0, 3), [users]);
-  const containerOpacity = useSharedValue(0);
-  const containerTranslateY = useSharedValue(-5);
+  const containerOpacity = useMotionValue(0);
+  const containerTranslateY = useMotionValue(-5);
 
   useEffect(() => {
-    containerOpacity.value = withTiming(1, timingConfigs.smooth);
-    containerTranslateY.value = withTiming(0, timingConfigs.smooth);
+    animate(containerOpacity, 1, { duration: timingConfigs.smooth.duration ?? 300 });
+    animate(containerTranslateY, 0, { duration: timingConfigs.smooth.duration ?? 300 });
   }, [containerOpacity, containerTranslateY]);
 
   const containerStyle = useAnimatedStyle(() => {
     return {
-      opacity: containerOpacity.value,
-      transform: [{ translateY: containerTranslateY.value }],
+      opacity: containerOpacity.get(),
+      transform: [{ translateY: containerTranslateY.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   const typingText = useMemo(() => {
     if (users.length === 1) {

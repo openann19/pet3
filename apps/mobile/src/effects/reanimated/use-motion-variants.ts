@@ -108,7 +108,7 @@ function applyTransition(
   } else {
     const timingConfig: TimingConfig = {
       duration,
-      easing: timingConfigs.smooth.easing
+        // easing removed - use default
     }
     if (delay > 0) {
       value.value = withDelay(delay, withTiming(target as number, timingConfig))

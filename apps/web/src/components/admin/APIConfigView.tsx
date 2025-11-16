@@ -96,7 +96,7 @@ export default function APIConfigView() {
   if (loading) {
     return (
       <div className="flex-1 flex flex-col">
-        <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
           <div className="container mx-auto px-6 py-8">
             <div className="space-y-4">
               <Skeleton className="h-10 w-64" />
@@ -125,7 +125,7 @@ export default function APIConfigView() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+      <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-10">
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
@@ -148,8 +148,8 @@ export default function APIConfigView() {
                   });
                 }}
                 disabled={broadcasting || saving}
-                variant="default"
-                size="default"
+                variant="primary"
+                size="md"
                 className="w-full sm:w-auto gap-2"
               >
                 {broadcasting ? (

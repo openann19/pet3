@@ -3,7 +3,7 @@
 
 import { PhoneOff, Mic, MicOff, Video, VideoOff, MonitorUp } from 'lucide-react';
 import { MotionView } from '@petspark/motion';
-import type { CallSession, CallStatus } from '@petspark/core/calls/call-types';
+import type { CallSession, CallStatus } from '@/lib/call-types';
 import { cn } from '@/lib/utils';
 import { getTypographyClasses } from '@/lib/typography';
 import { Button } from '@/components/ui/button';
@@ -65,7 +65,8 @@ function TopBar({
 const MuteBtn = ({ isMuted, onToggleMute }: { isMuted: boolean; onToggleMute: () => void }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="outline"
     onClick={onToggleMute}
     aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
@@ -87,7 +88,8 @@ const CameraBtn = ({
 }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="outline"
     onClick={onToggleCamera}
     aria-label={isCameraOff ? 'Turn camera on' : 'Turn camera off'}
@@ -111,7 +113,8 @@ const ScreenShareBtn = ({
 }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="outline"
     onClick={onToggleScreenShare}
     aria-label={isScreenSharing ? 'Stop screen sharing' : 'Share screen'}
@@ -128,7 +131,8 @@ const ScreenShareBtn = ({
 const EndBtn = ({ onEndCall }: { onEndCall: () => void }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="destructive"
     onClick={onEndCall}
     aria-label="End call"
@@ -196,7 +200,7 @@ function MainGrid({
 function getStatusLabel(status: CallStatus): string {
   if (status === 'ringing') return 'Ringing…';
   if (status === 'connecting') return 'Connecting…';
-  if (status === 'in-call') return 'In call';
+  if (status === 'active') return 'In call';
   if (status === 'failed') return 'Call failed';
   if (status === 'ended') return 'Call ended';
   return 'Call';
@@ -219,7 +223,7 @@ export function CallOverlay({
 }: CallOverlayProps): React.JSX.Element | null {
   if (!open || !session) return null;
   const remote = session.remoteParticipant;
-  const isActive = status === 'connecting' || status === 'ringing' || status === 'in-call';
+  const isActive = status === 'connecting' || status === 'ringing' || status === 'active';
   const statusLabel = getStatusLabel(status);
   return (
     <div className="fixed inset-0 z-80 flex items-stretch justify-stretch bg-black/80 backdrop-blur-xl">
@@ -234,7 +238,7 @@ export function CallOverlay({
           'shadow-[0_40px_120px_rgba(0,0,0,0.9)]'
         )}
       >
-        <TopBar statusLabel={statusLabel} remoteName={remote.displayName} onClose={onClose} />
+        <TopBar statusLabel={statusLabel} remoteName={remote.name} onClose={onClose} />
 
         <MainGrid session={session} localStream={localStream} remoteStream={remoteStream} />
 

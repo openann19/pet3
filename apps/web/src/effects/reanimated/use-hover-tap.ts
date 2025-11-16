@@ -1,6 +1,5 @@
 'use client';
 
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useCallback } from 'react';
 import {
   useAnimatedStyle,
@@ -8,6 +7,7 @@ import {
   animate,
   type SharedValue,
 } from '@petspark/motion';
+import type { CSSProperties } from 'react';
 
 export interface UseHoverTapOptions {
   hoverScale?: number;
@@ -19,7 +19,7 @@ export interface UseHoverTapOptions {
 
 export interface UseHoverTapReturn {
   scale: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
   handleMouseEnter: () => void;
   handleMouseLeave: () => void;
   handlePress: () => void;
@@ -49,7 +49,7 @@ export function useHoverTap(options: UseHoverTapOptions = {}): UseHoverTapReturn
     return {
       transform: [{ scale: scale.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   const handleMouseEnter = useCallback(() => {
     animate(scale, hoverScale, {

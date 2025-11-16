@@ -28,7 +28,7 @@ export function TypingPlaceholder({
 
   return (
     <MotionView
-      style={containerStyle as AnimatedStyle}
+      style={containerStyle}
       className={cn(
         'flex items-end gap-1.5 px-3 py-2 rounded-2xl max-w-[78%]',
         isOwn
@@ -40,7 +40,7 @@ export function TypingPlaceholder({
       {animatedStyles.map((style, index) => (
         <MotionView
           key={index}
-          style={style as AnimatedStyle}
+          style={style}
           className={cn('rounded-full', isOwn ? 'bg-white/80' : 'bg-muted-foreground/60')}
         >
           <div className="w-full h-full" />

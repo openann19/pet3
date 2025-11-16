@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useStorage } from '@/hooks/use-storage';
+import { MotionView, useAnimatedStyle } from '@petspark/motion';
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -24,8 +26,6 @@ import {
 import { toast } from 'sonner';
 import type { Pet } from '@/lib/types';
 import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
-import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
-import { MotionView } from '@petspark/motion';
 
 export default function ContentView() {
   const [allPets] = useStorage<Pet[]>('all-pets', []);
@@ -239,8 +239,17 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
     delay: index * 20
   })
 
+  const entryStyle = useAnimatedStyle(() => {
+    const scale = entry.scale.get();
+    const translateY = entry.translateY.get();
+    return {
+      opacity: entry.opacity.get(),
+      transform: [{ scale, translateY }] as Record<string, number>[],
+    };
+  });
+
   return (
-    <MotionView initial="hidden" animate="visible" variants={entry.variants}>
+    <MotionView style={entryStyle}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-square relative bg-muted">
           {pet.photo ? (

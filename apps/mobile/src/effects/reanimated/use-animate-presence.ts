@@ -77,7 +77,6 @@ export function useAnimatePresence(
 
       const enterConfig = {
         duration: enterDuration,
-        easing: timingConfigs.smooth.easing
       }
 
       switch (enterTransition) {
@@ -119,7 +118,6 @@ export function useAnimatePresence(
     } else {
       const exitConfig = {
         duration: exitDuration,
-        easing: timingConfigs.fast.easing
       }
 
       switch (exitTransition) {
@@ -180,7 +178,11 @@ export function useAnimatePresence(
   ])
 
   const animatedStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ translateX?: number; translateY?: number; scale?: number }> = []
+    const transforms: Array<
+      | { translateX: number }
+      | { translateY: number }
+      | { scale: number }
+    > = []
 
     if (translateX.value !== 0) {
       transforms.push({ translateX: translateX.value })
@@ -194,7 +196,7 @@ export function useAnimatePresence(
 
     return {
       opacity: opacity.value,
-      transform: transforms.length > 0 ? transforms : []
+      transform: transforms.length > 0 ? transforms : undefined
     }
   })
 

@@ -12,6 +12,8 @@ import { useCall } from '@/hooks/useCall';
 import { useMatches } from '@/hooks/useMatches';
 import { haptics } from '@/lib/haptics';
 import { calculateCompatibility, getCompatibilityFactors } from '@/lib/matching';
+import { cn } from '@/lib/utils';
+import { getTypographyClasses } from '@/lib/typography';
 import type { Match, Pet } from '@/lib/types';
 import {
   Calendar,
@@ -189,10 +191,14 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
 
   return (
     <PageTransitionWrapper key="matches-content" direction="up">
-      <div>
-        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+      <main aria-label="Matches view">
+        <section aria-label="Matches">
+        <header className="mb-6 flex items-center justify-between flex-wrap gap-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t.matches.title}</h2>
+            <h1 className={cn(
+              getTypographyClasses('h1'),
+              'mb-2'
+            )}>{t.matches.title}</h1>
             <p className="text-muted-foreground">
               {matchedPets.length}{' '}
               {matchedPets.length === 1 ? t.matches.subtitle : t.matches.subtitlePlural}
@@ -210,9 +216,9 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
               </Button>
             </MotionView>
           )}
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list" aria-label="Match cards">
           {matchedPets.map((pet) => (
             <MatchCard
               key={pet.id}
@@ -304,7 +310,8 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
             />
           )}
         </MotionView>
-      </div>
+        </section>
+      </main>
     </PageTransitionWrapper>
   );
 }
@@ -330,15 +337,25 @@ function MatchCard({
 }: MatchCardProps): React.ReactElement {
   return (
     <MotionView>
-      <div className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl cursor-pointer group relative border border-white/20">
-        <MotionView className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        <div
-          className="relative h-64 overflow-hidden"
-          onClick={() => {
+      <div 
+        className="overflow-hidden rounded-3xl glass-strong premium-shadow backdrop-blur-2xl cursor-pointer group relative border border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        onClick={() => {
+          haptics.trigger('selection');
+          onSelect();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
             haptics.trigger('selection');
             onSelect();
-          }}
-        >
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View match details for ${pet.name}`}
+      >
+        <MotionView className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="relative h-64 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
           <img src={pet.photo} alt={pet.name} className="w-full h-full object-cover" />
           <MotionView className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -353,9 +370,20 @@ function MatchCard({
               haptics.trigger('selection');
               onBreakdown();
             }}
-            className="absolute bottom-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                haptics.trigger('selection');
+                onBreakdown();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            className="absolute bottom-3 right-3 w-11 h-11 glass-strong rounded-full flex items-center justify-center shadow-xl border border-white/30 backdrop-blur-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
+            aria-label={`View compatibility breakdown for ${pet.name}`}
           >
-            <ChartBar size={20} className="text-white drop-shadow-lg" weight="bold" />
+            <ChartBar size={20} className="text-white drop-shadow-lg" weight="bold" aria-hidden="true" />
           </MotionView>
         </div>
 
@@ -409,10 +437,20 @@ function MatchCardActions({
           haptics.trigger('selection');
           onPlaydate();
         }}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-lg"
-        title="Schedule playdate"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            haptics.trigger('selection');
+            onPlaydate();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
+        aria-label="Schedule playdate"
       >
-        <Calendar size={18} weight="fill" className="text-white" />
+        <Calendar size={18} weight="fill" className="text-white" aria-hidden="true" />
       </MotionView>
       <MotionView
         onClick={(e) => {
@@ -420,10 +458,20 @@ function MatchCardActions({
           haptics.trigger('medium');
           onVideoCall();
         }}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg"
-        title="Start video call"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            haptics.trigger('medium');
+            onVideoCall();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
+        aria-label="Start video call"
       >
-        <VideoCamera size={18} weight="fill" className="text-white" />
+        <VideoCamera size={18} weight="fill" className="text-white" aria-hidden="true" />
       </MotionView>
       {onChat && (
         <MotionView
@@ -432,10 +480,20 @@ function MatchCardActions({
             haptics.trigger('medium');
             onChat();
           }}
-          className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg"
-          title="Start chat"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              haptics.trigger('medium');
+              onChat();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
+          aria-label="Start chat"
         >
-          <ChatCircle size={18} weight="fill" className="text-white" />
+          <ChatCircle size={18} weight="fill" className="text-white" aria-hidden="true" />
         </MotionView>
       )}
     </div>

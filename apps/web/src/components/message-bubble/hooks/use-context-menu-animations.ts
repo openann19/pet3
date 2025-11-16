@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
-import type { Transition } from 'framer-motion';
+import type { FramerTransition as Transition } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 

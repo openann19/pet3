@@ -20,7 +20,7 @@ import { useReducedMotionSV } from '../core/reduced-motion';
 import { useDeviceRefreshRate } from '@/hooks/use-device-refresh-rate';
 import { adaptiveAnimationConfigs } from '../../core/adaptive-animation-config';
 import { useUIConfig } from '@/hooks/use-ui-config';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { CSSProperties } from 'react';
 
 /**
  * Voice waveform effect options
@@ -42,7 +42,7 @@ export interface UseVoiceWaveformOptions {
 export interface UseVoiceWaveformReturn {
   playheadProgress: SharedValue<number>;
   waveformOpacity: SharedValue<number>;
-  animatedStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   drawWaveform: () => void;
 }
@@ -152,7 +152,7 @@ export function useVoiceWaveform(options: UseVoiceWaveformOptions = {}): UseVoic
     return {
       opacity: waveformOpacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     playheadProgress,

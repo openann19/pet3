@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { useFullscreen } from '@/hooks/use-fullscreen';
 import { useStoryAnalytics } from '@/hooks/use-story-analytics';
 import { useStoryGestures } from '@/hooks/use-story-gestures';

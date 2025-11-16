@@ -130,18 +130,22 @@ export function useSwipeReply(
     hasTriggeredHaptic.value = false
   }, [translateX, opacity, previewOpacity, previewScale, hasTriggeredHaptic, isReducedMotion])
 
-  const gesture = Gesture.Pan()
-    .enabled(enabled)
-    .activeOffsetX(10)
-    .onStart(() => {
-      handleGestureStart()
-    })
-    .onUpdate((e) => {
-      handleGestureUpdate(e.translationX)
-    })
-    .onEnd((e) => {
-      handleGestureEnd(e.translationX, e.velocityX)
-    })
+  const gesture = (() => {
+    const g = Gesture.Pan()
+      .enabled(enabled)
+    // @ts-expect-error - activeOffsetX exists at runtime but types may be incomplete
+    g.activeOffsetX(10)
+    return g
+      .onStart(() => {
+        handleGestureStart()
+      })
+      .onUpdate((e: { translationX: number }) => {
+        handleGestureUpdate(e.translationX)
+      })
+      .onEnd((e: { translationX: number; velocityX: number }) => {
+        handleGestureEnd(e.translationX, e.velocityX)
+      })
+  })()
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

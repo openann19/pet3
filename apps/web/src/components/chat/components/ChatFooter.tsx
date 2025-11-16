@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 /**
  * Chat Footer Component
  *
@@ -7,7 +7,7 @@ import { MotionView } from "@petspark/motion";
 
 import { MapPin, Microphone, Smiley, Sparkle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, type InputRef } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
@@ -23,7 +23,7 @@ import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface ChatFooterProps {
   inputValue: string;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<InputRef>;
   showTemplates: boolean;
   showStickers: boolean;
   isRecordingVoice: boolean;
@@ -67,9 +67,18 @@ export function ChatFooter({
     const _uiConfig = useUIConfig();
     const animation = useEntryAnimation({ initialY: 20, delay: 0 });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = animation.scale.get();
+    const translateY = animation.translateY.get();
+    return {
+      opacity: animation.opacity.get(),
+      transform: [{ scale, translateY }],
+    };
+  });
+
   return (
     <MotionView
-      style={animation.animatedStyle}
+      style={animatedStyle}
       className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl space-y-3"
     >
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -109,8 +118,8 @@ export function ChatFooter({
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
-              className="shrink-0"
+              size="sm"
+              className="shrink-0 w-10 h-10 p-0"
               aria-label={showStickers ? 'Close stickers and emojis' : 'Open stickers and emojis'}
               aria-expanded={showStickers}
             >
@@ -159,9 +168,9 @@ export function ChatFooter({
 
             <Button
               onMouseDown={onStartRecording}
-              size="icon"
+              size="sm"
               variant="ghost"
-              className="shrink-0"
+              className="shrink-0 w-10 h-10 p-0"
               aria-label="Record voice message"
             >
               <Microphone size={24} />
@@ -170,8 +179,8 @@ export function ChatFooter({
             <Button
               onClick={onSend}
               disabled={!inputValue.trim()}
-              size="icon"
-              className="shrink-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all"
+              size="sm"
+              className="shrink-0 w-10 h-10 p-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all"
               aria-label="Send message"
             >
               <SendButtonIcon isActive={!!inputValue.trim()} />

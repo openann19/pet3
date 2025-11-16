@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, IconButton } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -140,9 +140,14 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full" aria-label="Arrow Left">
-          <ArrowLeft size={20} weight="bold" />
-        </Button>
+        <IconButton
+          variant="ghost"
+          size="sm"
+          icon={<ArrowLeft size={20} weight="bold" />}
+          onClick={onBack}
+          className="rounded-full w-10 h-10 p-0"
+          ariaLabel="Go back"
+        />
         <div>
           <h2 className="text-3xl font-bold">My Applications</h2>
           <p className="text-muted-foreground">Track the status of your adoption applications</p>

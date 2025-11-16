@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import Animated from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Haptics from 'expo-haptics';
@@ -97,7 +98,7 @@ export function DocumentUploadCard({
             const result = await DocumentPicker.getDocumentAsync({
               type: ['image/*', 'application/pdf'],
             });
-            if (!result.canceled && result.assets[0]) {
+            if (!result.canceled && result.assets && result.assets[0]) {
               onUpload(result.assets[0].uri);
             }
           },
@@ -125,7 +126,7 @@ export function DocumentUploadCard({
   };
 
   return (
-    <View style={[styles.card, entry.animatedStyle]}>
+    <Animated.View style={[styles.card, entry.animatedStyle]}>
       <View style={styles.header}>
         <Text style={styles.label}>
           {DOCUMENT_LABELS[documentType]}
@@ -156,7 +157,7 @@ export function DocumentUploadCard({
           <Text style={styles.uploadButtonText}>Upload Document</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </Animated.View>
   );
 }
 

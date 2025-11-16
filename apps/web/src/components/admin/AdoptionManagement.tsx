@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -28,6 +28,7 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useStaggeredItem } from '@/effects/reanimated';
+import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
 import { adoptionApi } from '@/api/adoption-api';
 import { createLogger } from '@/lib/logger';
 import type { AdoptionProfile } from '@/lib/adoption-types';
@@ -55,10 +56,11 @@ function AdoptionProfileCard({
   onDelete,
 }: AdoptionProfileCardProps): JSX.Element {
   const animation = useStaggeredItem({ index, staggerDelay: 50 });
+  const style = useAnimatedStyleValue(animation.itemStyle);
 
   return (
     <MotionView
-      style={animation.itemStyle}
+      style={style}
       className="relative"
       role="article"
       aria-label={`Adoption profile for ${String(profile.petName ?? '')}`}

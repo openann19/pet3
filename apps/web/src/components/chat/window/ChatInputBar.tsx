@@ -5,10 +5,10 @@
 
 import { MotionView } from '@petspark/motion'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, type InputRef } from '@/components/ui/Input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { VoiceRecorder } from '@/components/chat/VoiceRecorder'
+import VoiceRecorder from '@/components/chat/VoiceRecorder'
 import {
   ChatCentered,
   Microphone,
@@ -21,10 +21,11 @@ import { MESSAGE_TEMPLATES, REACTION_EMOJIS } from '@/lib/chat-types'
 import { CHAT_STICKERS } from '@/lib/chat-utils'
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view'
 import { useAnimatedStyle } from '@petspark/motion'
+import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view'
 
-interface ChatInputBarProps {
+export interface ChatInputBarProps {
   inputValue: string
-  inputRef: React.RefObject<HTMLInputElement>
+  inputRef: React.RefObject<InputRef>
   showTemplates: boolean
   showStickers: boolean
   isRecording: boolean
@@ -100,14 +101,25 @@ export function ChatInputBar({
     opacity: 1,
     transform: [{ translateY: 0 }],
   })) as AnimatedStyle
+  const inputBarStyleValue = useAnimatedStyleValue(inputBarStyle)
+  
+  const templatesStyleValue = useAnimatedStyleValue(templatesStyle)
+  const templateButtonHoverStyleValue = useAnimatedStyleValue(templateButtonHover.animatedStyle)
+  const templateButtonTapStyleValue = useAnimatedStyleValue(templateButtonTap.animatedStyle)
+  const stickerButtonTapStyleValue = useAnimatedStyleValue(stickerButtonTap.animatedStyle)
+  const stickerButtonHoverStyleValue = useAnimatedStyleValue(stickerButtonHover.animatedStyle)
+  const emojiButtonTapStyleValue = useAnimatedStyleValue(emojiButtonTap.animatedStyle)
+  const emojiButtonHoverStyleValue = useAnimatedStyleValue(emojiButtonHover.animatedStyle)
+  const sendButtonHoverStyleValue = useAnimatedStyleValue(sendButtonHover.animatedStyle)
+  const sendButtonTapStyleValue = useAnimatedStyleValue(sendButtonTap.animatedStyle)
 
   return (
     <MotionView
       className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl"
-      style={inputBarStyle}
+      style={inputBarStyleValue}
     >
       {showTemplates && (
-        <MotionView style={templatesStyle} className="mb-3 overflow-hidden">
+        <MotionView style={templatesStyleValue} className="mb-3 overflow-hidden">
           <div className="glass-effect rounded-2xl p-3 space-y-2">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -122,7 +134,7 @@ export function ChatInputBar({
               {MESSAGE_TEMPLATES.slice(0, 4).map((template) => (
                 <MotionView
                   key={template.id}
-                  style={[templateButtonHover.animatedStyle, templateButtonTap.animatedStyle]}
+                  style={{ ...templateButtonHoverStyleValue, ...templateButtonTapStyleValue }}
                   onClick={() => onUseTemplate(template.text)}
                   onMouseEnter={templateButtonHover.handleEnter}
                   onMouseLeave={templateButtonHover.handleLeave}
@@ -148,11 +160,12 @@ export function ChatInputBar({
         <div className="flex items-end gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            isIconOnly
+            className="shrink-0 w-10 h-10 p-0"
             onClick={() => {
               setShowTemplates(!showTemplates)
             }}
-            className="shrink-0"
             aria-label={showTemplates ? 'Close message templates' : 'Open message templates'}
             aria-expanded={showTemplates}
           >
@@ -163,8 +176,9 @@ export function ChatInputBar({
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="shrink-0"
+                size="sm"
+                isIconOnly
+                className="shrink-0 w-10 h-10 p-0"
                 aria-label={showStickers ? 'Close stickers and emojis' : 'Open stickers and emojis'}
                 aria-expanded={showStickers}
               >
@@ -182,7 +196,7 @@ export function ChatInputBar({
                     {CHAT_STICKERS.map((sticker) => (
                       <MotionView
                         key={sticker.id}
-                        style={[stickerButtonTap.animatedStyle, stickerButtonHover.animatedStyle]}
+                        style={{ ...stickerButtonTapStyleValue, ...stickerButtonHoverStyleValue }}
                         onClick={() => onSendMessage(sticker.emoji, 'sticker')}
                         onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -208,7 +222,7 @@ export function ChatInputBar({
                     {REACTION_EMOJIS.map((emoji) => (
                       <MotionView
                         key={emoji}
-                        style={[emojiButtonTap.animatedStyle, emojiButtonHover.animatedStyle]}
+                        style={{ ...emojiButtonTapStyleValue, ...emojiButtonHoverStyleValue }}
                         onClick={() => {
                           onSendMessage(emoji, 'text')
                         }}
@@ -258,22 +272,23 @@ export function ChatInputBar({
             onClick={() => {
               onStartRecording()
             }}
-            size="icon"
+            size="sm"
             variant="ghost"
-            className="shrink-0"
+            className="shrink-0 w-10 h-10 p-0"
             aria-label="Record voice message"
           >
             <Microphone size={20} weight="regular" />
           </Button>
 
-          <MotionView style={[sendButtonHover.animatedStyle, sendButtonTap.animatedStyle]}>
+          <MotionView style={{ ...sendButtonHoverStyleValue, ...sendButtonTapStyleValue }}>
             <Button
               onClick={() => {
                 onSendMessage(inputValue, 'text')
               }}
               disabled={!inputValue.trim()}
-              size="icon"
-              className="shrink-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all disabled:opacity-50"
+              size="sm"
+              isIconOnly
+              className="shrink-0 w-10 h-10 p-0 bg-linear-to-br from-primary to-accent hover:shadow-lg transition-all disabled:opacity-50"
               onMouseEnter={sendButtonHover.handleEnter}
               onMouseLeave={sendButtonHover.handleLeave}
               aria-label="Send message"

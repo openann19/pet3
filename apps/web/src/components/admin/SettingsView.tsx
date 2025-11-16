@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
+import { useAnimatedStyle } from '@petspark/motion'
 import { triggerHaptic } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
 import { adminApi } from '@/api/admin-api'
@@ -107,7 +108,7 @@ export default function SettingsView() {
         registrationEnabled: true,
         moderationEnabled: true,
       }
-      await adminApi.updateSystemConfig(config as Record<string, unknown>, currentUser.id || 'admin')
+      await adminApi.updateSystemConfig(config as unknown as Record<string, unknown>, currentUser.id || 'admin')
       toast.success('System configuration saved successfully')
       logger.info('System config saved', { featureFlags, systemSettings })
     } catch (error) {
@@ -176,7 +177,7 @@ export default function SettingsView() {
 
       await configBroadcastService.broadcastConfig(
         'system',
-        config as Record<string, unknown>,
+        config as unknown as Record<string, unknown>,
         currentUser.id || 'admin'
       )
 
@@ -198,9 +199,31 @@ export default function SettingsView() {
     }
   }, [featureFlags, systemSettings, currentUser, saveConfig])
 
-  const featureFlagsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemSettingsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemInfoCardHover = useHoverLift({ intensity: 1.02 })
+  const featureFlagsCardHover = useHoverLift({ scale: 1.02 })
+  const systemSettingsCardHover = useHoverLift({ scale: 1.02 })
+  const systemInfoCardHover = useHoverLift({ scale: 1.02 })
+
+  const featureFlagsCardStyle = useAnimatedStyle(() => {
+    const scale = featureFlagsCardHover.scale.get();
+    const translateY = featureFlagsCardHover.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  })
+  const systemSettingsCardStyle = useAnimatedStyle(() => {
+    const scale = systemSettingsCardHover.scale.get();
+    const translateY = systemSettingsCardHover.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  })
+  const systemInfoCardStyle = useAnimatedStyle(() => {
+    const scale = systemInfoCardHover.scale.get();
+    const translateY = systemInfoCardHover.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  })
 
   if (loading) {
     return (
@@ -223,7 +246,7 @@ export default function SettingsView() {
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6 max-w-4xl">
           <MotionView
-            style={featureFlagsCardHover.animatedStyle}
+            style={featureFlagsCardStyle}
             onMouseEnter={featureFlagsCardHover.handleEnter}
             onMouseLeave={featureFlagsCardHover.handleLeave}
           >
@@ -292,7 +315,7 @@ export default function SettingsView() {
           </MotionView>
 
           <MotionView
-            style={systemSettingsCardHover.animatedStyle}
+            style={systemSettingsCardStyle}
             onMouseEnter={systemSettingsCardHover.handleEnter}
             onMouseLeave={systemSettingsCardHover.handleLeave}
           >
@@ -390,7 +413,7 @@ export default function SettingsView() {
           </Card>
           </MotionView>
 
-          <MotionView delay={200}>
+          <MotionView>
             <Card>
               <CardHeader>
                 <CardTitle>Actions</CardTitle>
@@ -420,7 +443,7 @@ export default function SettingsView() {
           </MotionView>
 
           <MotionView
-            style={systemInfoCardHover.animatedStyle}
+            style={systemInfoCardStyle}
             onMouseEnter={systemInfoCardHover.handleEnter}
             onMouseLeave={systemInfoCardHover.handleLeave}
           >

@@ -212,11 +212,12 @@ const MockFileReader = vi.fn().mockImplementation((): MockFileReaderInstance => 
   LOADING: 1,
   DONE: 2,
   readyState: 0,
-}));
+})) as unknown as typeof FileReader;
 
-MockFileReader.EMPTY = 0;
-MockFileReader.LOADING = 1;
-MockFileReader.DONE = 2;
+// Assign static properties to the mock constructor
+Object.defineProperty(MockFileReader, 'EMPTY', { value: 0, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(MockFileReader, 'LOADING', { value: 1, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(MockFileReader, 'DONE', { value: 2, writable: false, enumerable: true, configurable: false });
 
 global.FileReader = MockFileReader;
 
@@ -565,7 +566,6 @@ vi.mock('react-native-reanimated', () => {
   AnimatedComponent.a = AnimatedA;
 
   return {
-    ...(actual || {}),
     default: AnimatedComponent,
     Animated: AnimatedNamespace,
     useSharedValue: vi.fn((initial: number) => createMockSharedValueReanimated(initial)),
@@ -1129,30 +1129,61 @@ vi.mock('@petspark/motion', () => {
       onPressOut: vi.fn(),
       animatedStyle: { transform: [{ scale: scaleOnRelease }] },
     })),
-    useOverlayTransition: vi.fn((options?: { type?: 'modal' | 'sheet' | 'drawer'; drawerSide?: 'left' | 'right' | 'top' | 'bottom'; isOpen: boolean }) => {
-      const isOpen = options?.isOpen ?? false;
-      const type = options?.type ?? 'modal';
+    useOverlayTransition: vi.fn((options: { type?: 'modal' | 'sheet' | 'drawer'; drawerSide?: 'left' | 'right' | 'top' | 'bottom'; isOpen: boolean }) => {
+      const isOpen = options.isOpen;
+      const type = options.type ?? 'modal';
+      const drawerSide = options.drawerSide ?? 'right';
+      
+      // Backdrop variants (same for all types)
+      const backdropVariants = {
+        initial: { opacity: 0 },
+        animate: { opacity: isOpen ? 1 : 0 },
+        exit: { opacity: 0 },
+      };
+      
+      // Content variants based on type
+      let contentVariants: Record<string, Record<string, number | string>>;
+      
+      if (type === 'drawer') {
+        const translateKey = drawerSide === 'left' || drawerSide === 'right' ? 'x' : 'y';
+        const translateValue = drawerSide === 'left' || drawerSide === 'top' ? -100 : 100;
+        contentVariants = {
+          initial: { [translateKey]: translateValue, opacity: 0 },
+          animate: { [translateKey]: isOpen ? 0 : translateValue, opacity: isOpen ? 1 : 0 },
+          exit: { [translateKey]: translateValue, opacity: 0 },
+        };
+      } else if (type === 'sheet') {
+        contentVariants = {
+          initial: { y: '100%', opacity: 0 },
+          animate: { y: isOpen ? 0 : '100%', opacity: isOpen ? 1 : 0 },
+          exit: { y: '100%', opacity: 0 },
+        };
+      } else {
+        // modal (default)
+        contentVariants = {
+          initial: { opacity: 0, scale: 0.95, y: 20 },
+          animate: { 
+            opacity: isOpen ? 1 : 0, 
+            scale: isOpen ? 1 : 0.95,
+            y: isOpen ? 0 : 20,
+          },
+          exit: { opacity: 0, scale: 0.95, y: 20 },
+        };
+      }
+      
       return {
         backdropProps: {
           initial: 'initial',
           animate: isOpen ? 'animate' : 'exit',
           exit: 'exit',
-          variants: {
-            initial: { opacity: 0 },
-            animate: { opacity: isOpen ? 1 : 0 },
-            exit: { opacity: 0 },
-          },
+          variants: backdropVariants,
           transition: { duration: 0.2 },
         },
         contentProps: {
           initial: 'initial',
           animate: isOpen ? 'animate' : 'exit',
           exit: 'exit',
-          variants: {
-            initial: { opacity: 0, scale: 0.95, y: 20 },
-            animate: { opacity: isOpen ? 1 : 0, scale: isOpen ? 1 : 0.95, y: isOpen ? 0 : 20 },
-            exit: { opacity: 0, scale: 0.95, y: 20 },
-          },
+          variants: contentVariants,
           transition: { type: 'spring', stiffness: 300, damping: 30 },
         },
       };

@@ -5,11 +5,12 @@
  * Location: apps/mobile/src/hooks/call/useCallManager.ts
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { createLogger } from '@/utils/logger'
 import { useWebRTC, type CallState } from '@/hooks/call/use-web-rtc'
 import { WebRTCSignalingService } from '@/services/webrtc-signaling'
 import { getWebRTCConfig } from '@/config/webrtc-config'
+import type { CallSession } from '@petspark/core'
 import type {
   RTCSessionDescriptionInit,
   RTCIceCandidateInit,
@@ -38,6 +39,7 @@ export interface UseCallManagerReturn {
   callStatus: CallStatus
   currentCall: CallInfo | null
   callState: CallState | null
+  session: CallSession | null
 
   // Call actions
   startCall: (remoteUserId: string, remoteName: string, remotePhoto?: string) => Promise<void>
@@ -408,6 +410,67 @@ export function useCallManager(
     [callStatus, handleCallStatusChange, setIncomingCall]
   )
 
+  // Map internal CallStatus to CallSession status
+  const mapCallStatusToSessionStatus = useCallback(
+    (status: CallStatus): CallSession['status'] => {
+      switch (status) {
+        case 'idle':
+          return 'idle'
+        case 'incoming':
+        case 'outgoing':
+          return 'ringing'
+        case 'connecting':
+          return 'connecting'
+        case 'active':
+          return 'in-call'
+        case 'ended':
+          return 'ended'
+        default:
+          return 'idle'
+      }
+    },
+    []
+  )
+
+  // Create CallSession from current call state
+  const session = useMemo<CallSession | null>(() => {
+    if (!currentCall) {
+      return null
+    }
+
+    const sessionStatus = mapCallStatusToSessionStatus(callStatus)
+    const startedAt = new Date().toISOString()
+
+    const localParticipant: CallSession['localParticipant'] = {
+      id: localUserId,
+      displayName: 'You', // TODO: Get from user store
+      avatarUrl: null,
+      isLocal: true,
+      microphone: callState?.isMuted ? 'muted' : 'enabled',
+      camera: callState?.isCameraOn ? 'enabled' : 'off',
+    }
+
+    const remoteParticipant: CallSession['remoteParticipant'] = {
+      id: currentCall.remoteUserId,
+      displayName: currentCall.remoteName,
+      avatarUrl: currentCall.remotePhoto ?? null,
+      isLocal: false,
+      microphone: 'enabled', // TODO: Get from call state if available
+      camera: 'enabled', // TODO: Get from call state if available
+    }
+
+    return {
+      id: currentCall.callId,
+      kind: 'direct',
+      direction: currentCall.isCaller ? 'outgoing' : 'incoming',
+      status: sessionStatus,
+      localParticipant,
+      remoteParticipant,
+      startedAt,
+      ...(callStatus === 'ended' ? { endedAt: new Date().toISOString() } : {}),
+    }
+  }, [currentCall, callStatus, callState, localUserId, mapCallStatusToSessionStatus])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -419,6 +482,7 @@ export function useCallManager(
     callStatus,
     currentCall,
     callState: currentCall ? callState : null,
+    session,
     startCall,
     acceptCall,
     declineCall,

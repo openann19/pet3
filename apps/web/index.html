@@ -36,6 +36,7 @@
     
     <!-- Additional Meta Tags -->
     <meta name="theme-color" content="#6366f1" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="PawfectMatch" />
@@ -83,6 +84,38 @@
     }
     </script>
     <script>
+      // Polyfill for react-native-reanimated on web
+      // Fixes "Cannot read properties of undefined (reading 'JEST_WORKER_ID')" error
+      // This MUST run before any module scripts load
+      (function() {
+        // Ensure process exists
+        if (typeof process === 'undefined') {
+          // eslint-disable-next-line no-global-assign
+          process = {};
+        }
+        
+        // Ensure process.env exists
+        if (!process.env) {
+          process.env = {};
+        }
+        
+        // Ensure JEST_WORKER_ID exists (even if undefined) to prevent errors
+        if (!('JEST_WORKER_ID' in process.env)) {
+          process.env.JEST_WORKER_ID = undefined;
+        }
+        
+        // Also set it on window.process.env for compatibility
+        if (typeof window !== 'undefined') {
+          window.process = process;
+          if (!window.process.env) {
+            window.process.env = {};
+          }
+          if (!('JEST_WORKER_ID' in window.process.env)) {
+            window.process.env.JEST_WORKER_ID = undefined;
+          }
+        }
+      })();
+      
       // Polyfill for CommonJS exports/module (fallback only - Vite should handle transformation)
       if (typeof exports === 'undefined') {
         window.exports = {};

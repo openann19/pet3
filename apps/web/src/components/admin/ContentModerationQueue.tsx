@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { communityAPI } from '@/api/community-api';
@@ -321,7 +321,7 @@ export function ContentModerationQueue() {
           <p className="text-xs text-muted-foreground">
             Last seen: {formatDistanceToNow(new Date(alert.lastSeen.whenISO), { addSuffix: true })}
           </p>
-          {alert.photos && alert.photos.length > 0 && (
+          {alert.photos && alert.photos.length > 0 && alert.photos[0] && (
             <div className="w-24 h-24 bg-muted rounded overflow-hidden">
               <ProgressiveImage
                 src={alert.photos[0]}
@@ -413,8 +413,18 @@ export function ContentModerationQueue() {
     
     if (!presence.shouldRender) return null
     
+    const style = useAnimatedStyle(() => {
+      const opacity = presence.opacity.get();
+      const scale = presence.scale.get();
+      const translateY = presence.translateY.get();
+      return {
+        opacity,
+        transform: [{ scale, translateY }],
+      };
+    });
+    
     return (
-      <MotionView style={presence.animatedStyle} className="text-center py-12">
+      <MotionView style={style} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
       </MotionView>
@@ -429,8 +439,17 @@ export function ContentModerationQueue() {
       delay: index * 50 
     })
     
+    const entryStyle = useAnimatedStyle(() => {
+      const scale = entry.scale.get();
+      const translateY = entry.translateY.get();
+      return {
+        opacity: entry.opacity.get(),
+        transform: [{ scale, translateY }],
+      };
+    });
+
     return (
-      <MotionView initial="hidden" animate="visible" variants={entry.variants}>
+      <MotionView style={entryStyle}>
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { setSelectedItem(item); }}

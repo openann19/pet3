@@ -123,6 +123,19 @@ export function AnimatedView({
     ...domProps
   } = props;
 
+  // If onClick is provided, make it keyboard accessible
+  const handleKeyDown = onClick
+    ? (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }
+    : undefined;
+
+  const role = onClick ? 'button' : undefined;
+  const tabIndex = onClick ? 0 : undefined;
+
   return (
     <motion.div
       style={computedStyle}
@@ -130,6 +143,9 @@ export function AnimatedView({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={role}
+      tabIndex={tabIndex}
       initial={initial}
       animate={animate}
       exit={exit}

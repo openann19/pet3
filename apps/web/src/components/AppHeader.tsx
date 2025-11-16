@@ -116,9 +116,10 @@ export function AppHeader({
             >
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
+                isIconOnly
                 onClick={onOpenAdminConsole}
-                className="rounded-full hover:bg-primary/15 active:bg-primary/25 transition-all duration-300 shadow-lg hover:shadow-primary/20"
+                className="rounded-full hover:bg-primary/15 active:bg-primary/25 transition-all duration-300 shadow-lg hover:shadow-primary/20 w-10 h-10 p-0"
                 aria-label="Admin Console"
                 title="Admin Console"
               >
@@ -133,9 +134,10 @@ export function AppHeader({
             >
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
+                isIconOnly
                 onClick={onToggleTheme}
-                className="rounded-full hover:bg-primary/15 active:bg-primary/25 transition-all duration-300 shadow-lg hover:shadow-primary/20"
+                className="rounded-full hover:bg-primary/15 active:bg-primary/25 transition-all duration-300 shadow-lg hover:shadow-primary/20 w-10 h-10 p-0"
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {theme === 'dark' ? (
@@ -153,7 +155,8 @@ export function AppHeader({
             >
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
+                isIconOnly
                 onClick={onOpenThemeSettings}
                 className="rounded-full hover:bg-primary/15 active:bg-primary/25 transition-all duration-300 shadow-lg hover:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label="Theme Settings"

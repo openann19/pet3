@@ -9,7 +9,7 @@ import {
   withDelay,
   MotionView,
 } from '@petspark/motion';
-import type { Transition } from 'framer-motion';
+import type { FramerTransition as Transition } from '@petspark/motion';
 import { isTruthy } from '@petspark/shared';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated';

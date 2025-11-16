@@ -65,7 +65,7 @@ export function PricingCard({
 
         {plan.perks && plan.perks.length > 0 && (
           <View style={styles.features}>
-            {plan.perks.map((perk, index) => (
+            {plan.perks.map((perk: BillingPlan['perks'][number], index: number) => (
               <View key={perk.id || index} style={styles.feature}>
                 <Check size={16} color={colors.primary} />
                 <Text style={[getTypographyStyle('body'), styles.featureText]}>

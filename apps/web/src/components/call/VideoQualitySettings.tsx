@@ -1,13 +1,14 @@
 'use client';;
 import { useCallback, useMemo, useEffect } from 'react';
 import { MonitorPlay, Check } from '@phosphor-icons/react';
-import { useSharedValue, useAnimatedStyle, withSpring, MotionView } from '@petspark/motion';
+import { useMotionValue, useAnimatedStyle, animate, MotionView } from '@petspark/motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { VideoQuality } from '@/lib/call-types';
 import { haptics } from '@/lib/haptics';
 import { useHoverTap } from '@/effects/reanimated';
+import { useAnimatedStyleValue } from '@/effects/reanimated/animated-view';
 import { springConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
@@ -67,20 +68,20 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
     stiffness: 400,
   });
 
-  const checkProgress = useSharedValue(isSelected ? 1 : 0);
+  const checkProgress = useMotionValue(isSelected ? 1 : 0);
 
   const checkAnimatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: checkProgress.value }],
-      opacity: checkProgress.value,
+      transform: [{ scale: checkProgress.get() }],
+      opacity: checkProgress.get(),
     };
   }) as AnimatedStyle;
 
   useEffect(() => {
     if (isSelected) {
-      checkProgress.value = withSpring(1, springConfigs.bouncy);
+      animate(checkProgress, 1, { type: 'spring', ...springConfigs.bouncy });
     } else {
-      checkProgress.value = withSpring(0, springConfigs.smooth);
+      animate(checkProgress, 0, { type: 'spring', ...springConfigs.smooth });
     }
   }, [isSelected, checkProgress]);
 
@@ -89,6 +90,8 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
     onSelect(option.value);
   }, [hoverTap, onSelect, option.value]);
 
+  const checkStyle = useAnimatedStyleValue(checkAnimatedStyle);
+
   return (
     <MotionView
       style={hoverTap.animatedStyle}
@@ -96,11 +99,11 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
       onMouseLeave={hoverTap.handleMouseLeave}
     >
       <Button
-        variant={isSelected ? 'default' : 'outline'}
+        variant={isSelected ? 'primary' : 'outline'}
         className={`w-full h-auto py-4 px-4 justify-between ${
-          String(isSelected
-                        ? 'bg-gradient-to-r from-primary to-accent border-primary/50'
-                        : 'hover:bg-muted/50' ?? '')
+          isSelected
+            ? 'bg-linear-to-r from-primary to-accent border-primary/50'
+            : 'hover:bg-muted/50'
         }`}
         onClick={handleClick}
       >
@@ -116,7 +119,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
           <span className="text-sm font-mono opacity-80">{option.resolution}</span>
           <span className="text-xs opacity-70 text-left">{option.description}</span>
         </div>
-        <MotionView style={checkAnimatedStyle}>
+        <MotionView style={checkStyle}>
           <Check size={24} weight="bold" />
         </MotionView>
       </Button>

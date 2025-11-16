@@ -75,23 +75,32 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
   };
 
   return (
-    <div className="fixed inset-0 bg-background overflow-auto">
+    <main 
+      className="fixed inset-0 bg-background overflow-auto"
+      aria-label="Authentication"
+    >
       <div className="min-h-screen flex flex-col">
         {/* Header with back button, mode switcher, and language toggle */}
-        <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          animate="visible"
+        <header
           className={cn(
             'flex items-center justify-between',
             getSpacingClassesFromConfig({ padding: 'lg' })
           )}
+          aria-label="Authentication header"
         >
+          <motion.div
+            variants={headerVariants}
+            initial="hidden"
+            animate="visible"
+            className="contents"
+          >
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            isIconOnly
             onClick={handleBack}
             aria-label={t.common.back}
+            className="w-10 h-10 p-0"
           >
             <ArrowLeft size={20} />
           </Button>
@@ -108,19 +117,25 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
 
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            isIconOnly
             onClick={handleLanguageToggle}
             aria-pressed={language === 'bg'}
             aria-label={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
+            className="w-10 h-10 p-0"
           >
-            <Translate size={20} />
+            <Translate size={20} aria-hidden="true" />
           </Button>
-        </motion.div>
+          </motion.div>
+        </header>
 
-        <div className={cn(
-          'flex-1 flex items-center justify-center',
-          getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'xl' })
-        )}>
+        <section 
+          className={cn(
+            'flex-1 flex items-center justify-center',
+            getSpacingClassesFromConfig({ paddingX: 'xl', paddingY: 'xl' })
+          )}
+          aria-label="Authentication form"
+        >
           <div className="w-full max-w-md">
             <motion.div
               key={mode}
@@ -142,8 +157,8 @@ export default function AuthScreen({ initialMode = 'signup', onBack, onSuccess }
               )}
             </motion.div>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

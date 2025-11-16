@@ -1,5 +1,5 @@
 import { MotionView } from '@petspark/motion';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 import type { CreatePetFormActions } from '../create-pet-types';

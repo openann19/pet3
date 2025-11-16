@@ -131,7 +131,16 @@ function AdoptionMarketplaceScreenContent(): React.JSX.Element {
   }, [setFilters])
 
   const handleSortChange = useCallback((sort: SortOption) => {
-    setFilters({ ...filters, sortBy: sort })
+    // Map UI SortOption to API sortBy format
+    const sortByMap: Record<SortOption, 'recent' | 'distance' | 'age' | 'fee_low' | 'fee_high'> = {
+      'recent': 'recent',
+      'distance': 'distance',
+      'age-young': 'age',
+      'age-old': 'age',
+      'price-low': 'fee_low',
+      'price-high': 'fee_high',
+    }
+    setFilters({ ...filters, sortBy: sortByMap[sort] })
   }, [filters, setFilters])
 
   const handleCardPress = useCallback((listing: AdoptionListing) => {
@@ -273,7 +282,19 @@ function AdoptionMarketplaceScreenContent(): React.JSX.Element {
         {activeMode === 'browse' && (
           <PremiumControlStrip
             totalCount={filteredListings.length}
-            currentSort={filters.sortBy || 'recent'}
+            currentSort={(() => {
+              // Map API sortBy to UI SortOption
+              const sortBy = filters.sortBy
+              if (!sortBy) return 'recent'
+              const sortMap: Record<'recent' | 'distance' | 'age' | 'fee_low' | 'fee_high', SortOption> = {
+                'recent': 'recent',
+                'distance': 'distance',
+                'age': 'age-young', // Default to young for age
+                'fee_low': 'price-low',
+                'fee_high': 'price-high',
+              }
+              return sortMap[sortBy] || 'recent'
+            })()}
             onSortChange={handleSortChange}
             loading={loading}
             showDistance={!!filters.location}

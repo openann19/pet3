@@ -1,6 +1,6 @@
 'use client';
 
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 import { useState, useCallback } from 'react';
 import { Play, Pause, DownloadSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -63,10 +63,10 @@ function VoiceAttachment({ attachment }: VoiceAttachmentProps): React.JSX.Elemen
   return (
     <div className="flex items-center gap-3 min-w-50">
       <Button
-        size="icon"
+        size="sm"
         variant="ghost"
         onClick={togglePlayback}
-        className="shrink-0 w-8 h-8"
+        className="shrink-0 w-8 h-8 p-0"
         aria-label={isPlaying ? 'Pause voice message' : 'Play voice message'}
       >
         {isPlaying ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" />}
@@ -97,6 +97,14 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
     scale: 1.02,
   });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = hoverAnimation.scale.get();
+    const translateY = hoverAnimation.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  });
+
   const handleDownload = useCallback(() => {
     const link = document.createElement('a');
     link.href = attachment.url;
@@ -106,7 +114,7 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
 
   return (
     <MotionView
-      style={hoverAnimation.animatedStyle}
+      style={animatedStyle}
       className="relative rounded-lg overflow-hidden max-w-sm"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
@@ -121,9 +129,9 @@ function PhotoAttachment({ attachment }: PhotoAttachmentProps): React.JSX.Elemen
         }}
       />
       <Button
-        size="icon"
+        size="sm"
         variant="ghost"
-        className="absolute top-2 right-2 bg-black/50 hover:bg-black/70"
+        className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 w-8 h-8 p-0"
         onClick={handleDownload}
         aria-label="Download photo"
       >
@@ -142,9 +150,17 @@ function VideoAttachment({ attachment }: VideoAttachmentProps): React.JSX.Elemen
     scale: 1.02,
   });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = hoverAnimation.scale.get();
+    const translateY = hoverAnimation.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  });
+
   return (
     <MotionView
-      style={hoverAnimation.animatedStyle}
+      style={animatedStyle}
       className="relative rounded-lg overflow-hidden max-w-sm"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
@@ -169,6 +185,14 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
     scale: 1.02,
   });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = hoverAnimation.scale.get();
+    const translateY = hoverAnimation.translateY.get();
+    return {
+      transform: [{ scale, translateY }],
+    };
+  });
+
   const formatFileSize = useCallback((bytes = 0): string => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -184,7 +208,7 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
 
   return (
     <MotionView
-      style={hoverAnimation.animatedStyle}
+      style={animatedStyle}
       className="flex items-center gap-3 p-3 glass-effect rounded-lg"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}
@@ -197,9 +221,10 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
         <p className="text-xs text-muted-foreground">{formatFileSize(attachment.size ?? 0)}</p>
       </div>
       <Button
-        size="icon"
+        size="sm"
         variant="ghost"
         onClick={handleDownload}
+        className="w-8 h-8 p-0"
         aria-label={`Download ${attachment.name ?? 'document'}`}
       >
         <DownloadSimple size={16} weight="bold" />

@@ -130,7 +130,7 @@ export function AgeVerification({ onVerified, requiredAge = MINIMUM_AGE }: AgeVe
         <EnhancedButton
           title="Verify Age"
           onPress={handleVerify}
-          variant="primary"
+          variant="default"
           size="lg"
           style={styles.button}
         />

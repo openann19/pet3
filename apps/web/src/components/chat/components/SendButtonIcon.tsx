@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring, MotionView } from '@petspark/motion';
 import { PaperPlaneRight } from '@phosphor-icons/react';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface SendButtonIconProps {
@@ -17,12 +16,16 @@ export interface SendButtonIconProps {
 
 export function SendButtonIcon({ isActive = false }: SendButtonIconProps): JSX.Element {
     const _uiConfig = useUIConfig();
-    const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
+    const translateX = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(1);
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { scale: scale.value }],
-  })) as AnimatedStyle;
+  const iconStyle = useAnimatedStyle(() => {
+    const translateXVal = translateX.value;
+    const scaleVal = scale.value;
+    return {
+      transform: [{ translateX: translateXVal, scale: scaleVal }],
+    };
+  });
 
   useEffect(() => {
     if (isActive) {

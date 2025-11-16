@@ -8,3 +8,4 @@ export * from './hooks/use-chat-session';
 export * from './hooks/use-chat-messages';
 export * from './hooks/use-typing';
 export * from './hooks/use-presence';
+export * from './useOutbox';

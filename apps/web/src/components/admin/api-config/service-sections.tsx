@@ -1,7 +1,7 @@
 import type { APIConfig } from '@/api/api-config-api';
 import { APIConfigSection } from './APIConfigSection';
 import { ConfigField } from './ConfigField';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -104,7 +104,7 @@ export function MapsServiceSection({
         onReset('maps');
       }}
       testingService={testingService}
-      testDisabled={config?.maps?.provider === 'openstreetmap'}
+      testDisabled={Boolean(config?.maps?.provider === 'openstreetmap')}
     />
   );
 }

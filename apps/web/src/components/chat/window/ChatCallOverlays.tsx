@@ -6,21 +6,21 @@
 import { MotionView } from '@petspark/motion';
 import CallInterface from '@/components/call/CallInterface';
 import IncomingCallNotification from '@/components/call/IncomingCallNotification';
-import type { CallSession } from '@/hooks/useCall';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { Call, CallSession } from '@/lib/call-types';
+import type { CSSProperties } from 'react';
 
 export interface ChatCallOverlaysProps {
-  incomingCall: CallSession | null;
+  incomingCall: Call | null;
   activeCall: CallSession | null;
   matchedPetName?: string | null;
   matchedPetPhoto?: string | null;
   incomingCallPresence: {
     shouldRender: boolean;
-    animatedStyle: AnimatedStyle;
+    animatedStyle: CSSProperties;
   };
   activeCallPresence: {
     shouldRender: boolean;
-    animatedStyle: AnimatedStyle;
+    animatedStyle: CSSProperties;
   };
   onAnswerCall: () => void;
   onDeclineCall: () => void;
@@ -48,7 +48,7 @@ export function ChatCallOverlays({
         <MotionView style={incomingCallPresence.animatedStyle}>
           <IncomingCallNotification
             call={incomingCall}
-            callerName={matchedPetName ?? ''}
+            callerName={matchedPetName}
             {...(matchedPetPhoto ? { callerAvatar: matchedPetPhoto } : {})}
             onAccept={onAnswerCall}
             onDecline={onDeclineCall}

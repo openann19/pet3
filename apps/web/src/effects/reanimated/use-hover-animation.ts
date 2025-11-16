@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming } from '@petspark/motion';
 import { springConfigs, timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export interface UseHoverAnimationOptions {
   scale?: number;
@@ -12,7 +12,7 @@ export interface UseHoverAnimationOptions {
 }
 
 export interface UseHoverAnimationReturn {
-  animatedStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
   handleMouseEnter: () => void;
   handleMouseLeave: () => void;
   handleMouseDown: () => void;
@@ -59,7 +59,7 @@ export function useHoverAnimation(options: UseHoverAnimationOptions = {}): UseHo
     return {
       transform: [{ scale: scale.value }],
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     animatedStyle,

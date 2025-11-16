@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -29,8 +29,7 @@ import type { Post } from '@/lib/community-types';
 import { PostCard } from '@/components/community/PostCard';
 import { communityService } from '@/lib/community-service';
 import { createLogger } from '@/lib/logger';
-import { useSharedValue, useAnimatedStyle, withTiming, MotionView } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { useMotionValue, useAnimatedStyle, animate, MotionView } from '@petspark/motion';
 
 const logger = createLogger('CommunityManagement');
 
@@ -43,20 +42,21 @@ interface PostItemProps {
 }
 
 function PostItem({ post, isHidden, onHide, onUnhide, onDelete }: PostItemProps) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
+  const opacity = useMotionValue(0);
+  const translateY = useMotionValue(20);
 
   useEffect(() => {
-    opacity.value = withTiming(1, { duration: 300 });
-    translateY.value = withTiming(0, { duration: 300 });
+    animate(opacity, 1, { duration: 0.3 });
+    animate(translateY, 0, { duration: 0.3 });
   }, [opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const translateYValue = translateY.get();
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
+      opacity: opacity.get(),
+      transform: [{ translateY: translateYValue }],
     };
-  }) as AnimatedStyle;
+  });
 
   const postId = post._id ?? post.id;
   if (!postId) {

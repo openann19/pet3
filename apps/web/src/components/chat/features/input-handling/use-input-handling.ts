@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import type { MessageTemplate, SmartSuggestion } from '@/lib/chat-types';
+import type { InputRef } from '@/components/ui/Input';
 
 export interface UseInputHandlingOptions {
   onSendMessage: (content: string, type?: 'text' | 'sticker') => void;
@@ -10,7 +11,7 @@ export interface UseInputHandlingOptions {
 export interface UseInputHandlingReturn {
   inputValue: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<InputRef>;
   showStickers: boolean;
   setShowStickers: React.Dispatch<React.SetStateAction<boolean>>;
   showTemplates: boolean;
@@ -32,7 +33,7 @@ export function useInputHandling(options: UseInputHandlingOptions): UseInputHand
   const [showStickers, setShowStickers] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showSmartSuggestions, setShowSmartSuggestions] = useState(true);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<InputRef>(null);
 
   const handleInputChange = useCallback((value: string): void => {
     setInputValue(value);

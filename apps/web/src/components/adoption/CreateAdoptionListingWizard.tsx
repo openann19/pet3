@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -212,9 +212,11 @@ export function CreateAdoptionListingWizard({
           </div>
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            isIconOnly
             onClick={onClose}
             aria-label="Close adoption listing wizard"
+            className="w-10 h-10 p-0"
           >
             <X size={24} />
           </Button>

@@ -92,9 +92,7 @@ export function MapsSection({
       }}
       onTest={() => {
         triggerHaptic('light');
-        void onTest('Maps').catch(() => {
-          // Error handled in hook
-        });
+        onTest('Maps');
       }}
       onReset={() => {
         triggerHaptic('medium');
@@ -195,9 +193,7 @@ export function AISection({
       }}
       onTest={() => {
         triggerHaptic('light');
-        void onTest('AI').catch(() => {
-          // Error handled in hook
-        });
+        onTest('AI');
       }}
       onReset={() => {
         triggerHaptic('medium');

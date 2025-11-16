@@ -1,3 +1,25 @@
+// Polyfill for react-native-reanimated on web (backup - primary polyfill is in index.html)
+// Fixes "Cannot read properties of undefined (reading 'JEST_WORKER_ID')" error
+// This is a safety check in case the index.html polyfill didn't run
+if (typeof window !== 'undefined') {
+  // Ensure process exists (should already be set by index.html, but check anyway)
+  if (typeof process === 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).process = {};
+  }
+  
+  // Ensure process.env exists
+  if (typeof process !== 'undefined' && !process.env) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (process as any).env = {};
+  }
+  
+  // Ensure JEST_WORKER_ID exists (even if undefined) to prevent errors
+  if (typeof process !== 'undefined' && process.env && !('JEST_WORKER_ID' in process.env)) {
+    process.env.JEST_WORKER_ID = undefined;
+  }
+}
+
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { BrowserRouter } from 'react-router-dom';

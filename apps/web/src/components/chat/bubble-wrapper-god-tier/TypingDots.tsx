@@ -2,7 +2,6 @@
 import { MotionView } from "@petspark/motion";
 
 import { useTypingIndicator } from './effects/useTypingIndicator';
-import { type AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -27,11 +26,11 @@ export function TypingDots({
 
   return (
     <MotionView
-      style={containerStyle as AnimatedStyle}
+      style={containerStyle}
       className={cn('flex items-center gap-1', className)}
     >
       {dotStyles.map((style, index) => (
-        <MotionView key={index} style={style as AnimatedStyle} className="rounded-full">
+        <MotionView key={index} style={style} className="rounded-full">
           <div style={{ backgroundColor: dotColor }} />
         </MotionView>
       ))}

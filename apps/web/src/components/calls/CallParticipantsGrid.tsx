@@ -1,7 +1,7 @@
 // apps/web/src/components/calls/CallParticipantsGrid.tsx
 'use client';
 
-import type { CallSession } from '@petspark/core/calls/call-types';
+import type { CallSession } from '@/lib/call-types';
 import { CallParticipantTile } from './CallParticipantTile';
 
 export interface CallParticipantsGridProps {
@@ -18,10 +18,10 @@ export function CallParticipantsGrid({
   const remote = session.remoteParticipant;
   const local = session.localParticipant;
 
-  const remoteMuted = remote.microphone === 'muted';
-  const remoteCameraOff = remote.camera === 'off';
-  const localMuted = local.microphone === 'muted';
-  const localCameraOff = local.camera === 'off';
+  const remoteMuted = remote.isMuted;
+  const remoteCameraOff = !remote.isVideoEnabled;
+  const localMuted = local.isMuted;
+  const localCameraOff = !local.isVideoEnabled;
 
   return (
     <div className="relative flex h-full w-full items-stretch justify-stretch">
@@ -29,8 +29,8 @@ export function CallParticipantsGrid({
       <div className="relative h-full w-full">
         <CallParticipantTile
           stream={remoteStream}
-          displayName={remote.displayName}
-          avatarUrl={remote.avatarUrl}
+          displayName={remote.name}
+          avatarUrl={remote.avatar}
           isLocal={false}
           isMuted={remoteMuted}
           isCameraOff={remoteCameraOff}
@@ -44,8 +44,8 @@ export function CallParticipantsGrid({
         <div className="pointer-events-auto w-36 max-w-[40%]">
           <CallParticipantTile
             stream={localStream}
-            displayName={local.displayName}
-            avatarUrl={local.avatarUrl}
+            displayName={local.name}
+            avatarUrl={local.avatar}
             isLocal
             isMuted={localMuted}
             isCameraOff={localCameraOff}

@@ -59,8 +59,9 @@
   [role='button']:focus-visible,
   [role='link']:focus-visible,
   [tabindex]:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--btn-primary-focus-ring, rgba(255, 113, 91, 0.4));
+    outline: 2px solid var(--color-focus-ring, var(--color-ring, var(--ring)));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-ring, var(--color-ring, var(--ring)));
   }
 
   /**

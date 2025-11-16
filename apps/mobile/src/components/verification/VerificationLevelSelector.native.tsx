@@ -6,10 +6,13 @@
 
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { colors } from '@mobile/theme/colors';
 import { useEntryAnimation } from '@mobile/effects/reanimated/use-entry-animation';
 import { useBounceOnTap } from '@mobile/effects/reanimated/use-bounce-on-tap';
 import * as Haptics from 'expo-haptics';
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 type VerificationLevel = 'basic' | 'standard' | 'premium';
 
@@ -76,7 +79,7 @@ function LevelCard({ level, isSelected, onSelect, index }: LevelCardProps): Reac
   };
 
   return (
-    <TouchableOpacity
+    <AnimatedTouchableOpacity
       style={[
         styles.card,
         isSelected && styles.cardSelected,
@@ -94,7 +97,7 @@ function LevelCard({ level, isSelected, onSelect, index }: LevelCardProps): Reac
         </Text>
       </View>
       {isSelected && <View style={styles.checkmark}>✓</View>}
-    </TouchableOpacity>
+    </AnimatedTouchableOpacity>
   );
 }
 

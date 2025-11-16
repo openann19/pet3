@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 /**
  * Template Panel Component
  *
@@ -22,18 +22,27 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
     const _uiConfig = useUIConfig();
     const animation = useEntryAnimation({ initialY: 20, delay: 0 });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = animation.scale.get();
+    const translateY = animation.translateY.get();
+    return {
+      opacity: animation.opacity.get(),
+      transform: [{ scale, translateY }],
+    };
+  });
+
   return (
     <MotionView
-      style={animation.animatedStyle}
+      style={animatedStyle}
       className="glass-strong border border-white/20 rounded-xl p-4 space-y-3 backdrop-blur-xl"
     >
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-foreground">Message Templates</h3>
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           onClick={onClose}
-          className="h-6 w-6"
+          className="h-6 w-6 p-0"
           aria-label="Close message templates"
         >
           <X size={16} />

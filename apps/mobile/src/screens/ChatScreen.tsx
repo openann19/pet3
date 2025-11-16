@@ -15,9 +15,8 @@ import {
   CallInterface,
   IncomingCallNotification,
 } from '@mobile/components/call'
-import type { CallInfo } from '@mobile/hooks/call/useCallManager'
 import HoloBackgroundNative from '@mobile/components/chrome/HoloBackground'
-import { useCallManager } from '@mobile/hooks/call/useCallManager'
+import { useCallManager, type CallInfo } from '@/hooks/call/use-call-manager'
 import { useUserStore } from '@mobile/store/user-store'
 import { colors } from '@mobile/theme/colors'
 import React, { useState, useCallback, useEffect } from 'react'
@@ -26,7 +25,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { realtime } from '@mobile/lib/realtime'
 import { createLogger } from '@mobile/utils/logger'
 
-import { useReduceMotion } from '@mobile/effects/chat/ui'
+import { useReduceMotion } from '@mobile/effects/chat/ui/all-in-chat-effects'
 import {
   ReactionBurst,
   ShimmerOverlay,
@@ -42,16 +41,22 @@ type DraftMessage = Message & {
 const INITIAL_MESSAGES: DraftMessage[] = [
   {
     id: '1',
+    roomId: 'demo-room',
     content: 'Welcome to your premium chat experience!',
     senderId: 'system',
-    timestamp: Date.now() - 60_000,
+    type: 'text',
+    createdAt: new Date(Date.now() - 60_000).toISOString(),
+    timestamp: new Date(Date.now() - 60_000).toISOString(),
     status: 'delivered',
   },
   {
     id: '2',
+    roomId: 'demo-room',
     content: 'Swipe on me to reply ✨',
     senderId: 'friend',
-    timestamp: Date.now() - 45_000,
+    type: 'text',
+    createdAt: new Date(Date.now() - 45_000).toISOString(),
+    timestamp: new Date(Date.now() - 45_000).toISOString(),
     status: 'read',
   },
 ]
@@ -70,10 +75,10 @@ export function ChatScreen(): React.ReactElement {
   // Initialize call manager
   const callManager = useCallManager({
     localUserId,
-    onCallStateChange: (status) => {
+    onCallStateChange: (status: 'idle' | 'incoming' | 'outgoing' | 'connecting' | 'active' | 'ended') => {
       logger.info('Call status changed', { status })
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Call error', error)
     },
   })
@@ -81,11 +86,13 @@ export function ChatScreen(): React.ReactElement {
   // Listen for incoming calls
   useEffect(() => {
     // Listen for incoming call signals from RealtimeClient
+    // Note: This is a simplified implementation - in production, you'd listen for specific call IDs
+    const callId = 'incoming-call'
     const unsubscribe = realtime.onWebRTCSignal(
-      'incoming-call',
+      callId,
       localUserId,
       (signal) => {
-        if (signal.type === 'offer' && signal.from) {
+        if (signal.type === 'offer' && signal.from && signal.callId) {
           // Handle incoming call
           logger.info('Incoming call received', {
             from: signal.from,
@@ -99,9 +106,7 @@ export function ChatScreen(): React.ReactElement {
             remoteUserId: signal.from,
             remoteName: remoteUserName,
             isCaller: false,
-          }
-          if (remoteUserPhoto) {
-            callInfo.remotePhoto = remoteUserPhoto
+            ...(remoteUserPhoto ? { remotePhoto: remoteUserPhoto } : {}),
           }
           callManager.setIncomingCall(callInfo)
         }
@@ -119,7 +124,7 @@ export function ChatScreen(): React.ReactElement {
       await callManager.startCall(
         remoteUserId,
         remoteUserName,
-        remoteUserPhoto ?? undefined
+        remoteUserPhoto
       )
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))

@@ -18,6 +18,7 @@ export interface RootStackParamList {
   SignIn: undefined
   SignUp: undefined
   PostComposer: { onPostCreated?: () => void } | undefined
+  [key: string]: object | undefined
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
