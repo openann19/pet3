@@ -6,7 +6,6 @@ import {
   withTiming,
   withSequence,
   MotionView,
-  Presence,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated';

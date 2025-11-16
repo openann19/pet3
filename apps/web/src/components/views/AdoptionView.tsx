@@ -5,7 +5,7 @@ import { CreateAdoptionListingDialog } from '@/components/adoption/CreateAdoptio
 import { MyApplicationsView } from '@/components/adoption/MyApplicationsView';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { useStorage } from '@/hooks/use-storage';
@@ -20,7 +20,7 @@ import { VirtualGrid } from '@/components/virtual/VirtualGrid';
 
 // Type definition for global spark object
 declare global {
-  // eslint-disable-next-line no-var
+   
   var spark: {
     user: () => Promise<{ id: string }>;
   } | undefined;
