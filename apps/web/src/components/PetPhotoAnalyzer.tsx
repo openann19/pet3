@@ -16,7 +16,6 @@ import {
   withTiming,
   withSpring,
   MotionView,
-  Presence,
 } from '@petspark/motion';
 import { toast } from 'sonner';
 

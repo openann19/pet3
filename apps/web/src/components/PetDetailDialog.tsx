@@ -36,7 +36,6 @@ import {
   withSpring,
   withTiming,
   MotionView,
-  Presence,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 

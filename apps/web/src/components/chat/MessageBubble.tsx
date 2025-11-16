@@ -12,7 +12,7 @@
  * - Accessibility features and ARIA attributes
  * - Multiple animation layers and effects
  */
-/* eslint-disable max-lines -- Complex component with multiple media types, reactions, animations, and accessibility features */
+ 
 
 import { useApp } from '@/contexts/AppContext';
 import { isTruthy } from '@petspark/shared';

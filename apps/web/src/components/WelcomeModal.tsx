@@ -14,7 +14,6 @@ import {
   withRepeat,
   withSequence,
   withSpring,
-  type AnimatedStyle,
 } from '@petspark/motion';
 
 export default function WelcomeModal(): JSX.Element | null {
