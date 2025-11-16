@@ -12,7 +12,7 @@ import { cleanupTestState, resetAllMocks } from './utilities/test-helpers';
 // Suppress React act() warnings for Radix UI components during testing
 const originalError = console.error;
 beforeEach(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       args[0].includes('Warning: An update to') &&
@@ -159,14 +159,41 @@ Object.defineProperty(URL, 'revokeObjectURL', {
 });
 
 // Mock File and FileReader
-global.File = vi.fn().mockImplementation((chunks: any[], filename: string, options?: any) => ({
-  name: filename,
-  size: chunks.reduce((acc: number, chunk: any) => acc + (chunk.length || 0), 0),
-  type: options?.type || '',
-  lastModified: Date.now(),
-})) as any;
+interface FileInit {
+  type?: string;
+  lastModified?: number;
+}
 
-const MockFileReader: any = vi.fn().mockImplementation(() => ({
+global.File = vi.fn().mockImplementation((chunks: unknown[], filename: string, options?: FileInit) => ({
+  name: filename,
+  size: chunks.reduce((acc: number, chunk: unknown) => {
+    const chunkLength = (chunk as { length?: number })?.length ?? 0;
+    return acc + chunkLength;
+  }, 0),
+  type: options?.type ?? '',
+  lastModified: Date.now(),
+})) as typeof File;
+
+interface MockFileReaderInstance {
+  readAsDataURL: ReturnType<typeof vi.fn>;
+  readAsText: ReturnType<typeof vi.fn>;
+  readAsArrayBuffer: ReturnType<typeof vi.fn>;
+  result: string | ArrayBuffer | null;
+  error: DOMException | null;
+  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  onabort: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  onloadstart: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  onloadend: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  onprogress: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null;
+  abort: ReturnType<typeof vi.fn>;
+  EMPTY: number;
+  LOADING: number;
+  DONE: number;
+  readyState: number;
+}
+
+const MockFileReader = vi.fn().mockImplementation((): MockFileReaderInstance => ({
   readAsDataURL: vi.fn(),
   readAsText: vi.fn(),
   readAsArrayBuffer: vi.fn(),

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Map as MapInstance, Marker as MarkerInstance, MapMouseEvent } from 'maplibre-gl';
 import type { Location } from '@/lib/maps/types';
 import { getMapStyleUrl } from './provider-config';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export interface MapMarker {
   id: string;
@@ -187,7 +187,7 @@ export function useMapLibreMap({
         el.style.width = '30px';
         el.style.height = '30px';
         el.style.borderRadius = '50%';
-        el.style.backgroundColor = markerData.color || 'hsl(var(--primary))';
+        el.style.backgroundColor = markerData.color ?? 'hsl(var(--primary))';
         el.style.border = '3px solid white';
         el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         el.style.cursor = 'pointer';

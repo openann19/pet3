@@ -190,7 +190,6 @@ export function SubscriptionAdminPanel() {
           </CardContent>
         </Card>
       </div>
-
       <Tabs defaultValue="subscriptions" className="space-y-4">
         <TabsList>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
@@ -333,7 +332,6 @@ export function SubscriptionAdminPanel() {
           </Card>
         </TabsContent>
       </Tabs>
-
       <Dialog open={compDialogOpen} onOpenChange={setCompDialogOpen}>
         <DialogContent>
           <DialogHeader>

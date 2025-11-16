@@ -1,5 +1,4 @@
-'use client';
-
+'use client';;
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   PhoneDisconnect,
@@ -18,7 +17,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { CallSession } from '@/lib/call-types';
 import { formatCallDuration } from '@/lib/call-utils';
 import { haptics } from '@/lib/haptics';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import {
   useSharedValue,
@@ -26,6 +24,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
+  MotionView,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
@@ -144,7 +143,7 @@ export default function CallInterface({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <MotionView
       style={containerStyle}
       className={`fixed inset-0 z-50 flex items-center justify-center ${
         String(isFullscreen ? 'bg-black' : 'bg-black/90 backdrop-blur-xl p-4' ?? '')
@@ -214,7 +213,7 @@ export default function CallInterface({
           onToggleSpeaker={handleToggleSpeaker}
         />
       </div>
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -245,7 +244,7 @@ function AvatarPulseView({ avatar, name, isMuted, isActive, audioWaveform }: Ava
 
   return (
     <div className="absolute inset-0 flex items-center justify-center">
-      <AnimatedView style={avatarStyle} className="flex flex-col items-center">
+      <MotionView style={avatarStyle} className="flex flex-col items-center">
         <Avatar className="w-40 h-40 ring-4 ring-white/30 mb-6">
           <AvatarImage src={avatar} alt={name} />
           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-5xl font-bold">
@@ -254,7 +253,7 @@ function AvatarPulseView({ avatar, name, isMuted, isActive, audioWaveform }: Ava
         </Avatar>
 
         {!isMuted && isActive && <AudioWaveformView waveform={audioWaveform} />}
-      </AnimatedView>
+      </MotionView>
     </div>
   );
 }
@@ -290,7 +289,7 @@ function WaveformBar({ value }: WaveformBarProps) {
     };
   }) as AnimatedStyle;
 
-  return <AnimatedView style={barStyle} className="w-1.5 bg-primary rounded-full" />;
+  return <MotionView style={barStyle} className="w-1.5 bg-primary rounded-full" />;
 }
 
 interface LocalVideoViewProps {
@@ -314,7 +313,7 @@ function LocalVideoView({ videoRef }: LocalVideoViewProps) {
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <MotionView
       style={videoStyle}
       className="absolute top-6 right-6 w-40 h-28 rounded-2xl overflow-hidden shadow-2xl ring-2 ring-white/30"
     >
@@ -326,7 +325,7 @@ function LocalVideoView({ videoRef }: LocalVideoViewProps) {
         className="w-full h-full object-cover"
         style={{ transform: 'scaleX(-1)' }}
       />
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -394,7 +393,7 @@ function CallInfoView({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <MotionView
       style={infoStyle}
       className="glass-strong rounded-2xl px-4 py-3 backdrop-blur-2xl"
     >
@@ -402,14 +401,14 @@ function CallInfoView({
       <div className="flex items-center gap-2">
         {isActive ? (
           <>
-            <AnimatedView style={statusStyle} className="w-2 h-2 bg-green-500 rounded-full" />
+            <MotionView style={statusStyle} className="w-2 h-2 bg-green-500 rounded-full" />
             <span className="text-sm text-white/90 font-medium">
               {formatCallDuration(duration)}
             </span>
           </>
         ) : (
           <>
-            <AnimatedView style={statusStyle} className="w-2 h-2 bg-yellow-500 rounded-full" />
+            <MotionView style={statusStyle} className="w-2 h-2 bg-yellow-500 rounded-full" />
             <span className="text-sm text-white/90">
               {callStatus === 'ringing' ? 'Ringing...' : 'Connecting...'}
             </span>
@@ -441,7 +440,7 @@ function CallInfoView({
           </>
         )}
       </div>
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -488,8 +487,8 @@ function CallControlsView({
 
   return (
     <div className="absolute bottom-0 left-0 right-0 p-8">
-      <AnimatedView style={controlsStyle} className="flex items-center justify-center gap-4">
-        <AnimatedView style={muteAnimation.animatedStyle}>
+      <MotionView style={controlsStyle} className="flex items-center justify-center gap-4">
+        <MotionView style={muteAnimation.animatedStyle}>
           <Button
             onClick={() => {
               muteAnimation.handlePress();
@@ -508,10 +507,10 @@ function CallControlsView({
               <Microphone size={24} weight="fill" className="text-white" />
             )}
           </Button>
-        </AnimatedView>
+        </MotionView>
 
         {isVideoCall && (
-          <AnimatedView style={videoAnimation.animatedStyle}>
+          <MotionView style={videoAnimation.animatedStyle}>
             <Button
               onClick={() => {
                 videoAnimation.handlePress();
@@ -530,10 +529,10 @@ function CallControlsView({
                 <VideoCameraSlash size={24} weight="fill" className="text-white" />
               )}
             </Button>
-          </AnimatedView>
+          </MotionView>
         )}
 
-        <AnimatedView style={endCallAnimation.animatedStyle}>
+        <MotionView style={endCallAnimation.animatedStyle}>
           <Button
             onClick={() => {
               endCallAnimation.handlePress();
@@ -544,9 +543,9 @@ function CallControlsView({
           >
             <PhoneDisconnect size={28} weight="fill" className="text-white" />
           </Button>
-        </AnimatedView>
+        </MotionView>
 
-        <AnimatedView style={speakerAnimation.animatedStyle}>
+        <MotionView style={speakerAnimation.animatedStyle}>
           <Button
             onClick={() => {
               speakerAnimation.handlePress();
@@ -565,8 +564,8 @@ function CallControlsView({
               <SpeakerSlash size={24} weight="fill" className="text-white" />
             )}
           </Button>
-        </AnimatedView>
-      </AnimatedView>
+        </MotionView>
+      </MotionView>
     </div>
   );
 }

@@ -1,5 +1,4 @@
-'use client';
-
+'use client';;
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   useSharedValue,
@@ -7,13 +6,13 @@ import {
   withSpring,
   withTiming,
   withDelay,
+  MotionView,
 } from '@petspark/motion';
 import { MagnifyingGlass, X, Crown, Clock } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useStorage } from '@/hooks/use-storage';
 import { useBounceOnTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
@@ -57,7 +56,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
     }
 
     if (selectedCategory === 'recent') {
-      return getRecentStickers(recentStickerIds || []);
+      return getRecentStickers(recentStickerIds ?? []);
     }
 
     if (selectedCategory === 'premium') {
@@ -72,7 +71,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
 
     const updatedRecent = [
       sticker.id,
-      ...(recentStickerIds || []).filter((id) => id !== sticker.id),
+      ...(recentStickerIds ?? []).filter((id) => id !== sticker.id),
     ].slice(0, 24);
     setRecentStickerIds(updatedRecent);
 
@@ -116,7 +115,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
   }, [containerOpacity, containerY, onClose]);
 
   return (
-    <AnimatedView
+    <MotionView
       style={containerStyle}
       className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] bg-card/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-105 sm:rounded-2xl sm:border sm:max-h-150"
     >
@@ -215,7 +214,7 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
         )}
 
         <ScrollArea className="flex-1 px-4">
-          <AnimatedView style={contentStyle}>
+          <MotionView style={contentStyle}>
             {displayedStickers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="text-6xl mb-4 opacity-50">🔍</div>
@@ -238,10 +237,10 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
                 ))}
               </div>
             )}
-          </AnimatedView>
+          </MotionView>
         </ScrollArea>
       </div>
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -297,7 +296,7 @@ function StickerButton({
   }) as AnimatedStyle;
 
   return (
-    <AnimatedView
+    <MotionView
       style={buttonStyle}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
@@ -312,6 +311,6 @@ function StickerButton({
       {sticker.premium && (
         <Crown size={12} weight="fill" className="absolute top-0.5 right-0.5 text-accent" />
       )}
-    </AnimatedView>
+    </MotionView>
   );
 }

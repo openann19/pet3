@@ -225,6 +225,33 @@ export { useWaveAnimation, useMultiWave } from './recipes/useWaveAnimation'
 export { usePageTransitions, Presence } from './transitions/presence'
 export { motion as motionTokens } from './tokens'
 
+// Canonical motion tokens (new system)
+export {
+  motionDurations,
+  motionEasings,
+  motionSprings,
+  type MotionDurationKey,
+  type MotionEasingKey,
+  type MotionSpringKey,
+} from './motionTokens'
+// Note: SpringConfig is exported from './types' below to avoid duplicate
+
+// Canonical motion hooks
+export {
+  usePressMotion,
+  useBubbleEntryMotion,
+  useListItemPresenceMotion,
+  useOverlayTransition,
+  type UsePressMotionOptions,
+  type UsePressMotionReturn,
+  type BubbleMotionOptions,
+  type UseBubbleEntryMotionReturn,
+  type UseListItemPresenceMotionOptions,
+  type UseListItemPresenceMotionReturn,
+  type UseOverlayTransitionOptions,
+  type UseOverlayTransitionReturn,
+} from './hooks'
+
 // Reduced motion utilities
 export { usePerfBudget } from './usePerfBudget'
 export type { PerfBudget } from './usePerfBudget'
@@ -260,7 +287,7 @@ export type { ViewStyle, TextStyle, ImageStyle } from 'react-native'
 // Framer Motion direct exports (web only - use with platform checks)
 // Note: These are conditionally available based on platform
 // Use type guards or platform checks when using these
-export type { Variants, HTMLMotionProps } from 'framer-motion'
+export type { Variants, HTMLMotionProps, Transition } from 'framer-motion'
 // Export Transition from framer-motion with alias to avoid conflict
 export type { Transition as FramerTransition } from 'framer-motion'
 // For runtime exports, import directly from 'framer-motion' when needed

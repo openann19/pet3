@@ -241,7 +241,6 @@ export function MatchingConfigPanel() {
           })}
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>Hard Gates Configuration</CardTitle>
@@ -337,7 +336,6 @@ export function MatchingConfigPanel() {
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>Feature Flags</CardTitle>
@@ -401,7 +399,6 @@ export function MatchingConfigPanel() {
           </div>
         </CardContent>
       </Card>
-
       <div className="flex gap-4">
         <Button
           onClick={() => {
@@ -468,7 +465,6 @@ export function MatchingConfigPanel() {
           Reset to Current
         </Button>
       </div>
-
       {config.updatedAt && (
         <p className="text-sm text-muted-foreground">
           Last updated: {new Date(config.updatedAt).toLocaleString()} by {config.updatedBy}

@@ -1,8 +1,13 @@
-'use client';
-
+'use client';;
 import React, { useState, useCallback, useRef, useEffect, useId } from 'react';
-import { useSharedValue, useAnimatedStyle, withSpring, withTiming, animate } from '@petspark/motion';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  animate,
+  MotionView,
+} from '@petspark/motion';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
@@ -215,18 +220,18 @@ export function PremiumInput({
         onMouseEnter={hoverLift.handleEnter}
         onMouseLeave={hoverLift.handleLeave}
       >
-        <AnimatedView
+        <MotionView
           style={borderStyle}
           className="absolute inset-0 rounded-xl pointer-events-none"
         />
 
         {leftIcon && (
-          <AnimatedView style={iconStyle} className={cn(
+          <MotionView style={iconStyle} className={cn(
             'shrink-0 text-muted-foreground',
             getSpacingClassesFromConfig({ marginX: 'sm' })
           )} aria-hidden="true">
             {leftIcon}
-          </AnimatedView>
+          </MotionView>
         )}
 
         {label && (
@@ -240,7 +245,7 @@ export function PremiumInput({
         )}
 
         {label && (
-          <AnimatedView
+          <MotionView
             style={labelStyle}
             className={cn(
               'absolute left-4 pointer-events-none transition-colors',
@@ -253,7 +258,7 @@ export function PremiumInput({
             aria-hidden="true"
           >
             {label}
-          </AnimatedView>
+          </MotionView>
         )}
 
         <input
@@ -326,7 +331,6 @@ export function PremiumInput({
           {rightIcon && <div className="shrink-0 text-muted-foreground" aria-hidden="true">{rightIcon}</div>}
         </div>
       </div>
-
       {(error || helperText) && (
         <div
           id={error ? errorId : helperTextId}

@@ -344,7 +344,7 @@ export class LiveStreamingAPI {
       // Broadcast reaction via WebSocket to all viewers
       try {
         const stream = await this.getStreamById(streamId);
-        const roomId = stream?.roomId || `live:${streamId}`;
+        const roomId = stream?.roomId ?? `live:${streamId}`;
         realtime.broadcastReaction(roomId, {
           id: reaction.id,
           userId: reaction.userId,

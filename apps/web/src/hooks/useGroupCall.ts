@@ -306,7 +306,7 @@ export function useGroupCall(
   };
 
   const addToHistory = (item: CallHistoryItem) => {
-    setCallHistory((prev) => [item, ...(prev || [])].slice(0, 50));
+    setCallHistory((prev) => [item, ...(prev ?? [])].slice(0, 50));
   };
 
   return {

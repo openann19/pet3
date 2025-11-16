@@ -96,7 +96,7 @@ class AdminApiImpl {
       await APIClient.post(`${ENDPOINTS.ADMIN.SETTINGS}/moderate`, {
         taskId,
         action,
-        reason: reason || undefined,
+        ...(reason ? { reason } : {}),
       });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));

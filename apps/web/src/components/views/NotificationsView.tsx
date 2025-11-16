@@ -69,7 +69,7 @@ function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
   const entry = useEntryAnimation({ initialY: 20, initialOpacity: 0 })
 
   return (
-    <AnimatedView
+    <MotionView
       style={entry.animatedStyle}
       className="flex flex-col items-center justify-center py-16 text-center"
     >
@@ -84,8 +84,8 @@ function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
           ? 'You\'re all caught up!'
           : 'When you get notifications, they\'ll appear here'}
       </p>
-    </AnimatedView>
-  )
+    </MotionView>
+  );
 }
 
 function _NotificationItemView({
@@ -120,7 +120,7 @@ function _NotificationItemView({
   const message = getNotificationMessage(notification)
 
   return (
-    <AnimatedView
+    <MotionView
       style={animatedStyle}
       onClick={() => {
         onNotificationClick(notification)
@@ -154,8 +154,8 @@ function _NotificationItemView({
           )}
         </div>
       </div>
-    </AnimatedView>
-  )
+    </MotionView>
+  );
 }
 
 interface NotificationsViewProps {

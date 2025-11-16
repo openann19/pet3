@@ -7,9 +7,8 @@ import { generateSamplePets } from '@/lib/seedData';
 import type { Pet } from '@/lib/types';
 import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
-import { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from '@petspark/motion';
+import { useAnimatedStyle, useSharedValue, withRepeat, withTiming, MotionView } from '@petspark/motion';
 
 interface GenerateProfilesButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -81,7 +80,7 @@ export default function GenerateProfilesButton({
 
   return (
     <div className={showLabel ? 'w-full' : ''}>
-      <AnimatedView
+      <MotionView
         style={buttonHover.animatedStyle}
         onMouseEnter={buttonHover.handleMouseEnter}
         onMouseLeave={buttonHover.handleMouseLeave}
@@ -100,21 +99,21 @@ export default function GenerateProfilesButton({
           }
         >
           {showLabel && (
-            <AnimatedView
+            <MotionView
               style={shimmerStyle}
               className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
             />
           )}
-          <AnimatedView style={iconStyle} className={showLabel ? 'mr-2' : ''}>
+          <MotionView style={iconStyle} className={showLabel ? 'mr-2' : ''}>
             {isGenerating ? <Sparkle size={20} weight="fill" /> : <Plus size={20} weight="bold" />}
-          </AnimatedView>
+          </MotionView>
           {showLabel && (
             <span className="relative z-10 font-semibold">
               {isGenerating ? 'Generating Profiles...' : 'Generate More Profiles'}
             </span>
           )}
         </Button>
-      </AnimatedView>
+      </MotionView>
     </div>
   );
 }

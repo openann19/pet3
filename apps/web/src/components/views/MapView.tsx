@@ -54,7 +54,7 @@ function AnimatedMarker({
   });
 
   return (
-    <AnimatedView
+    <MotionView
       className="absolute"
       style={[
         markerEntry.animatedStyle,
@@ -76,7 +76,7 @@ function AnimatedMarker({
         </div>
         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
       </button>
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -221,7 +221,7 @@ export default function MapView() {
   const handleSavePlace = (placeId: string) => {
     haptics.trigger('medium');
     setSavedPlaces((current) => {
-      const currentPlaces = current || [];
+      const currentPlaces = current ?? [];
       if (currentPlaces.includes(placeId)) {
         toast.info(t.map?.placeRemoved || 'Place removed from saved');
         return currentPlaces.filter((id) => id !== placeId);
@@ -515,7 +515,7 @@ export default function MapView() {
 
                 {filteredPlaces.map((place) => {
                   const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
-                  const isSaved = (savedPlaces || []).includes(place.id);
+                  const isSaved = (savedPlaces ?? []).includes(place.id);
 
                   return (
                     <Card
@@ -598,7 +598,7 @@ export default function MapView() {
               {(() => {
                 const place = selectedMarker.data as Place;
                 const category = PLACE_CATEGORIES.find((c) => c.id === place.category);
-                const isSaved = (savedPlaces || []).includes(place.id);
+                const isSaved = (savedPlaces ?? []).includes(place.id);
 
                 return (
                   <div className="p-6 space-y-4">
@@ -702,7 +702,7 @@ export default function MapView() {
                 <p className="text-xs text-muted-foreground">{t.map?.placesNearby || 'Places'}</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-primary">{(savedPlaces || []).length}</p>
+                <p className="text-2xl font-bold text-primary">{(savedPlaces ?? []).length}</p>
                 <p className="text-xs text-muted-foreground">{t.map?.saved || 'Saved'}</p>
               </div>
               <div>

@@ -45,7 +45,7 @@ function AnimatedAlertCard({
   })
 
   return (
-    <AnimatedView style={cardEntry.animatedStyle}>
+    <MotionView style={cardEntry.animatedStyle}>
       <LostAlertCard
         alert={alert}
         onSelect={onSelect}
@@ -53,8 +53,8 @@ function AnimatedAlertCard({
         isFavorited={isFavorited}
         onToggleFavorite={onToggleFavorite}
       />
-    </AnimatedView>
-  )
+    </MotionView>
+  );
 }
 
 export default function LostFoundView() {

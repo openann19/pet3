@@ -28,6 +28,8 @@ export default [
       '**/html/**',
       '**/MEDIA_EDITOR_EXAMPLES.tsx',
       'MEDIA_EDITOR_EXAMPLES.tsx',
+      'apps/backend/**', // Backend uses different tsconfig, exclude from type-aware linting
+      'packages/core/**', // Exclude core from linting to avoid tsconfig conflicts
     ],
   },
 
@@ -155,6 +157,7 @@ export default [
       '**/test/**',
       '**/__tests__/**',
       'apps/web/android-design-tokens-rn/**',
+      'packages/core/**', // Exclude core from type-aware to avoid tsconfig conflicts
     ],
     languageOptions: {
       parser: tseslint.parser,

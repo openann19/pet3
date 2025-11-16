@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { MotionView } from "@petspark/motion";
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { 
   Heart, 
@@ -19,14 +20,9 @@ import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { ConsentManager, AgeVerification, isAgeVerified } from '@/components/compliance'
 import { errorTracking } from '@/lib/error-tracking'
-import { useBounceOnTap, useHeaderAnimation, useHeaderButtonAnimation, useHoverLift, useIconRotation, useLogoAnimation, useLogoGlow, useModalAnimation, useNavBarAnimation, usePageTransition, useStaggeredContainer } from '@/effects/reanimated'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
-import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation'
-import { useStorage } from '@/hooks/use-storage'
 import { haptics } from '@/lib/haptics'
 import type { Playdate } from '@/lib/playdate-types'
 import '@/lib/profile-generator-helper'; // Expose generateProfiles to window
-import type { Match, Pet, SwipeAction } from '@/lib/types'
 import HoloBackground from '@/components/chrome/HoloBackground'
 import GlowTrail from '@/effects/cursor/GlowTrail'
 // Ultra overlays (web-only, zero deps)
@@ -36,10 +32,13 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Toaster } from '@/components/ui/sonner'
 import { NavButton } from '@/components/navigation/NavButton'
-import { isTruthy } from '@petspark/shared';
-import type { View } from '@/lib/routes';
-import { getDefaultView, isValidView } from '@/lib/routes';
-import { useNavigation } from '@/hooks/use-navigation';
+import { useStorage } from '@/hooks/use-storage'
+import { useAppAnimations } from '@/hooks/use-app-animations'
+import { useAppModals } from '@/hooks/use-app-modals'
+import { useAppState } from '@/hooks/use-app-state'
+import { useAppStats } from '@/hooks/use-app-stats'
+import { useAppNavigation } from '@/hooks/use-app-navigation'
+import { useNavigation } from '@/hooks/use-navigation'
 
 // Route components - lazy loaded
 const DiscoverView = lazy(() => import(/* webpackPrefetch: true */ '@/components/views/DiscoverView'))
@@ -67,19 +66,47 @@ const BillingIssueBanner = lazy(() => import('@/components/payments/BillingIssue
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt').then(module => ({ default: module.InstallPrompt })))
 const SeedDataInitializer = lazy(() => import('@/components/SeedDataInitializer'))
 const OfflineIndicator = lazy(() => import('@/components/network/OfflineIndicator').then(module => ({ default: module.OfflineIndicator })))
-type AppState = 'welcome' | 'auth' | 'main'
 
 function App() {
   const NAV_BUTTON_BASE_CLASSES = 'flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] sm:min-w-[70px]'
   
-  const [currentView, setCurrentView] = useState<View>(getDefaultView())
+  // App state management hooks
+  const { currentView, setCurrentView } = useAppNavigation()
   const navigation = useNavigation(setCurrentView)
-  const [appState, setAppState] = useState<AppState>('welcome')
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup')
+  const { appState, authMode, handleWelcomeGetStarted, handleWelcomeSignIn, handleWelcomeExplore, handleAuthSuccess, handleAuthBack } = useAppState()
   const { t, theme, toggleTheme, language, toggleLanguage } = useApp()
-  const { isAuthenticated, user } = useAuth()
-  const [hasSeenWelcome, setHasSeenWelcome] = useStorage<boolean>('has-seen-welcome-v2', false)
+  const { user } = useAuth()
   const [ageVerified, setAgeVerified] = useState(isAgeVerified())
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [playdates] = useStorage<Playdate[]>('playdates', [])
+  
+  // Modal state management
+  const {
+    showGenerateProfiles,
+    showStats,
+    showMap,
+    showAdminConsole,
+    showThemeSettings,
+    setShowGenerateProfiles,
+    setShowStats,
+    setShowMap,
+    setShowAdminConsole,
+    setShowThemeSettings,
+  } = useAppModals()
+  
+  // Statistics
+  const { totalMatches, totalSwipes, successRate } = useAppStats()
+  
+  // Animations
+  const animations = useAppAnimations({
+    currentView,
+    language,
+    showGenerateProfiles,
+    showStats,
+    showMap,
+    showAdminConsole,
+    showThemeSettings,
+  })
   
   // Initialize error tracking with user context
   useEffect(() => {
@@ -87,88 +114,6 @@ function App() {
       errorTracking.setUserContext(user.id)
     }
   }, [user])
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
-  const [_userPets] = useStorage<Pet[]>('user-pets', [])
-  const [matches] = useStorage<Match[]>('matches', [])
-  const [swipeHistory] = useStorage<SwipeAction[]>('swipe-history', [])
-  const [playdates] = useStorage<Playdate[]>('playdates', [])
-  const [showGenerateProfiles, setShowGenerateProfiles] = useState(false)
-  const [showStats, setShowStats] = useState(false)
-  const [showMap, setShowMap] = useState(false)
-  const [showAdminConsole, setShowAdminConsole] = useState(false)
-  const [showThemeSettings, setShowThemeSettings] = useState(false)
-
-  // Reanimated navigation button animation for Lost & Found
-  const lostFoundAnimation = useNavButtonAnimation({
-    isActive: currentView === 'lost-found',
-    enablePulse: true,
-    enableRotation: true,
-    hapticFeedback: true
-  })
-
-  // Logo animations
-  const logoAnimation = useLogoAnimation()
-  const logoGlow = useLogoGlow()
-  
-  // Header button hover animations
-  const logoButtonHover = useHoverLift({ scale: 1.06 })
-  
-  // Header button animations
-  const headerButtonsContainer = useStaggeredContainer({ delay: 0.2 })
-  const headerButton1 = useHeaderButtonAnimation({ delay: 0.3, scale: 1.12, translateY: -3, rotation: -5 })
-  const headerButton2 = useHeaderButtonAnimation({ delay: 0.35, scale: 1.12, translateY: -3, rotation: -5 })
-  const headerButton3 = useHeaderButtonAnimation({ delay: 0.4, scale: 1.1, translateY: -2, rotation: -3 })
-  const headerButton4 = useHeaderButtonAnimation({ delay: 0.45, scale: 1.12, translateY: -3, rotation: -5 })
-  const headerButton5 = useHeaderButtonAnimation({ delay: 0.5, scale: 1.12, translateY: -3, rotation: -5 })
-  const headerButton6 = useHeaderButtonAnimation({ delay: 0.55, scale: 1.12, translateY: -3, rotation: -5 })
-  
-  // Language button icon rotation
-  const languageIconRotation = useIconRotation({ enabled: language === 'bg', targetRotation: 360 })
-  
-  // Page transition animation
-  const pageTransition = usePageTransition({ 
-    isVisible: true, 
-    direction: 'up' 
-  })
-  const loadingTransition = usePageTransition({ isVisible: true, direction: 'fade', duration: 300 })
-  
-  // Modal animations
-  const generateProfilesModal = useModalAnimation({ isVisible: showGenerateProfiles, duration: 200 })
-  const generateProfilesContent = useModalAnimation({ isVisible: showGenerateProfiles, duration: 300 })
-  const statsModal = useModalAnimation({ isVisible: showStats, duration: 200 })
-  const statsContent = useModalAnimation({ isVisible: showStats, duration: 300 })
-  const mapModal = useModalAnimation({ isVisible: showMap, duration: 200 })
-  const mapContent = useModalAnimation({ isVisible: showMap, duration: 300 })
-  const adminModal = useModalAnimation({ isVisible: showAdminConsole, duration: 200 })
-  const adminContent = useModalAnimation({ isVisible: showAdminConsole, duration: 300 })
-  const themeContent = useModalAnimation({ isVisible: showThemeSettings, duration: 300 })
-  
-  // Reanimated animations for main app
-  const headerAnimation = useHeaderAnimation({ delay: 0.1 })
-  const navBarAnimation = useNavBarAnimation({ delay: 0.2 })
-  
-  // Button animations
-  const closeButtonBounce = useBounceOnTap({ hapticFeedback: true })
-
-  
-
-  // Memoize computed values to prevent unnecessary re-renders
-  const totalMatches = useMemo(() => 
-    Array.isArray(matches) ? matches.filter(m => m.status === 'active').length : 0,
-    [matches]
-  )
-  const totalSwipes = useMemo(() => 
-    Array.isArray(swipeHistory) ? swipeHistory.length : 0,
-    [swipeHistory]
-  )
-  const likeCount = useMemo(() => 
-    Array.isArray(swipeHistory) ? swipeHistory.filter(s => s.action === 'like').length : 0,
-    [swipeHistory]
-  )
-  const successRate = useMemo(() => 
-    likeCount > 0 ? Math.round((totalMatches / likeCount) * 100) : 0,
-    [likeCount, totalMatches]
-  )
 
   useEffect(() => {
     const handleOnline = () => { setIsOnline(true); }
@@ -201,40 +146,6 @@ function App() {
     }
   }, [])
 
-  useEffect(() => {
-    if (hasSeenWelcome && isAuthenticated) {
-      setAppState('main')
-    } else if (isTruthy(hasSeenWelcome)) {
-      setAppState('auth')
-    } else {
-      setAppState('welcome')
-    }
-  }, [hasSeenWelcome, isAuthenticated])
-
-  const handleWelcomeGetStarted = () => {
-    setHasSeenWelcome(true)
-    setAuthMode('signup')
-    setAppState('auth')
-  }
-
-  const handleWelcomeSignIn = () => {
-    setHasSeenWelcome(true)
-    setAuthMode('signin')
-    setAppState('auth')
-  }
-
-  const handleWelcomeExplore = () => {
-    setHasSeenWelcome(true)
-    setAppState('main')
-  }
-
-  const handleAuthSuccess = () => {
-    setAppState('main')
-  }
-
-  const handleAuthBack = () => {
-    setAppState('welcome')
-  }
 
   return (
     <ErrorBoundary>
@@ -286,67 +197,67 @@ function App() {
       </Suspense>
       
       {/* Ultra-premium glassmorphic header with layered effects */}
-      <AnimatedView 
+      <MotionView 
         className="backdrop-blur-2xl bg-card/90 border-b border-border/50 sticky top-0 z-40 shadow-2xl shadow-primary/20"
-        style={headerAnimation.headerStyle}
+        animatedStyle={animations.headerAnimation.headerStyle}
       >
         <div className="absolute inset-0 bg-linear-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
-        <AnimatedView 
+        <MotionView 
           className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
-          style={headerAnimation.shimmerStyle}
+          animatedStyle={animations.headerAnimation.shimmerStyle}
         >
           <div />
-        </AnimatedView>
+        </MotionView>
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 relative">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            <AnimatedView 
+            <MotionView 
               className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
-              style={{ scale: logoButtonHover.scale, y: logoButtonHover.translateY }}
-              onMouseEnter={logoButtonHover.handleEnter}
-              onMouseLeave={logoButtonHover.handleLeave}
+              animatedStyle={{ scale: animations.logoButtonHover.scale, y: animations.logoButtonHover.translateY }}
+              onMouseEnter={animations.logoButtonHover.handleEnter}
+              onMouseLeave={animations.logoButtonHover.handleLeave}
             >
-              <AnimatedView className="relative" style={logoAnimation.style}>
-                <AnimatedView
+              <MotionView className="relative" animatedStyle={animations.logoAnimation.style}>
+                <MotionView
                   className="absolute inset-0 bg-linear-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
-                  style={logoGlow.style}
+                  animatedStyle={animations.logoGlow.style}
                 >
                   <div />
-                </AnimatedView>
+                </MotionView>
                 <Heart className="text-primary drop-shadow-2xl relative z-10 group-hover:scale-125 transition-transform duration-300" size={24} weight="fill" />
-              </AnimatedView>
+              </MotionView>
               <h1 className="text-base sm:text-xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent bg-size-[200%_auto] animate-gradient-x drop-shadow-sm">
                 {t.app.title}
               </h1>
-            </AnimatedView>
-            <AnimatedView 
+            </MotionView>
+            <MotionView 
               className="flex items-center gap-1 sm:gap-2"
-              style={{ opacity: headerButtonsContainer.opacity, x: headerButtonsContainer.x }}
+              animatedStyle={{ opacity: animations.headerButtonsContainer.opacity, x: animations.headerButtonsContainer.x }}
             >
-              <AnimatedView 
-                style={headerButton1.buttonStyle}
-                onMouseEnter={headerButton1.handleEnter}
-                onMouseLeave={headerButton1.handleLeave}
-                onClick={headerButton1.handleTap}
+              <MotionView 
+                animatedStyle={animations.headerButton1.buttonStyle}
+                onMouseEnter={animations.headerButton1.handleEnter}
+                onMouseLeave={animations.headerButton1.handleLeave}
+                onClick={animations.headerButton1.handleTap}
               >
                 <Suspense fallback={<div className="w-9 h-9" />}>
                   <SyncStatusIndicator />
                 </Suspense>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton2.buttonStyle}
-                onMouseEnter={headerButton2.handleEnter}
-                onMouseLeave={headerButton2.handleLeave}
-                onClick={headerButton2.handleTap}
+              </MotionView>
+              <MotionView 
+                animatedStyle={animations.headerButton2.buttonStyle}
+                onMouseEnter={animations.headerButton2.handleEnter}
+                onMouseLeave={animations.headerButton2.handleLeave}
+                onClick={animations.headerButton2.handleTap}
               >
                 <Suspense fallback={<div className="w-9 h-9" />}>
                   <PremiumNotificationBell />
                 </Suspense>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton3.buttonStyle}
-                onMouseEnter={headerButton3.handleEnter}
-                onMouseLeave={headerButton3.handleLeave}
-                onClick={headerButton3.handleTap}
+              </MotionView>
+              <MotionView 
+                animatedStyle={animations.headerButton3.buttonStyle}
+                onMouseEnter={animations.headerButton3.handleEnter}
+                onMouseLeave={animations.headerButton3.handleLeave}
+                onClick={animations.headerButton3.handleTap}
               >
                 <Button
                   variant="ghost"
@@ -360,19 +271,19 @@ function App() {
                   aria-pressed={language === 'bg'}
                   title={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
                 >
-                  <AnimatedView style={languageIconRotation.style}>
+                  <MotionView animatedStyle={animations.languageIconRotation.style}>
                     <Translate size={18} weight="bold" className="text-foreground" />
-                  </AnimatedView>
+                  </MotionView>
                   <span className="text-xs font-semibold">
                     {language === 'en' ? 'БГ' : 'EN'}
                   </span>
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton4.buttonStyle}
-                onMouseEnter={headerButton4.handleEnter}
-                onMouseLeave={headerButton4.handleLeave}
-                onClick={headerButton4.handleTap}
+              </MotionView>
+              <MotionView 
+                animatedStyle={animations.headerButton4.buttonStyle}
+                onMouseEnter={animations.headerButton4.handleEnter}
+                onMouseLeave={animations.headerButton4.handleLeave}
+                onClick={animations.headerButton4.handleTap}
               >
                 <Button
                   variant="ghost"
@@ -387,12 +298,12 @@ function App() {
                 >
                   <ShieldCheck size={20} weight="bold" className="text-foreground" />
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton5.buttonStyle}
-                onMouseEnter={headerButton5.handleEnter}
-                onMouseLeave={headerButton5.handleLeave}
-                onClick={headerButton5.handleTap}
+              </MotionView>
+              <MotionView 
+                animatedStyle={animations.headerButton5.buttonStyle}
+                onMouseEnter={animations.headerButton5.handleEnter}
+                onMouseLeave={animations.headerButton5.handleLeave}
+                onClick={animations.headerButton5.handleTap}
               >
                 <Button
                   variant="ghost"
@@ -410,12 +321,12 @@ function App() {
                     <Moon size={20} weight="bold" className="text-foreground" />
                   )}
                 </Button>
-              </AnimatedView>
-              <AnimatedView 
-                style={headerButton6.buttonStyle}
-                onMouseEnter={headerButton6.handleEnter}
-                onMouseLeave={headerButton6.handleLeave}
-                onClick={headerButton6.handleTap}
+              </MotionView>
+              <MotionView 
+                animatedStyle={animations.headerButton6.buttonStyle}
+                onMouseEnter={animations.headerButton6.handleEnter}
+                onMouseLeave={animations.headerButton6.handleLeave}
+                onClick={animations.headerButton6.handleTap}
               >
                 <Button
                   variant="ghost"
@@ -430,11 +341,11 @@ function App() {
                 >
                   <Palette size={20} weight="bold" className="text-foreground" />
                 </Button>
-              </AnimatedView>
-            </AnimatedView>
+              </MotionView>
+            </MotionView>
           </div>
         </div>
-      </AnimatedView>
+      </MotionView>
 
       <Suspense fallback={null}>
         <BillingIssueBanner />
@@ -443,13 +354,13 @@ function App() {
       {/* Enhanced main content with premium transitions */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 relative z-10">
         <Suspense fallback={
-          <AnimatedView style={loadingTransition.style}>
+          <MotionView animatedStyle={animations.loadingTransition.style}>
             <LoadingState />
-          </AnimatedView>
+          </MotionView>
         }>
-          <AnimatedView
+          <MotionView
             key={currentView}
-            style={pageTransition.style}
+            animatedStyle={animations.pageTransition.style}
           >
             {currentView === 'discover' && <DiscoverView />}
             {currentView === 'matches' && <MatchesView onNavigateToChat={() => { navigation.navigateToView('chat'); }} />}
@@ -458,21 +369,21 @@ function App() {
             {currentView === 'adoption' && <AdoptionView />}
             {currentView === 'lost-found' && <LostFoundView />}
             {currentView === 'profile' && <ProfileView />}
-          </AnimatedView>
+          </MotionView>
         </Suspense>
       </main>
 
-            <AnimatedView 
-        style={navBarAnimation.navStyle}
+            <MotionView 
+        animatedStyle={animations.navBarAnimation.navStyle}
         className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/50 z-40 shadow-2xl shadow-primary/20 safe-area-inset-bottom"                                                                               
       >
         <div className="absolute inset-0 bg-linear-to-t from-primary/8 via-accent/4 to-transparent pointer-events-none" />                                      
-        <AnimatedView 
-          style={navBarAnimation.shimmerStyle}
+        <MotionView 
+          animatedStyle={animations.navBarAnimation.shimmerStyle}
           className="absolute inset-0 bg-linear-to-r from-transparent via-accent/5 to-transparent pointer-events-none"                                          
         >
           <div />
-        </AnimatedView>
+        </MotionView>
         <div className="max-w-7xl mx-auto px-1 sm:px-2 relative">
           <div className="flex items-center justify-around py-2 sm:py-3 gap-1">
                         <NavButton
@@ -504,7 +415,7 @@ function App() {
               isActive={currentView === 'community'}
               onClick={() => { setCurrentView('community'); }}
               icon={<Users size={22} weight={currentView === 'community' ? 'fill' : 'regular'} />}
-              label={t.nav.community || 'Community'}
+              label={t.nav.community ?? 'Community'}
               enablePulse={currentView === 'community'}
             />
 
@@ -512,38 +423,38 @@ function App() {
               isActive={currentView === 'adoption'}
               onClick={() => { setCurrentView('adoption'); }}
               icon={<Heart size={22} weight={currentView === 'adoption' ? 'fill' : 'duotone'} />}
-              label={t.nav.adoption || 'Adopt'}
+              label={t.nav.adoption ?? 'Adopt'}
               enablePulse={currentView === 'adoption'}
             />
 
-            <AnimatedView
+            <MotionView
               className={`${String(NAV_BUTTON_BASE_CLASSES ?? '')} relative cursor-pointer ${
                 String(currentView === 'lost-found'
                                                                     ? 'text-primary bg-linear-to-br from-primary/20 to-accent/15 shadow-lg shadow-primary/25'
                                                                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/60')
               }`}
-              style={{ scale: lostFoundAnimation.scale, y: lostFoundAnimation.translateY }}
-              onMouseEnter={lostFoundAnimation.handleHover}
-              onMouseLeave={lostFoundAnimation.handleLeave}
+              animatedStyle={{ scale: animations.lostFoundAnimation.scale, y: animations.lostFoundAnimation.translateY }}
+              onMouseEnter={animations.lostFoundAnimation.handleHover}
+              onMouseLeave={animations.lostFoundAnimation.handleLeave}
               onClick={() => {
-                lostFoundAnimation.handlePress()
+                animations.lostFoundAnimation.handlePress()
                 haptics.impact('light')
                 setCurrentView('lost-found')
               }}
             >
-              <AnimatedView style={{ scale: lostFoundAnimation.iconScale, rotate: lostFoundAnimation.iconRotation }}>
+              <MotionView animatedStyle={{ scale: animations.lostFoundAnimation.iconScale, rotate: animations.lostFoundAnimation.iconRotation }}>
                 <MapPin size={22} weight={currentView === 'lost-found' ? 'fill' : 'regular'} />
-              </AnimatedView>
-              <span className="text-[10px] sm:text-xs font-semibold leading-tight">{t.nav['lost-found'] || 'Lost & Found'}</span>
+              </MotionView>
+              <span className="text-[10px] sm:text-xs font-semibold leading-tight">{t.nav['lost-found'] ?? 'Lost & Found'}</span>
               {currentView === 'lost-found' && (
-                <AnimatedView
+                <MotionView
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
-                  style={{ opacity: lostFoundAnimation.indicatorOpacity, width: lostFoundAnimation.indicatorWidth }}
+                  animatedStyle={{ opacity: animations.lostFoundAnimation.indicatorOpacity, width: animations.lostFoundAnimation.indicatorWidth }}
                 >
                   <div />
-                </AnimatedView>
+                </MotionView>
               )}
-            </AnimatedView>
+            </MotionView>
 
                         <NavButton
               isActive={currentView === 'profile'}
@@ -554,7 +465,7 @@ function App() {
             />
           </div>
         </div>
-      </AnimatedView>
+      </MotionView>
 
       <Suspense fallback={null}>
         <QuickActionsMenu
@@ -569,20 +480,20 @@ function App() {
       </Suspense>
 
       {showGenerateProfiles && (
-        <AnimatedView
-          style={{ opacity: generateProfilesModal.opacity, scale: generateProfilesModal.scale, y: generateProfilesModal.y }}
+        <MotionView
+          animatedStyle={{ opacity: animations.generateProfilesModal.opacity, scale: animations.generateProfilesModal.scale, y: animations.generateProfilesModal.y }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowGenerateProfiles(false); }}
         >
-          <AnimatedView
-            style={{ opacity: generateProfilesContent.opacity, scale: generateProfilesContent.scale, y: generateProfilesContent.y }}
+          <MotionView
+            animatedStyle={{ opacity: animations.generateProfilesContent.opacity, scale: animations.generateProfilesContent.scale, y: animations.generateProfilesContent.y }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="bg-card p-6 rounded-2xl shadow-2xl max-w-md w-full border border-border/50"
           >
             <Suspense fallback={<LoadingState />}>
               <GenerateProfilesButton />
             </Suspense>
-            <AnimatedView style={{ scale: closeButtonBounce.scale }}>
+            <MotionView animatedStyle={{ scale: animations.closeButtonBounce.scale }}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -590,18 +501,18 @@ function App() {
               >
                 Close
               </Button>
-            </AnimatedView>
-          </AnimatedView>
-        </AnimatedView>
+            </MotionView>
+          </MotionView>
+        </MotionView>
       )}
       {showStats && totalSwipes > 0 && (
-        <AnimatedView
-          style={{ opacity: statsModal.opacity, scale: statsModal.scale, y: statsModal.y }}
+        <MotionView
+          animatedStyle={{ opacity: animations.statsModal.opacity, scale: animations.statsModal.scale, y: animations.statsModal.y }}
           className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={() => { setShowStats(false); }}
         >
-          <AnimatedView
-            style={{ opacity: statsContent.opacity, scale: statsContent.scale, y: statsContent.y }}
+          <MotionView
+            animatedStyle={{ opacity: animations.statsContent.opacity, scale: animations.statsContent.scale, y: animations.statsContent.y }}
             onClick={(e?: React.MouseEvent) => e?.stopPropagation()}
             className="max-w-2xl w-full"
           >
@@ -612,7 +523,7 @@ function App() {
                 successRate={successRate}
               />
             </Suspense>
-            <AnimatedView style={{ scale: closeButtonBounce.scale }}>
+            <MotionView animatedStyle={{ scale: animations.closeButtonBounce.scale }}>
               <Button
                 variant="outline"
                 className="w-full mt-4"
@@ -620,55 +531,55 @@ function App() {
               >
                 Close
               </Button>
-            </AnimatedView>
-          </AnimatedView>
-        </AnimatedView>
+            </MotionView>
+          </MotionView>
+        </MotionView>
       )}
 
       {showMap && (
-        <AnimatedView
-          style={{ opacity: mapModal.opacity, scale: mapModal.scale, y: mapModal.y }}
+        <MotionView
+          animatedStyle={{ opacity: animations.mapModal.opacity, scale: animations.mapModal.scale, y: animations.mapModal.y }}
           className="fixed inset-0 z-50"
         >
           <Suspense fallback={<LoadingState />}>
-            <AnimatedView
-              style={{ opacity: mapContent.opacity, scale: mapContent.scale, y: mapContent.y }}
+            <MotionView
+              animatedStyle={{ opacity: animations.mapContent.opacity, scale: animations.mapContent.scale, y: animations.mapContent.y }}
               className="h-full w-full"
             >
               <PlaydateMap
-                playdates={playdates || []}
+                playdates={playdates ?? []}
                 onClose={() => { setShowMap(false); }}
               />
-            </AnimatedView>
+            </MotionView>
           </Suspense>
-        </AnimatedView>
+        </MotionView>
       )}
 
       {showAdminConsole && (
-        <AnimatedView
-          style={{ opacity: adminModal.opacity, scale: adminModal.scale, y: adminModal.y }}
+        <MotionView
+          animatedStyle={{ opacity: animations.adminModal.opacity, scale: animations.adminModal.scale, y: animations.adminModal.y }}
           className="fixed inset-0 z-50 bg-background"
         >
-          <AnimatedView
-            style={adminContent.style}
+          <MotionView
+            animatedStyle={animations.adminContent.style}
             className="h-full w-full"
           >
             <Suspense fallback={<LoadingState />}>
               <AdminConsole onClose={() => { setShowAdminConsole(false); }} />
             </Suspense>
-          </AnimatedView>
-        </AnimatedView>
+          </MotionView>
+        </MotionView>
       )}
 
       {showThemeSettings && (
         <Dialog open={showThemeSettings} onOpenChange={setShowThemeSettings}>
           <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto p-0">
             <DialogTitle className="sr-only">Ultra Theme Settings</DialogTitle>
-            <AnimatedView style={themeContent.style}>
+            <MotionView animatedStyle={animations.themeContent.style}>
               <Suspense fallback={<LoadingState />}>
                 <UltraThemeSettings />
               </Suspense>
-            </AnimatedView>
+            </MotionView>
           </DialogContent>
         </Dialog>
       )}
@@ -692,7 +603,7 @@ function App() {
       } />
       </Routes>
     </ErrorBoundary>
-  )
+  );
 }
 
 export default App

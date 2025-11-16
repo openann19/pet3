@@ -238,7 +238,7 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
   })
 
   return (
-    <AnimatedView style={entry.animatedStyle}>
+    <MotionView style={entry.animatedStyle}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-square relative bg-muted">
           {pet.photo ? (
@@ -275,8 +275,8 @@ function AnimatedPetCard({ pet, index, onReview }: AnimatedPetCardProps) {
           </Button>
         </CardContent>
       </Card>
-    </AnimatedView>
-  )
+    </MotionView>
+  );
 }
 
 function InfoItem({ label, value }: { label: string; value: string }) {

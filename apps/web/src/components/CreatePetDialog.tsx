@@ -13,8 +13,6 @@ import {
   Check,
   Sparkle,
 } from '@phosphor-icons/react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import {
@@ -24,6 +22,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
+  MotionView,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Button } from '@/components/ui/button';
@@ -521,18 +520,18 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
 
     if (editingPet) {
       void setUserPets((current) =>
-        (current || []).map((p) => (p.id === editingPet.id ? petData : p))
+        (current ?? []).map((p) => (p.id === editingPet.id ? petData : p))
       );
       void setAllPets((current) =>
-        (current || []).map((p) => (p.id === editingPet.id ? petData : p))
+        (current ?? []).map((p) => (p.id === editingPet.id ? petData : p))
       );
 
       toast.success('Pet profile updated!', {
         description: `${name}'s profile has been updated successfully.`,
       });
     } else {
-      void setUserPets((current) => [...(current || []), petData]);
-      void setAllPets((current) => [...(current || []), petData]);
+      void setUserPets((current) => [...(current ?? []), petData]);
+      void setAllPets((current) => [...(current ?? []), petData]);
       toast.success('Pet profile created! 🎉', {
         description: `${name} is ready to find perfect companions!`,
       });
@@ -546,7 +545,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
     switch (currentStep) {
       case 'type':
         return (
-          <AnimatedView key="type" style={stepStyle} className="space-y-6">
+          <MotionView key="type" style={stepStyle} className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">What type of pet do you have?</h3>
               <p className="text-muted-foreground">
@@ -557,7 +556,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               {PET_TYPES.map((type) => {
                 const Icon = type.icon;
                 return (
-                  <AnimatedView
+                  <MotionView
                     key={type.value}
                     style={petTypeButtonTap.animatedStyle}
                     onClick={() => {
@@ -571,32 +570,32 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     onMouseEnter={petTypeButtonHover.handleEnter}
                     onMouseLeave={petTypeButtonHover.handleLeave}
                   >
-                    <AnimatedView style={petTypeButtonHover.animatedStyle}>
+                    <MotionView style={petTypeButtonHover.animatedStyle}>
                       <div className="flex flex-col items-center gap-3">
                         <span className="text-4xl">{type.emoji}</span>
                         <Icon size={32} weight="duotone" className="text-primary" />
                         <span className="font-semibold text-lg">{type.label}</span>
                       </div>
-                    </AnimatedView>
+                    </MotionView>
                     {petType === type.value && (
-                      <AnimatedView
+                      <MotionView
                         style={petTypeIndicatorStyle}
                         className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1"
                       >
                         <Check size={16} weight="bold" />
-                      </AnimatedView>
+                      </MotionView>
                     )}
-                  </AnimatedView>
+                  </MotionView>
                 );
               })}
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'template': {
         const templates = getTemplatesByType(petType);
         return (
-          <AnimatedView key="template" style={stepStyle} className="space-y-6">
+          <MotionView key="template" style={stepStyle} className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Choose a profile template</h3>
               <p className="text-muted-foreground">
@@ -605,7 +604,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-100 overflow-y-auto pr-2">
               {templates.map((template) => (
-                <AnimatedView
+                <MotionView
                   key={template.id}
                   onClick={() => {
                     applyTemplate(template);
@@ -622,9 +621,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-base">{template.name}</h4>
                         {selectedTemplate?.id === template.id && (
-                          <AnimatedView className="bg-primary text-primary-foreground rounded-full p-1 shrink-0">
+                          <MotionView className="bg-primary text-primary-foreground rounded-full p-1 shrink-0">
                             <Check size={14} weight="bold" />
-                          </AnimatedView>
+                          </MotionView>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">
@@ -644,20 +643,20 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                       </div>
                     </div>
                   </div>
-                </AnimatedView>
+                </MotionView>
               ))}
             </div>
             <Button type="button" variant="outline" className="w-full" onClick={skipToBasics}>
               <Sparkle size={16} className="mr-2" />
               Skip & Customize From Scratch
             </Button>
-          </AnimatedView>
+          </MotionView>
         );
       }
 
       case 'basics':
         return (
-          <AnimatedView key="basics" className="space-y-6">
+          <MotionView key="basics" className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Tell us the basics</h3>
               <p className="text-muted-foreground">
@@ -701,12 +700,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 />
               </div>
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'characteristics':
         return (
-          <AnimatedView key="characteristics" className="space-y-6">
+          <MotionView key="characteristics" className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Physical characteristics</h3>
               <p className="text-muted-foreground">
@@ -717,7 +716,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
               <div>
                 <Label className="mb-3 block">Gender *</Label>
                 <div className="grid grid-cols-2 gap-4">
-                  <AnimatedView>
+                  <MotionView>
                     <Button
                       type="button"
                       variant={gender === 'male' ? 'default' : 'outline'}
@@ -726,8 +725,8 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     >
                       ♂ Male
                     </Button>
-                  </AnimatedView>
-                  <AnimatedView>
+                  </MotionView>
+                  <MotionView>
                     <Button
                       type="button"
                       variant={gender === 'female' ? 'default' : 'outline'}
@@ -736,7 +735,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     >
                       ♀ Female
                     </Button>
-                  </AnimatedView>
+                  </MotionView>
                 </div>
               </div>
               <div>
@@ -771,12 +770,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 />
               </div>
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'photo':
         return (
-          <AnimatedView key="photo" className="space-y-6">
+          <MotionView key="photo" className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Add a photo of {name || 'your pet'}</h3>
               <p className="text-muted-foreground">
@@ -810,7 +809,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 className="mt-1"
               />
               {photoPresence.shouldRender && photo && (
-                <AnimatedView
+                <MotionView
                   style={photoPresence.animatedStyle}
                   className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
                 >
@@ -820,7 +819,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                     className="w-full h-full object-cover"
                     aria-label="Pet photo preview"
                   />
-                </AnimatedView>
+                </MotionView>
               )}
             </div>
             <div>
@@ -834,12 +833,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 className="mt-1"
               />
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'personality':
         return (
-          <AnimatedView key="personality" className="space-y-6">
+          <MotionView key="personality" className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">
                 What's {name || 'your pet'}'s personality?
@@ -863,12 +862,12 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 </Badge>
               ))}
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'preferences':
         return (
-          <AnimatedView key="preferences" className="space-y-8">
+          <MotionView key="preferences" className="space-y-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">What does {name || 'your pet'} enjoy?</h3>
               <p className="text-muted-foreground">This helps us find perfect companions</p>
@@ -911,13 +910,13 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 </div>
               </div>
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       case 'complete':
         return (
-          <AnimatedView key="complete" className="space-y-6 text-center">
-            <AnimatedView className="text-8xl mb-4">🎉</AnimatedView>
+          <MotionView key="complete" className="space-y-6 text-center">
+            <MotionView className="text-8xl mb-4">🎉</MotionView>
             <h3 className="text-3xl font-bold">All set!</h3>
             <p className="text-lg text-muted-foreground">
               {name || 'Your pet'}'s profile is ready to go. Let's find some perfect companions!
@@ -946,7 +945,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <span className="font-semibold">{personality.length} traits</span>
               </div>
             </div>
-          </AnimatedView>
+          </MotionView>
         );
 
       default:
@@ -959,7 +958,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
-            <AnimatedView style={emojiStyle}>🐾</AnimatedView>
+            <MotionView style={emojiStyle}>🐾</MotionView>
             {editingPet ? 'Edit Pet Profile' : 'Create Pet Profile'}
           </DialogTitle>
           <DialogDescription>
@@ -970,30 +969,30 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
         </DialogHeader>
 
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-6">
-          <AnimatedView
+          <MotionView
             className="h-full bg-linear-to-r from-primary to-accent"
             style={progressStyle}
           />
         </div>
 
         {completeStepPresence.shouldRender && currentStep !== 'complete' && (
-          <AnimatedView style={completeStepPresence.animatedStyle}>
+          <MotionView style={completeStepPresence.animatedStyle}>
             {renderStepContent()}
-          </AnimatedView>
+          </MotionView>
         )}
 
         <div className="flex gap-3 pt-6 mt-6 border-t">
           {currentStep !== 'type' && currentStep !== 'complete' && (
-            <AnimatedView>
+            <MotionView>
               <Button type="button" variant="outline" onClick={handleBack} className="gap-2">
                 <ArrowLeft size={16} weight="bold" />
                 Back
               </Button>
-            </AnimatedView>
+            </MotionView>
           )}
           <div className="flex-1" />
           {currentStep !== 'complete' ? (
-            <AnimatedView>
+            <MotionView>
               <Button
                 type="button"
                 onClick={handleNext}
@@ -1003,9 +1002,9 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 Continue
                 <ArrowRight size={16} weight="bold" />
               </Button>
-            </AnimatedView>
+            </MotionView>
           ) : (
-            <AnimatedView>
+            <MotionView>
               <Button
                 type="button"
                 onClick={handleSubmit}
@@ -1014,7 +1013,7 @@ export default function CreatePetDialog({ open, onOpenChange, editingPet }: Crea
                 <Check size={16} weight="bold" />
                 {editingPet ? 'Save Changes' : 'Create Profile'}
               </Button>
-            </AnimatedView>
+            </MotionView>
           )}
         </div>
       </DialogContent>

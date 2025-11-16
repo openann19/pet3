@@ -41,11 +41,11 @@ export default function CreateHighlightDialog({
 
   const [title, setTitle] = useState(existingHighlight?.title || '');
   const [selectedStories, setSelectedStories] = useState<Set<string>>(
-    new Set(existingHighlight?.stories.map((s) => s.id) || [])
+    new Set(existingHighlight?.stories.map((s) => s.id) ?? [])
   );
   const [coverImageUrl, setCoverImageUrl] = useState(existingHighlight?.coverImage || '');
 
-  const myStories = (stories || []).filter((s) => s.userId === (currentUser?.id || 'user-1'));
+  const myStories = (stories ?? []).filter((s) => s.userId === (currentUser?.id ?? 'user-1'));
 
   const userStories = filterActiveStories(myStories);
 
@@ -95,7 +95,7 @@ export default function CreateHighlightDialog({
 
     if (isTruthy(existingHighlight)) {
       setHighlights((current) =>
-        (current || []).map((h) =>
+        (current ?? []).map((h) =>
           h.id === existingHighlight.id
             ? {
                 ...h,
@@ -117,7 +117,7 @@ export default function CreateHighlightDialog({
         selectedStoryObjects
       );
 
-      setHighlights((current) => [...(current || []), newHighlight]);
+      setHighlights((current) => [...(current ?? []), newHighlight]);
       toast.success('Highlight created!');
     }
 

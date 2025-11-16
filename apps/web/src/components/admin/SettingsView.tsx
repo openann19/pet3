@@ -1,5 +1,6 @@
 'use client'
 
+import { MotionView } from "@petspark/motion";
 import { useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -9,7 +10,6 @@ import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { useStorage } from '@/hooks/use-storage'
 import { toast } from 'sonner'
-import { AnimatedView } from '@/effects/reanimated/animated-view'
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift'
 import { triggerHaptic } from '@/lib/haptics'
 import { createLogger } from '@/lib/logger'
@@ -113,10 +113,9 @@ export default function SettingsView() {
           </p>
         </div>
       </div>
-
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6 max-w-4xl">
-          <AnimatedView
+          <MotionView
             style={featureFlagsCardHover.animatedStyle}
             onMouseEnter={featureFlagsCardHover.handleEnter}
             onMouseLeave={featureFlagsCardHover.handleLeave}
@@ -183,9 +182,9 @@ export default function SettingsView() {
               </div>
             </CardContent>
           </Card>
-          </AnimatedView>
+          </MotionView>
 
-          <AnimatedView
+          <MotionView
             style={systemSettingsCardHover.animatedStyle}
             onMouseEnter={systemSettingsCardHover.handleEnter}
             onMouseLeave={systemSettingsCardHover.handleLeave}
@@ -282,9 +281,9 @@ export default function SettingsView() {
               </div>
             </CardContent>
           </Card>
-          </AnimatedView>
+          </MotionView>
 
-          <AnimatedView
+          <MotionView
             style={systemInfoCardHover.animatedStyle}
             onMouseEnter={systemInfoCardHover.handleEnter}
             onMouseLeave={systemInfoCardHover.handleLeave}
@@ -306,11 +305,11 @@ export default function SettingsView() {
               <InfoRow label="Build" value={new Date().toISOString().split('T')[0] ?? new Date().toISOString()} />
             </CardContent>
           </Card>
-          </AnimatedView>
+          </MotionView>
         </div>
       </ScrollArea>
     </div>
-  )
+  );
 }
 
 interface FeatureFlagItemProps {

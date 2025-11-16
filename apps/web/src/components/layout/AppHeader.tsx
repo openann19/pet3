@@ -1,3 +1,4 @@
+import { MotionView } from "@petspark/motion";
 /**
  * AppHeader Component
  *
@@ -8,7 +9,6 @@
 import { Suspense } from 'react';
 import { Heart, Translate, ShieldCheck, Sun, Moon, Palette } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import type { UseAppAnimationsReturn } from '@/hooks/use-app-animations';
 import { haptics } from '@/lib/haptics';
 
@@ -53,47 +53,47 @@ export function AppHeader({
   } = animations;
 
   return (
-    <AnimatedView
+    <MotionView
       className="backdrop-blur-2xl bg-card/90 border-b border-border/50 sticky top-0 z-40 shadow-2xl shadow-primary/20"
       style={headerAnimation.headerStyle}
     >
       <div className="absolute inset-0 bg-linear-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
-      <AnimatedView
+      <MotionView
         className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
         style={headerAnimation.shimmerStyle}
       >
         <div />
-      </AnimatedView>
+      </MotionView>
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 relative">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          <AnimatedView
+          <MotionView
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
             style={logoButtonHover.animatedStyle}
             onMouseEnter={logoButtonHover.handleEnter}
             onMouseLeave={logoButtonHover.handleLeave}
           >
-            <AnimatedView className="relative" style={logoAnimation.style}>
-              <AnimatedView
+            <MotionView className="relative" style={logoAnimation.style}>
+              <MotionView
                 className="absolute inset-0 bg-linear-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
                 style={logoGlow.style}
               >
                 <div />
-              </AnimatedView>
+              </MotionView>
               <Heart
                 className="text-primary drop-shadow-2xl relative z-10 group-hover:scale-125 transition-transform duration-300"
                 size={24}
                 weight="fill"
               />
-            </AnimatedView>
+            </MotionView>
             <h1 className="text-base sm:text-xl font-bold bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent bg-size-[200%_auto] animate-gradient-x drop-shadow-sm">
               {title}
             </h1>
-          </AnimatedView>
-          <AnimatedView
+          </MotionView>
+          <MotionView
             className="flex items-center gap-1 sm:gap-2"
             style={headerButtonsContainer.containerStyle}
           >
-            <AnimatedView
+            <MotionView
               style={headerButton1.buttonStyle}
               onMouseEnter={headerButton1.handleEnter}
               onMouseLeave={headerButton1.handleLeave}
@@ -102,8 +102,8 @@ export function AppHeader({
               <Suspense fallback={<div className="w-9 h-9" />}>
                 <SyncStatusIndicator />
               </Suspense>
-            </AnimatedView>
-            <AnimatedView
+            </MotionView>
+            <MotionView
               style={headerButton2.buttonStyle}
               onMouseEnter={headerButton2.handleEnter}
               onMouseLeave={headerButton2.handleLeave}
@@ -112,8 +112,8 @@ export function AppHeader({
               <Suspense fallback={<div className="w-9 h-9" />}>
                 <PremiumNotificationBell />
               </Suspense>
-            </AnimatedView>
-            <AnimatedView
+            </MotionView>
+            <MotionView
               style={headerButton3.buttonStyle}
               onMouseEnter={headerButton3.handleEnter}
               onMouseLeave={headerButton3.handleLeave}
@@ -131,13 +131,13 @@ export function AppHeader({
                 aria-pressed={language === 'bg'}
                 title={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
               >
-                <AnimatedView style={languageIconRotation.style}>
+                <MotionView style={languageIconRotation.style}>
                   <Translate size={18} weight="bold" className="text-foreground" />
-                </AnimatedView>
+                </MotionView>
                 <span className="text-xs font-semibold">{language === 'en' ? 'БГ' : 'EN'}</span>
               </Button>
-            </AnimatedView>
-            <AnimatedView
+            </MotionView>
+            <MotionView
               style={headerButton4.buttonStyle}
               onMouseEnter={headerButton4.handleEnter}
               onMouseLeave={headerButton4.handleLeave}
@@ -156,8 +156,8 @@ export function AppHeader({
               >
                 <ShieldCheck size={20} weight="bold" className="text-foreground" />
               </Button>
-            </AnimatedView>
-            <AnimatedView
+            </MotionView>
+            <MotionView
               style={headerButton5.buttonStyle}
               onMouseEnter={headerButton5.handleEnter}
               onMouseLeave={headerButton5.handleLeave}
@@ -179,8 +179,8 @@ export function AppHeader({
                   <Moon size={20} weight="bold" className="text-foreground" />
                 )}
               </Button>
-            </AnimatedView>
-            <AnimatedView
+            </MotionView>
+            <MotionView
               style={headerButton6.buttonStyle}
               onMouseEnter={headerButton6.handleEnter}
               onMouseLeave={headerButton6.handleLeave}
@@ -199,11 +199,11 @@ export function AppHeader({
               >
                 <Palette size={20} weight="bold" className="text-foreground" />
               </Button>
-            </AnimatedView>
-          </AnimatedView>
+            </MotionView>
+          </MotionView>
         </div>
       </div>
-    </AnimatedView>
+    </MotionView>
   );
 }
 

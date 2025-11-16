@@ -1,5 +1,4 @@
-'use client';
-
+'use client';;
 import { memo, useEffect, useState, useCallback } from 'react';
 import {
   useSharedValue,
@@ -7,6 +6,7 @@ import {
   withSpring,
   withTiming,
   withSequence,
+  MotionView,
 } from '@petspark/motion';
 import { communityAPI } from '@/api/community-api';
 import { Avatar } from '@/components/ui/avatar';
@@ -36,7 +36,6 @@ import {
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
@@ -367,21 +366,21 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
 
   return (
     <>
-      <AnimatedView style={containerStyle}>
+      <MotionView style={containerStyle}>
         <Card
           className="overflow-hidden bg-linear-to-br from-card via-card to-card/95 border border-border/60 shadow-lg hover:shadow-xl hover:border-border transition-all duration-500 backdrop-blur-sm cursor-pointer"
           onClick={handleCardClick}
         >
           {/* Author Header */}
           <div className="flex items-center justify-between p-4 pb-3">
-            <AnimatedView
+            <MotionView
               style={authorButtonStyle}
               onMouseEnter={handleAuthorMouseEnter}
               onMouseLeave={handleAuthorMouseLeave}
               onClick={() => onAuthorClick?.(post.authorId)}
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <AnimatedView
+              <MotionView
                 style={avatarHover.animatedStyle}
                 onMouseEnter={avatarHover.handleMouseEnter}
                 onMouseLeave={avatarHover.handleMouseLeave}
@@ -396,7 +395,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                     </div>
                   )}
                 </Avatar>
-              </AnimatedView>
+              </MotionView>
               <div className="text-left">
                 <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors duration-200">
                   {post.authorName}
@@ -405,11 +404,11 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                 </p>
               </div>
-            </AnimatedView>
+            </MotionView>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <AnimatedView
+                <MotionView
                   style={optionsButtonHover.animatedStyle}
                   onMouseEnter={optionsButtonHover.handleMouseEnter}
                   onMouseLeave={optionsButtonHover.handleMouseLeave}
@@ -423,7 +422,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   >
                     <DotsThree size={22} weight="bold" />
                   </Button>
-                </AnimatedView>
+                </MotionView>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleReport} className="text-destructive">
@@ -457,7 +456,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
           {post.media && post.media.length > 0 && post.media[currentMediaIndex] && (
             <div className="relative bg-muted">
               <div className="relative aspect-square overflow-hidden">
-                <AnimatedView style={mediaStyle} className="w-full h-full">
+                <MotionView style={mediaStyle} className="w-full h-full">
                   <img
                     key={currentMediaIndex}
                     src={
@@ -469,7 +468,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                     className="w-full h-full object-cover cursor-pointer"
                     onClick={() => handleMediaClick(currentMediaIndex)}
                   />
-                </AnimatedView>
+                </MotionView>
               </div>
 
               {/* Media Navigation Dots */}
@@ -507,7 +506,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                 }}
                 className="flex items-center gap-1.5 group"
               >
-                <AnimatedView
+                <MotionView
                   style={likeButtonStyle}
                   onMouseEnter={likeButtonHover.handleMouseEnter}
                   onMouseLeave={likeButtonHover.handleMouseLeave}
@@ -519,7 +518,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                     className={`transition-colors ${isLiked ? 'text-red-500' : 'text-foreground group-hover:text-red-500'
                       }`}
                   />
-                </AnimatedView>
+                </MotionView>
                 {likesCount > 0 && (
                   <span className="text-sm font-medium text-foreground">{likesCount}</span>
                 )}
@@ -557,7 +556,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                 void handleSave();
               }}
             >
-              <AnimatedView
+              <MotionView
                 style={bookmarkHover.animatedStyle}
                 onMouseEnter={bookmarkHover.handleMouseEnter}
                 onMouseLeave={bookmarkHover.handleMouseLeave}
@@ -569,7 +568,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
                   className={`transition-colors ${isSaved ? 'text-primary' : 'text-foreground hover:text-primary'
                     }`}
                 />
-              </AnimatedView>
+              </MotionView>
             </button>
           </div>
 
@@ -628,8 +627,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
             }}
           />
         </Card>
-      </AnimatedView>
-
+      </MotionView>
       <PostDetailView
         open={showPostDetail}
         onOpenChange={setShowPostDetail}

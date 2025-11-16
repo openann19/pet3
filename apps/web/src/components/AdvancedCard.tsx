@@ -3,7 +3,7 @@ import { MotionView } from '@petspark/motion';
 import { useSharedValue, useAnimatedStyle, withTiming } from '@petspark/motion';
 import React from 'react';
 import type { ReactNode } from 'react';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 export type CardVariant =
   | 'glass'

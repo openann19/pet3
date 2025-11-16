@@ -101,7 +101,7 @@ export function CreateAdoptionListingWizard({
 
   const toggleArrayItem = <K extends keyof CreateAdoptionListingData>(field: K, value: string) => {
     setFormData((prev) => {
-      const current = (prev[field] as string[]) || [];
+      const current = (prev[field] as string[]) ?? [];
       const updated = current.includes(value)
         ? current.filter((item) => item !== value)
         : [...current, value];

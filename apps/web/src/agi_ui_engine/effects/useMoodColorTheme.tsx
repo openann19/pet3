@@ -55,7 +55,7 @@ const getMoodColors = (mode: 'light' | 'dark' = 'light') => ({
 export function useMoodColorTheme(options: UseMoodColorThemeOptions): UseMoodColorThemeReturn {
   const { text, enabled = true } = options;
   const { theme } = useUIConfig();
-  const themeMode = theme.mode || 'light';
+  const themeMode = theme.mode ?? 'light';
 
   const colors = useMemo(() => {
     const moodColors = getMoodColors(themeMode);

@@ -6,7 +6,7 @@
  */
 
 import { useApp } from '@/contexts/AppContext';
-import { AnimatedView, type AnimatedStyle } from '@/effects/reanimated/animated-view';
+import { type AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { useAITypingReveal } from '@/hooks/use-ai-typing-reveal';
 import { useBubbleHoverTilt } from '@/hooks/use-bubble-hover-tilt';
@@ -46,7 +46,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { memo, useEffect, useRef, useState, useMemo } from 'react';
-import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from '@petspark/motion';
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming, MotionView } from '@petspark/motion';
 import { AnimatedAIWrapper, BubbleWrapperGodTier } from './bubble-wrapper-god-tier';
 import { useHapticFeedback } from './bubble-wrapper-god-tier/effects/useHapticFeedback';
 import { useParticleBurstOnEvent } from './bubble-wrapper-god-tier/effects/useParticleBurstOnEvent';
@@ -434,9 +434,9 @@ function MessageBubble({
 
     if (message.status === 'sending') {
       return (
-        <AnimatedView style={statusStyle}>
+        <MotionView style={statusStyle}>
           <Clock size={12} className="text-muted-foreground" />
-        </AnimatedView>
+        </MotionView>
       );
     }
     if (message.status === 'failed') {
@@ -452,22 +452,22 @@ function MessageBubble({
     }
     if (message.status === 'read') {
       return (
-        <AnimatedView style={statusStyle}>
+        <MotionView style={statusStyle}>
           <Checks size={12} className="text-primary" />
-        </AnimatedView>
+        </MotionView>
       );
     }
     if (message.status === 'delivered') {
       return (
-        <AnimatedView style={statusStyle}>
+        <MotionView style={statusStyle}>
           <Checks size={12} className="text-muted-foreground" />
-        </AnimatedView>
+        </MotionView>
       );
     }
     return (
-      <AnimatedView style={statusStyle}>
+      <MotionView style={statusStyle}>
         <Check size={12} className="text-muted-foreground" />
-      </AnimatedView>
+      </MotionView>
     );
   };
 
@@ -604,7 +604,7 @@ function MessageBubble({
           handleLongPress();
         }}
       >
-        <AnimatedView
+        <MotionView
           style={combinedAnimatedStyle as AnimatedStyle}
           className={cn(
             'relative group px-3 py-2 rounded-2xl shadow-sm max-w-[78%]',
@@ -624,18 +624,18 @@ function MessageBubble({
           onTouchEnd={handlePress}
           onTouchCancel={handlePressOut}
         >
-          <AnimatedView
+          <MotionView
             style={combinedGlowStyle as AnimatedStyle}
             className="absolute inset-0 rounded-2xl pointer-events-none"
           >
             <div />
-          </AnimatedView>
-          <AnimatedView
+          </MotionView>
+          <MotionView
             style={combinedBackgroundStyle as AnimatedStyle}
             className="absolute inset-0 rounded-2xl pointer-events-none"
           >
             <div />
-          </AnimatedView>
+          </MotionView>
           {/* Message Content */}
           {message.type === 'text' && (
             <BubbleWrapperGodTier
@@ -664,15 +664,15 @@ function MessageBubble({
                 {isAIMessage && typingReveal.revealedText.length > 0 ? (
                   <AnimatedAIWrapper enabled={true}>
                     <>
-                      <AnimatedView style={typingReveal.animatedStyle as AnimatedStyle}>
+                      <MotionView style={typingReveal.animatedStyle as AnimatedStyle}>
                         {typingReveal.revealedText}
-                      </AnimatedView>
+                      </MotionView>
                       {!typingReveal.isComplete && (
-                        <AnimatedView style={typingReveal.cursorStyle as AnimatedStyle}>
+                        <MotionView style={typingReveal.cursorStyle as AnimatedStyle}>
                           <span className="inline-block w-0.5 h-4 bg-current ml-1 animate-pulse">
                             |
                           </span>
-                        </AnimatedView>
+                        </MotionView>
                       )}
                     </>
                   </AnimatedAIWrapper>
@@ -735,13 +735,13 @@ function MessageBubble({
               <Waveform size={20} />
               <div className="flex-1 h-8 bg-muted/50 rounded-full flex items-center gap-1 px-2">
                 {voiceWaveform.animatedStyles.map((style, index) => (
-                  <AnimatedView
+                  <MotionView
                     key={index}
                     style={style as AnimatedStyle}
                     className="bg-primary w-1 rounded-full"
                   >
                     <div />
-                  </AnimatedView>
+                  </MotionView>
                 ))}
               </div>
               <span className="text-xs">
@@ -860,11 +860,11 @@ function MessageBubble({
                 );
               }
             })()}
-        </AnimatedView>
+        </MotionView>
 
         {/* Context Menu */}
         {showContextMenu && (
-          <AnimatedView
+          <MotionView
             style={contextMenuStyle}
             className={cn(
               'absolute z-50 bg-card border border-border rounded-lg shadow-lg p-1',
@@ -920,12 +920,12 @@ function MessageBubble({
                 <span>{t.chat?.delete || 'Delete'}</span>
               </button>
             )}
-          </AnimatedView>
+          </MotionView>
         )}
 
         {/* Reactions Picker */}
         {showReactions && (
-          <AnimatedView
+          <MotionView
             style={reactionsPickerStyle}
             className={cn(
               'absolute z-50 bg-card border border-border rounded-full shadow-lg p-2',
@@ -944,10 +944,9 @@ function MessageBubble({
                 <span className="text-xl">{type}</span>
               </button>
             ))}
-          </AnimatedView>
+          </MotionView>
         )}
       </div>
-
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={showDeleteConfirmation}
@@ -956,10 +955,8 @@ function MessageBubble({
         messagePreview={message.content.slice(0, 50)}
         context={isAdmin && !isOwn ? 'admin-delete' : 'self-delete'}
       />
-
       {/* Undo Delete Chip */}
       {showUndo && <UndoDeleteChip onUndo={handleUndoDelete} />}
-
       {/* Particle Explosion */}
       {particleExplosion.particles.length > 0 && (
         <div className="fixed inset-0 pointer-events-none z-9999">
@@ -968,7 +965,6 @@ function MessageBubble({
           ))}
         </div>
       )}
-
       {/* Message Peek */}
       {showPeek && (
         <MessagePeek

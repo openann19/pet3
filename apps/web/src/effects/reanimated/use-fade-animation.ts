@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { useMotionValue, animate, type MotionValue } from 'framer-motion';
+import { useMotionValue, animate, type MotionValue } from '@petspark/motion';
 import { springConfigs, timingConfigs } from './transitions';
 import type { AnimatedStyle } from './animated-view';
 

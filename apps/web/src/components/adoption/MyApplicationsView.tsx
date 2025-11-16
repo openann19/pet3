@@ -55,7 +55,7 @@ export function MyApplicationsView({ onBack }: MyApplicationsViewProps) {
       const userApps = await adoptionService.getUserApplications(user.id);
 
       const appsWithProfiles: ApplicationWithProfile[] = userApps.map((app) => {
-        const profile = (profiles || []).find((p) => p._id === app.adoptionProfileId);
+        const profile = (profiles ?? []).find((p) => p._id === app.adoptionProfileId);
         const result: ApplicationWithProfile = {
           ...app,
         };

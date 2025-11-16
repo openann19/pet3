@@ -51,7 +51,7 @@ export default function AdoptionView() {
       const result = await adoptionApi.getAdoptionProfiles({ limit: 50 });
       const mappedListings = result.profiles.map(
         (p) =>
-          ({
+          (({
             id: p._id,
             ownerId: p.shelterId,
             ownerName: p.shelterName,
@@ -64,6 +64,7 @@ export default function AdoptionView() {
             petSpecies: 'dog' as const,
             petPhotos: p.photos,
             petDescription: p.description,
+
             status:
               p.status === 'available'
                 ? ('active' as const)
@@ -72,11 +73,13 @@ export default function AdoptionView() {
                   : p.status === 'adopted'
                     ? ('adopted' as const)
                     : ('pending_review' as const),
+
             location: {
               city: p.location.split(', ')[0] || '',
               country: p.location.split(', ')[1] || '',
               privacyRadiusM: 1000,
             },
+
             requirements: [],
             vetDocuments: [],
             vaccinated: p.vaccinated,
@@ -91,8 +94,8 @@ export default function AdoptionView() {
             updatedAt: p.postedDate,
             viewsCount: 0,
             applicationsCount: 0,
-            featured: false,
-          }) as AdoptionListing,
+            featured: false
+          }) as AdoptionListing),
       );
       setListings(mappedListings);
       setCursor(result.nextCursor);

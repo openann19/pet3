@@ -258,7 +258,7 @@ export function PostDetailView({ open, onOpenChange, postId, onAuthorClick }: Po
 
   if (!open) return null;
 
-  const allMedia = (post?.media || []).map((media, index) => {
+  const allMedia = (post?.media ?? []).map((media, index) => {
     if (typeof media === 'string') {
       return { id: `media-${index}`, url: media, type: 'photo' as const };
     }

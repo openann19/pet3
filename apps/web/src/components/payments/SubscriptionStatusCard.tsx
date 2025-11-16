@@ -274,7 +274,6 @@ export function SubscriptionStatusCard() {
             )}
         </CardContent>
       </Card>
-
       <PricingModal
         open={pricingModalOpen}
         onOpenChange={setPricingModalOpen}

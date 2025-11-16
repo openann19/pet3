@@ -50,8 +50,6 @@ import {
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import {
@@ -61,6 +59,7 @@ import {
   withTiming,
   withRepeat,
   withSequence,
+  MotionView,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 
@@ -380,7 +379,7 @@ export default function ChatWindow({
             newMessage.senderAvatar = currentUserAvatar;
           }
 
-          setMessages((current: ChatMessage[]) => [...(current || []), newMessage]);
+          setMessages((current: ChatMessage[]) => [...(current ?? []), newMessage]);
           setIsRecording(false);
 
           toast.success('Voice message sent!', {
@@ -488,7 +487,7 @@ export default function ChatWindow({
       const petId = room.matchedPetId;
       const petName = room.matchedPetName;
       if (petId && petName) {
-        void initiateCall(petId, petName, room.matchedPetPhoto || undefined, 'voice').catch(
+        void initiateCall(petId, petName, room.matchedPetPhoto ?? undefined, 'voice').catch(
           (error) => {
             const err = error instanceof Error ? error : new Error(String(error));
             logger.error('ChatWindowNew handleVoiceCall error', err, { petId, petName });
@@ -513,7 +512,7 @@ export default function ChatWindow({
       const petId = room.matchedPetId;
       const petName = room.matchedPetName;
       if (petId && petName) {
-        void initiateCall(petId, petName, room.matchedPetPhoto || undefined, 'video').catch(
+        void initiateCall(petId, petName, room.matchedPetPhoto ?? undefined, 'video').catch(
           (error) => {
             const err = error instanceof Error ? error : new Error(String(error));
             logger.error('ChatWindowNew handleVideoCall error', err, { petId, petName });
@@ -542,9 +541,8 @@ export default function ChatWindow({
       <SkipToComposer inputRef={inputRef} />
       <AnnounceNewMessage lastText={lastMessageText} senderName={lastMessageSender} />
       <AnnounceTyping userName={typingUser} multipleUsers={multipleTypingUsers} />
-
       {incomingCallPresence.shouldRender && incomingCall && room.matchedPetName && (
-        <AnimatedView style={incomingCallPresence.animatedStyle}>
+        <MotionView style={incomingCallPresence.animatedStyle}>
           <IncomingCallNotification
             call={incomingCall}
             callerName={room.matchedPetName ?? ''}
@@ -552,22 +550,20 @@ export default function ChatWindow({
             onAccept={answerCall}
             onDecline={declineCall}
           />
-        </AnimatedView>
+        </MotionView>
       )}
-
       {activeCallPresence.shouldRender && activeCall && (
-        <AnimatedView style={activeCallPresence.animatedStyle}>
+        <MotionView style={activeCallPresence.animatedStyle}>
           <CallInterface
             session={activeCall}
             onEndCall={endCall}
             onToggleMute={toggleMute}
             onToggleVideo={toggleVideo}
           />
-        </AnimatedView>
+        </MotionView>
       )}
-
       <div className="flex flex-col h-full">
-        <AnimatedView
+        <MotionView
           style={headerStyle}
           className="glass-strong border-b border-white/20 p-4 shadow-xl backdrop-blur-2xl"
         >
@@ -586,32 +582,32 @@ export default function ChatWindow({
 
             <Avatar className="w-10 h-10 ring-2 ring-white/30">
               <AvatarImage
-                src={room.matchedPetPhoto || undefined}
-                alt={room.matchedPetName || undefined}
+                src={room.matchedPetPhoto ?? undefined}
+                alt={room.matchedPetName ?? undefined}
               />
               <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white font-bold">
-                {room.matchedPetName?.[0] || '?'}
+                {room.matchedPetName?.[0] ?? '?'}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1">
-              <h2 className="font-bold text-foreground">{room.matchedPetName || 'Unknown'}</h2>
+              <h2 className="font-bold text-foreground">{room.matchedPetName ?? 'Unknown'}</h2>
               {typingUsers.length > 0 && (
-                <AnimatedView
+                <MotionView
                   style={typingContainerStyle}
                   className="text-xs text-primary flex items-center gap-1"
                 >
-                  <AnimatedView style={typingTextStyle}>
+                  <MotionView style={typingTextStyle}>
                     {typingUsers.length === 1
                       ? `${typingUsers[0]?.userName ?? 'Someone'} is typing`
                       : `${String(typingUsers.length ?? '')} people are typing`}
-                  </AnimatedView>
-                  <AnimatedView style={typingDotsStyle}>...</AnimatedView>
-                </AnimatedView>
+                  </MotionView>
+                  <MotionView style={typingDotsStyle}>...</MotionView>
+                </MotionView>
               )}
             </div>
 
-            <AnimatedView style={videoButtonHover.animatedStyle}>
+            <MotionView style={videoButtonHover.animatedStyle}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -624,9 +620,9 @@ export default function ChatWindow({
               >
                 <VideoCamera size={24} weight="regular" />
               </Button>
-            </AnimatedView>
+            </MotionView>
 
-            <AnimatedView style={voiceButtonHover.animatedStyle}>
+            <MotionView style={voiceButtonHover.animatedStyle}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -639,17 +635,17 @@ export default function ChatWindow({
               >
                 <Phone size={24} weight="regular" />
               </Button>
-            </AnimatedView>
+            </MotionView>
 
             <Button variant="ghost" size="icon" className="shrink-0" aria-label="Chat options menu">
               <DotsThree size={24} weight="bold" />
             </Button>
           </div>
-        </AnimatedView>
+        </MotionView>
 
         {useVirtualizedList ? (
           <VirtualMessageList
-            messages={messages || []}
+            messages={messages ?? []}
             currentUserId={currentUserId}
             currentUserName={currentUserName}
             typingUsers={typingUsers}
@@ -661,17 +657,17 @@ export default function ChatWindow({
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
               {messageGroups.map((group: { date: string; messages: ChatMessage[] }) => (
                 <div key={group.date} className="space-y-4">
-                  <AnimatedView className="flex justify-center" style={dateGroupStyle}>
+                  <MotionView className="flex justify-center" style={dateGroupStyle}>
                     <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
                       {group.date}
                     </div>
-                  </AnimatedView>
+                  </MotionView>
 
                   {group.messages.map((message: ChatMessage) => {
                     const isCurrentUser = message.senderId === currentUserId;
 
                     return (
-                      <AnimatedView
+                      <MotionView
                         key={message.id}
                         className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
                         style={messageItemStyle}
@@ -679,19 +675,18 @@ export default function ChatWindow({
                         {!isCurrentUser && (
                           <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                             <AvatarImage
-                              src={message.senderAvatar || undefined}
-                              alt={message.senderName || undefined}
+                              src={message.senderAvatar ?? undefined}
+                              alt={message.senderName ?? undefined}
                             />
                             <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
-                              {message.senderName?.[0] || '?'}
+                              {message.senderName?.[0] ?? '?'}
                             </AvatarFallback>
                           </Avatar>
                         )}
-
                         <div
                           className={`flex flex-col max-w-[75%] ${isCurrentUser ? 'items-end' : 'items-start'}`}
                         >
-                          <AnimatedView
+                          <MotionView
                             style={messageBubbleHover.animatedStyle}
                             onMouseEnter={messageBubbleHover.handleEnter}
                             onMouseLeave={messageBubbleHover.handleLeave}
@@ -710,14 +705,14 @@ export default function ChatWindow({
                             )}
 
                             {message.type === 'voice' && voiceMessages?.[message.id] && (
-                              <AnimatedView
+                              <MotionView
                                 style={voiceButtonTap.animatedStyle}
                                 onClick={() => toggleVoicePlayback(message.id)}
                                 className="flex items-center gap-2 min-w-50 cursor-pointer"
                                 onMouseEnter={voiceButtonHover.handleEnter}
                                 onMouseLeave={voiceButtonHover.handleLeave}
                               >
-                                <AnimatedView
+                                <MotionView
                                   style={voiceButtonHover.animatedStyle}
                                   className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
                                 >
@@ -726,7 +721,7 @@ export default function ChatWindow({
                                   ) : (
                                     <Play size={16} weight="fill" />
                                   )}
-                                </AnimatedView>
+                                </MotionView>
                                 <div className="flex-1 h-8 flex items-center gap-0.5">
                                   {voiceMessages[message.id]?.waveform
                                     .slice(0, 30)
@@ -745,7 +740,7 @@ export default function ChatWindow({
                                     return `${Math.floor(voiceMsg.duration / 60)}:${(voiceMsg.duration % 60).toString().padStart(2, '0')}`;
                                   })()}
                                 </span>
-                              </AnimatedView>
+                              </MotionView>
                             )}
 
                             <Popover
@@ -753,7 +748,7 @@ export default function ChatWindow({
                               onOpenChange={(open) => setShowReactions(open ? message.id : null)}
                             >
                               <PopoverTrigger asChild>
-                                <AnimatedView
+                                <MotionView
                                   style={reactionButtonTap.animatedStyle}
                                   onClick={() => { }}
                                   className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
@@ -761,7 +756,7 @@ export default function ChatWindow({
                                   onMouseLeave={reactionButtonHover.handleLeave}
                                 >
                                   <Heart size={14} weight="fill" className="text-red-500" />
-                                </AnimatedView>
+                                </MotionView>
                               </PopoverTrigger>
                               <PopoverContent
                                 className="w-auto p-2 glass-strong backdrop-blur-2xl border-white/30"
@@ -769,7 +764,7 @@ export default function ChatWindow({
                               >
                                 <div className="flex gap-1">
                                   {REACTION_EMOJIS.slice(0, 6).map((emoji) => (
-                                    <AnimatedView
+                                    <MotionView
                                       key={emoji}
                                       style={reactionButtonTap.animatedStyle}
                                       onClick={() => handleReaction(message.id, emoji)}
@@ -778,36 +773,32 @@ export default function ChatWindow({
                                       onMouseLeave={reactionButtonHover.handleLeave}
                                     >
                                       {emoji}
-                                    </AnimatedView>
+                                    </MotionView>
                                   ))}
                                 </div>
                               </PopoverContent>
                             </Popover>
-                          </AnimatedView>
+                          </MotionView>
 
                           {(() => {
                             const reactionsArray = getReactionsArray(message.reactions);
-                            return (
-                              reactionsArray.length > 0 && (
-                                <AnimatedView
-                                  className="flex gap-1 mt-1 px-2"
-                                  style={reactionContainerStyle}
+                            return (reactionsArray.length > 0 && (<MotionView
+                              className="flex gap-1 mt-1 px-2"
+                              style={reactionContainerStyle}
+                            >
+                              {reactionsArray.map((reaction: MessageReaction, idx: number) => (
+                                <MotionView
+                                  key={idx}
+                                  style={reactionButtonHover.animatedStyle}
+                                  onMouseEnter={reactionButtonHover.handleEnter}
+                                  onMouseLeave={reactionButtonHover.handleLeave}
+                                  className="text-lg bg-white/80 rounded-full px-2 py-0.5 shadow-sm cursor-pointer"
+                                  title={reaction.userName}
                                 >
-                                  {reactionsArray.map((reaction: MessageReaction, idx: number) => (
-                                    <AnimatedView
-                                      key={idx}
-                                      style={reactionButtonHover.animatedStyle}
-                                      onMouseEnter={reactionButtonHover.handleEnter}
-                                      onMouseLeave={reactionButtonHover.handleLeave}
-                                      className="text-lg bg-white/80 rounded-full px-2 py-0.5 shadow-sm cursor-pointer"
-                                      title={reaction.userName}
-                                    >
-                                      {reaction.emoji}
-                                    </AnimatedView>
-                                  ))}
-                                </AnimatedView>
-                              )
-                            );
+                                  {reaction.emoji}
+                                </MotionView>
+                              ))}
+                            </MotionView>));
                           })()}
 
                           <div className="flex items-center gap-1 mt-1 px-1">
@@ -825,7 +816,7 @@ export default function ChatWindow({
                             )}
                           </div>
                         </div>
-                      </AnimatedView>
+                      </MotionView>
                     );
                   })}
                 </div>
@@ -833,25 +824,25 @@ export default function ChatWindow({
             </div>
 
             {typingUsers.length > 0 && (
-              <AnimatedView
+              <MotionView
                 key="typing-indicators"
                 className="flex items-end gap-2 flex-row p-4"
                 style={typingIndicatorStyle}
               >
                 <Avatar className="w-8 h-8 ring-2 ring-white/20 shrink-0">
                   <AvatarFallback className="bg-linear-to-br from-secondary to-primary text-white text-xs font-bold">
-                    {typingUsers[0]?.userName?.[0] || '?'}
+                    {typingUsers[0]?.userName?.[0] ?? '?'}
                   </AvatarFallback>
                 </Avatar>
                 <WebBubbleWrapper showTyping isIncoming>
                   <div />
                 </WebBubbleWrapper>
-              </AnimatedView>
+              </MotionView>
             )}
           </>
         )}
 
-        <AnimatedView
+        <MotionView
           className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl"
           style={
             useAnimatedStyle(() => ({
@@ -861,7 +852,7 @@ export default function ChatWindow({
           }
         >
           {showTemplates && (
-            <AnimatedView style={templatesStyle} className="mb-3 overflow-hidden">
+            <MotionView style={templatesStyle} className="mb-3 overflow-hidden">
               <div className="glass-effect rounded-2xl p-3 space-y-2">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -874,7 +865,7 @@ export default function ChatWindow({
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                   {MESSAGE_TEMPLATES.slice(0, 4).map((template) => (
-                    <AnimatedView
+                    <MotionView
                       key={template.id}
                       style={[templateButtonHover.animatedStyle, templateButtonTap.animatedStyle]}
                       onClick={() => handleUseTemplate(template.text)}
@@ -885,11 +876,11 @@ export default function ChatWindow({
                     >
                       <span className="mr-2">{template.icon}</span>
                       {template.title}
-                    </AnimatedView>
+                    </MotionView>
                   ))}
                 </div>
               </div>
-            </AnimatedView>
+            </MotionView>
           )}
 
           {isRecording ? (
@@ -937,7 +928,7 @@ export default function ChatWindow({
                     <TabsContent value="stickers" className="mt-3">
                       <div className="grid grid-cols-6 gap-2">
                         {CHAT_STICKERS.map((sticker) => (
-                          <AnimatedView
+                          <MotionView
                             key={sticker.id}
                             style={[
                               stickerButtonTap.animatedStyle,
@@ -959,14 +950,14 @@ export default function ChatWindow({
                             tabIndex={0}
                           >
                             {sticker.emoji}
-                          </AnimatedView>
+                          </MotionView>
                         ))}
                       </div>
                     </TabsContent>
                     <TabsContent value="emojis" className="mt-3">
                       <div className="grid grid-cols-6 gap-2">
                         {REACTION_EMOJIS.map((emoji) => (
-                          <AnimatedView
+                          <MotionView
                             key={emoji}
                             style={[emojiButtonTap.animatedStyle, emojiButtonHover.animatedStyle]}
                             onClick={() => { handleSendMessage(emoji, 'text'); }}
@@ -984,7 +975,7 @@ export default function ChatWindow({
                             tabIndex={0}
                           >
                             {emoji}
-                          </AnimatedView>
+                          </MotionView>
                         ))}
                       </div>
                     </TabsContent>
@@ -1023,7 +1014,7 @@ export default function ChatWindow({
                 <Microphone size={20} weight="regular" />
               </Button>
 
-              <AnimatedView style={[sendButtonHover.animatedStyle, sendButtonTap.animatedStyle]}>
+              <MotionView style={[sendButtonHover.animatedStyle, sendButtonTap.animatedStyle]}>
                 <Button
                   onClick={() => { handleSendMessage(inputValue, 'text'); }}
                   disabled={!inputValue.trim()}
@@ -1035,10 +1026,10 @@ export default function ChatWindow({
                 >
                   <PaperPlaneRight size={20} weight="fill" />
                 </Button>
-              </AnimatedView>
+              </MotionView>
             </div>
           )}
-        </AnimatedView>
+        </MotionView>
       </div>
     </>
   );

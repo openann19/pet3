@@ -1,6 +1,4 @@
 import { useEffect } from 'react';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
-import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -9,6 +7,7 @@ import {
   withRepeat,
   withSequence,
   withDelay,
+  MotionView,
 } from '@petspark/motion';
 import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Heart, Sparkle } from '@phosphor-icons/react';
@@ -62,13 +61,13 @@ function Particle({ index, total }: ParticleProps) {
   })) as AnimatedStyle;
 
   return (
-    <AnimatedView className="absolute" style={particleStyle}>
+    <MotionView className="absolute" style={particleStyle}>
       {index % 2 === 0 ? (
         <Heart size={24} weight="fill" className="text-primary drop-shadow-2xl" />
       ) : (
         <Sparkle size={20} weight="fill" className="text-accent drop-shadow-2xl" />
       )}
-    </AnimatedView>
+    </MotionView>
   );
 }
 
@@ -211,11 +210,11 @@ export default function MatchCelebration({
   return (
     <>
       {presence.shouldRender && show && (
-        <AnimatedView
+        <MotionView
           style={containerStyle}
           className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
         >
-          <AnimatedView
+          <MotionView
             className="absolute inset-0 glass-strong backdrop-blur-2xl"
             style={backdropStyle}
           />
@@ -224,49 +223,49 @@ export default function MatchCelebration({
             <Particle key={i} index={i} total={particles.length} />
           ))}
 
-          <AnimatedView
+          <MotionView
             className="relative z-10 rounded-3xl glass-strong premium-shadow border-2 border-white/40 p-10 max-w-md mx-4 backdrop-blur-2xl overflow-hidden"
             style={modalStyle}
           >
-            <AnimatedView
+            <MotionView
               className="absolute inset-0 bg-linear-to-br from-primary/30 via-accent/30 to-secondary/30"
               style={gradientStyle}
             />
 
-            <AnimatedView style={heartStyle} className="text-center mb-6 relative z-10">
+            <MotionView style={heartStyle} className="text-center mb-6 relative z-10">
               <div className="inline-block p-4 rounded-full glass-strong border-2 border-white/50 shadow-2xl">
                 <Heart size={72} weight="fill" className="text-white drop-shadow-2xl" />
               </div>
-            </AnimatedView>
+            </MotionView>
 
-            <AnimatedView
+            <MotionView
               style={titleStyle}
               className="text-4xl font-bold text-white text-center mb-3 drop-shadow-2xl relative z-10"
             >
               It's a Match! 🎉
-            </AnimatedView>
+            </MotionView>
 
-            <AnimatedView
+            <MotionView
               style={subtitleStyle}
               className="text-white/95 text-center text-xl font-medium drop-shadow-lg relative z-10"
             >
               {petName1} and {petName2} are now connected!
-            </AnimatedView>
+            </MotionView>
 
-            <AnimatedView
+            <MotionView
               className="mt-8 flex items-center justify-center gap-5 relative z-10"
               style={footerStyle}
             >
-              <AnimatedView style={sparkle1Style}>
+              <MotionView style={sparkle1Style}>
                 <Sparkle size={32} weight="fill" className="text-white drop-shadow-2xl" />
-              </AnimatedView>
+              </MotionView>
               <div className="text-white font-bold text-lg drop-shadow-lg">Perfect Companions!</div>
-              <AnimatedView style={sparkle2Style}>
+              <MotionView style={sparkle2Style}>
                 <Sparkle size={32} weight="fill" className="text-white drop-shadow-2xl" />
-              </AnimatedView>
-            </AnimatedView>
-          </AnimatedView>
-        </AnimatedView>
+              </MotionView>
+            </MotionView>
+          </MotionView>
+        </MotionView>
       )}
     </>
   );

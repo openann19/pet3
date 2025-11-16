@@ -75,12 +75,12 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
 
   // Expose testing APIs to window for Playwright
   useEffect(() => {
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__setChatMessages = (newMessages: Message[]) => {
       setMessages(newMessages);
     };
 
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__sendMessage = (content: string) => {
       const newMessage: Message = {
         id: `msg-${Date.now()}`,
@@ -105,42 +105,42 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
       }, 1000);
     };
 
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__setMessageStatus = (messageId: string, status: MessageStatus) => {
       setMessages(prev => prev.map(msg =>
         msg.id === messageId ? { ...msg, status } : msg
       ));
     };
 
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__showTypingIndicator = (user: string) => {
       setTypingUser(user);
       setIsTyping(true);
     };
 
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__hideTypingIndicator = () => {
       setIsTyping(false);
       setTypingUser('');
     };
 
-    // @ts-ignore - Testing API
+    // @ts-expect-error - Testing API for Playwright
     window.__setConnectionStatus = (status: 'online' | 'offline') => {
       setIsOnline(status === 'online');
     };
 
     return () => {
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__setChatMessages;
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__sendMessage;
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__setMessageStatus;
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__showTypingIndicator;
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__hideTypingIndicator;
-      // @ts-ignore - Cleanup
+      // @ts-expect-error - Cleanup: deleting test API properties
       delete window.__setConnectionStatus;
     };
   }, [currentUserId]);
@@ -170,7 +170,7 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
       if (msg.id !== messageId) return msg;
       
       const reactions = { ...msg.reactions };
-      const reactionUsers = reactions[reaction] || [];
+      const reactionUsers = reactions[reaction] ?? [];
       
       if (reactionUsers.includes(currentUserId)) {
         // Remove reaction
@@ -330,7 +330,7 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
             <TypingIndicator 
               data-testid="typing-indicator"
               isVisible={isTyping}
-              userName={typingUser || 'Someone'}
+              userName={typingUser ?? 'Someone'}
             />
           </div>
         )}

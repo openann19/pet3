@@ -1,3 +1,4 @@
+import { MotionView } from "@petspark/motion";
 import { communityAPI } from '@/api/community-api';
 import { liveStreamingAPI } from '@/api/live-streaming-api';
 import { lostFoundAPI } from '@/api/lost-found-api';
@@ -37,7 +38,6 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
-import { AnimatedView } from '@/effects/reanimated/animated-view';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -412,11 +412,11 @@ export function ContentModerationQueue() {
     if (!presence.shouldRender) return null
     
     return (
-      <AnimatedView style={presence.animatedStyle} className="text-center py-12">
+      <MotionView style={presence.animatedStyle} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
-      </AnimatedView>
-    )
+      </MotionView>
+    );
   }
 
   // Item component with animation
@@ -428,7 +428,7 @@ export function ContentModerationQueue() {
     })
     
     return (
-      <AnimatedView style={entry.animatedStyle}>
+      <MotionView style={entry.animatedStyle}>
         <Card
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => { setSelectedItem(item); }}
@@ -447,8 +447,8 @@ export function ContentModerationQueue() {
             </div>
           </div>
         </Card>
-      </AnimatedView>
-    )
+      </MotionView>
+    );
   }
 
   return (
@@ -465,7 +465,6 @@ export function ContentModerationQueue() {
           Refresh
         </Button>
       </div>
-
       <Tabs
         value={selectedType}
         onValueChange={(v) => setSelectedType(v as ContentType)}
@@ -514,13 +513,13 @@ export function ContentModerationQueue() {
                   <p className="text-muted-foreground">Loading...</p>
                 </div>
               ) : filteredItems.length === 0 ? (
-                <AnimatedView className="text-center py-12">
+                <MotionView className="text-center py-12">
                   <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No items in this queue</p>
-                </AnimatedView>
+                </MotionView>
               ) : (
                 filteredItems.map((item) => (
-                  <AnimatedView key={item.id} layout>
+                  <MotionView key={item.id} layout>
                     <Card
                       className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setSelectedItem(item)}
@@ -542,14 +541,13 @@ export function ContentModerationQueue() {
                         </div>
                       </div>
                     </Card>
-                  </AnimatedView>
+                  </MotionView>
                 ))
               )}
             </div>
           </ScrollArea>
         </div>
       </Tabs>
-
       <Dialog
         open={selectedItem !== null}
         onOpenChange={() => {
