@@ -20,7 +20,7 @@ import { VirtualGrid } from '@/components/virtual/VirtualGrid';
 
 // Type definition for global spark object
 declare global {
-  // eslint-disable-next-line no-var
+   
   var spark: {
     user: () => Promise<{ id: string }>;
   } | undefined;
