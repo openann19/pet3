@@ -33,7 +33,7 @@ import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import { useMotionVariants, useHoverLift, useBounceOnTap } from '@/effects/reanimated';
 import * as Reanimated from '@petspark/motion';
 import { interpolate, Extrapolation, MotionView } from '@petspark/motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import SaveToHighlightDialog from './SaveToHighlightDialog';
 import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
@@ -391,6 +391,14 @@ export default function StoryViewer({
     transition: transitionConfig,
   });
 
+  // Combined style for reaction buttons
+  const combinedReactionButtonStyle = useMemo(() => {
+    return {
+      ...reactionButtonHover.animatedStyle,
+      ...reactionButtonTap.animatedStyle,
+    };
+  }, [reactionButtonHover.animatedStyle, reactionButtonTap.animatedStyle]);
+
   const mediaContainerStyle = Reanimated.useAnimatedStyle(() => {
     const opacity = gestureState.isSwiping ? 0.5 : 1;
     const scale = gestureState.isSwiping ? 0.95 : gestureState.pinchScale;
@@ -399,6 +407,15 @@ export default function StoryViewer({
       transform: [{ scale }],
     };
   });
+
+  // Combined style for media container
+  const combinedMediaContainerStyle = useMemo(() => {
+    return {
+      ...mediaContainerStyle,
+      ...swipeOpacityStyle,
+      ...swipeScaleStyle,
+    };
+  }, [mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]);
 
   if (!currentStory) return null;
 
@@ -544,7 +561,7 @@ export default function StoryViewer({
                               <motion.div
           ref={mediaContainerRef}
           className="relative w-full h-full max-w-2xl mx-auto touch-none"
-          style={[mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]}
+          style={combinedMediaContainerStyle}
         >
           {currentStory.type === 'photo' && (
             <MotionView key={currentStory.id} style={imageEntry.animatedStyle}>
@@ -601,7 +618,7 @@ export default function StoryViewer({
                         key={emoji}
                         type="button"
                         className="text-4xl focus:outline-none focus:ring-2 focus:ring-white rounded-lg p-2"
-                        style={[reactionButtonHover.animatedStyle, reactionButtonTap.animatedStyle]}
+                        style={combinedReactionButtonStyle}
                         onMouseEnter={reactionButtonHover.handleEnter}
                         onMouseLeave={reactionButtonHover.handleLeave}
                         onClick={() => {

@@ -107,6 +107,7 @@ export function ChatWindowView({
         currentUserId={currentUserId}
         currentUserName={currentUserName}
         typingUsers={chatWindowData.typingUsers}
+        messages={chatWindowData.messages}
         messageGroups={chatWindowData.messageGroups}
         voiceMessages={chatWindowData.voiceMessages}
         playingVoice={chatWindowData.playingVoice}

@@ -72,13 +72,13 @@ interface AppHeaderProps {
       handleTap: () => void
     }
     headerButton6: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void
     }
     languageIconRotation: {
-      style: unknown
+      style: React.CSSProperties
     }
   }
   t: {
