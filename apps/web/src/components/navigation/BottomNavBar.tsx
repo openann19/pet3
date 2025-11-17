@@ -196,7 +196,7 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
     }
   }, [isHovered, isActive, iconScale]);
 
-  const iconStyle = useAnimatedStyle(() => {
+  const iconStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [
         { scale: iconScale.value },

@@ -2,8 +2,7 @@
 
 import type { ComponentProps, MouseEvent } from 'react';
 import { forwardRef, useRef, useCallback } from 'react';
-import type { buttonVariants } from '@/components/ui/button';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import type { VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';

@@ -120,7 +120,7 @@ export function SmartToast({
     return undefined;
   }, [duration, handleDismiss]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle((): Record<string, unknown> => ({
     opacity: opacity.get(),
     transform: [
       { translateY: translateY.get() },

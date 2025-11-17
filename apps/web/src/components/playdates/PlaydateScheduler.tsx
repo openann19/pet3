@@ -130,7 +130,7 @@ export function PlaydateScheduler({
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={(date) => date < new Date()}
+              disabled={(date: Date) => date < new Date()}
               className="mt-1"
             />
           </div>

@@ -49,7 +49,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 }
 
 // Button variant styles using design tokens
-const buttonVariants = {
+export const buttonVariants = {
   primary: 'bg-primary text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-primary',
   secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 focus-visible:ring-secondary',
   outline: 'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent',

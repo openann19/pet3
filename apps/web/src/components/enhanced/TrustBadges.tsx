@@ -96,7 +96,7 @@ function BadgeAnimated({ index, animated, sizeConfig, config, Icon }: BadgeAnima
     }
   }, [animated, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       opacity: staggered.opacity.get(),
       transform: [{ translateY: staggered.y.get() }, { scale: scale.get() }],

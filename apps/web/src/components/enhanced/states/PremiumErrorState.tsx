@@ -49,7 +49,7 @@ export function PremiumErrorState({
     animate(opacity, opacityTransition.target, opacityTransition.transition);
   }, [scale, opacity, prefersReducedMotion]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [{ scale: scale.get() }, { translateX: shake.get() }],
       opacity: opacity.get(),

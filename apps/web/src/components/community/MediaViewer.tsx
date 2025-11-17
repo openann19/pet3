@@ -73,7 +73,7 @@ function SlideTransition({
     }
   }, [isVisible, direction, translateX, opacity, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [{ translateX: translateX.value }, { scale: scale.value }],
       opacity: opacity.value,

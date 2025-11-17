@@ -42,7 +42,7 @@ export default function CreateHighlightDialog({
 
   const [title, setTitle] = useState(existingHighlight?.title ?? '');
   const [selectedStories, setSelectedStories] = useState<Set<string>>(
-    new Set(existingHighlight?.stories.map((s) => s.id) ?? [])
+    new Set(existingHighlight?.stories.map((s: { id: string }) => s.id) ?? [])
   );
   const [coverImageUrl, setCoverImageUrl] = useState(existingHighlight?.coverImage ?? '');
 

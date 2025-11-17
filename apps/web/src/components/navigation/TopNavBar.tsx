@@ -92,12 +92,25 @@ export default function TopNavBar({
 
   // Holographic shimmer effect
   useEffect(() => {
-    animate(shimmerX, [200, -100], {
-      duration: 3,
-      ease: 'linear',
-      repeat: Infinity,
-      repeatType: 'loop',
-    });
+    // Animate from current value to 200, then to -100 in a loop
+    const sequence = async () => {
+      await animate(shimmerX, 200, {
+        duration: 1.5,
+        ease: 'linear',
+      });
+      await animate(shimmerX, -100, {
+        duration: 1.5,
+        ease: 'linear',
+      });
+    };
+    
+    const runAnimation = async () => {
+      while (true) {
+        await sequence();
+      }
+    };
+    
+    void runAnimation();
   }, [shimmerX]);
 
   const barVariants: Variants = {

@@ -26,6 +26,7 @@ export function DetailedPetAnalytics({
   matchReasons,
 }: DetailedPetAnalyticsProps) {
     const _uiConfig = useUIConfig();
+    const prefersReducedMotion = usePrefersReducedMotion();
     const stats = [
         {
           icon: Heart,

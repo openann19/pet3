@@ -55,11 +55,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        PreviousMonthButton: ({ className }) => {
+        PreviousMonthButton: ({ className }: { className?: string }) => {
           const iconProps: { className?: string } = { className: cn('size-4', className) };
           return <ChevronLeft {...iconProps} />;
         },
-        NextMonthButton: ({ className }) => {
+        NextMonthButton: ({ className }: { className?: string }) => {
           const iconProps: { className?: string } = { className: cn('size-4', className) };
           return <ChevronRight {...iconProps} />;
         },
