@@ -7,9 +7,10 @@
  * Composes the core Button component and adds motion effects.
  */
 
-import { MotionView, usePressBounce, useHoverLift, useMagnetic } from '@petspark/motion';                                                                       
+import { MotionView, usePressBounce, useMagnetic } from '@petspark/motion';
+import { useHoverLift } from '@/effects/reanimated/use-hover-lift';                                                                       
 import { cn } from '@/lib/utils';
-import { Button, type buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import type { VariantProps } from 'class-variance-authority';
 
 interface PremiumButtonProps {
@@ -33,7 +34,7 @@ export function PremiumButton({
 }: PremiumButtonProps) {
   // Motion hooks - combine for premium feel
   const pressBounce = usePressBounce(0.94);
-  const hoverLift = useHoverLift(size === 'lg' ? 8 : size === 'sm' ? 4 : 6);
+  const hoverLift = useHoverLift({ translateY: size === 'lg' ? -8 : size === 'sm' ? -4 : -6 });
   const magneticEffect = useMagnetic(magnetic ? 80 : 0);
 
   // Combine all animated styles

@@ -25,10 +25,10 @@ interface AppMainContentProps {
   }
   animations: {
     loadingTransition: {
-      style: unknown
+      style: React.CSSProperties
     }
     pageTransition: {
-      style: unknown
+      style: React.CSSProperties
     }
   }
 }

@@ -42,7 +42,7 @@ export default function CreateHighlightDialog({
 
   const [title, setTitle] = useState(existingHighlight?.title ?? '');
   const [selectedStories, setSelectedStories] = useState<Set<string>>(
-    new Set(existingHighlight?.stories.map((s) => s.id) ?? [])
+    new Set(existingHighlight?.stories.map((s: { id: string }) => s.id) ?? [])
   );
   const [coverImageUrl, setCoverImageUrl] = useState(existingHighlight?.coverImage ?? '');
 
@@ -184,7 +184,7 @@ export default function CreateHighlightDialog({
                           className={`aspect-[9/16] rounded-2xl overflow-hidden relative group w-full border-2 transition-all ${
                             String(isSelected
                                                             ? 'border-primary shadow-lg'
-                                                            : 'border-transparent hover:border-border' ?? '')
+                                                            : 'border-transparent hover:border-border')
                           }`}
                         >
                           <img

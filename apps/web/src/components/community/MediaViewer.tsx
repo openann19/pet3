@@ -73,7 +73,7 @@ function SlideTransition({
     }
   }, [isVisible, direction, translateX, opacity, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const animatedStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [{ translateX: translateX.value }, { scale: scale.value }],
       opacity: opacity.value,
@@ -627,7 +627,7 @@ export function MediaViewer({
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
               <SlideTransition direction={direction} isVisible={true}>
                 <MotionView
-                  style={[mediaContainerStyle, dragOpacity]}
+                  style={{ ...mediaContainerStyle, ...dragOpacity }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
                   {isVideo ? (

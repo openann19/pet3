@@ -92,7 +92,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
   });
   const authorButtonTranslateX = useSharedValue(0);
 
-  const authorButtonStyle = useAnimatedStyle(() => {
+  const authorButtonStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [
         { translateX: authorButtonTranslateX.value },

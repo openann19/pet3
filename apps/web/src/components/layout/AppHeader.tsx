@@ -4,7 +4,7 @@
  */
 
 import { Suspense } from 'react'
-import { MotionView } from '@petspark/motion'
+import { MotionView, useSharedValue } from '@petspark/motion'
 import { Button } from '@/components/ui/button'
 import {
   Heart,
@@ -21,51 +21,51 @@ import { haptics } from '@/lib/haptics'
 interface AppHeaderProps {
   animations: {
     headerAnimation: {
-      headerStyle: unknown
-      shimmerStyle: unknown
+      headerStyle: React.CSSProperties
+      shimmerStyle: React.CSSProperties
     }
     logoButtonHover: {
-      scale: unknown
-      translateY: unknown
+      scale: number | ReturnType<typeof useSharedValue<number>>
+      translateY: number | ReturnType<typeof useSharedValue<number>>
       handleEnter: () => void
       handleLeave: () => void
     }
     logoAnimation: {
-      style: unknown
+      style: React.CSSProperties
     }
     logoGlow: {
-      style: unknown
+      style: React.CSSProperties
     }
     headerButtonsContainer: {
-      opacity: unknown
-      x: unknown
+      opacity: number | ReturnType<typeof useSharedValue<number>>
+      x: number | ReturnType<typeof useSharedValue<number>>
     }
     headerButton1: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void
     }
     headerButton2: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void
     }
     headerButton3: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void
     }
     headerButton4: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void
     }
     headerButton5: {
-      buttonStyle: unknown
+      buttonStyle: React.CSSProperties
       handleEnter: () => void
       handleLeave: () => void
       handleTap: () => void

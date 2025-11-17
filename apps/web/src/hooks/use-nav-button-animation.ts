@@ -25,6 +25,9 @@ export interface UseNavButtonAnimationReturn {
   variants: Variants;
   iconVariants: Variants;
   indicatorVariants: Variants;
+  buttonStyle: { scale: MotionValue<number>; translateY: MotionValue<number>; rotation: MotionValue<number> };
+  iconStyle: { scale: MotionValue<number>; rotation: MotionValue<number> };
+  indicatorStyle: { opacity: MotionValue<number>; width: MotionValue<number> };
   handlePress: () => void;
   handleHover: () => void;
   handleLeave: () => void;
@@ -276,6 +279,9 @@ export function useNavButtonAnimation(
     variants,
     iconVariants,
     indicatorVariants,
+    buttonStyle: { scale, translateY, rotation },
+    iconStyle: { scale: iconScale, rotation: iconRotation },
+    indicatorStyle: { opacity: indicatorOpacity, width: indicatorWidth },
     handlePress,
     handleHover,
     handleLeave,

@@ -130,7 +130,7 @@ function ReminderItem({ reminder, index, onComplete }: ReminderItemProps): JSX.E
     <MotionView
       style={staggeredAnimation.itemStyle}
       className={`flex items-start gap-3 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow ${
-        String(reminder.completed ? 'opacity-50' : '' ?? '')
+        String(reminder.completed ? 'opacity-50' : '')
       }`}
     >
       <div

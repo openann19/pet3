@@ -42,8 +42,8 @@ function deepMerge(
   const result = { ...target };
 
   for (const key in source) {
-    if (source[key] !== undefined) {
-      const sourceValue = source[key];
+    if (source[key as keyof AbsoluteMaxUIModeConfig] !== undefined) {
+      const sourceValue = source[key as keyof AbsoluteMaxUIModeConfig];
       const targetValue = target[key as keyof AbsoluteMaxUIModeConfig];
 
       if (

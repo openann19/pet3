@@ -196,7 +196,7 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
     }
   }, [isHovered, isActive, iconScale]);
 
-  const iconStyle = useAnimatedStyle(() => {
+  const iconStyle = useAnimatedStyle((): Record<string, unknown> => {
     return {
       transform: [
         { scale: iconScale.value },
@@ -314,9 +314,10 @@ function Badge({ count, isActive }: BadgeProps) {
 
   useEffect(() => {
     if (isTruthy(isActive)) {
-      pulseScale.value = withSpring(1.2, springConfigs.bouncy, () => {
+      pulseScale.value = withSpring(1.2, springConfigs.bouncy);
+      setTimeout(() => {
         pulseScale.value = withSpring(1, springConfigs.smooth);
-      });
+      }, 200);
     }
   }, [isActive, pulseScale]);
 
