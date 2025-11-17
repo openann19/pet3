@@ -115,6 +115,21 @@ function CommunityViewContent(): JSX.Element {
     activeTab,
   });
 
+  // Combined pull to refresh styles
+  const combinedPullIndicatorStyle = useMemo(() => {
+    return {
+      ...pullToRefresh.pullTranslateStyle,
+      ...pullToRefresh.pullOpacityStyle,
+    };
+  }, [pullToRefresh.pullTranslateStyle, pullToRefresh.pullOpacityStyle]);
+
+  const combinedPullIconStyle = useMemo(() => {
+    return {
+      ...pullToRefresh.pullRotationStyle,
+      ...pullToRefresh.pullScaleStyle,
+    };
+  }, [pullToRefresh.pullRotationStyle, pullToRefresh.pullScaleStyle]);
+
   // Post actions hook
   const postActions = usePostActions({
     onPostCreated: () => {
@@ -491,11 +506,11 @@ function CommunityViewContent(): JSX.Element {
         {/* Pull-to-Refresh Indicator */}
         <MotionView
           className="absolute top-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-          style={[pullToRefresh.pullTranslateStyle, pullToRefresh.pullOpacityStyle]}
+          style={combinedPullIndicatorStyle}
         >
           <MotionView
             className="bg-card/95 backdrop-blur-xl shadow-xl rounded-full p-3 border border-border/50"
-            style={[pullToRefresh.pullRotationStyle, pullToRefresh.pullScaleStyle]}
+            style={combinedPullIconStyle}
           >
             <ArrowsClockwise
               size={24}
