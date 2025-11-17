@@ -445,7 +445,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
               <p className="text-sm text-muted-foreground">{pet.name}'s health records</p>
             </div>
           </div>
-          <MotionView style={closeButtonAnimation.animatedStyle}>
+          <MotionView animatedStyle={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>

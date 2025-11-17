@@ -91,7 +91,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
 
   return (
     <MotionView
-      style={hoverTap.animatedStyle}
+      animatedStyle={hoverTap.animatedStyle}
       onMouseEnter={hoverTap.handleMouseEnter}
       onMouseLeave={hoverTap.handleMouseLeave}
     >
@@ -116,7 +116,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
           <span className="text-sm font-mono opacity-80">{option.resolution}</span>
           <span className="text-xs opacity-70 text-left">{option.description}</span>
         </div>
-        <MotionView style={checkAnimatedStyle}>
+        <MotionView animatedStyle={checkAnimatedStyle}>
           <Check size={24} weight="bold" />
         </MotionView>
       </Button>

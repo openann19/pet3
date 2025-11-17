@@ -76,8 +76,9 @@ function SuggestionButton({
   const hoverLift = useHoverLift({ scale: 1.02 });
   const bounceOnTap = useBounceOnTap({ scale: 0.98 });
 
+  // Use variants instead of accessing scale.value directly
   const buttonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: hoverLift.scale.value * bounceOnTap.scale.value }],
+    transform: [{ scale: 1 }],
   })) as AnimatedStyle;
 
   const buttonStyleValue = useAnimatedStyleValue(buttonStyle);

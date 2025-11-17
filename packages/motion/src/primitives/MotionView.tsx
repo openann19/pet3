@@ -1,4 +1,4 @@
-import { motion, type HTMLMotionProps, type Variants } from 'framer-motion';
+import { motion, type HTMLMotionProps, type Variants, type VariantLabels } from 'framer-motion';
 import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 import { forwardRef, useMemo } from 'react';
 
@@ -43,11 +43,12 @@ type ButtonAttributes = Omit<
 interface MotionViewCommonProps {
   children?: React.ReactNode;
   animatedStyle?: Record<string, unknown> | object | Record<string, unknown>[];
-  whileHover?: HoverStyle;
-  whileTap?: HoverStyle;
-  initial?: Variants | boolean | Variants['initial'];
-  animate?: Variants['animate'] | Variants | boolean;
+  whileHover?: HoverStyle | string | VariantLabels;
+  whileTap?: HoverStyle | string | VariantLabels;
+  initial?: Variants | boolean | Variants['initial'] | string | VariantLabels;
+  animate?: Variants['animate'] | Variants | boolean | string | VariantLabels;
   exit?: Variants['exit'] | Variants;
+  variants?: Variants;
   transition?: HTMLMotionProps<'div'>['transition'];
   as?: AsTag;
   // Framer-motion advanced props (web-oriented, no-ops on RN)
@@ -110,6 +111,7 @@ export const MotionView: ForwardRefExoticComponent<
       initial,
       animate,
       exit,
+      variants,
       transition,
       animatedStyle: _animatedStyle,
       as = 'div',
@@ -131,26 +133,47 @@ export const MotionView: ForwardRefExoticComponent<
     },
     ref
   ) => {
+    // Type guard to check if value is a HoverStyle object
+    const isHoverStyle = (value: HoverStyle | string | VariantLabels | undefined): value is HoverStyle => {
+      return typeof value === 'object' && value !== null && !Array.isArray(value);
+    };
+
     const mappedWhileHover = useMemo(() => {
       if (!whileHover) return undefined;
-      const mapped: Record<string, number> = {};
-      if (whileHover.scale !== undefined) mapped.scale = whileHover.scale;
-      if (whileHover.opacity !== undefined) mapped.opacity = whileHover.opacity;
-      if (whileHover.rotate !== undefined) mapped.rotate = whileHover.rotate;
-      if (whileHover.translateX !== undefined) mapped.x = whileHover.translateX;
-      if (whileHover.translateY !== undefined) mapped.y = whileHover.translateY;
-      return Object.keys(mapped).length > 0 ? mapped : undefined;
+      // If it's a string or array (variant key), pass it through directly
+      if (typeof whileHover === 'string' || Array.isArray(whileHover)) {
+        return whileHover;
+      }
+      // Otherwise, map HoverStyle object to framer-motion format
+      if (isHoverStyle(whileHover)) {
+        const mapped: Record<string, number> = {};
+        if (whileHover.scale !== undefined) mapped.scale = whileHover.scale;
+        if (whileHover.opacity !== undefined) mapped.opacity = whileHover.opacity;
+        if (whileHover.rotate !== undefined) mapped.rotate = whileHover.rotate;
+        if (whileHover.translateX !== undefined) mapped.x = whileHover.translateX;
+        if (whileHover.translateY !== undefined) mapped.y = whileHover.translateY;
+        return Object.keys(mapped).length > 0 ? mapped : undefined;
+      }
+      return undefined;
     }, [whileHover]);
 
     const mappedWhileTap = useMemo(() => {
       if (!whileTap) return undefined;
-      const mapped: Record<string, number> = {};
-      if (whileTap.scale !== undefined) mapped.scale = whileTap.scale;
-      if (whileTap.opacity !== undefined) mapped.opacity = whileTap.opacity;
-      if (whileTap.rotate !== undefined) mapped.rotate = whileTap.rotate;
-      if (whileTap.translateX !== undefined) mapped.x = whileTap.translateX;
-      if (whileTap.translateY !== undefined) mapped.y = whileTap.translateY;
-      return Object.keys(mapped).length > 0 ? mapped : undefined;
+      // If it's a string or array (variant key), pass it through directly
+      if (typeof whileTap === 'string' || Array.isArray(whileTap)) {
+        return whileTap;
+      }
+      // Otherwise, map HoverStyle object to framer-motion format
+      if (isHoverStyle(whileTap)) {
+        const mapped: Record<string, number> = {};
+        if (whileTap.scale !== undefined) mapped.scale = whileTap.scale;
+        if (whileTap.opacity !== undefined) mapped.opacity = whileTap.opacity;
+        if (whileTap.rotate !== undefined) mapped.rotate = whileTap.rotate;
+        if (whileTap.translateX !== undefined) mapped.x = whileTap.translateX;
+        if (whileTap.translateY !== undefined) mapped.y = whileTap.translateY;
+        return Object.keys(mapped).length > 0 ? mapped : undefined;
+      }
+      return undefined;
     }, [whileTap]);
 
     const {
@@ -159,6 +182,7 @@ export const MotionView: ForwardRefExoticComponent<
       initial: _initial,
       animate: _animate,
       exit: _exit,
+      variants: _variants,
       transition: _transition,
       animatedStyle: _animatedStyleProp,
       as: _asConsumed,
@@ -169,6 +193,7 @@ export const MotionView: ForwardRefExoticComponent<
       initial?: unknown;
       animate?: unknown;
       exit?: unknown;
+      variants?: unknown;
       transition?: unknown;
       animatedStyle?: unknown;
       as?: unknown;
@@ -183,6 +208,7 @@ export const MotionView: ForwardRefExoticComponent<
       ...(initial !== undefined && { initial }),
       ...(animate !== undefined && { animate }),
       ...(exit !== undefined && { exit }),
+      ...(variants !== undefined && { variants }),
       ...(transition !== undefined && { transition }),
       ...(mappedWhileHover !== undefined && { whileHover: mappedWhileHover }),
       ...(mappedWhileTap !== undefined && { whileTap: mappedWhileTap }),

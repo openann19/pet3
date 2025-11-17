@@ -91,7 +91,9 @@ function ParticipantVideo({
 
   return (
     <MotionView
-      style={hoverLift.animatedStyle}
+      variants={hoverLift.variants}
+      initial="rest"
+      whileHover="hover"
       className={cn(
         'relative rounded-2xl overflow-hidden bg-linear-to-br from-primary/20 to-accent/20',
         isSpotlight ? 'col-span-full row-span-2' : ''
@@ -431,13 +433,17 @@ export default function GroupCallInterface({
   });
 
   const raiseHandButton = useBounceOnTap({
+    scale: 0.95,
+    hapticFeedback: false,
+  });
+  const chatButton = useBounceOnTap({
     onPress: handleRaiseHand,
     hapticFeedback: true,
   });
 
   return (
     <MotionView
-      style={modalAnimation.style}
+      animatedStyle={modalAnimation.style}
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
         isFullscreen ? 'bg-background' : 'bg-background/95 backdrop-blur-xl p-4'
@@ -611,7 +617,7 @@ export default function GroupCallInterface({
               role="toolbar"
               aria-label="Call controls"
             >
-              <MotionView style={muteButton.animatedStyle}>
+              <MotionView variants={muteButton.variants} initial="rest" animate="rest" whileTap="tap">
                 <Button
                   onClick={muteButton.handlePress}
                   size="icon"
@@ -640,7 +646,7 @@ export default function GroupCallInterface({
               </MotionView>
 
               {isVideoCall && (
-                <MotionView style={videoButton.animatedStyle}>
+                <MotionView variants={videoButton.variants} initial="rest" animate="rest" whileTap="tap">
                   <Button
                     onClick={videoButton.handlePress}
                     size="icon"
@@ -674,7 +680,7 @@ export default function GroupCallInterface({
                 </MotionView>
               )}
 
-              <MotionView style={endCallButton.animatedStyle}>
+              <MotionView variants={endCallButton.variants} initial="rest" animate="rest" whileTap="tap">
                 <Button
                   onClick={endCallButton.handlePress}
                   size="icon"
@@ -690,7 +696,7 @@ export default function GroupCallInterface({
                 </Button>
               </MotionView>
 
-              <MotionView style={raiseHandButton.animatedStyle}>
+              <MotionView variants={raiseHandButton.variants} initial="rest" animate="rest" whileTap="tap">
                 <Button
                   onClick={raiseHandButton.handlePress}
                   size="icon"
@@ -708,7 +714,7 @@ export default function GroupCallInterface({
                 </Button>
               </MotionView>
 
-              <MotionView style={useBounceOnTap({ hapticFeedback: true }).animatedStyle}>
+              <MotionView variants={chatButton.variants} initial="rest" animate="rest" whileTap="tap">
                 <Button
                   size="icon"
                   variant="outline"

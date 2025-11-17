@@ -146,7 +146,7 @@ export function VirtualMessageList({
       <div ref={containerRef} className={`flex-1 overflow-y-auto p-4 ${className ?? ''}`}>
         {groups.map((g) => (
           <React.Fragment key={g.date}>
-            <MotionView style={headerFx.animatedStyle} className="flex justify-center py-2">
+            <MotionView animatedStyle={headerFx.animatedStyle} className="flex justify-center py-2">
               <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
                 {g.date}
               </div>
@@ -203,7 +203,7 @@ export function VirtualMessageList({
               }}
             >
               {row.type === 'header' ? (
-                <MotionView style={headerFx.animatedStyle} className="flex justify-center py-2">
+                <MotionView animatedStyle={headerFx.animatedStyle} className="flex justify-center py-2">
                   <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
                     {row.date}
                   </div>

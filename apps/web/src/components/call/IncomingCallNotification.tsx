@@ -104,7 +104,7 @@ export default function IncomingCallNotification({
 
   return (
     <MotionView
-      style={modalAnimation.style}
+      animatedStyle={modalAnimation.style}
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
       role="alertdialog"
       aria-labelledby="incoming-call-title"
@@ -112,11 +112,11 @@ export default function IncomingCallNotification({
       aria-modal="true"
     >
       <MotionView
-        style={glowPulse.animatedStyle}
+        animatedStyle={glowPulse.animatedStyle}
         className="glass-strong backdrop-blur-2xl rounded-3xl p-6 border border-white/30 shadow-2xl"
       >
         <div className="flex items-center gap-4 mb-6">
-          <MotionView style={avatarAnimatedStyle}>
+            <MotionView animatedStyle={avatarAnimatedStyle}>
             <Avatar className="w-16 h-16 ring-4 ring-primary/30">
               <AvatarImage src={callerAvatar} alt={callerName} />
               <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-2xl font-bold">
@@ -142,7 +142,7 @@ export default function IncomingCallNotification({
         </div>
 
         <div className="flex gap-3" role="group" aria-label="Call actions">
-          <MotionView style={declineBounce.animatedStyle} className="flex-1">
+          <MotionView variants={declineBounce.variants} initial="rest" animate="rest" whileTap="tap" className="flex-1">
             <Button
               onClick={declineBounce.handlePress}
               variant="outline"
@@ -154,7 +154,7 @@ export default function IncomingCallNotification({
             </Button>
           </MotionView>
 
-          <MotionView style={acceptBounce.animatedStyle} className="flex-1">
+          <MotionView variants={acceptBounce.variants} initial="rest" animate="rest" whileTap="tap" className="flex-1">
             <Button
               onClick={acceptBounce.handlePress}
               className="w-full h-12 bg-linear-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg"

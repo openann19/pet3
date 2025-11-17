@@ -147,13 +147,14 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
   return (
     <>
       <MotionView
-        style={backdropStyle}
+        animatedStyle={backdropStyle}
         className="fixed inset-0 bg-black z-40"
         onClick={onClose}
         aria-hidden="true"
       />
       <MotionView
-        style={{ ...cardPosition, ...cardStyle }}
+        style={cardPosition}
+        animatedStyle={cardStyle}
         className="fixed z-50 bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-[90vw]"
         role="dialog"
         aria-modal="true"

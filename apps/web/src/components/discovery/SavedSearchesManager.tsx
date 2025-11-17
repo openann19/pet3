@@ -78,7 +78,7 @@ function SearchItem({
 
   return (
     <MotionView
-      style={itemAnimation.animatedStyle}
+      animatedStyle={itemAnimation.animatedStyle}
       className="group p-4 rounded-lg border bg-card hover:shadow-md transition-all"
       onMouseEnter={itemHover.handleEnter}
       onMouseLeave={itemHover.handleLeave}
@@ -92,7 +92,7 @@ function SearchItem({
             autoFocus
           />
           <div className="flex gap-2">
-            <MotionView style={itemBounce.animatedStyle}>
+            <MotionView animatedStyle={itemBounce.animatedStyle}>
               <Button
                 size="sm"
                 onClick={() => {
@@ -126,7 +126,7 @@ function SearchItem({
               </div>
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MotionView style={pinBounce.animatedStyle}>
+              <MotionView animatedStyle={pinBounce.animatedStyle}>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -143,7 +143,7 @@ function SearchItem({
                   />
                 </Button>
               </MotionView>
-              <MotionView style={editBounce.animatedStyle}>
+              <MotionView animatedStyle={editBounce.animatedStyle}>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -156,7 +156,7 @@ function SearchItem({
                   <Pencil size={16} />
                 </Button>
               </MotionView>
-              <MotionView style={deleteBounce.animatedStyle}>
+              <MotionView animatedStyle={deleteBounce.animatedStyle}>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -178,7 +178,7 @@ function SearchItem({
                 `Used ${search.useCount} time${search.useCount !== 1 ? 's' : ''}`}
               {search.lastUsed && ` • Last: ${new Date(search.lastUsed).toLocaleDateString()}`}
             </div>
-            <MotionView style={applyBounce.animatedStyle}>
+            <MotionView animatedStyle={applyBounce.animatedStyle}>
               <Button
                 size="sm"
                 onClick={() => {
@@ -393,7 +393,7 @@ export default function SavedSearchesManager({
                 <CardDescription>Save your current search criteria</CardDescription>
               </div>
               <MotionView
-                style={cardHover.animatedStyle}
+                animatedStyle={cardHover.animatedStyle}
                 onMouseEnter={cardHover.handleEnter}
                 onMouseLeave={cardHover.handleLeave}
               >
@@ -425,7 +425,7 @@ export default function SavedSearchesManager({
                       }}
                     />
                   </div>
-                  <MotionView style={saveButtonBounce.animatedStyle}>
+                  <MotionView animatedStyle={saveButtonBounce.animatedStyle}>
                     <Button onClick={handleSaveCurrentSearch}>
                       <FloppyDisk size={16} className="mr-2" />
                       Save

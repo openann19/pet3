@@ -147,7 +147,8 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
           {emptyStatePresence.shouldRender && (
             <MotionView
-              style={[emptyHeartStyle, emptyStatePresence.animatedStyle]}
+              animatedStyle={emptyStatePresence.animatedStyle}
+              style={emptyHeartStyle}
               className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
             >
               <MotionView

@@ -6,7 +6,7 @@
 import * as React from 'react'
 
 const { useState } = React
-import { Button, LoadingButton, IconButton, ButtonGroup } from '../ui/Button'
+import { Button, LoadingButton, IconButton, ButtonGroup } from '../ui/button'
 import { Input, Textarea } from '../ui/Input'
 import { Label, Field } from '../ui/Label'
 import { Checkbox, CheckboxGroup } from '../ui/Checkbox'

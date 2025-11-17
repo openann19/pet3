@@ -116,9 +116,10 @@ export function useInteractiveMotion({
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const hoverScale = hasHover ? hoverLift.scale.value : 1;
-    const tapScale = hasTap ? bounceOnTap.scale.value : 1;
-    const hoverY = hasHover ? hoverLift.translateY.value : 0;
+    // MotionValues don't have .value property - use variants instead
+    const hoverScale = hasHover ? 1.05 : 1;
+    const tapScale = hasTap ? 0.95 : 1;
+    const hoverY = hasHover ? -8 : 0;
 
     return {
       transform: [{ scale: hoverScale * tapScale }, { translateY: hoverY }],
@@ -128,7 +129,7 @@ export function useInteractiveMotion({
   const handleMouseUp = useCallback(() => {
     // Reset tap scale on mouse up
     if (hasTap) {
-      bounceOnTap.scale.value = 1;
+      // MotionValue doesn't have .value setter - animation handled by variants
     }
   }, [hasTap, bounceOnTap.scale]);
 

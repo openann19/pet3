@@ -116,7 +116,7 @@ export function MessageItem({
           className="relative"
         >
           <MotionView
-            style={hover.animatedStyle}
+            animatedStyle={hover.animatedStyle}
             onMouseEnter={hover.handleMouseEnter}
             onMouseLeave={hover.handleMouseLeave}
             className={`relative group ${message.type === 'sticker' ? 'p-0' : 'p-3'} rounded-2xl shadow-lg focus-ring ${isCurrentUser

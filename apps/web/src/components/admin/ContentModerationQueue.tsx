@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, type Variants } from "@petspark/motion";
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { communityAPI } from '@/api/community-api';
@@ -324,7 +324,7 @@ export function ContentModerationQueue() {
           {alert.photos && alert.photos.length > 0 && (
             <div className="w-24 h-24 bg-muted rounded overflow-hidden">
               <ProgressiveImage
-                src={alert.photos[0]}
+                src={alert.photos[0] ?? ''}
                 alt={alert.petSummary.name}
                 className="w-full h-full object-cover"
                 aria-label={`Photo of ${alert.petSummary.name}`}
@@ -414,7 +414,7 @@ export function ContentModerationQueue() {
     if (!presence.shouldRender) return null
     
     return (
-      <MotionView style={presence.animatedStyle} className="text-center py-12">
+      <MotionView animatedStyle={presence.animatedStyle} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
       </MotionView>

@@ -42,7 +42,7 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler'
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 // ============================================================
 // TYPES & INTERFACES
@@ -285,7 +285,7 @@ export function useShimmerSweep({
   const opacity = useSharedValue(opacityRange[0])
 
   useEffect(() => {
-    const start = () => {
+    const start = (): void => {
       progress.value = withRepeat(
         withTiming(1, { duration, easing }),
         -1,
@@ -301,7 +301,7 @@ export function useShimmerSweep({
       )
     }
 
-    const stop = () => {
+    const stop = (): void => {
       cancelAnimation(progress)
       cancelAnimation(opacity)
     }
@@ -396,7 +396,7 @@ export function useBubblePopIn(
   const opacity = useSharedValue(reduceMotion ? 1 : 0)
 
   useEffect(() => {
-    const animate = () => {
+    const animate = (): void => {
       scale.value = withDelay(
         delay,
         withSpring(1, {
@@ -506,8 +506,9 @@ export function TypingIndicator({
   useEffect(() => {
     if (isTruthy(reduceMotion)) return
 
-    const animate = (sv: SharedValue<number>, delayFactor: number) => {
-      sv.value = withDelay(
+    const animate = (sv: SharedValue<number>, delayFactor: number): void => {
+      const sharedValue = sv;
+      sharedValue.value = withDelay(
         duration * delayFactor,
         withRepeat(
           withSequence(
@@ -531,17 +532,26 @@ export function TypingIndicator({
     }
   }, [duration, reduceMotion, alpha1, alpha2, alpha3])
 
-  const createDotStyle = (alpha: SharedValue<number>) =>
-    useAnimatedStyle(() => ({
-      opacity: alpha.value,
-      transform: [
-        { translateY: interpolate(alpha.value, [0.4, 1], [0, -2]) },
-      ],
-    }))
+  const style1 = useAnimatedStyle(() => ({
+    opacity: alpha1.value,
+    transform: [
+      { translateY: interpolate(alpha1.value, [0.4, 1], [0, -2]) },
+    ],
+  }))
 
-  const style1 = createDotStyle(alpha1)
-  const style2 = createDotStyle(alpha2)
-  const style3 = createDotStyle(alpha3)
+  const style2 = useAnimatedStyle(() => ({
+    opacity: alpha2.value,
+    transform: [
+      { translateY: interpolate(alpha2.value, [0.4, 1], [0, -2]) },
+    ],
+  }))
+
+  const style3 = useAnimatedStyle(() => ({
+    opacity: alpha3.value,
+    transform: [
+      { translateY: interpolate(alpha3.value, [0.4, 1], [0, -2]) },
+    ],
+  }))
 
   const dotBaseStyle = { width: size, height: size, borderRadius: size / 2, backgroundColor: '#9CA3AF' }
 
@@ -721,7 +731,7 @@ export function Ripple({
   const scale = useSharedValue(0.01)
   const opacity = useSharedValue(0)
 
-  const play = () => {
+  const play = (): void => {
     scale.value = 0.01
     opacity.value = 0
 
@@ -929,12 +939,18 @@ export function EmojiTrail({
   areaWidth = 0,
   areaHeight = 0,
 }: EmojiTrailProps): React.JSX.Element {
-  type ParticleData = { id: number; x: number; y: number; drift: number; rot: number }
+  interface ParticleData {
+    id: number;
+    x: number;
+    y: number;
+    drift: number;
+    rot: number;
+  }
   const [particles, setParticles] = useState<ParticleData[]>([])
   const lastPos = useRef<{ x: number; y: number } | null>(null)
   const idCounter = useRef(0)
 
-  const addParticle = (x: number, y: number) => {
+  const addParticle = useCallback((x: number, y: number): void => {
     idCounter.current += 1
     const id = idCounter.current
 
@@ -951,9 +967,9 @@ export function EmojiTrail({
       ]
       return next.length > max ? next.slice(next.length - max) : next
     })
-  }
+  }, [max])
 
-  const removeParticle = (id: number) => {
+  const removeParticle = (id: number): void => {
     setParticles((prev: ParticleData[]) => prev.filter((p: ParticleData) => p.id !== id))
   }
 
@@ -984,7 +1000,7 @@ export function EmojiTrail({
           lastPos.current = null
           onComplete?.()
         }),
-    [step, onComplete]
+    [step, onComplete, addParticle]
   )
 
   return (
@@ -1052,7 +1068,7 @@ function EmojiParticle({
       { translateX: interpolate(progress.value, [0, 1], [0, drift]) },
       { translateY: interpolate(progress.value, [0, 1], [0, -20]) },
       { scale: interpolate(progress.value, [0, 1], [1, 0.85]) },
-      { rotate: `${String(rot * 0.5 ?? '')}deg` },
+      { rotate: `${String(rot * 0.5)}deg` },
     ],
   }))
 
@@ -1082,26 +1098,28 @@ export function ConfettiEmitter({
       { duration, easing: Easing.out(Easing.quad) },
       (finished?: boolean) => {
         if (finished === true) {
-          runOnJS(onDone ?? (() => {}))()
+          runOnJS(onDone ?? (() => {
+            // No-op callback
+          }))()
         }
       }
     )
   }, [duration, onDone, time])
 
-  type SeedData = {
-    key: number
-    color: string
-    angle: number
-    velocity: number
-    spin: number
-    size: number
+  interface SeedData {
+    key: number;
+    color: string;
+    angle: number;
+    velocity: number;
+    spin: number;
+    size: number;
   }
 
   const seeds = useMemo<SeedData[]>(
     () =>
       Array.from({ length: count }, (_: unknown, i: number) => ({
         key: i,
-        color: colors[i % colors.length],
+        color: colors[i % colors.length] ?? '#F59E0B',
         angle: (i / count) * Math.PI * 2 + Math.random() * 0.3,
         velocity: 40 + Math.random() * 90,
         spin: (Math.random() * 2 - 1) * 360,
@@ -1161,7 +1179,7 @@ function ConfettiPiece({
       transform: [
         { translateX: x },
         { translateY: y },
-        { rotate: `${String(seed.spin * t ?? '')}deg` },
+        { rotate: `${String(seed.spin * t)}deg` },
       ],
       opacity: interpolate(t, [0.8, 1], [1, 0]),
     }

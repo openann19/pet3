@@ -56,7 +56,7 @@ export function LinkPreview({
       aria-live="polite"
     >
       {/* Skeleton */}
-      <MotionView style={skeletonStyle} className="absolute inset-0">
+      <MotionView animatedStyle={skeletonStyle} className="absolute inset-0">
         <div className="flex gap-3 p-3">
           {image && (
             <div className="w-20 h-20 bg-muted rounded animate-pulse" />
@@ -70,7 +70,7 @@ export function LinkPreview({
       </MotionView>
       {/* Content */}
       {showContent && (
-        <MotionView style={contentStyle} className="relative">
+        <MotionView animatedStyle={contentStyle} className="relative">
           <a
             href={safeUrl}
             target="_blank"

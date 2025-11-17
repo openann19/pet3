@@ -24,7 +24,7 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
 
   return (
     <MotionView
-      style={animation.animatedStyle}
+      animatedStyle={animation.animatedStyle}
       className="glass-strong border border-white/20 rounded-xl p-4 space-y-3 backdrop-blur-xl"
     >
       <div className="flex items-center justify-between">

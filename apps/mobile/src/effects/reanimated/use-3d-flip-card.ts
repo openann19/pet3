@@ -49,7 +49,7 @@ export function use3DFlipCard(options: Use3DFlipCardOptions = {}) {
       opacity,
       transform: [
         { perspective },
-        { rotateY: `${String(rotateY.value + 180 ?? '')}deg` },
+        { rotateY: `${String(rotateY.value + 180)}deg` },
       ],
       backfaceVisibility: 'hidden',
     }

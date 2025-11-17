@@ -403,7 +403,7 @@ export default function StoryViewer({
 
   return (
     <MotionView
-      style={viewerEntry.animatedStyle}
+      animatedStyle={viewerEntry.animatedStyle}
       className="fixed inset-0 z-100 bg-black"
       role="dialog"
       aria-modal="true"
@@ -546,7 +546,7 @@ export default function StoryViewer({
           style={[mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]}
         >
           {currentStory.type === 'photo' && (
-            <MotionView key={currentStory.id} style={imageEntry.animatedStyle}>
+            <MotionView key={currentStory.id} animatedStyle={imageEntry.animatedStyle}>
               <ProgressiveImage
                 src={currentStory.mediaUrl}
                 alt={currentStory.caption ?? 'Story'}
@@ -574,7 +574,7 @@ export default function StoryViewer({
             <div className="absolute bottom-24 left-0 right-0 px-4">
               <MotionView
                 className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-                style={captionAnimation.animatedStyle}
+                animatedStyle={captionAnimation.animatedStyle}
               >
                 <p className="text-white text-center">{currentStory.caption}</p>
               </MotionView>
@@ -589,7 +589,7 @@ export default function StoryViewer({
               {showReactions && (
                 <MotionView
                   key="reactions"
-                  style={reactionsAnimation.animatedStyle}
+                  animatedStyle={reactionsAnimation.animatedStyle}
                   className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
                   role="dialog"
                   aria-label="React to story"
@@ -661,7 +661,7 @@ export default function StoryViewer({
           <div className="absolute bottom-4 left-4 right-4 z-20">
             <MotionView
               className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
-              style={analyticsAnimation.animatedStyle}
+              animatedStyle={analyticsAnimation.animatedStyle}
               role="region"
               aria-label="Story analytics"
             >

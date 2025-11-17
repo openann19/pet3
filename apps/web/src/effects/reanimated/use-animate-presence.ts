@@ -179,7 +179,7 @@ export function useAnimatePresence(options: UseAnimatePresenceOptions): UseAnima
       opacity: opacity.value,
       transform: transforms.length > 0 ? transforms : undefined,
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     opacity,

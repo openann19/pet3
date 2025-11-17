@@ -15,6 +15,7 @@ import {
   withSequence,
   withSpring,
   type AnimatedStyle,
+  type MotionValue,
 } from '@petspark/motion';
 
 export default function WelcomeModal(): JSX.Element | null {
@@ -33,80 +34,59 @@ export default function WelcomeModal(): JSX.Element | null {
   const buttonHover = useHoverTap({ hoverScale: 1.05, tapScale: 0.95 });
   const arrowX = useSharedValue(0);
 
-  const bgAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: bgScale.value }, { rotate: `${bgRotate.value}deg` }],
-  }));
+  const bgAnimatedStyle = useAnimatedStyle(() => {
+    const scale = bgScale.value;
+    const rotate = bgRotate.value;
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ scale });
+    transforms.push({ rotate: `${rotate}deg` });
+    return { transform: transforms };
+  });
 
-  const iconAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconScale.value }],
-  }));
+  const iconAnimatedStyle = useAnimatedStyle(() => {
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ scale: iconScale.value });
+    return { transform: transforms };
+  });
 
-  const iconPulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconPulse.value }],
-  }));
+  const iconPulseStyle = useAnimatedStyle(() => {
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ scale: iconPulse.value });
+    return { transform: transforms };
+  });
 
-  const iconGlowStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconGlowScale.value }],
-    opacity: iconGlowOpacity.value,
-  }));
+  const iconGlowStyle = useAnimatedStyle(() => {
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ scale: iconGlowScale.value });
+    return {
+      transform: transforms,
+      opacity: iconGlowOpacity.value,
+    };
+  });
 
-  const arrowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: arrowX.value }],
-  }));
+  const arrowStyle = useAnimatedStyle(() => {
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ translateX: arrowX.value });
+    return { transform: transforms };
+  });
 
   // Animation hooks
-  const _containerEntry = useEntryAnimation({ initialOpacity: 0 })
-  const _titleEntry = useEntryAnimation({ initialY: 20, delay: 300 })
-  const _subtitleEntry = useEntryAnimation({ initialY: 20, delay: 400 })
-  const _buttonEntry = useEntryAnimation({ initialY: 20, delay: 1000 })
-  const closeButtonHover = useHoverLift({ scale: 1.1 })
-  const closeButtonRotate = useSharedValue(0)
-  const _closeButtonRotateStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${closeButtonRotate.value}deg` }],
-  }))
-  const _closeButtonTap = useBounceOnTap({ scale: 0.9 })
-  const buttonHover = useHoverLift({ scale: 1.05 })
-  const _buttonTap = useBounceOnTap({ scale: 0.95 })
-
-  // Background gradient animation
-  const bgScale = useSharedValue(1)
-  const bgRotate = useSharedValue(0)
-  const _bgStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: bgScale.value },
-      { rotate: `${bgRotate.value}deg` },
-    ],
-  }))
-
-  // Heart icon animations
-  const heartScale = useSharedValue(1)
-  const _heartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
-  }))
-
-  // Heart pulse animation
-  const heartPulseScale = useSharedValue(1)
-  const heartPulseOpacity = useSharedValue(0.5)
-  const _heartPulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartPulseScale.value }],
-    opacity: heartPulseOpacity.value,
-  }))
-
-  // Arrow animation
-  const arrowX = useSharedValue(0)
-  const arrowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: arrowX.value }],
-  }))
+  const _containerEntry = useEntryAnimation({ initialOpacity: 0 });
+  const _titleEntry = useEntryAnimation({ initialY: 20, delay: 300 });
+  const _subtitleEntry = useEntryAnimation({ initialY: 20, delay: 400 });
+  const _buttonEntry = useEntryAnimation({ initialY: 20, delay: 1000 });
 
   // Logo entry animation
-  const logoScale = useSharedValue(0)
-  const logoRotate = useSharedValue(-180)
-  const logoStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: logoScale.value },
-      { rotate: `${logoRotate.value}deg` },
-    ],
-  }))
+  const logoScale = useSharedValue(0);
+  const logoRotate = useSharedValue(-180);
+  const logoStyle = useAnimatedStyle(() => {
+    const scale = logoScale.value;
+    const rotate = logoRotate.value;
+    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    transforms.push({ scale });
+    transforms.push({ rotate: `${rotate}deg` });
+    return { transform: transforms };
+  });
 
   useEffect(() => {
     if (!hasSeenWelcome) {
@@ -196,12 +176,12 @@ export default function WelcomeModal(): JSX.Element | null {
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
           <MotionView
-            style={bgAnimatedStyle}
+            style={bgAnimatedStyle as React.CSSProperties}
             className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"
           />
 
           <MotionView
-            style={closeButtonHover.animatedStyle}
+            animatedStyle={closeButtonHover.animatedStyle}
             onMouseEnter={closeButtonHover.handleMouseEnter}
             onMouseLeave={closeButtonHover.handleMouseLeave}
             onClick={closeButtonHover.handlePress}
@@ -217,15 +197,14 @@ export default function WelcomeModal(): JSX.Element | null {
           </MotionView>
 
           <MotionView
-            style={iconAnimatedStyle}
+            style={logoStyle as React.CSSProperties}
             className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
-            style={logoStyle}
           >
-            <MotionView style={iconPulseStyle}>
+            <MotionView style={iconPulseStyle as React.CSSProperties}>
               <Heart size={40} className="text-white" weight="fill" />
             </MotionView>
             <MotionView
-              style={iconGlowStyle}
+              style={iconGlowStyle as React.CSSProperties}
               className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent"
             />
           </MotionView>
@@ -258,7 +237,7 @@ export default function WelcomeModal(): JSX.Element | null {
 
           <div className="flex justify-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-300 delay-1000">
             <MotionView
-              style={buttonHover.animatedStyle}
+              animatedStyle={buttonHover.animatedStyle}
               onMouseEnter={buttonHover.handleMouseEnter}
               onMouseLeave={buttonHover.handleMouseLeave}
               onClick={buttonHover.handlePress}
@@ -269,7 +248,7 @@ export default function WelcomeModal(): JSX.Element | null {
                 className="px-8 shadow-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 {t.welcome.getStarted}
-                <MotionView style={arrowStyle} className="ml-2">
+                <MotionView style={arrowStyle as React.CSSProperties} className="ml-2">
                   →
                 </MotionView>
               </Button>

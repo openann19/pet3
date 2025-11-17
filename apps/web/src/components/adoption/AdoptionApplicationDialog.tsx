@@ -43,7 +43,7 @@ function LoadingSpinner() {
   });
 
   return (
-    <MotionView style={rotationAnimation.rotationStyle} className="inline-block">
+    <MotionView style={rotationAnimation.rotationStyle as React.CSSProperties} className="inline-block">
       <PaperPlaneRight size={18} />
     </MotionView>
   );

@@ -1,5 +1,6 @@
 import { MotionView } from "@petspark/motion";
 import { useState } from 'react';
+import { useAnimatePresence } from '@/effects/reanimated';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -120,8 +121,8 @@ export function AdoptionListingDetailDialog({
       await adoptionMarketplaceService.createApplication({
         listingId: listing.id,
         applicantId: String(user.id),
-        applicantName: user.login || 'Anonymous',
-        applicantEmail: user.email || '',
+        applicantName: user.login ?? 'Anonymous',
+        applicantEmail: user.email ?? '',
         message: applicationData.message,
         homeType: applicationData.homeType,
         hasYard: applicationData.hasYard,
@@ -171,7 +172,7 @@ export function AdoptionListingDetailDialog({
         error instanceof Error ? error : new Error(String(error))
       );
       haptics.trigger('error');
-      toast.error(errorMessage || 'Failed to submit application. Please try again.');
+      toast.error(errorMessage ?? 'Failed to submit application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -182,7 +183,7 @@ export function AdoptionListingDetailDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <div className="relative h-80 bg-muted">
           {photoPresence.shouldRender && (
-            <MotionView key={currentPhotoIndex} style={photoPresence.animatedStyle}>
+            <MotionView key={currentPhotoIndex} animatedStyle={photoPresence.animatedStyle}>
               <img
                 src={photos[currentPhotoIndex]}
                 alt={`${listing.petName} - Photo ${currentPhotoIndex + 1}`}
@@ -194,7 +195,7 @@ export function AdoptionListingDetailDialog({
           {photos.length > 1 && (
             <>
               <MotionView
-                style={prevButtonHover.animatedStyle}
+                animatedStyle={prevButtonHover.animatedStyle}
                 onMouseEnter={prevButtonHover.handleMouseEnter}
                 onMouseLeave={prevButtonHover.handleMouseLeave}
                 onClick={() => {
@@ -211,7 +212,7 @@ export function AdoptionListingDetailDialog({
                 </button>
               </MotionView>
               <MotionView
-                style={nextButtonHover.animatedStyle}
+                animatedStyle={nextButtonHover.animatedStyle}
                 onMouseEnter={nextButtonHover.handleMouseEnter}
                 onMouseLeave={nextButtonHover.handleMouseLeave}
                 onClick={() => {
@@ -356,7 +357,7 @@ export function AdoptionListingDetailDialog({
 
           {applicationFormPresence.shouldRender && showApplicationForm && (
             <MotionView
-              style={applicationFormPresence.animatedStyle}
+              animatedStyle={applicationFormPresence.animatedStyle}
               className="space-y-4 p-4 border rounded-lg bg-muted/50"
             >
               <div className="flex items-center justify-between">

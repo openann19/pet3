@@ -19,7 +19,7 @@ export function DateGroup({ date, delay }: DateGroupProps): JSX.Element {
     const animation = useEntryAnimation({ initialY: -10, delay });
 
   return (
-    <MotionView style={animation.animatedStyle} className="flex items-center justify-center my-4">
+    <MotionView animatedStyle={animation.animatedStyle} className="flex items-center justify-center my-4">
       <Badge variant="secondary" className="text-xs px-3 py-1">
         {date}
       </Badge>

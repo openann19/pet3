@@ -86,7 +86,7 @@ export function ChatMessageBubble({
         className={`flex flex-col max-w-[75%] ${isCurrentUser ? 'items-end' : 'items-start'}`}
       >
         <MotionView
-          style={messageBubbleHover.animatedStyle}
+          animatedStyle={messageBubbleHover.animatedStyle}
           onMouseEnter={messageBubbleHover.handleEnter}
           onMouseLeave={messageBubbleHover.handleLeave}
           className={`relative group ${message.type === 'sticker' ? 'p-0' : 'p-3'
@@ -105,14 +105,14 @@ export function ChatMessageBubble({
 
           {message.type === 'voice' && voiceMessages?.[message.id] && (
             <MotionView
-              style={voiceButtonTap.animatedStyle}
+              animatedStyle={voiceButtonTap.animatedStyle}
               onClick={() => onToggleVoicePlayback(message.id)}
               className="flex items-center gap-2 min-w-50 cursor-pointer"
               onMouseEnter={voiceButtonHover.handleEnter}
               onMouseLeave={voiceButtonHover.handleLeave}
             >
               <MotionView
-                style={voiceButtonHover.animatedStyle}
+                animatedStyle={voiceButtonHover.animatedStyle}
                 className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
               >
                 {playingVoice === message.id ? (
@@ -148,7 +148,7 @@ export function ChatMessageBubble({
           >
             <PopoverTrigger asChild>
               <MotionView
-                style={reactionButtonTap.animatedStyle}
+                animatedStyle={reactionButtonTap.animatedStyle}
                 onClick={() => { }}
                 className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 onMouseEnter={reactionButtonHover.handleEnter}
@@ -165,7 +165,7 @@ export function ChatMessageBubble({
                 {REACTION_EMOJIS.slice(0, 6).map((emoji) => (
                   <MotionView
                     key={emoji}
-                    style={reactionButtonTap.animatedStyle}
+                    animatedStyle={reactionButtonTap.animatedStyle}
                     onClick={() => onReaction(message.id, emoji)}
                     className="text-2xl p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
                     onMouseEnter={reactionButtonHover.handleEnter}
@@ -189,7 +189,7 @@ export function ChatMessageBubble({
               {reactionsArray.map((reaction: MessageReaction, idx: number) => (
                 <MotionView
                   key={idx}
-                  style={reactionButtonHover.animatedStyle}
+                  animatedStyle={reactionButtonHover.animatedStyle}
                   onMouseEnter={reactionButtonHover.handleEnter}
                   onMouseLeave={reactionButtonHover.handleLeave}
                   className="text-lg bg-white/80 rounded-full px-2 py-0.5 shadow-sm cursor-pointer"

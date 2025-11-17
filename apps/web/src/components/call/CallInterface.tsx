@@ -489,7 +489,7 @@ function CallControlsView({
   return (
     <div className="absolute bottom-0 left-0 right-0 p-8">
       <MotionView animatedStyle={controlsStyle} className="flex items-center justify-center gap-4">
-        <MotionView animatedStyle={muteAnimation.animatedStyle}>
+        <MotionView variants={muteAnimation.variants} initial="rest" animate="rest" whileTap="tap">
           <Button
             onClick={() => {
               muteAnimation.handlePress();
@@ -511,7 +511,7 @@ function CallControlsView({
         </MotionView>
 
         {isVideoCall && (
-          <MotionView animatedStyle={videoAnimation.animatedStyle}>
+          <MotionView variants={videoAnimation.variants} initial="rest" animate="rest" whileTap="tap">
             <Button
               onClick={() => {
                 videoAnimation.handlePress();
@@ -533,7 +533,7 @@ function CallControlsView({
           </MotionView>
         )}
 
-        <MotionView animatedStyle={endCallAnimation.animatedStyle}>
+        <MotionView variants={endCallAnimation.variants} initial="rest" animate="rest" whileTap="tap">
           <Button
             onClick={() => {
               endCallAnimation.handlePress();
@@ -546,7 +546,7 @@ function CallControlsView({
           </Button>
         </MotionView>
 
-        <MotionView animatedStyle={speakerAnimation.animatedStyle}>
+        <MotionView variants={speakerAnimation.variants} initial="rest" animate="rest" whileTap="tap">
           <Button
             onClick={() => {
               speakerAnimation.handlePress();

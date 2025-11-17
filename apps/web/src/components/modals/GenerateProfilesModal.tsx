@@ -41,7 +41,7 @@ export function GenerateProfilesModal({
                 <Suspense fallback={<LoadingState />}>
                     <GenerateProfilesButton />
                 </Suspense>
-                <MotionView style={closeButtonBounce.animatedStyle}>
+                <MotionView animatedStyle={closeButtonBounce.animatedStyle}>
                     <Button variant="outline" className="w-full mt-4" onClick={onClose}>
                         Close
                     </Button>

@@ -234,7 +234,7 @@ function SwipeableCard<T extends CardData>({
   return (
     <div className="relative" style={{ width, height }}>
       <MotionView
-        style={swipeHook.animatedStyle}
+        animatedStyle={swipeHook.animatedStyle}
         onMouseDown={(e: React.MouseEvent) => {
           const startX = e.clientX;
           const startY = e.clientY;

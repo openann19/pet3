@@ -199,7 +199,7 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
   const iconStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        { scale: iconScale.value * animation.iconScale.value },
+        { scale: iconScale.value },
         { translateY: iconY.value },
       ],
     };

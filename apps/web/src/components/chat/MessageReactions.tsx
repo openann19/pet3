@@ -148,7 +148,7 @@ function ReactionButton({
 
   const buttonStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: scale.value * hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: scale.value * hoverScale.value }],
       opacity: opacity.value,
     };
   }) as AnimatedStyle;
@@ -173,7 +173,7 @@ function ReactionButton({
             userReacted ? 'bg-primary/20 ring-1 ring-primary' : 'bg-white/10 hover:bg-white/20'
           }`}
         >
-          <MotionView style={buttonStyle} className="flex items-center gap-1">
+          <MotionView animatedStyle={buttonStyle} className="flex items-center gap-1">
             <span className="text-sm">{emoji}</span>
             <span className="text-[10px] font-semibold">{count}</span>
           </MotionView>
@@ -224,7 +224,7 @@ function AddReactionButton({
 
   const buttonStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: hoverScale.value }],
     };
   }) as AnimatedStyle;
 
@@ -271,13 +271,13 @@ function AddReactionButton({
           onMouseLeave={handleMouseLeave}
           className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
         >
-          <MotionView style={buttonStyle}>
+          <MotionView animatedStyle={buttonStyle}>
             <Plus size={12} weight="bold" />
           </MotionView>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 glass-strong p-3">
-        <MotionView style={pickerStyle}>
+        <MotionView animatedStyle={pickerStyle}>
           <div className="grid grid-cols-6 gap-2">
             {availableReactions.map((emoji) => (
               <EmojiButton key={emoji} emoji={emoji} onClick={() => handleEmojiClick(emoji)} />
@@ -305,7 +305,7 @@ function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
 
   const buttonStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: hoverScale.value * bounce.scale.value }],
+      transform: [{ scale: hoverScale.value }],
     };
   }) as AnimatedStyle;
 
@@ -319,7 +319,7 @@ function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
 
   return (
     <MotionView
-      style={buttonStyle}
+      animatedStyle={buttonStyle}
       onClick={bounce.handlePress}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

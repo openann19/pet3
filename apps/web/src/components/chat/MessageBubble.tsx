@@ -448,7 +448,7 @@ function MessageBubble({
                   <AnimatedAIWrapper enabled={true}>
                     <>
                       <MotionView
-                        style={typingReveal.animatedStyle}
+                        animatedStyle={typingReveal.animatedStyle}
                       >
                         {typingReveal.revealedText}
                       </MotionView>

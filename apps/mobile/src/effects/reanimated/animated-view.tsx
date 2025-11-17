@@ -1,7 +1,6 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, type ViewProps } from 'react-native'
 import Animated from 'react-native-reanimated'
-import type { ViewProps, View } from 'react-native'
 import type { AnimatedStyle as ReanimatedAnimatedStyle } from 'react-native-reanimated'
 
 /**

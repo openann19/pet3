@@ -266,7 +266,7 @@ export function ChatInputBar({
             <Microphone size={20} weight="regular" />
           </Button>
 
-          <MotionView style={[sendButtonHover.animatedStyle, sendButtonTap.animatedStyle]}>
+          <MotionView animatedStyle={sendButtonHover.animatedStyle}>
             <Button
               onClick={() => {
                 onSendMessage(inputValue, 'text')

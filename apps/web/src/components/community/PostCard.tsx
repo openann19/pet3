@@ -382,7 +382,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
               className="flex items-center gap-3 group cursor-pointer"
             >
               <MotionView
-                style={avatarHover.animatedStyle}
+                animatedStyle={avatarHover.animatedStyle}
                 onMouseEnter={avatarHover.handleMouseEnter}
                 onMouseLeave={avatarHover.handleMouseLeave}
                 onClick={avatarHover.handlePress}
@@ -410,7 +410,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <MotionView
-                  style={optionsButtonHover.animatedStyle}
+                  animatedStyle={optionsButtonHover.animatedStyle}
                   onMouseEnter={optionsButtonHover.handleMouseEnter}
                   onMouseLeave={optionsButtonHover.handleMouseLeave}
                   onClick={optionsButtonHover.handlePress}
@@ -558,7 +558,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
               }}
             >
               <MotionView
-                style={bookmarkHover.animatedStyle}
+                animatedStyle={bookmarkHover.animatedStyle}
                 onMouseEnter={bookmarkHover.handleMouseEnter}
                 onMouseLeave={bookmarkHover.handleMouseLeave}
                 onClick={bookmarkHover.handlePress}

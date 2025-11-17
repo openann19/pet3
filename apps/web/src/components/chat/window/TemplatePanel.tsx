@@ -19,7 +19,7 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
   const animation = useEntryAnimation({ initialY: -10, delay: 0 });
 
   return (
-    <MotionView style={animation.animatedStyle} className="glass-effect p-3 rounded-xl space-y-2">
+    <MotionView animatedStyle={animation.animatedStyle} className="glass-effect p-3 rounded-xl space-y-2">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold">Message Templates</h4>
         <Button
@@ -51,7 +51,7 @@ function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX.Elemen
 
   return (
     <MotionView
-      style={hover.animatedStyle}
+      animatedStyle={hover.animatedStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
       onMouseDown={hover.handleMouseDown}

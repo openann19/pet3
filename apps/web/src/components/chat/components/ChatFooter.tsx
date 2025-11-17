@@ -69,7 +69,7 @@ export function ChatFooter({
 
   return (
     <MotionView
-      style={animation.animatedStyle}
+      animatedStyle={animation.animatedStyle}
       className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl space-y-3"
     >
       <div className="flex items-center gap-2 overflow-x-auto pb-2">

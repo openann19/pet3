@@ -32,7 +32,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
   return (
     <div ref={containerRef}>
       <MotionView
-        style={hover.animatedStyle}
+        animatedStyle={hover.animatedStyle}
         onMouseEnter={hover.handleMouseEnter}
         onMouseLeave={hover.handleMouseLeave}
         onMouseDown={hover.handleMouseDown}

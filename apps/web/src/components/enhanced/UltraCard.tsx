@@ -99,7 +99,7 @@ export function UltraCard({
           className="relative"
         >
           <MotionView
-            style={enableHoverLift ? hoverLift.animatedStyle : enableTilt ? tilt.animatedStyle : {}}
+            animatedStyle={enableHoverLift ? hoverLift.animatedStyle : enableTilt ? tilt.animatedStyle : undefined}
           >
             <div
               className={cn(
@@ -110,7 +110,7 @@ export function UltraCard({
               {...props}
             >
               {enableGlow && (
-                <MotionView style={glow.animatedStyle}>
+                <MotionView animatedStyle={glow.animatedStyle}>
                   <div className="absolute inset-0 rounded-xl pointer-events-none" />
                 </MotionView>
               )}

@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStorage } from '@/hooks/use-storage';
 import type { Pet } from '@/lib/types';
 import { createLogger } from '@/lib/logger';
+import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import type { Icon } from '@phosphor-icons/react';
 import {
   Calendar,
@@ -259,14 +260,14 @@ export default function UsersView() {
       <ScrollArea className="flex-1 px-6 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredUsers.map((user, index) => {
-            const entry = useEntryAnimation({
+            const entryAnimation = useEntryAnimation({
               initialScale: 0.95,
               initialOpacity: 0,
               delay: index * 30
             })
             
             return (
-              <MotionView key={user.id} style={entry.animatedStyle}>
+              <MotionView key={user.id} initial="hidden" animate="visible" variants={entryAnimation.variants}>
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -460,7 +461,7 @@ export default function UsersView() {
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              Reset password for {selectedUser?.name || selectedUser?.email}
+              Reset password for {selectedUser?.name ?? selectedUser?.email}
             </DialogDescription>
           </DialogHeader>
 

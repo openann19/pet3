@@ -35,7 +35,7 @@ export function CommunityScreen(): React.JSX.Element {
             />
             <BodyLine
               text={`Comments allowed on active posts: ${
-                String(community.canReceiveCommentsOnActivePost ? 'Yes' : 'No' ?? '')
+                community.canReceiveCommentsOnActivePost ? 'Yes' : 'No'
               }`}
             />
           </FeatureCard>

@@ -47,7 +47,7 @@ export function StatsModal({
                 <Suspense fallback={<LoadingState />}>
                     <StatsCard totalMatches={totalMatches} totalSwipes={totalSwipes} successRate={successRate} />
                 </Suspense>
-                <MotionView style={closeButtonBounce.animatedStyle}>
+                <MotionView animatedStyle={closeButtonBounce.animatedStyle}>
                     <Button variant="outline" className="w-full mt-4" onClick={onClose}>
                         Close
                     </Button>

@@ -77,7 +77,6 @@ export function useAnimatePresence(
 
       const enterConfig = {
         duration: enterDuration,
-        easing: timingConfigs.smooth.easing
       }
 
       switch (enterTransition) {
@@ -119,7 +118,6 @@ export function useAnimatePresence(
     } else {
       const exitConfig = {
         duration: exitDuration,
-        easing: timingConfigs.fast.easing
       }
 
       switch (exitTransition) {

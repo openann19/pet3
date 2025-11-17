@@ -277,7 +277,7 @@ function CloseButton({ onClose }: CloseButtonProps): React.JSX.Element {
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
       aria-label="Close pet detail view"
     >
-      <MotionView style={bounce.animatedStyle}>
+      <MotionView animatedStyle={bounce.animatedStyle}>
         <X size={24} weight="bold" />
       </MotionView>
     </Button>
@@ -304,7 +304,7 @@ function PhotoNavButton({ onClick }: PhotoNavButtonProps): React.JSX.Element {
       className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background pointer-events-auto"
       aria-label="Navigate to next photo"
     >
-      <MotionView style={bounce.animatedStyle}>
+      <MotionView animatedStyle={bounce.animatedStyle}>
         <PawPrint size={20} weight="fill" />
       </MotionView>
     </Button>
@@ -724,7 +724,7 @@ function ActionButton({
       onClick={handlePress}
       className={`flex-1 rounded-full ${className ?? ''}`}
     >
-      <MotionView style={bounce.animatedStyle} className="flex items-center">
+      <MotionView animatedStyle={bounce.animatedStyle} className="flex items-center">
         <Icon size={20} weight={variant === 'primary' ? 'fill' : 'bold'} className="mr-2" />
         {label}
       </MotionView>

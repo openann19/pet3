@@ -70,7 +70,7 @@ function _EmptyStateView({ filter }: { filter: 'all' | 'unread' }) {
 
   return (
     <MotionView
-      style={entry.animatedStyle}
+      animatedStyle={entry.animatedStyle}
       className="flex flex-col items-center justify-center py-16 text-center"
     >
       <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">

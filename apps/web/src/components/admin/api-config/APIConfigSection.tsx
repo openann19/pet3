@@ -205,7 +205,7 @@ export function APIConfigSection({
   alert,
   children,
 }: APIConfigSectionProps) {
-  const isProviderDisabled = provider?.disabledValue && provider.value === provider.disabledValue;
+  const isProviderDisabled = Boolean(provider?.disabledValue && provider.value === provider.disabledValue);
   const sectionTesting = testingService === title;
 
   return (

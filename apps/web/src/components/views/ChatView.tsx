@@ -206,7 +206,7 @@ export default function ChatView() {
     return (
       <main aria-label="Chat view" className={cn('flex flex-col items-center justify-center min-h-[60vh] text-center', getSpacingClassesFromConfig({ paddingX: 'lg' }))}>
         <MotionView
-          style={emptyStateAnimation.style}
+          animatedStyle={emptyStateAnimation.style}
           className={cn('glass-strong rounded-3xl max-w-md', getSpacingClassesFromConfig({ padding: '2xl' }))}
         >
           <h2 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.createProfile}</h2>
@@ -222,7 +222,7 @@ export default function ChatView() {
   return (
     <PageTransitionWrapper key="chat-view" direction="up">
       <main aria-label="Chat view" className="h-[calc(100vh-8rem)]">
-        <MotionView style={headerAnimation.style} className={getSpacingClassesFromConfig({ marginY: 'xl' })}>
+        <MotionView animatedStyle={headerAnimation.style} className={getSpacingClassesFromConfig({ marginY: 'xl' })}>
           <h2 className={cn(getTypographyClasses('h2'), getSpacingClassesFromConfig({ marginY: 'sm' }))}>{t.chat.title}</h2>
           <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>
             {(chatRooms ?? []).length}{' '}
@@ -233,7 +233,7 @@ export default function ChatView() {
         <div className={cn('grid grid-cols-1 md:grid-cols-12 h-[calc(100%-5rem)]', getSpacingClassesFromConfig({ gap: 'xl' }))}>
           {showRoomsList && (
             <MotionView
-              style={roomsListAnimation.style}
+              animatedStyle={roomsListAnimation.style}
               className="md:col-span-4 glass-strong rounded-3xl p-4 shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden"
             >
               <ChatRoomsList
@@ -246,7 +246,7 @@ export default function ChatView() {
 
           {showChatWindow && selectedRoom && (
             <MotionView
-              style={chatWindowAnimation.style}
+              animatedStyle={chatWindowAnimation.style}
               className={`${isMobile ? 'col-span-1' : 'md:col-span-8'
                 } glass-strong rounded-3xl shadow-xl backdrop-blur-2xl border border-white/20 overflow-hidden flex flex-col`}
             >
@@ -264,7 +264,7 @@ export default function ChatView() {
 
           {!selectedRoom && !isMobile && (
             <MotionView
-              style={emptyChatAnimation.style}
+              animatedStyle={emptyChatAnimation.style}
               className="md:col-span-8 glass-effect rounded-3xl flex items-center justify-center border border-white/20"
               role="status"
               aria-live="polite"

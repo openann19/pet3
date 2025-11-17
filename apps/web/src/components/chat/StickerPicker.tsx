@@ -289,7 +289,7 @@ function StickerButton({
   }, [isHovered, hoverScale]);
 
   const buttonStyle = useAnimatedStyle(() => {
-    const combinedScale = scale.value * hoverScale.value * bounceAnimation.scale.value;
+    const combinedScale = scale.value * hoverScale.value;
     return {
       opacity: opacity.value,
       transform: [{ scale: combinedScale }],

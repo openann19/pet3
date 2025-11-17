@@ -647,7 +647,7 @@ export function MediaViewer({
                           className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
                           <MotionView
-                            style={playButtonHover.animatedStyle}
+                            animatedStyle={playButtonHover.animatedStyle}
                             onMouseEnter={playButtonHover.handleMouseEnter}
                             onMouseLeave={playButtonHover.handleMouseLeave}
                             onClick={handleVideoClick}

@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, type Variants } from "@petspark/motion";
 import { useAnimatePresence } from '@/effects/reanimated/use-animate-presence';
 import { useEntryAnimation } from '@/effects/reanimated/use-entry-animation';
 import { kycApi } from '@/api/kyc-api';
@@ -73,7 +73,7 @@ export function KYCManagement() {
     if (!presence.shouldRender) return null
     
     return (
-      <MotionView style={presence.animatedStyle} className="text-center py-12">
+      <MotionView animatedStyle={presence.animatedStyle} className="text-center py-12">
         <ShieldCheck size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No sessions in this category</p>
       </MotionView>

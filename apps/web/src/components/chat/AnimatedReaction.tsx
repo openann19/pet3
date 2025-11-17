@@ -40,7 +40,7 @@ export function AnimatedReaction({
 
   return (
     <MotionView
-      style={animatedStyle}
+      animatedStyle={animatedStyle}
       onClick={handleClick}
       className={cn('text-2xl cursor-pointer select-none', className)}
     >

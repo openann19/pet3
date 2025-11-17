@@ -49,7 +49,7 @@ export function useHoverTap(options: UseHoverTapOptions = {}): UseHoverTapReturn
     return {
       transform: [{ scale: scale.get() }],
     };
-  }) as AnimatedStyle;
+  });
 
   const handleMouseEnter = useCallback(() => {
     animate(scale, hoverScale, {

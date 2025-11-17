@@ -1157,6 +1157,9 @@ vi.mock('@petspark/motion', () => {
         },
       };
     }),
+    animate: vi.fn((value: unknown, keyframes: unknown, options?: unknown) => {
+      return Promise.resolve(value);
+    }),
   };
 });
 

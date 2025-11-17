@@ -81,7 +81,7 @@ export function UltraAnimationShowcase() {
           <h2 className="text-3xl font-bold text-white">3D Card Reveals</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[card1, card2, card3].map((card, i) => (
-              <MotionView key={i} style={card.animatedStyle}>
+              <MotionView key={i} animatedStyle={card.animatedStyle}>
                 <div className="bg-linear-to-br from-purple-600 to-blue-600 p-8 rounded-2xl shadow-2xl">
                   <h3 className="text-2xl font-bold text-white mb-4">Card {i + 1}</h3>
                   <p className="text-gray-200">
@@ -103,7 +103,7 @@ export function UltraAnimationShowcase() {
             onMouseMove={magnetic.handleMouseMove}
             className="inline-block"
           >
-            <MotionView style={magnetic.animatedStyle}>
+            <MotionView animatedStyle={magnetic.animatedStyle}>
               <div className="bg-linear-to-r from-pink-500 to-purple-600 px-12 py-8 rounded-2xl shadow-2xl cursor-pointer">
                 <p className="text-2xl font-bold text-white">Hover over me!</p>
               </div>
@@ -122,7 +122,7 @@ export function UltraAnimationShowcase() {
             {ripple.ripples.map((r) => (
               <MotionView
                 key={r.id}
-                style={ripple.animatedStyle}
+                animatedStyle={ripple.animatedStyle}
                 className="absolute rounded-full pointer-events-none"
               >
                 <div />
@@ -140,7 +140,7 @@ export function UltraAnimationShowcase() {
             onMouseLeave={elastic.handlePressOut}
             className="inline-block"
           >
-            <MotionView style={elastic.animatedStyle}>
+            <MotionView animatedStyle={elastic.animatedStyle}>
               <Button className="text-xl px-8 py-6 bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
                 Press Me!
               </Button>
@@ -152,7 +152,7 @@ export function UltraAnimationShowcase() {
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-white">Morphing Shapes</h2>
           <div className="flex gap-4">
-            <MotionView style={morph.animatedStyle}>
+            <MotionView animatedStyle={morph.animatedStyle}>
               <div className="bg-linear-to-br from-green-500 to-emerald-600 w-32 h-32 shadow-2xl" />
             </MotionView>
             <Button onClick={morph.cycleShape} className="px-6 py-3">
@@ -181,7 +181,7 @@ export function UltraAnimationShowcase() {
         {/* Glow Border Section */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-white">Animated Glow</h2>
-          <MotionView style={glowBorder.animatedStyle}>
+          <MotionView animatedStyle={glowBorder.animatedStyle}>
             <div className="bg-linear-to-r from-purple-900 to-indigo-900 px-12 py-8 rounded-2xl inline-block">
               <p className="text-2xl font-bold text-white">Pulsating Glow</p>
             </div>
@@ -191,7 +191,7 @@ export function UltraAnimationShowcase() {
         {/* Breathing Animation Section */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-white">Breathing Effect</h2>
-          <MotionView style={breathing.animatedStyle}>
+          <MotionView animatedStyle={breathing.animatedStyle}>
             <div className="bg-linear-to-r from-teal-500 to-cyan-600 px-12 py-8 rounded-2xl shadow-2xl inline-block">
               <p className="text-2xl font-bold text-white">Breathe...</p>
             </div>
@@ -201,7 +201,7 @@ export function UltraAnimationShowcase() {
         {/* Wave Animation Section */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-white">Wave Motion</h2>
-          <MotionView style={wave.animatedStyle}>
+          <MotionView animatedStyle={wave.animatedStyle}>
             <div className="bg-linear-to-r from-blue-400 to-cyan-500 px-12 py-8 rounded-2xl shadow-2xl inline-block">
               <p className="text-2xl font-bold text-white">Flowing Wave</p>
             </div>

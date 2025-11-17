@@ -151,7 +151,7 @@ export default function AdminLayout({
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <MotionView
-        style={sidebarAnimation.widthStyle}
+        style={sidebarAnimation.widthStyle as React.CSSProperties}
         className="border-r border-border bg-card flex flex-col shrink-0"
       >
         <div className="p-4 sm:p-6 flex items-center justify-between shrink-0">
@@ -160,7 +160,7 @@ export default function AdminLayout({
               <ShieldCheck className="text-white" size={20} weight="fill" />
             </div>
             {sidebarOpen && (
-              <MotionView style={sidebarAnimation.opacityStyle} className="min-w-0">
+              <MotionView style={sidebarAnimation.opacityStyle as React.CSSProperties} className="min-w-0">
                 <h2 className="font-bold text-lg truncate">Admin Console</h2>
                 <p className="text-xs text-muted-foreground truncate">Moderation & Management</p>
               </MotionView>

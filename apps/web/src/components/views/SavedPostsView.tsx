@@ -23,7 +23,7 @@ function _EmptyStateView() {
 
   return (
     <MotionView
-      style={entry.animatedStyle}
+      animatedStyle={entry.animatedStyle}
       className="flex flex-col items-center justify-center py-16 text-center"
     >
       <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -55,7 +55,7 @@ function PostItemView({
   })
 
   return (
-    <MotionView style={entry.animatedStyle}>
+    <MotionView animatedStyle={entry.animatedStyle}>
       <div
         onClick={() => { onPostClick(post.id); }}
         className="cursor-pointer"

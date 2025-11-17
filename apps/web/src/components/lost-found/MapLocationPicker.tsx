@@ -163,7 +163,7 @@ export function MapLocationPicker({
             <h2 className="text-2xl font-bold">Pick Location on Map</h2>
             <p className="text-sm text-muted-foreground">Drag the map or use current location</p>
           </div>
-          <MotionView style={closeButtonAnimation.animatedStyle}>
+          <MotionView animatedStyle={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>

@@ -18,13 +18,21 @@ import {
 import { convertTransformToStyle } from './useMotionStyle'
 
 /**
+ * Animation return type - allows target to be a subtype of T to prevent literal type narrowing
+ */
+type AnimationReturn<T extends number | string> = {
+  target: T extends number ? number : T extends string ? string : T
+  transition: Transition
+}
+
+/**
  * SharedValue type for compatibility
  * Includes .value property for Reanimated-style access
  * The getter returns T, the setter accepts either a direct value or an animation object from withSpring/withTiming
  */
 export type SharedValue<T extends number | string> = Omit<MotionValue<T>, 'value'> & {
   get value(): T
-  set value(newValue: T | { target: T; transition: Transition })
+  set value(newValue: T | AnimationReturn<T>)
 }
 
 /**
@@ -42,10 +50,17 @@ export function useSharedValue<T extends number | string>(
     get(): T {
       return motionValue.get()
     },
-    set(newValue: T | { target: T; transition: Transition }) {
+    set(newValue: T | AnimationReturn<T>) {
       // Handle withSpring/withTiming return values
-      if (typeof newValue === 'object' && newValue !== null && 'target' in newValue && 'transition' in newValue) {                                              
-        animate(motionValue, newValue.target as number, newValue.transition)
+      if (typeof newValue === 'object' && newValue !== null && 'target' in newValue && 'transition' in newValue) {
+        const animationReturn = newValue as AnimationReturn<T>
+        // animate only accepts number types, so we need to ensure T is number
+        if (typeof animationReturn.target === 'number') {
+          animate(motionValue as MotionValue<number>, animationReturn.target, animationReturn.transition)
+        } else {
+          // For string types, use set directly
+          motionValue.set(animationReturn.target as T)
+        }
       } else {
         motionValue.set(newValue as T)
       }
@@ -54,7 +69,7 @@ export function useSharedValue<T extends number | string>(
     enumerable: true,
   })
   
-  return motionValue as SharedValue<T>
+  return motionValue as unknown as SharedValue<T>
 }
 
 /**

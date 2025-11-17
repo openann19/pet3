@@ -9,10 +9,10 @@ import {
   withDelay,
   MotionView,
 } from '@petspark/motion';
-import type { Transition } from 'framer-motion';
+import type { Transition } from '@petspark/motion';
 import { isTruthy } from '@petspark/shared';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useAnimatePresence } from '@/effects/reanimated';
+import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { Heart, Sparkle } from '@phosphor-icons/react';
 
 interface MatchCelebrationProps {

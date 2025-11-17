@@ -424,7 +424,7 @@ export default function SupportChatPanel() {
                           {message.userName.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`flex-1 ${String(message.isAdmin ? 'text-right' : '' ?? '')}`}>
+                      <div className={`flex-1 ${message.isAdmin ? 'text-right' : ''}`}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-sm">{message.userName}</span>
                           {message.isAdmin && (

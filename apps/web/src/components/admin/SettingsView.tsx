@@ -107,7 +107,7 @@ export default function SettingsView() {
         registrationEnabled: true,
         moderationEnabled: true,
       }
-      await adminApi.updateSystemConfig(config as Record<string, unknown>, currentUser.id || 'admin')
+      await adminApi.updateSystemConfig(config as unknown as Record<string, unknown>, currentUser.id || 'admin')
       toast.success('System configuration saved successfully')
       logger.info('System config saved', { featureFlags, systemSettings })
     } catch (error) {
@@ -176,7 +176,7 @@ export default function SettingsView() {
 
       await configBroadcastService.broadcastConfig(
         'system',
-        config as Record<string, unknown>,
+        config as unknown as Record<string, unknown>,
         currentUser.id || 'admin'
       )
 
@@ -198,9 +198,9 @@ export default function SettingsView() {
     }
   }, [featureFlags, systemSettings, currentUser, saveConfig])
 
-  const featureFlagsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemSettingsCardHover = useHoverLift({ intensity: 1.02 })
-  const systemInfoCardHover = useHoverLift({ intensity: 1.02 })
+  const featureFlagsCardHover = useHoverLift({ scale: 1.02, translateY: -8 })
+  const systemSettingsCardHover = useHoverLift({ scale: 1.02, translateY: -8 })
+  const systemInfoCardHover = useHoverLift({ scale: 1.02, translateY: -8 })
 
   if (loading) {
     return (
@@ -223,7 +223,9 @@ export default function SettingsView() {
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6 max-w-4xl">
           <MotionView
-            style={featureFlagsCardHover.animatedStyle}
+            variants={featureFlagsCardHover.variants}
+            initial="rest"
+            whileHover="hover"
             onMouseEnter={featureFlagsCardHover.handleEnter}
             onMouseLeave={featureFlagsCardHover.handleLeave}
           >
@@ -292,7 +294,9 @@ export default function SettingsView() {
           </MotionView>
 
           <MotionView
-            style={systemSettingsCardHover.animatedStyle}
+            variants={systemSettingsCardHover.variants}
+            initial="rest"
+            whileHover="hover"
             onMouseEnter={systemSettingsCardHover.handleEnter}
             onMouseLeave={systemSettingsCardHover.handleLeave}
           >
@@ -390,7 +394,7 @@ export default function SettingsView() {
           </Card>
           </MotionView>
 
-          <MotionView delay={200}>
+          <MotionView transition={{ delay: 0.2 }}>
             <Card>
               <CardHeader>
                 <CardTitle>Actions</CardTitle>
@@ -420,7 +424,9 @@ export default function SettingsView() {
           </MotionView>
 
           <MotionView
-            style={systemInfoCardHover.animatedStyle}
+            variants={systemInfoCardHover.variants}
+            initial="rest"
+            whileHover="hover"
             onMouseEnter={systemInfoCardHover.handleEnter}
             onMouseLeave={systemInfoCardHover.handleLeave}
           >

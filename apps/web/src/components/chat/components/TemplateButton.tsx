@@ -20,7 +20,7 @@ export function TemplateButton({ template, onSelect }: TemplateButtonProps): JSX
     const hover = useHoverAnimation({ scale: 1.02 });
 
   return (
-    <MotionView style={hover.animatedStyle}>
+    <MotionView animatedStyle={hover.animatedStyle}>
       <Button
         variant="outline"
         className="w-full justify-start text-left h-auto py-2 px-3"
