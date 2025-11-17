@@ -1,27 +1,27 @@
 import type { ComponentProps } from 'react';
-import { Drawer as DrawerPrimitive } from 'vaul';
+import { Drawer as VaulDrawer, Root as VaulRoot, Trigger as VaulTrigger, Portal as VaulPortal, Close as VaulClose, Overlay as VaulOverlay, Content as VaulContent, Handle as VaulHandle, Title as VaulTitle, Description as VaulDescription } from 'vaul';
 
 import { cn } from '@/lib/utils';
 
-function Drawer({ ...props }: ComponentProps<typeof DrawerPrimitive.Root>) {
-  return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
+function Drawer({ ...props }: ComponentProps<typeof VaulRoot>) {
+  return <VaulRoot data-slot="drawer" {...props} />;
 }
 
-function DrawerTrigger({ ...props }: ComponentProps<typeof DrawerPrimitive.Trigger>) {
-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
+function DrawerTrigger({ ...props }: ComponentProps<typeof VaulTrigger>) {
+  return <VaulTrigger data-slot="drawer-trigger" {...props} />;
 }
 
-function DrawerPortal({ ...props }: ComponentProps<typeof DrawerPrimitive.Portal>) {
-  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
+function DrawerPortal({ ...props }: ComponentProps<typeof VaulPortal>) {
+  return <VaulPortal data-slot="drawer-portal" {...props} />;
 }
 
-function DrawerClose({ ...props }: ComponentProps<typeof DrawerPrimitive.Close>) {
-  return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
+function DrawerClose({ ...props }: ComponentProps<typeof VaulClose>) {
+  return <VaulClose data-slot="drawer-close" {...props} />;
 }
 
-function DrawerOverlay({ className, ...props }: ComponentProps<typeof DrawerPrimitive.Overlay>) {
+function DrawerOverlay({ className, ...props }: ComponentProps<typeof VaulOverlay>) {
   return (
-    <DrawerPrimitive.Overlay
+    <VaulOverlay
       data-slot="drawer-overlay"
       className={cn(
         'fixed inset-0 z-50 bg-background/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -36,11 +36,11 @@ function DrawerContent({
   className,
   children,
   ...props
-}: ComponentProps<typeof DrawerPrimitive.Content>) {
+}: ComponentProps<typeof VaulContent>) {
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
-      <DrawerPrimitive.Content
+      <VaulContent
         data-slot="drawer-content"
         className={cn(
           'group/drawer-content fixed z-50 flex h-auto flex-col rounded-none border border-border bg-card text-card-foreground shadow-2xl',
@@ -54,7 +54,7 @@ function DrawerContent({
       >
         <div className="mx-auto mt-4 hidden h-2 w-16 shrink-0 rounded-full bg-muted/60 group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {children}
-      </DrawerPrimitive.Content>
+      </VaulContent>
     </DrawerPortal>
   );
 }
@@ -79,9 +79,9 @@ function DrawerFooter({ className, ...props }: ComponentProps<'div'>) {
   );
 }
 
-function DrawerTitle({ className, ...props }: ComponentProps<typeof DrawerPrimitive.Title>) {
+function DrawerTitle({ className, ...props }: ComponentProps<typeof VaulTitle>) {
   return (
-    <DrawerPrimitive.Title
+    <VaulTitle
       data-slot="drawer-title"
       className={cn('text-foreground font-semibold', className)}
       {...props}
@@ -92,9 +92,9 @@ function DrawerTitle({ className, ...props }: ComponentProps<typeof DrawerPrimit
 function DrawerDescription({
   className,
   ...props
-}: ComponentProps<typeof DrawerPrimitive.Description>) {
+}: ComponentProps<typeof VaulDescription>) {
   return (
-    <DrawerPrimitive.Description
+    <VaulDescription
       data-slot="drawer-description"
       className={cn('text-muted-foreground text-sm', className)}
       {...props}
