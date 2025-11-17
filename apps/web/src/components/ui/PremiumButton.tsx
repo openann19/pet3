@@ -81,8 +81,12 @@ export function PremiumButton({
         )}
       >
         <MotionView
-          style={combinedAnimatedStyles}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}                                                                             
+          style={{
+            ...combinedAnimatedStyles,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
           {label}
         </MotionView>
