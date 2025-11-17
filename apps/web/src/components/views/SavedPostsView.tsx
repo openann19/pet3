@@ -68,7 +68,7 @@ function PostItemView({
         role="button"
         tabIndex={0}
         className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded"
-        aria-label={`View post: ${post.title || post.content?.substring(0, 50) || 'Untitled post'}`}
+        aria-label={`View post: ${post.text?.substring(0, 50) || 'Untitled post'}`}
       >
         <PostCard
           post={post}
@@ -181,7 +181,7 @@ function SavedPostsViewContent({ onBack, onAuthorClick }: SavedPostsViewProps) {
                     role="button"
                     tabIndex={0}
                     className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                    aria-label={`View saved post by ${post.author?.name || 'user'}`}
+                    aria-label={`View saved post by ${post.authorName || 'user'}`}
                   >
                     <ErrorBoundary
                       fallback={
