@@ -136,9 +136,9 @@ export default function HighlightViewer({
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-3 gap-3">
             {highlight.stories.map((story, index) => (
-              <MotionView
-                as="button"
+              <motion.button
                 key={story.id}
+                type="button"
                 onClick={() => { handleStoryClick(index); }}
                 className="aspect-[9/16] rounded-2xl overflow-hidden relative group"
                 whileHover={{ scale: 1.05 }}
@@ -167,7 +167,7 @@ export default function HighlightViewer({
                     <span className="text-white text-xs">▶</span>
                   </div>
                 )}
-              </MotionView>
+              </motion.button>
             ))}
           </div>
         </div>

@@ -162,8 +162,8 @@ export default function StoryFilterSelector({
         <div className="grid grid-cols-3 gap-3 pr-4">
           <Presence visible={true}>
             {filteredFilters.map((filter, index) => (
-              <MotionView
-                as="button"
+                            <motion.button
+                type="button"
                 key={filter.id}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -213,15 +213,15 @@ export default function StoryFilterSelector({
                 </div>
 
                 {selectedFilter.id === filter.id && (
-                  <MotionView
+                                <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-lg"
                   >
                     <Check size={12} weight="bold" className="text-white" />
-                  </MotionView>
+                  </motion.div>
                 )}
-              </MotionView>
+              </motion.button>
             ))}
           </Presence>
         </div>

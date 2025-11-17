@@ -324,8 +324,7 @@ export default function ProfileView() {
                   </MotionView>
                   <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <MotionView
-                    style={editButtonRotation.style}
-                    style={{ ...editButtonHoverStyle, ...editButtonTapStyle }}
+                    style={{ ...editButtonRotation.style, ...editButtonHoverStyle, ...editButtonTapStyle }}
                     onMouseEnter={() => {
                       editButtonHover.handleEnter()
                     }}
