@@ -3,7 +3,8 @@
  * Bottom navigation bar with view switching
  */
 
-import { MotionView, useSharedValue } from '@petspark/motion'
+import type { useSharedValue } from '@petspark/motion';
+import { MotionView } from '@petspark/motion'
 import { NavButton } from '@/components/navigation/NavButton'
 import {
   Sparkle,

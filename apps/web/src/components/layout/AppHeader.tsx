@@ -4,7 +4,8 @@
  */
 
 import { Suspense } from 'react'
-import { MotionView, useSharedValue } from '@petspark/motion'
+import type { useSharedValue } from '@petspark/motion';
+import { MotionView } from '@petspark/motion'
 import { Button } from '@/components/ui/button'
 import {
   Heart,

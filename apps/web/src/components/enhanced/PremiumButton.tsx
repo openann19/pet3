@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { ButtonHTMLAttributes } from 'react';
 import { useUIConfig } from "@/hooks/use-ui-config";
-import { Button, buttonVariants } from '@/components/ui/button';
+import type { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import type { VariantProps } from 'class-variance-authority';
 import { getAriaButtonAttributes } from '@/lib/accessibility';
 

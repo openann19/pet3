@@ -37,26 +37,26 @@ export default function WelcomeModal(): JSX.Element | null {
   const bgAnimatedStyle = useAnimatedStyle(() => {
     const scale = bgScale.value;
     const rotate = bgRotate.value;
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale });
     transforms.push({ rotate: `${rotate}deg` });
     return { transform: transforms };
   });
 
   const iconAnimatedStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale: iconScale.value });
     return { transform: transforms };
   });
 
   const iconPulseStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale: iconPulse.value });
     return { transform: transforms };
   });
 
   const iconGlowStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale: iconGlowScale.value });
     return {
       transform: transforms,
@@ -65,7 +65,7 @@ export default function WelcomeModal(): JSX.Element | null {
   });
 
   const arrowStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ translateX: arrowX.value });
     return { transform: transforms };
   });
@@ -82,7 +82,7 @@ export default function WelcomeModal(): JSX.Element | null {
   const logoStyle = useAnimatedStyle(() => {
     const scale = logoScale.value;
     const rotate = logoRotate.value;
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale });
     transforms.push({ rotate: `${rotate}deg` });
     return { transform: transforms };
@@ -176,7 +176,7 @@ export default function WelcomeModal(): JSX.Element | null {
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 p-8 md:p-12 overflow-hidden animate-in fade-in duration-300">
           <MotionView
-            style={bgAnimatedStyle as React.CSSProperties}
+            style={bgAnimatedStyle}
             className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"
           />
 
@@ -197,14 +197,14 @@ export default function WelcomeModal(): JSX.Element | null {
           </MotionView>
 
           <MotionView
-            style={logoStyle as React.CSSProperties}
+            style={logoStyle}
             className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10"
           >
-            <MotionView style={iconPulseStyle as React.CSSProperties}>
+            <MotionView style={iconPulseStyle}>
               <Heart size={40} className="text-white" weight="fill" />
             </MotionView>
             <MotionView
-              style={iconGlowStyle as React.CSSProperties}
+              style={iconGlowStyle}
               className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent"
             />
           </MotionView>
@@ -248,7 +248,7 @@ export default function WelcomeModal(): JSX.Element | null {
                 className="px-8 shadow-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
               >
                 {t.welcome.getStarted}
-                <MotionView style={arrowStyle as React.CSSProperties} className="ml-2">
+                <MotionView style={arrowStyle} className="ml-2">
                   →
                 </MotionView>
               </Button>

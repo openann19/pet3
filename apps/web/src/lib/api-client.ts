@@ -145,7 +145,7 @@ export class APIClient {
 	private static getAuthHeaders(): Record<string, string> {
 		const headers: Record<string, string> = {};
 		if (this.accessToken) {
-			headers['Authorization'] = `Bearer ${this.accessToken}`;
+			headers.Authorization = `Bearer ${this.accessToken}`;
 		}
 		return headers;
 	}

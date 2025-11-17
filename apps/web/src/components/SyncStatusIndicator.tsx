@@ -28,7 +28,7 @@ export function SyncStatusIndicator() {
   const iconStyle = useAnimatedStyle(() => {
     const scale = iconScale.value;
     const rotate = iconRotate.value;
-    const transforms: Array<{ [key: string]: number | string | MotionValue<number> }> = [];
+    const transforms: Record<string, number | string | MotionValue<number>>[] = [];
     transforms.push({ scale });
     transforms.push({ rotate: `${rotate}deg` });
     return { transform: transforms };
