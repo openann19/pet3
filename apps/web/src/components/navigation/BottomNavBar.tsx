@@ -314,9 +314,10 @@ function Badge({ count, isActive }: BadgeProps) {
 
   useEffect(() => {
     if (isTruthy(isActive)) {
-      pulseScale.value = withSpring(1.2, springConfigs.bouncy, () => {
+      pulseScale.value = withSpring(1.2, springConfigs.bouncy);
+      setTimeout(() => {
         pulseScale.value = withSpring(1, springConfigs.smooth);
-      });
+      }, 200);
     }
   }, [isActive, pulseScale]);
 

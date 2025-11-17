@@ -176,52 +176,46 @@ export function useConfettiBurst(options: UseConfettiBurstOptions = {}): UseConf
         });
 
         // Opacity fade - use adaptive duration
-        particle.opacity.value = withTiming(
-          1,
-          {
-            duration: scaleDuration(finalDuration * 0.1),
-            easing: Easing.out(Easing.ease),
-          },
-          () => {
-            particle.opacity.value = withTiming(0, {
-              duration: scaleDuration(finalDuration * 0.9),
-              easing: Easing.in(Easing.ease),
-            });
-          }
-        );
+        particle.opacity.value = withTiming(1, {
+          duration: scaleDuration(finalDuration * 0.1),
+          easing: Easing.out(Easing.ease),
+        });
+        
+        setTimeout(() => {
+          particle.opacity.value = withTiming(0, {
+            duration: scaleDuration(finalDuration * 0.9),
+            easing: Easing.in(Easing.ease),
+          });
+        }, scaleDuration(finalDuration * 0.1));
 
         // Scale - use adaptive duration
-        particle.scale.value = withTiming(
-          1,
-          {
-            duration: scaleDuration(finalDuration * 0.2),
-            easing: Easing.out(Easing.ease),
-          },
-          () => {
-            particle.scale.value = withTiming(0.5, {
-              duration: scaleDuration(finalDuration * 0.8),
-              easing: Easing.in(Easing.ease),
-            });
-          }
-        );
+        particle.scale.value = withTiming(1, {
+          duration: scaleDuration(finalDuration * 0.2),
+          easing: Easing.out(Easing.ease),
+        });
+        
+        setTimeout(() => {
+          particle.scale.value = withTiming(0.5, {
+            duration: scaleDuration(finalDuration * 0.8),
+            easing: Easing.in(Easing.ease),
+          });
+        }, scaleDuration(finalDuration * 0.2));
       });
     } else {
       // Reduced motion: instant opacity change - use adaptive duration
       const reducedOpacityDuration = scaleDuration(120);
       particlesRef.current.forEach((particle) => {
-        particle.opacity.value = withTiming(
-          1,
-          {
+        particle.opacity.value = withTiming(1, {
+          duration: reducedOpacityDuration,
+          easing: Easing.linear,
+        });
+        
+        setTimeout(() => {
+          particle.opacity.value = withTiming(0, {
             duration: reducedOpacityDuration,
             easing: Easing.linear,
-          },
-          () => {
-            particle.opacity.value = withTiming(0, {
-              duration: reducedOpacityDuration,
-              easing: Easing.linear,
-            });
-          }
-        );
+          });
+        }, reducedOpacityDuration);
       });
     }
 

@@ -447,7 +447,7 @@ export default function SavedSearchesManager({
             <CardDescription>
               {sortedSearches.length === 0
                 ? 'No saved searches yet'
-                : `${String(sortedSearches.length ?? '')} saved search${String(sortedSearches.length !== 1 ? 'es' : '' ?? '')}`}
+                : `${String(sortedSearches.length)} saved search${String(sortedSearches.length !== 1 ? 'es' : '')}`}
             </CardDescription>
           </CardHeader>
           <CardContent>

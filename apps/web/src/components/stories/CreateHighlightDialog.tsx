@@ -184,7 +184,7 @@ export default function CreateHighlightDialog({
                           className={`aspect-[9/16] rounded-2xl overflow-hidden relative group w-full border-2 transition-all ${
                             String(isSelected
                                                             ? 'border-primary shadow-lg'
-                                                            : 'border-transparent hover:border-border' ?? '')
+                                                            : 'border-transparent hover:border-border')
                           }`}
                         >
                           <img
