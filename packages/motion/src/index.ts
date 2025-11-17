@@ -232,6 +232,68 @@ export const Extrapolation = {
   EXTEND: 'extend',
 } as const
 
+/**
+ * Interpolate between colors
+ * Supports hex colors (#RRGGBB format)
+ */
+export function interpolateColor(
+  value: number,
+  inputRange: number[],
+  outputRange: string[]
+): string {
+  if (inputRange.length === 0 || outputRange.length === 0 || inputRange.length !== outputRange.length) {
+    return outputRange[0] ?? '#000000'
+  }
+
+  // Find which segment we're in
+  let segmentIndex = 0
+  for (let i = 1; i < inputRange.length; i++) {
+    const inputVal = inputRange[i]
+    if (inputVal !== undefined && value <= inputVal) {
+      segmentIndex = i - 1
+      break
+    }
+    if (i === inputRange.length - 1) {
+      segmentIndex = i - 1
+    }
+  }
+
+  const inputMin = inputRange[segmentIndex]
+  const inputMax = inputRange[segmentIndex + 1]
+  const outputMin = outputRange[segmentIndex]
+  const outputMax = outputRange[segmentIndex + 1]
+
+  if (inputMin === undefined || inputMax === undefined || outputMin === undefined || outputMax === undefined) {
+    return outputRange[0] ?? '#000000'
+  }
+
+  // Clamp to segment bounds
+  const clampedValue = Math.max(inputMin, Math.min(inputMax, value))
+  const ratio = (clampedValue - inputMin) / (inputMax - inputMin)
+
+  // Parse hex colors
+  const parseHex = (hex: string): [number, number, number] => {
+    const clean = hex.replace('#', '')
+    return [
+      parseInt(clean.slice(0, 2), 16),
+      parseInt(clean.slice(2, 4), 16),
+      parseInt(clean.slice(4, 6), 16),
+    ]
+  }
+
+  const [r1, g1, b1] = parseHex(outputMin)
+  const [r2, g2, b2] = parseHex(outputMax)
+
+  // Interpolate each channel
+  const r = Math.round(r1 + (r2 - r1) * ratio)
+  const g = Math.round(g1 + (g2 - g1) * ratio)
+  const b = Math.round(b1 + (b2 - b1) * ratio)
+
+  // Convert back to hex
+  const toHex = (n: number) => n.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
 // Define AnimatedStyle as MotionStyle for compatibility
 export type AnimatedStyle = MotionStyle
 export type AnimatedProps = Record<string, unknown>

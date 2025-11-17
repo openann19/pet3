@@ -402,7 +402,7 @@ export default function StoryViewer({
   if (!currentStory) return null;
 
   return (
-    <MotionView
+                          <motion.div
       style={viewerEntry.animatedStyle}
       className="fixed inset-0 z-100 bg-black"
       role="dialog"
@@ -427,7 +427,7 @@ export default function StoryViewer({
                 aria-valuemax={100}
                   aria-label={`Story ${String(idx + 1)} of ${String(stories.length)}`}
               >
-                <MotionView
+                                      <motion.div
                   className="h-full bg-white"
                   style={{
                     width:
@@ -540,7 +540,7 @@ export default function StoryViewer({
         </div>
 
         {/* Media container with pinch-zoom support */}
-        <MotionView
+                              <motion.div
           ref={mediaContainerRef}
           className="relative w-full h-full max-w-2xl mx-auto touch-none"
           style={[mediaContainerStyle, swipeOpacityStyle, swipeScaleStyle]}
@@ -572,22 +572,22 @@ export default function StoryViewer({
 
           {currentStory.caption && (
             <div className="absolute bottom-24 left-0 right-0 px-4">
-              <MotionView
+                                    <motion.div
                 className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
                 style={captionAnimation.animatedStyle}
               >
                 <p className="text-white text-center">{currentStory.caption}</p>
-              </MotionView>
+              </motion.div>
             </div>
           )}
-        </MotionView>
+        </motion.div>
 
         {/* Interaction area */}
         {!isOwn && (
           <div className="absolute bottom-0 left-0 right-0 z-20 p-4 space-y-3">
             <AnimatePresence>
               {showReactions && (
-                <MotionView
+                                      <motion.div
                   key="reactions"
                   style={reactionsAnimation.animatedStyle}
                   className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
@@ -596,9 +596,9 @@ export default function StoryViewer({
                 >
                   <div className="flex justify-center gap-4">
                     {STORY_REACTION_EMOJIS.map((emoji) => (
-                      <MotionView
+                                            <motion.button
                         key={emoji}
-                        as="button"
+                        type="button"
                         className="text-4xl focus:outline-none focus:ring-2 focus:ring-white rounded-lg p-2"
                         style={[reactionButtonHover.animatedStyle, reactionButtonTap.animatedStyle]}
                         onMouseEnter={reactionButtonHover.handleEnter}
@@ -610,10 +610,10 @@ export default function StoryViewer({
                         aria-label={`React with ${String(emoji ?? '')}`}
                       >
                         {emoji}
-                      </MotionView>
+                      </motion.button>
                     ))}
                   </div>
-                </MotionView>
+                </motion.div>
               )}
             </AnimatePresence>
 
@@ -659,7 +659,7 @@ export default function StoryViewer({
         {/* Analytics for story owner */}
         {isOwn && (
           <div className="absolute bottom-4 left-4 right-4 z-20">
-            <MotionView
+                                  <motion.div
               className="glass-strong p-4 rounded-2xl backdrop-blur-xl"
               style={analyticsAnimation.animatedStyle}
               role="region"
@@ -685,7 +685,7 @@ export default function StoryViewer({
                   View Insights
                 </Button>
               </div>
-            </MotionView>
+            </motion.div>
           </div>
         )}
       </div>
@@ -699,6 +699,6 @@ export default function StoryViewer({
           }}
         />
       )}
-    </MotionView>
+    </motion.div>
   );
 }
