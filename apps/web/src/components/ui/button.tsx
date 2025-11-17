@@ -40,6 +40,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
   // Layout
   readonly fullWidth?: boolean
   readonly isIconOnly?: boolean
+  readonly asChild?: boolean
   
   // Advanced features
   readonly tooltip?: string
@@ -70,6 +71,8 @@ const buttonSizes = {
 } as const
 
 const iconSizes = {
+  icon: 'h-4 w-4',
+  default: 'h-4 w-4',
   xs: 'h-3 w-3',
   sm: 'h-3.5 w-3.5',
   md: 'h-4 w-4',
@@ -237,7 +240,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     )
     
     // Motion props for animation
-    const motionProps: MotionProps = disableAnimation ? {} : {
+    const motionProps: Partial<HTMLMotionProps<'button'>> = disableAnimation ? {} : {
       whileTap: buttonAnimations.tap,
       whileHover: loading || disabled ? undefined : buttonAnimations.hover,
       transition: { duration: animationDuration }
