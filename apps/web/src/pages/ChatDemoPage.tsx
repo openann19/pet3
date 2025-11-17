@@ -151,9 +151,12 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
     window.__sendMessage = (content: string) => {
       const newMessage: Message = {
         id: `msg-${Date.now()}`,
+        roomId: 'test-room',
         content,
         senderId: currentUserId,
+        type: 'text',
         timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         status: 'sending',
       };
       setMessages(prev => [...prev, newMessage]);
@@ -270,9 +273,12 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
   const handleSendMessage = useCallback((content: string) => {
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
+      roomId: 'test-room',
       content,
       senderId: currentUserId,
+      type: 'text',
       timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       status: 'sending',
     };
     
