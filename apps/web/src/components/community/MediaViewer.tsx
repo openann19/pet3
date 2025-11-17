@@ -57,26 +57,30 @@ function SlideTransition({
   direction,
   isVisible,
 }: SlideTransitionProps): JSX.Element | null {
-  const translateX = useSharedValue(direction > 0 ? 1000 : -1000);
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.9);
+  const translateX = useSharedValue<number>(direction > 0 ? 1000 : -1000);
+  const opacity = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(0.9);
 
   useEffect(() => {
     if (isVisible) {
-      translateX.value = withSpring(0, springConfigs.smooth);
-      opacity.value = withTiming(1, timingConfigs.fast);
-      scale.value = withSpring(1, springConfigs.smooth);
+      translateX.value = withSpring(0, springConfigs.smooth) as unknown as number;
+      opacity.value = withTiming(1, timingConfigs.fast) as unknown as number;
+      scale.value = withSpring(1, springConfigs.smooth) as unknown as number;
     } else {
-      translateX.value = withSpring(direction > 0 ? -1000 : 1000, springConfigs.smooth);
-      opacity.value = withTiming(0, timingConfigs.fast);
-      scale.value = withTiming(0.9, timingConfigs.fast);
+      const targetX = direction > 0 ? -1000 : 1000;
+      translateX.value = withSpring(targetX, springConfigs.smooth) as unknown as number;
+      opacity.value = withTiming(0, timingConfigs.fast) as unknown as number;
+      scale.value = withTiming(0.9, timingConfigs.fast) as unknown as number;
     }
   }, [isVisible, direction, translateX, opacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const transforms: Array<Record<string, number>> = [];
+    transforms.push({ translateX: translateX.value as number });
+    transforms.push({ scale: scale.value as number });
     return {
-      transform: [{ translateX: translateX.value }, { scale: scale.value }],
-      opacity: opacity.value,
+      transform: transforms,
+      opacity: opacity.value as number,
     };
   }) as AnimatedStyle;
 
@@ -84,7 +88,7 @@ function SlideTransition({
 
   return (
     <MotionView
-      style={animatedStyle}
+      style={animatedStyle as Record<string, unknown>}
       className="absolute inset-0 flex items-center justify-center"
     >
       {children}
@@ -104,7 +108,7 @@ export function MediaViewer({
   const [isZoomed, setIsZoomed] = useState(false);
   const [direction, setDirection] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const dragX = useSharedValue(0);
+  const dragX = useSharedValue<number>(0);
   const dragStartX = useRef<number>(0);
 
   // Get current media early for use in callbacks
@@ -221,16 +225,16 @@ export function MediaViewer({
     (clientX: number) => {
       if (!isDragging || isZoomed || currentMedia?.type === 'video') return;
       const delta = clientX - dragStartX.current;
-      dragX.value = delta;
+      dragX.value = delta as number;
     },
-    [isDragging, isZoomed, dragX]
+    [isDragging, isZoomed, dragX, currentMedia?.type]
   );
 
   const handleDragEnd = useCallback(
     (clientX: number) => {
       if (!isDragging || isZoomed || currentMedia?.type === 'video') {
         setIsDragging(false);
-        dragX.value = withSpring(0, springConfigs.smooth);
+        dragX.value = withSpring(0, springConfigs.smooth) as unknown as number;
         return;
       }
 
@@ -246,7 +250,7 @@ export function MediaViewer({
       }
 
       setIsDragging(false);
-      dragX.value = withSpring(0, springConfigs.smooth);
+      dragX.value = withSpring(0, springConfigs.smooth) as unknown as number;
     },
     [isDragging, isZoomed, currentIndex, media.length, handlePrevious, handleNext, dragX]
   );
@@ -351,7 +355,7 @@ export function MediaViewer({
     try {
       const currentMedia = media[currentIndex];
       if (!currentMedia) {
-        toast.error(t.community?.mediaNotAvailable || 'Media not available');
+        toast.error(t.community?.mediaNotAvailable ?? 'Media not available');
         return;
       }
       const isVideo = currentMedia.type === 'video';
@@ -367,10 +371,10 @@ export function MediaViewer({
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(downloadUrl);
-      toast.success(t.community?.downloaded || `${isVideo ? 'Video' : 'Image'} downloaded`);
+      toast.success(t.community?.downloaded ?? `${isVideo ? 'Video' : 'Image'} downloaded`);
     } catch (error) {
       logger.error('Failed to download', error instanceof Error ? error : new Error(String(error)));
-      toast.error(t.community?.downloadError || 'Failed to download');
+      toast.error(t.community?.downloadError ?? 'Failed to download');
     }
   }, [currentIndex, media, t, logger]);
 
@@ -378,7 +382,7 @@ export function MediaViewer({
     haptics.selection();
     const currentMedia = media[currentIndex];
     if (!currentMedia) {
-      toast.error(t.community?.mediaNotAvailable || 'Media not available');
+      toast.error(t.community?.mediaNotAvailable ?? 'Media not available');
       return;
     }
     const isVideo = currentMedia.type === 'video';
@@ -397,7 +401,7 @@ export function MediaViewer({
       void navigator.clipboard
         .writeText(url)
         .then(() => {
-          toast.success(t.community?.linkCopied || 'Link copied to clipboard');
+          toast.success(t.community?.linkCopied ?? 'Link copied to clipboard');
         })
         .catch(() => {
           // Clipboard write failed - silently fail
@@ -413,11 +417,14 @@ export function MediaViewer({
 
   const dragOpacity = useAnimatedStyle(() => {
     if (isVideo) return { opacity: 1 };
-    const opacityValue = interpolate(
+    const       opacityValue = interpolate(
       dragX.value,
       [-200, 0, 200],
       [0.5, 1, 0.5],
-      Extrapolation.CLAMP
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
     );
     return { opacity: opacityValue };
   }) as AnimatedStyle;
@@ -428,16 +435,16 @@ export function MediaViewer({
     };
   }) as AnimatedStyle;
 
-  const headerOpacity = useSharedValue(showVideoControls || !isVideo ? 1 : 0);
-  const headerTranslateY = useSharedValue(0);
+  const headerOpacity = useSharedValue<number>(showVideoControls || !isVideo ? 1 : 0);
+  const headerTranslateY = useSharedValue<number>(0);
 
   useEffect(() => {
     if (showVideoControls || !isVideo) {
-      headerOpacity.value = withTiming(1, timingConfigs.fast);
-      headerTranslateY.value = withTiming(0, timingConfigs.fast);
+      headerOpacity.value = withTiming(1, timingConfigs.fast) as unknown as number;
+      headerTranslateY.value = withTiming(0, timingConfigs.fast) as unknown as number;
     } else {
-      headerOpacity.value = withTiming(0, timingConfigs.fast);
-      headerTranslateY.value = withTiming(-20, timingConfigs.fast);
+      headerOpacity.value = withTiming(0, timingConfigs.fast) as unknown as number;
+      headerTranslateY.value = withTiming(-20, timingConfigs.fast) as unknown as number;
     }
   }, [showVideoControls, isVideo, headerOpacity, headerTranslateY]);
 
@@ -448,10 +455,11 @@ export function MediaViewer({
     };
   }) as AnimatedStyle;
 
-  const imageScale = useSharedValue(isZoomed ? 2 : 1);
+  const imageScale = useSharedValue<number>(isZoomed ? 2 : 1);
 
   useEffect(() => {
-    imageScale.value = withSpring(isZoomed ? 2 : 1, springConfigs.smooth);
+    const targetScale = isZoomed ? 2 : 1;
+    imageScale.value = withSpring(targetScale, springConfigs.smooth) as unknown as number;
   }, [isZoomed, imageScale]);
 
   const imageStyle = useAnimatedStyle(() => {
@@ -460,16 +468,16 @@ export function MediaViewer({
     };
   }) as AnimatedStyle;
 
-  const videoControlsOpacity = useSharedValue(showVideoControls ? 1 : 0);
-  const videoControlsTranslateY = useSharedValue(0);
+  const videoControlsOpacity = useSharedValue<number>(showVideoControls ? 1 : 0);
+  const videoControlsTranslateY = useSharedValue<number>(0);
 
   useEffect(() => {
     if (showVideoControls) {
-      videoControlsOpacity.value = withTiming(1, timingConfigs.fast);
-      videoControlsTranslateY.value = withTiming(0, timingConfigs.fast);
+      videoControlsOpacity.value = withTiming(1, timingConfigs.fast) as unknown as number;
+      videoControlsTranslateY.value = withTiming(0, timingConfigs.fast) as unknown as number;
     } else {
-      videoControlsOpacity.value = withTiming(0, timingConfigs.fast);
-      videoControlsTranslateY.value = withTiming(20, timingConfigs.fast);
+      videoControlsOpacity.value = withTiming(0, timingConfigs.fast) as unknown as number;
+      videoControlsTranslateY.value = withTiming(20, timingConfigs.fast) as unknown as number;
     }
   }, [showVideoControls, videoControlsOpacity, videoControlsTranslateY]);
 
@@ -485,16 +493,16 @@ export function MediaViewer({
     tapScale: 0.95,
   });
 
-  const navButtonLeftOpacity = useSharedValue(currentIndex > 0 && showVideoControls ? 1 : 0);
-  const navButtonLeftTranslateX = useSharedValue(-20);
+  const navButtonLeftOpacity = useSharedValue<number>(currentIndex > 0 && showVideoControls ? 1 : 0);
+  const navButtonLeftTranslateX = useSharedValue<number>(-20);
 
   useEffect(() => {
     if (currentIndex > 0 && showVideoControls) {
-      navButtonLeftOpacity.value = withTiming(1, timingConfigs.fast);
-      navButtonLeftTranslateX.value = withTiming(0, timingConfigs.fast);
+      navButtonLeftOpacity.value = withTiming(1, timingConfigs.fast) as unknown as number;
+      navButtonLeftTranslateX.value = withTiming(0, timingConfigs.fast) as unknown as number;
     } else {
-      navButtonLeftOpacity.value = withTiming(0, timingConfigs.fast);
-      navButtonLeftTranslateX.value = withTiming(-20, timingConfigs.fast);
+      navButtonLeftOpacity.value = withTiming(0, timingConfigs.fast) as unknown as number;
+      navButtonLeftTranslateX.value = withTiming(-20, timingConfigs.fast) as unknown as number;
     }
   }, [currentIndex, showVideoControls, navButtonLeftOpacity, navButtonLeftTranslateX]);
 
@@ -505,18 +513,18 @@ export function MediaViewer({
     };
   }) as AnimatedStyle;
 
-  const navButtonRightOpacity = useSharedValue(
+  const navButtonRightOpacity = useSharedValue<number>(
     currentIndex < media.length - 1 && showVideoControls ? 1 : 0
   );
-  const navButtonRightTranslateX = useSharedValue(20);
+  const navButtonRightTranslateX = useSharedValue<number>(20);
 
   useEffect(() => {
     if (currentIndex < media.length - 1 && showVideoControls) {
-      navButtonRightOpacity.value = withTiming(1, timingConfigs.fast);
-      navButtonRightTranslateX.value = withTiming(0, timingConfigs.fast);
+      navButtonRightOpacity.value = withTiming(1, timingConfigs.fast) as unknown as number;
+      navButtonRightTranslateX.value = withTiming(0, timingConfigs.fast) as unknown as number;
     } else {
-      navButtonRightOpacity.value = withTiming(0, timingConfigs.fast);
-      navButtonRightTranslateX.value = withTiming(20, timingConfigs.fast);
+      navButtonRightOpacity.value = withTiming(0, timingConfigs.fast) as unknown as number;
+      navButtonRightTranslateX.value = withTiming(20, timingConfigs.fast) as unknown as number;
     }
   }, [
     currentIndex,
@@ -795,8 +803,8 @@ export function MediaViewer({
                 className="absolute bottom-20 left-1/2 -translate-x-1/2 text-white/60 text-xs bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm"
               >
                 {isZoomed
-                  ? t.community?.tapToZoomOut || 'Tap to zoom out'
-                  : t.community?.tapToZoom || 'Tap to zoom in'}
+                  ? t.community?.tapToZoomOut ?? 'Tap to zoom out'
+                  : t.community?.tapToZoom ?? 'Tap to zoom in'}
               </MotionView>
             )}
           </div>

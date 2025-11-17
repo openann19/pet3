@@ -14,10 +14,10 @@ export function SignInFormHeader({ t }: SignInFormHeaderProps) {
         'text-foreground',
         getSpacingClassesFromConfig({ marginY: 'sm' })
       )}>
-        {t.auth?.signInTitle || 'Welcome Back'}
+        {t.auth?.signInTitle ?? 'Welcome Back'}
       </h2>
       <p className={cn(getTypographyClasses('body'), 'text-muted-foreground')}>
-        {t.auth?.signInSubtitle || 'Sign in to continue to PawfectMatch'}
+        {t.auth?.signInSubtitle ?? 'Sign in to continue to PawfectMatch'}
       </p>
     </div>
   );

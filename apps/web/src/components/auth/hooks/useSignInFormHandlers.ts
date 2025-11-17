@@ -30,7 +30,7 @@ export function useSignInFormHandlers({
   const handleForgotPassword = () => {
     haptics.trigger('selection');
     analytics.track('forgot_password_clicked');
-    toast.info(t.auth?.forgotPasswordInfo || 'Password reset link would be sent to your email');
+    toast.info(t.auth?.forgotPasswordInfo ?? 'Password reset link would be sent to your email');
   };
 
   const handleLegalClick = (type: 'terms' | 'privacy') => {
@@ -41,8 +41,8 @@ export function useSignInFormHandlers({
     haptics.trigger('light');
     analytics.track('oauth_clicked', { provider, action: 'signin' });
     const message = provider === 'google' 
-      ? (t.auth?.signInWithGoogle || 'Signing in with Google...')
-      : (t.auth?.signInWithApple || 'Signing in with Apple...');
+      ? (t.auth?.signInWithGoogle ?? 'Signing in with Google...')
+      : (t.auth?.signInWithApple ?? 'Signing in with Apple...');
     toast.info(message);
   };
 

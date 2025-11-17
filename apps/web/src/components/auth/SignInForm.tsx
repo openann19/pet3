@@ -62,7 +62,7 @@ export default function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormPr
           className="w-full rounded-xl"
           onMouseEnter={() => !shouldReduceMotion && haptics.trigger('selection')}
         >
-          {isLoading ? (t.common.loading || 'Loading...') : (t.auth?.signIn || 'Sign In')}
+          {isLoading ? (t.common.loading ?? 'Loading...') : (t.auth?.signIn ?? 'Sign In')}
         </Button>
         <SignInFormFooter
           t={t}

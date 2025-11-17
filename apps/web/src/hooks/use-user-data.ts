@@ -196,8 +196,8 @@ export function useSwipeMutation(): UseMutationResult<
       ]);
 
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.swipes.stats });
-      queryClient.invalidateQueries({ queryKey: queryKeys.matches.list });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.swipes.stats });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.matches.list });
     },
     onError: (error) => {
       logger.error('Swipe mutation failed', error);

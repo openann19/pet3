@@ -182,7 +182,7 @@ export function DismissibleOverlay({
           aria-labelledby={title ? 'overlay-title' : undefined}
         >
           <MotionView style={contentPresence.animatedStyle as React.CSSProperties} className="h-full w-full">
-            {(title || showCloseButton) && (
+            {((title ?? '') || showCloseButton) && (
               <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 {title && (
                   <h2 id="overlay-title" className="text-xl font-semibold text-foreground">

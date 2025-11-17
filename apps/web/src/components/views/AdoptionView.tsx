@@ -20,7 +20,6 @@ import { VirtualGrid } from '@/components/virtual/VirtualGrid';
 
 // Type definition for global spark object
 declare global {
-  // eslint-disable-next-line no-var
   var spark: {
     user: () => Promise<{ id: string }>;
   } | undefined;
@@ -78,8 +77,8 @@ export default function AdoptionView() {
                     : ('pending_review' as const),
 
             location: {
-              city: p.location.split(', ')[0] || '',
-              country: p.location.split(', ')[1] || '',
+              city: p.location.split(', ')[0] ?? '',
+              country: p.location.split(', ')[1] ?? '',
               privacyRadiusM: 1000,
             },
 
@@ -92,7 +91,7 @@ export default function AdoptionView() {
             goodWithPets: p.goodWithPets,
             energyLevel: p.energyLevel,
             temperament: p.personality,
-            reasonForAdoption: p.description || 'Looking for a loving home',
+            reasonForAdoption: p.description ?? 'Looking for a loving home',
             createdAt: p.postedDate,
             updatedAt: p.postedDate,
             viewsCount: 0,
@@ -212,17 +211,17 @@ export default function AdoptionView() {
             <div>
               <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
                 <Heart size={32} weight="fill" className="text-primary" aria-hidden="true" />
-                {t.adoption?.title || 'Pet Adoption'}
+                {t.adoption?.title ?? 'Pet Adoption'}
               </h1>
               <p className="text-muted-foreground">
-                {t.adoption?.subtitle || 'Find your perfect companion and give them a forever home'}
+                {t.adoption?.subtitle ?? 'Find your perfect companion and give them a forever home'}
               </p>
             </div>
 
             <nav className="flex items-center gap-2" aria-label="Adoption actions">
               <Button onClick={() => setViewMode('my-applications')} variant="outline" className="gap-2">
                 <ClipboardText size={20} weight="fill" />
-                {t.adoption?.myApplications || 'My Applications'}
+                {t.adoption?.myApplications ?? 'My Applications'}
                 {userApplicationsCount > 0 && (
                   <Badge variant="secondary" className="ml-1">
                     {userApplicationsCount}
@@ -231,7 +230,7 @@ export default function AdoptionView() {
               </Button>
               <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
                 <Plus size={20} weight="fill" />
-                {t.adoption?.createListing || 'Create Listing'}
+                {t.adoption?.createListing ?? 'Create Listing'}
               </Button>
             </nav>
           </header>
@@ -252,7 +251,7 @@ export default function AdoptionView() {
               <TabsList>
                 <TabsTrigger value="all">All {listings.length > 0 && `(${listings.length})`}</TabsTrigger>
                 <TabsTrigger value="available">
-                  {t.adoption?.available || 'Available'} {availableCount > 0 && `(${availableCount})`}
+                  {t.adoption?.available ?? 'Available'} {availableCount > 0 && `(${availableCount})`}
                 </TabsTrigger>
                 <TabsTrigger value="favorites">
                   Favorites {Array.isArray(favorites) && favorites.length > 0 && `(${favorites.length})`}

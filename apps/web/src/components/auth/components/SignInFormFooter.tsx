@@ -31,7 +31,7 @@ export function SignInFormFooter({
           onClick={onForgotPassword}
           className="h-auto p-0"
         >
-          {t.auth?.forgotPassword || 'Forgot password?'}
+          {t.auth?.forgotPassword ?? 'Forgot password?'}
         </Button>
       </div>
 
@@ -45,7 +45,7 @@ export function SignInFormFooter({
             'bg-background text-muted-foreground',
             getSpacingClassesFromConfig({ paddingX: 'md' })
           )}>
-            {t.auth?.or || 'or'}
+            {t.auth?.or ?? 'or'}
           </span>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function SignInFormFooter({
       <div className="text-center">
         <p className={getTypographyClasses('body-sm')}>
           <span className="text-muted-foreground">
-            {t.auth?.noAccount || "Don't have an account?"}{' '}
+            {t.auth?.noAccount ?? "Don't have an account?"}{' '}
           </span>
           <Button
             type="button"
@@ -68,7 +68,7 @@ export function SignInFormFooter({
             onClick={onSwitchToSignUp}
             className="h-auto p-0 font-semibold"
           >
-            {t.auth?.signUp || 'Sign up'}
+            {t.auth?.signUp ?? 'Sign up'}
           </Button>
         </p>
         <p className={getTypographyClasses('body-sm')}>
@@ -80,7 +80,7 @@ export function SignInFormFooter({
             className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Terms of Service"
           >
-            {t.auth?.terms || 'Terms of Service'}
+            {t.auth?.terms ?? 'Terms of Service'}
           </a>
         </p>
         <p className={getTypographyClasses('body-sm')}>
@@ -92,7 +92,7 @@ export function SignInFormFooter({
             className="rounded underline text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Privacy Policy"
           >
-            {t.auth?.privacyPolicy || 'Privacy Policy'}
+            {t.auth?.privacyPolicy ?? 'Privacy Policy'}
           </a>
         </p>
       </div>

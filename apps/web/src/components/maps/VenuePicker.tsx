@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, MotionView } from '@petspark/motion';
+import { MotionView } from '@petspark/motion';
 import { X, MagnifyingGlass, NavigationArrow, Star } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
@@ -22,7 +22,7 @@ import type { MapMarker } from '@/lib/maps/useMapLibreMap';
 import { forwardGeocode } from '@/lib/maps/geocoding';
 import { useMapConfig } from '@/lib/maps/useMapConfig';
 import { toast } from 'sonner';
-import { isTruthy, isDefined } from '@petspark/shared';
+import { isTruthy } from '@petspark/shared';
 
 interface VenuePickerProps {
   open: boolean;
@@ -85,7 +85,7 @@ export default function VenuePicker({
     if (!userLocation) return;
 
     try {
-      const query = searchQuery || (selectedCategory ? `${String(selectedCategory ?? '')} pet` : 'pet friendly');
+      const query = searchQuery || (selectedCategory ? `${selectedCategory} pet` : 'pet friendly');
       const results = await forwardGeocode(query, 'en', userLocation);
 
       const places: Place[] = results.map((result) => ({
@@ -106,7 +106,7 @@ export default function VenuePicker({
       setVenues(places.slice(0, 20));
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      toast.error(err.message || t.map?.errorLoadingMap || 'Error loading venues');
+      toast.error(err.message ?? t.map?.errorLoadingMap ?? 'Error loading venues');
     }
   };
 
@@ -137,7 +137,7 @@ export default function VenuePicker({
   };
 
   const handleGetDirections = (venue: Place): void => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${String(venue.location.lat ?? '')},${String(venue.location.lng ?? '')}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.location.lat},${venue.location.lng}`;
     window.open(url, '_blank');
   };
 
@@ -152,7 +152,7 @@ export default function VenuePicker({
       <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0">
         <SheetHeader className="p-6 pb-4 border-b">
           <SheetTitle className="text-xl font-bold">
-            {t.map?.choosePlace || 'Choose a place'}
+            {t.map?.choosePlace ?? 'Choose a place'}
           </SheetTitle>
         </SheetHeader>
 
@@ -160,7 +160,7 @@ export default function VenuePicker({
           <div className="p-4 space-y-4 border-b">
             <div className="flex gap-2">
               <Input
-                placeholder={t.map?.searchPlaceholder || 'Search places...'}
+                placeholder={t.map?.searchPlaceholder ?? 'Search places...'}
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -242,10 +242,10 @@ export default function VenuePicker({
                   onClick={() => { handleGetDirections(selectedVenue); }}
                 >
                   <NavigationArrow size={18} className="mr-2" />
-                  {t.map?.openInMaps || 'Open in Maps'}
+                  {t.map?.openInMaps ?? 'Open in Maps'}
                 </Button>
                 <Button className="flex-1" onClick={handleSelectVenue}>
-                  {t.map?.selectLocation || 'Select'}
+                  {t.map?.selectLocation ?? 'Select'}
                 </Button>
               </div>
             </MotionView>

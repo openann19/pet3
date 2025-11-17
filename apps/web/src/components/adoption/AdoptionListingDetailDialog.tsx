@@ -122,8 +122,8 @@ export function AdoptionListingDetailDialog({
       await adoptionMarketplaceService.createApplication({
         listingId: listing.id,
         applicantId: String(user.id),
-        applicantName: user.login || 'Anonymous',
-        applicantEmail: user.email || '',
+        applicantName: user.login ?? 'Anonymous',
+        applicantEmail: user.email ?? '',
         message: applicationData.message,
         homeType: applicationData.homeType,
         hasYard: applicationData.hasYard,
@@ -173,7 +173,7 @@ export function AdoptionListingDetailDialog({
         error instanceof Error ? error : new Error(String(error))
       );
       haptics.trigger('error');
-      toast.error(errorMessage || 'Failed to submit application. Please try again.');
+      toast.error(errorMessage ?? 'Failed to submit application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

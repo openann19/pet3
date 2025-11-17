@@ -5,7 +5,6 @@
  * Replaces legacy KV functionality.
  */
 
-/* eslint-disable max-lines -- Unified storage service with IndexedDB and localStorage coordination, error recovery, and cross-tab synchronization */
 import { createLogger } from './logger';
 import { isTruthy } from './utils';
 
@@ -586,10 +585,10 @@ class StorageService {
 // Export singleton instance
 export const storage = new StorageService();
 
-// Initialize on module load (but don't block)
+  // Initialize on module load (but don't block)
 if (typeof window !== 'undefined') {
   // Initialize asynchronously to avoid blocking
-  storage.initDB().catch((error) => {
+  void storage.initDB().catch((error) => {
     logger.warn('Failed to initialize IndexedDB, using localStorage only', {
       error: error instanceof Error ? error.message : String(error),
     });
