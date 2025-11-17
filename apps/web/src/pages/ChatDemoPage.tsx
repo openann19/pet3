@@ -182,13 +182,11 @@ export function ChatDemoPage({ variant = 'default' }: ChatDemoPageProps) {
     };
 
     window.__showTypingIndicator = (user: string) => {
-      setTypingUser(user);
-      setIsTyping(true);
+      setTypingUsers([{ userId: 'user1', userName: user, startedAt: new Date().toISOString() }]);
     };
 
     window.__hideTypingIndicator = () => {
-      setIsTyping(false);
-      setTypingUser('');
+      setTypingUsers([]);
     };
 
     window.__setConnectionStatus = (status: 'online' | 'offline') => {
