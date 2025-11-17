@@ -87,7 +87,7 @@ export function useDiscoverSwipe(options: UseDiscoverSwipeOptions): UseDiscoverS
               matchedPetPhoto: currentPet.photo,
               compatibilityScore: matchResult.compatibility || swipeResult.compatibility,
               compatibility: matchResult.compatibility || swipeResult.compatibility,
-              reasoning: matchResult.reasoning || [],
+              reasoning: [],
               matchedAt: new Date().toISOString(),
               status: 'active',
             };

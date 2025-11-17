@@ -143,8 +143,8 @@ export function AdvancedChatWindowContent({
           typingContainerStyle={headerAnimations.typingContainerStyle}
           typingTextStyle={headerAnimations.typingTextStyle}
           typingDotsStyle={headerAnimations.typingDotsStyle}
-          videoButtonHover={headerAnimations.videoButtonHover}
-          voiceButtonHover={headerAnimations.voiceButtonHover}
+          videoButtonHover={headerAnimations.videoButtonHover as any}
+          voiceButtonHover={headerAnimations.voiceButtonHover as any}
           onBack={onBack}
           onVideoCall={(): void => {
             toast.info('Video call feature coming soon');
