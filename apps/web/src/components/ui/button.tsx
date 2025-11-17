@@ -15,8 +15,8 @@ const logger = createLogger('Button')
 
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'onAnimationStart' | 'onAnimationEnd' | 'onDrag' | 'onDragEnd' | 'onDragStart'> {
   // Visual variants
-  readonly variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link'
-  readonly size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  readonly variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link' | 'default'
+  readonly size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon' | 'default'
   
   // States
   readonly loading?: boolean
@@ -50,6 +50,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 
 // Button variant styles using design tokens
 export const buttonVariants = {
+  default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-primary',
   primary: 'bg-primary text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-primary',
   secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 focus-visible:ring-secondary',
   outline: 'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent',
@@ -59,6 +60,8 @@ export const buttonVariants = {
 } as const
 
 const buttonSizes = {
+  icon: 'h-9 w-9 p-0',
+  default: 'h-9 px-4 text-sm',
   xs: 'h-7 px-2 text-xs',
   sm: 'h-8 px-3 text-sm',
   md: 'h-9 px-4 text-sm',
