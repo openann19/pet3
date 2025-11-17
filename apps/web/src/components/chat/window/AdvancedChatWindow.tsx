@@ -35,6 +35,7 @@ import { AnnounceNewMessage, AnnounceTyping } from './LiveRegions';
 import { useOutbox } from '@petspark/chat-core';
 import { flags } from '@petspark/config';
 import { useChatKeyboardShortcuts } from '@/hooks/chat/use-chat-keyboard-shortcuts';
+import { useChatInputAnimations } from './hooks/useChatInputAnimations';
 
 const logger = createLogger('AdvancedChatWindow');
 
@@ -208,7 +209,7 @@ export default function AdvancedChatWindow({
   const [burstSeed, setBurstSeed] = useState(0);
   const [confettiSeed, setConfettiSeed] = useState(0);
   const [lastIncomingText, setLastIncomingText] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null) as React.RefObject<import('@/components/ui/input').InputRef>;
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -335,6 +336,7 @@ export default function AdvancedChatWindow({
   });
 
   const useVirtualization = flags().chat.virtualization;
+  const inputAnimations = useChatInputAnimations(showTemplates);
 
   return (
     <div className="flex flex-col h-full relative">
@@ -409,53 +411,42 @@ export default function AdvancedChatWindow({
       <ChatErrorBoundary>
         <ChatInputBar
           inputValue={inputValue}
-          setInputValue={(v: string) => {
+          inputRef={inputRef}
+          showTemplates={showTemplates}
+          showStickers={showStickers}
+          isRecording={isRecordingVoice}
+          templatesStyle={inputAnimations.templatesStyle}
+          templateButtonHover={inputAnimations.templateButtonHover}
+          templateButtonTap={inputAnimations.templateButtonTap}
+          stickerButtonTap={inputAnimations.stickerButtonTap}
+          stickerButtonHover={inputAnimations.stickerButtonHover}
+          emojiButtonTap={inputAnimations.emojiButtonTap}
+          emojiButtonHover={inputAnimations.emojiButtonHover}
+          sendButtonHover={inputAnimations.sendButtonHover}
+          sendButtonTap={inputAnimations.sendButtonTap}
+          onInputChange={(v: string) => {
             setInputValue(v);
             typingChange(v);
           }}
-          inputRef={inputRef}
-          showStickers={showStickers}
-          setShowStickers={setShowStickers}
-          showTemplates={showTemplates}
+          onSendMessage={(content: string, type?: 'text' | 'sticker' | 'voice') => {
+            onSend(content, type ?? 'text');
+          }}
+          onUseTemplate={(template: string) => {
+            setInputValue(template);
+            setShowTemplates(false);
+          }}
+          onVoiceRecorded={(_audioBlob: Blob, _duration: number, _waveform: number[]) => {
+            setIsRecordingVoice(false);
+            onSend('Voice message', 'voice');
+          }}
+          onVoiceCancel={() => {
+            setIsRecordingVoice(false);
+          }}
+          onStartRecording={() => {
+            setIsRecordingVoice(true);
+          }}
           setShowTemplates={setShowTemplates}
-          isRecordingVoice={isRecordingVoice}
-          setIsRecordingVoice={setIsRecordingVoice}
-          onSend={onSend}
-          onSuggestion={(s: SmartSuggestion) => {
-            onSend(s.text, 'text');
-          }}
-          onShareLocation={() => {
-            if ('geolocation' in navigator) {
-              navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                  onSend('Shared my location', 'location', undefined, {
-                    location: {
-                      lat: pos.coords.latitude,
-                      lng: pos.coords.longitude,
-                      latitude: pos.coords.latitude,
-                      longitude: pos.coords.longitude,
-                      address: 'Current Location',
-                    },
-                  });
-                  toast.success('Location shared!');
-                },
-                () => {
-                  toast.error('Unable to access location');
-                }
-              );
-            } else {
-              toast.error('Geolocation not supported');
-            }
-          }}
-          onTemplate={(t: MessageTemplate) => {
-            setInputValue(t.content || t.text || '');
-          }}
-          onQuickReaction={(emoji: string) => {
-            const lastMessage = messages?.[messages.length - 1];
-            if (lastMessage && lastMessage.senderId !== currentUserId) {
-              onReaction(lastMessage.id, emoji);
-            }
-          }}
+          setShowStickers={setShowStickers}
         />
       </ChatErrorBoundary>
     </div>
