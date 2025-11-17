@@ -6,6 +6,7 @@ import { PushPin, PushPinSlash, Trash, X } from '@phosphor-icons/react';
 import { motion, MotionView } from '@petspark/motion';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { isTruthy } from '@petspark/shared';
 import StoryViewer from './StoryViewer';
 
 interface HighlightViewerProps {

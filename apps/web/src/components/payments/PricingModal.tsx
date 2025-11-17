@@ -37,7 +37,7 @@ export function PricingModal({ open, onOpenChange, onSuccess }: PricingModalProp
     try {
       const user = await spark?.user();
 
-      await PaymentsService.createSubscription(user.id, plan.id, 'web', { billingCycle });
+      await PaymentsService.createSubscription(user?.id ?? '', plan.id, 'web', { billingCycle });
 
       toast.success(
         plan.trialDays ? `${plan.trialDays}-day trial started!` : 'Subscription activated!',
