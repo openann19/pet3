@@ -38,8 +38,8 @@ export function useTypingIndicator(
     dotSize = DEFAULT_DOT_SIZE,
   } = options;
 
-  const scales = Array.from({ length: dotCount }, () => useSharedValue(1));
-  const opacities = Array.from({ length: dotCount }, () => useSharedValue(0.5));
+  const scales = Array.from({ length: dotCount }, () => useSharedValue<number>(1));
+  const opacities = Array.from({ length: dotCount }, () => useSharedValue<number>(0.5));
 
   useEffect(() => {
     if (!enabled) {

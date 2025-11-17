@@ -82,7 +82,8 @@ export function IncomingCallToast({
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              size="icon"
+              size="sm"
+              isIconOnly
               variant="ghost"
               onClick={onDecline}
               aria-label="Decline call"
@@ -93,8 +94,9 @@ export function IncomingCallToast({
 
             <Button
               type="button"
-              size="icon"
-              variant="default"
+              size="sm"
+              isIconOnly
+              variant="primary"
               onClick={onAccept}
               aria-label="Accept call"
               className="rounded-full size-10 bg-emerald-500 text-white hover:bg-emerald-600"

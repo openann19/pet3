@@ -72,11 +72,11 @@ export function useReactionTrail(options: UseReactionTrailOptions = {}): UseReac
 
         const particle: ReactionTrailParticle = {
           id: `${String(Date.now() ?? '')}-${String(i ?? '')}-${String(rng() ?? '')}`,
-          x: useSharedValue(x + offsetX),
-          y: useSharedValue(y + offsetY),
-          scale: useSharedValue(0),
-          opacity: useSharedValue(0),
-          rotation: useSharedValue(0),
+          x: useSharedValue<number>(x + offsetX),
+          y: useSharedValue<number>(y + offsetY),
+          scale: useSharedValue<number>(0),
+          opacity: useSharedValue<number>(0),
+          rotation: useSharedValue<number>(0),
           emoji: emojiToUse,
           createdAt: Date.now(),
         };
@@ -168,11 +168,13 @@ export function useReactionTrail(options: UseReactionTrailOptions = {}): UseReac
   const getParticleStyle = useCallback(
     (particle: ReactionTrailParticle): ReturnType<typeof useAnimatedStyle> => {
       return useAnimatedStyle(() => {
+        const scale = particle.scale.value;
+        const rotate = `${particle.rotation.value}deg`;
         return {
           position: 'absolute' as const,
           left: particle.x.value,
           top: particle.y.value,
-          transform: [{ scale: particle.scale.value }, { rotate: `${particle.rotation.value}deg` }],
+          transform: [{ scale, rotate }],
           opacity: particle.opacity.value,
           pointerEvents: 'none' as const,
           zIndex: 9999,

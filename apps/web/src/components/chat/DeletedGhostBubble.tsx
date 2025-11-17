@@ -17,8 +17,8 @@ export function DeletedGhostBubble({
   delay = 0,
 }: DeletedGhostBubbleProps) {
   const _uiConfig = useUIConfig();
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.95);
+  const opacity = useSharedValue<number>(0);
+  const scale = useSharedValue<number>(0.95);
 
   useEffect(() => {
     const timer = setTimeout(() => {

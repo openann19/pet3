@@ -13,7 +13,7 @@ export interface CallParticipantsGridProps {
 export function CallParticipantsGrid({ session, localStream, remoteStream }: CallParticipantsGridProps): React.ReactElement {
   const remote = session.remoteParticipant
   const local = session.localParticipant
-  if (!remote) return null;
+  if (!remote) return <></>;
   return (
     <View style={styles.container}>
       <View style={styles.remote}>

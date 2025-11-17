@@ -47,22 +47,19 @@ export function useDeleteBubbleAnimation(
     duration = DEFAULT_DURATION,
   } = options;
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
-  const translateX = useSharedValue(0);
-  const height = useSharedValue(60);
-  const rotation = useSharedValue(0);
+  const opacity = useSharedValue<number>(1);
+  const scale = useSharedValue<number>(1);
+  const translateY = useSharedValue<number>(0);
+  const translateX = useSharedValue<number>(0);
+  const height = useSharedValue<number>(60);
+  const rotation = useSharedValue<number>(0);
 
   // Extract completion callback to reduce nesting
-  const handleAnimationComplete = useCallback(
-    (finished?: boolean) => {
-      if (finished && onFinish) {
-        runOnJS(onFinish)();
-      }
-    },
-    [onFinish]
-  );
+  const handleAnimationComplete = useCallback(() => {
+    if (onFinish) {
+      runOnJS(onFinish)();
+    }
+  }, [onFinish]);
 
   const triggerDelete = useCallback(() => {
     if (hapticFeedback) {
@@ -88,7 +85,8 @@ export function useDeleteBubbleAnimation(
           scale.value = withSequence(withTiming(1.1, timingConfig1), withTiming(0, timingConfig2));
           translateY.value = withTiming(-40, timingConfig3);
           opacity.value = withTiming(0, timingConfig3);
-          height.value = withTiming(0, { duration }, handleAnimationComplete);
+          height.value = withTiming(0, { duration });
+          runOnJS(handleAnimationComplete)();
           break;
         }
 
@@ -108,12 +106,13 @@ export function useDeleteBubbleAnimation(
             withTiming(0.7, { duration: duration * 0.2 }),
             withTiming(0, { duration: duration * 0.8 })
           );
-          height.value = withTiming(0, { duration }, handleAnimationComplete);
+          height.value = withTiming(0, { duration });
           rotation.value = withSequence(
             withTiming(5, { duration: duration * 0.2 }),
             withTiming(-5, { duration: duration * 0.2 }),
             withTiming(0, { duration: duration * 0.6 })
           );
+          runOnJS(handleAnimationComplete)();
           break;
         }
 
@@ -126,7 +125,8 @@ export function useDeleteBubbleAnimation(
             withTiming(0.8, { duration: duration * 0.2 }),
             withTiming(0, { duration: duration * 0.8 })
           );
-          height.value = withTiming(0, { duration }, handleAnimationComplete);
+          height.value = withTiming(0, { duration });
+          runOnJS(handleAnimationComplete)();
           rotation.value = withTiming(Math.random() > 0.5 ? 15 : -15, { duration });
           break;
         }
@@ -137,14 +137,16 @@ export function useDeleteBubbleAnimation(
             withTiming(0.5, { duration: duration * 0.3 }),
             withTiming(0, { duration: duration * 0.7 })
           );
-          height.value = withTiming(0, { duration }, handleAnimationComplete);
+          height.value = withTiming(0, { duration });
+          runOnJS(handleAnimationComplete)();
           break;
         }
 
         default: {
           scale.value = withTiming(0, { duration });
           opacity.value = withTiming(0, { duration });
-          height.value = withTiming(0, { duration }, handleAnimationComplete);
+          height.value = withTiming(0, { duration });
+          runOnJS(handleAnimationComplete)();
         }
       }
     })();
@@ -173,13 +175,15 @@ export function useDeleteBubbleAnimation(
   }, [opacity, scale, translateY, translateX, height, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const scaleVal = scale.value;
+    const translateYVal = translateY.value;
+    const translateXVal = translateX.value;
+    const rotateVal = `${rotation.value}deg`;
+    
     return {
       opacity: opacity.value,
       transform: [
-        { scale: scale.value },
-        { translateY: translateY.value },
-        { translateX: translateX.value },
-        { rotate: `${rotation.value}deg` },
+        { scale: scaleVal, translateY: translateYVal, translateX: translateXVal, rotate: rotateVal },
       ],
       height: height.value,
       overflow: 'hidden' as const,

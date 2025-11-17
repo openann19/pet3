@@ -18,7 +18,7 @@ import { RTCView } from 'react-native-webrtc';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@mobile/theme/colors';
-import { useWebRTC } from '@/hooks/call/use-web-rtc';
+import { useWebRTC } from '@mobile/hooks/call/use-web-rtc';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,14 +38,34 @@ export function LiveStreamScreen({
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
-  const { addStream, state } = useWebRTC({
+  // Note: useWebRTC requires callId and remoteUserId - these should come from props or navigation params
+  // For now, using placeholder values - this should be fixed when integrating with actual call system
+  const { callState, handleSignalingData } = useWebRTC({
+    callId: streamId || 'live-stream',
+    remoteUserId: 'host', // Placeholder - should be actual host user ID
+    isCaller: !isHost,
     onRemoteStream: (stream) => {
       setRemoteStream(stream);
     },
     onConnectionStateChange: (state) => {
-      // Handle connection state
+      // Handle connection state changes
+      if (state === 'connected') {
+        setIsLive(true);
+      } else if (state === 'disconnected' || state === 'failed') {
+        setIsLive(false);
+      }
     },
   });
+
+  // Update remote stream from callState
+  useEffect(() => {
+    if (callState.remoteStream) {
+      setRemoteStream(callState.remoteStream);
+    }
+    if (callState.localStream) {
+      setLocalStream(callState.localStream);
+    }
+  }, [callState.remoteStream, callState.localStream]);
 
   useEffect(() => {
     if (isHost) {
@@ -56,22 +76,17 @@ export function LiveStreamScreen({
       if (localStream) {
         localStream.getTracks().forEach((track) => track.stop());
       }
+      if (callState.localStream) {
+        callState.localStream.getTracks().forEach((track) => track.stop());
+      }
     };
-  }, [isHost]);
+  }, [isHost, localStream, callState.localStream]);
 
   const startStreaming = async (): Promise<void> => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          frameRate: { ideal: 30 },
-        },
-        audio: true,
-      });
-
-      setLocalStream(stream);
-      addStream(stream);
+      // On mobile, we need to use react-native-webrtc's mediaDevices
+      // This is handled by the useWebRTC hook internally
+      // For now, we'll rely on the hook to manage the stream
       setIsLive(true);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {

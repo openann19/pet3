@@ -164,7 +164,19 @@ export function UltraAnimationShowcase() {
         {/* 3D Flip Card Section */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-white">3D Flip Card</h2>
-          <div className="relative w-64 h-40" onClick={flipCard.flip}>
+          <div
+            className="relative w-64 h-40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            onClick={flipCard.flip}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                flipCard.flip();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Flip 3D card"
+          >
             <MotionView style={flipCard.frontAnimatedStyle} className="absolute inset-0">
               <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-600 rounded-2xl shadow-2xl flex items-center justify-center cursor-pointer">
                 <p className="text-2xl font-bold text-white">Front</p>

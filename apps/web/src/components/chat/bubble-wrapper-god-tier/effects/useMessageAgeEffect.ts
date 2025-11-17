@@ -55,8 +55,8 @@ export function useMessageAgeEffect(
     return getMessageAge(timestamp);
   }, [timestamp, enabled]);
 
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
+  const opacity = useSharedValue<number>(1);
+  const scale = useSharedValue<number>(1);
 
   useEffect(() => {
     if (!enabled || age < fadeStartAge) {
@@ -66,8 +66,8 @@ export function useMessageAgeEffect(
     }
 
     const progress = Math.min((age - fadeStartAge) / (fadeEndAge - fadeStartAge), 1);
-    const targetOpacity = interpolate(progress, [0, 1], [1, opacityMin], Extrapolation.CLAMP);
-    const targetScale = interpolate(progress, [0, 1], [1, scaleMin], Extrapolation.CLAMP);
+    const targetOpacity = interpolate(progress, [0, 1], [1, opacityMin], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    const targetScale = interpolate(progress, [0, 1], [1, scaleMin], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
     opacity.value = withTiming(targetOpacity, timingConfigs.smooth);
     scale.value = withTiming(targetScale, timingConfigs.smooth);

@@ -45,7 +45,8 @@ export function CallControlBar({
     >
       <Button
         type="button"
-        size="icon"
+        size="sm"
+        isIconOnly
         variant="ghost"
         onClick={onToggleMute}
         aria-label={isMuted ? 'Unmute' : 'Mute'}
@@ -65,7 +66,8 @@ export function CallControlBar({
 
       <Button
         type="button"
-        size="icon"
+        size="sm"
+        isIconOnly
         variant="ghost"
         onClick={onToggleCamera}
         aria-label={isCameraOff ? 'Turn camera on' : 'Turn camera off'}
@@ -85,7 +87,8 @@ export function CallControlBar({
 
       <Button
         type="button"
-        size="icon"
+        size="sm"
+        isIconOnly
         variant="ghost"
         onClick={onToggleScreenShare}
         aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
@@ -107,7 +110,8 @@ export function CallControlBar({
 
       <Button
         type="button"
-        size="icon"
+        size="sm"
+        isIconOnly
         variant="destructive"
         onClick={onEndCall}
         aria-label="End call"

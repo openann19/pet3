@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-import type { LayoutChangeEvent } from 'react-native'
+
+// Type definition for LayoutChangeEvent (web compatibility)
+interface LayoutChangeEvent {
+  nativeEvent: {
+    layout: {
+      x: number
+      y: number
+      width: number
+      height: number
+    }
+  }
+}
 
 // Type helper for transform arrays to avoid React Native type strictness
 type TransformArray = any[]

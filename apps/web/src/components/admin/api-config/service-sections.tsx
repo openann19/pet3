@@ -104,7 +104,7 @@ export function MapsServiceSection({
         onReset('maps');
       }}
       testingService={testingService}
-      testDisabled={config?.maps?.provider === 'openstreetmap'}
+      testDisabled={Boolean(config?.maps?.provider === 'openstreetmap')}
     />
   );
 }

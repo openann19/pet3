@@ -38,8 +38,40 @@ export function RippleEffect({
     [disabled, ripple, onClick]
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        // Create a synthetic mouse event for ripple effect
+        const syntheticEvent = {
+          ...e,
+          currentTarget: e.currentTarget,
+          clientX: e.currentTarget.getBoundingClientRect().left + e.currentTarget.offsetWidth / 2,
+          clientY: e.currentTarget.getBoundingClientRect().top + e.currentTarget.offsetHeight / 2,
+        } as unknown as React.MouseEvent<HTMLDivElement>;
+        handleClick(syntheticEvent);
+      }
+    },
+    [disabled, handleClick]
+  );
+
+  const hasClickHandler = onClick !== undefined;
+  const role = hasClickHandler ? 'button' : undefined;
+  const tabIndex = hasClickHandler && !disabled ? 0 : undefined;
+
   return (
-    <div onClick={handleClick} className={cn('relative overflow-hidden', className)} {...props}>
+    <div
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={role}
+      tabIndex={tabIndex}
+      className={cn(
+        'relative overflow-hidden',
+        hasClickHandler && !disabled && 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        className
+      )}
+      {...props}
+    >
       {children}
       {ripple.ripples.map((rippleState) => (
         <MotionView

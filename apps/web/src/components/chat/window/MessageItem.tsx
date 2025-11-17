@@ -18,7 +18,6 @@ import { Badge } from '@/components/ui/badge';
 import { useEffect, useRef, useMemo } from 'react';
 import { ensureFocusAppearance } from '@/core/a11y/focus-appearance';
 import { getStableMessageReference } from '@/core/a11y/fixed-references';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { ProgressiveImage } from '@/components/enhanced/ProgressiveImage';
 
 export interface MessageItemProps {
@@ -66,8 +65,8 @@ export function MessageItem({
   // Ensure focus appearance on bubble
   useEffect(() => {
     if (bubbleRef.current) {
-      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]')!;
-      if (bubbleElement) {
+      const bubbleElement = bubbleRef.current.querySelector('[class*="rounded-2xl"]');
+      if (bubbleElement && bubbleElement instanceof HTMLElement) {
         bubbleElement.setAttribute('id', stableReference.stableId);
         bubbleElement.setAttribute('tabIndex', '0');
         bubbleElement.setAttribute('role', 'article');
@@ -87,15 +86,33 @@ export function MessageItem({
   }, [isCurrentUser, message.status, sendWarp]);
 
   const combined = useAnimatedStyle(() => {
-    const a = entry.animatedStyle;
-    const b = isCurrentUser ? sendWarp.animatedStyle : receiveAir.animatedStyle;
-    return { ...a, ...b };
-  }) as AnimatedStyle;
+    const scale = entry.scale.get();
+    const translateY = entry.translateY.get();
+    const opacity = entry.opacity.get();
+    
+    if (isCurrentUser) {
+      const translateX = sendWarp.translateX.get();
+      return {
+        opacity: opacity * sendWarp.opacity.get(),
+        transform: [
+          { translateX, scale, translateY },
+        ],
+      };
+    } else {
+      const receiveScale = receiveAir.scale.get();
+      return {
+        opacity,
+        transform: [
+          { scale: scale * receiveScale, translateY },
+        ],
+      };
+    }
+  });
 
   return (
     <MotionView
       style={combined}
-      className={`flex items-end gap-2 ${String(isCurrentUser ? 'flex-row-reverse' : 'flex-row' ?? '')}`}
+      className={`flex items-end gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
       {!isCurrentUser && message.senderAvatar && (
         <PresenceAvatar

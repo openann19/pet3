@@ -1,15 +1,11 @@
 'use client';;
 import { useEffect } from 'react';
 import {
-  useSharedValue,
+  useMotionValue,
   useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  withDelay,
+  animate,
   MotionView,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { cn } from '@/lib/utils';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -60,41 +56,33 @@ function TypingDot({
   animationDuration: number;
   delay: number;
 }) {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.5);
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(0.5);
 
   useEffect(() => {
-    scale.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1.4, { duration: animationDuration / 3 }),
-          withTiming(1, { duration: animationDuration / 3 })
-        ),
-        -1,
-        true
-      )
-    );
-    opacity.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: animationDuration / 3 }),
-          withTiming(0.5, { duration: animationDuration / 3 })
-        ),
-        -1,
-        true
-      )
-    );
+    setTimeout(() => {
+      animate(scale, [1, 1.4, 1], {
+        duration: animationDuration,
+        repeat: Infinity,
+        repeatType: 'reverse',
+        ease: 'easeInOut',
+      });
+      animate(opacity, [0.5, 1, 0.5], {
+        duration: animationDuration,
+        repeat: Infinity,
+        repeatType: 'reverse',
+        ease: 'easeInOut',
+      });
+    }, delay);
   }, [delay, animationDuration, scale, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    transform: [{ scale: scale.get() }],
+    opacity: opacity.get(),
     width: dotSize,
     height: dotSize,
     backgroundColor: dotColor,
-  })) as AnimatedStyle;
+  }));
 
   return (
     <MotionView style={animatedStyle} className="rounded-full">

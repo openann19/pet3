@@ -78,11 +78,11 @@ export function LocationShareButton({
     <>
       <Button
         type="button"
-        size="icon"
+        size="sm"
+        className={cn('w-10 h-10 p-0 rounded-full', className)}
         variant="ghost"
         onClick={() => setIsOpen(true)}
         aria-label="Share location"
-        className={cn('rounded-full', className)}
       >
         <MapPin className="size-5" aria-hidden="true" />
       </Button>

@@ -61,7 +61,7 @@ export function ReactionPicker({
     [onSelect, onClose]
   );
 
-  if (!visible) return null;
+  if (!visible) return <></>;
 
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>

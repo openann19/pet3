@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { Warning } from '@phosphor-icons/react';
 import { ConfigField } from './ConfigField';
 import { ServiceTestButton } from './ServiceTestButton';
@@ -57,7 +57,7 @@ interface APIConfigSectionProps {
   onTest: () => void;
   onReset: () => void;
   testingService: string | null;
-  testDisabled?: boolean;
+  testDisabled?: boolean | "";
   alert?: {
     variant: 'warning' | 'info';
     title: string;
@@ -186,6 +186,78 @@ function SwitchesList({ switches }: { switches: SwitchConfig[] }) {
   );
 }
 
+function APIConfigContent({
+  sectionKey,
+  provider,
+  fields,
+  switches,
+  showSecrets,
+  onToggleSecret,
+  isProviderDisabled,
+  children,
+  alert,
+}: {
+  sectionKey: keyof APIConfig;
+  provider?: APIConfigSectionProps['provider'];
+  fields: APIConfigSectionProps['fields'];
+  switches?: APIConfigSectionProps['switches'];
+  showSecrets: APIConfigSectionProps['showSecrets'];
+  onToggleSecret: (key: string) => void;
+  isProviderDisabled: boolean;
+  children?: React.ReactNode;
+  alert?: APIConfigSectionProps['alert'];
+}): React.JSX.Element {
+  return (
+    <>
+      {alert && (
+        <Alert variant={alert.variant} className="shadow-sm">
+          <Warning size={20} weight="fill" />
+          <AlertTitle>{alert.title}</AlertTitle>
+          <AlertDescription>{alert.description}</AlertDescription>
+        </Alert>
+      )}
+      {provider && <ProviderSelect sectionKey={sectionKey} provider={provider} />}
+      {!isProviderDisabled && (
+        <>
+          <FieldsList fields={fields} showSecrets={showSecrets} onToggleSecret={onToggleSecret} />
+          {switches && <SwitchesList switches={switches} />}
+          {children}
+        </>
+      )}
+    </>
+  );
+}
+
+function APIConfigActions({
+  title,
+  sectionTesting,
+  isTestDisabled,
+  isProviderDisabled,
+  onTest,
+  onReset,
+}: {
+  title: string;
+  sectionTesting: boolean;
+  isTestDisabled: boolean;
+  isProviderDisabled: boolean;
+  onTest: () => void;
+  onReset: () => void;
+}): React.JSX.Element {
+  return (
+    <div className="flex gap-2">
+      <ServiceTestButton
+        serviceName={title}
+        isTesting={sectionTesting}
+        onTest={onTest}
+        disabled={isTestDisabled || isProviderDisabled}
+      />
+      <Button variant="outline" onClick={onReset}>
+        Reset
+      </Button>
+    </div>
+  );
+}
+
 export function APIConfigSection({
   sectionKey,
   icon,
@@ -207,6 +279,7 @@ export function APIConfigSection({
 }: APIConfigSectionProps) {
   const isProviderDisabled = Boolean(provider?.disabledValue && provider.value === provider.disabledValue);
   const sectionTesting = testingService === title;
+  const isTestDisabled = Boolean(testDisabled);
 
   return (
     <Card className="shadow-sm border-border/50">
@@ -218,35 +291,25 @@ export function APIConfigSection({
         onEnabledChange={onEnabledChange}
       />
       <CardContent className="space-y-6">
-        {alert && (
-          <Alert variant={alert.variant} className="shadow-sm">
-            <Warning size={20} weight="fill" />
-            <AlertTitle>{alert.title}</AlertTitle>
-            <AlertDescription>{alert.description}</AlertDescription>
-          </Alert>
-        )}
-
-        {provider && <ProviderSelect sectionKey={sectionKey} provider={provider} />}
-
-        {!isProviderDisabled && (
-          <>
-            <FieldsList fields={fields} showSecrets={showSecrets} onToggleSecret={onToggleSecret} />
-            {switches && <SwitchesList switches={switches} />}
-            {children}
-          </>
-        )}
-
-        <div className="flex gap-2">
-          <ServiceTestButton
-            serviceName={title}
-            isTesting={sectionTesting}
-            onTest={onTest}
-            disabled={testDisabled || isProviderDisabled}
-          />
-          <Button variant="outline" onClick={onReset}>
-            Reset
-          </Button>
-        </div>
+        <APIConfigContent
+          sectionKey={sectionKey}
+          provider={provider}
+          fields={fields}
+          switches={switches}
+          showSecrets={showSecrets}
+          onToggleSecret={onToggleSecret}
+          isProviderDisabled={isProviderDisabled}
+          children={children}
+          alert={alert}
+        />
+        <APIConfigActions
+          title={title}
+          sectionTesting={sectionTesting}
+          isTestDisabled={isTestDisabled}
+          isProviderDisabled={isProviderDisabled}
+          onTest={onTest}
+          onReset={onReset}
+        />
       </CardContent>
     </Card>
   );

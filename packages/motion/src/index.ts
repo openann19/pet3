@@ -31,6 +31,7 @@ export {
   animateWithDelay,
   animateWithRepeat,
   useAnimateValue,
+  interpolateColor,
   type SharedValue,
 } from './framer-api/hooks'
 
@@ -290,6 +291,9 @@ export type { ViewStyle, TextStyle, ImageStyle } from 'react-native'
 export type { Variants, HTMLMotionProps, Transition } from 'framer-motion'
 // Export Transition from framer-motion with alias to avoid conflict
 export type { Transition as FramerTransition } from 'framer-motion'
+// Re-export useTransform from framer-motion for direct use
+// Note: useMotionValue is already exported via ./framer-api
+export { useTransform } from 'framer-motion'
 // For runtime exports, import directly from 'framer-motion' when needed
 // This avoids TypeScript issues with conditional exports
 

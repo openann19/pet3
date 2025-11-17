@@ -336,8 +336,9 @@ export default function BackendDemo() {
                     <Button
                       onClick={() => handleDelete(record.id)}
                       variant="ghost"
-                      size="icon"
-                      className="shrink-0"
+                      size="sm"
+                      isIconOnly
+                      className="shrink-0 w-10 h-10 p-0"
                       aria-label={`Delete record ${record.id}`}
                     >
                       <Trash size={18} />

@@ -4,7 +4,7 @@
  * Global error tracking with user context, error grouping, and performance monitoring
  */
 
-/* eslint-disable max-lines -- error tracking service with comprehensive error handling and web vitals */
+ 
 import { createLogger } from './logger'
 import type { Language } from './i18n/core/types'
 

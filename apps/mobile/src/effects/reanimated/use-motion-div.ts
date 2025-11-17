@@ -34,8 +34,12 @@ export function useMotionDiv({
   useEffect(() => {
     if (!enabled || isReducedMotion.value) return
 
-    const springConfig = transition.type === 'spring'
-      ? { stiffness: transition.stiffness ?? springConfigs.smooth.stiffness, damping: transition.damping ?? springConfigs.smooth.damping }
+    const springConfig: typeof springConfigs.smooth = transition.type === 'spring'
+      ? {
+          stiffness: transition.stiffness ?? (springConfigs.smooth.stiffness as number) ?? 100,
+          damping: transition.damping ?? (springConfigs.smooth.damping as number) ?? 10,
+          mass: springConfigs.smooth.mass ?? 1,
+        }
       : springConfigs.smooth
 
     const timingConfig = { duration: transition.duration ?? timingConfigs.smooth.duration }
@@ -59,16 +63,21 @@ export function useMotionDiv({
   }, [enabled, animate, transition, scale, opacity, x, y, rotate, isReducedMotion])
 
   const animatedStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ translateX?: number; translateY?: number; scale?: number; rotate?: string }> = []
+    const transforms: Array<
+      | { translateX: number }
+      | { translateY: number }
+      | { scale: number }
+      | { rotate: string }
+    > = []
     
     if (x.value !== 0) transforms.push({ translateX: x.value })
     if (y.value !== 0) transforms.push({ translateY: y.value })
     if (scale.value !== 1) transforms.push({ scale: scale.value })
-    if (rotate.value !== 0) transforms.push({ rotate: `${String(rotate.value ?? '')}deg` })
+    if (rotate.value !== 0) transforms.push({ rotate: `${String(rotate.value)}deg` })
 
     return {
       opacity: opacity.value,
-      transform: transforms.length > 0 ? transforms : []
+      transform: transforms.length > 0 ? transforms : undefined
     }
   })
 
@@ -87,20 +96,20 @@ export function useInteractiveMotion({
   whileTap?: Record<string, number>
   enabled?: boolean
 }) {
+  const hasHover = enabled && Object.keys(whileHover).length > 0
+  const hasTap = enabled && Object.keys(whileTap).length > 0
+
   const hoverLift = useHoverLift({ 
-    scale: whileHover.scale ?? 1.05, 
-    enabled: enabled && Object.keys(whileHover).length > 0 
+    scale: whileHover.scale ?? 1.05
   })
   const bounceOnTap = useBounceOnTap({ 
-    scale: whileTap.scale ?? 0.95, 
-    hapticFeedback: false,
-    enabled: enabled && Object.keys(whileTap).length > 0
+    scale: whileTap.scale ?? 0.95
   })
 
   const animatedStyle = useAnimatedStyle(() => {
-    const hoverScale = hoverLift.scale.value
-    const tapScale = bounceOnTap.scale.value
-    const hoverY = hoverLift.translateY.value
+    const hoverScale = hasHover ? hoverLift.scale.value : 1
+    const tapScale = hasTap ? bounceOnTap.scale.value : 1
+    const hoverY = hasHover ? hoverLift.translateY.value : 0
 
     return {
       transform: [
@@ -112,8 +121,8 @@ export function useInteractiveMotion({
 
   return {
     animatedStyle,
-    onPressIn: bounceOnTap.handlePress,
-    onPressOut: bounceOnTap.handleRelease
+    onPressIn: hasTap ? bounceOnTap.handlePressIn : undefined,
+    onPressOut: hasTap ? bounceOnTap.handlePressOut : undefined
   }
 }
 
@@ -142,7 +151,7 @@ export function useRepeatingAnimation({
 
     if (animate.scale && animate.scale.length > 1) {
       const sequence = animate.scale.map((val) => 
-        withTiming(val, { duration: duration / animate.scale.length })
+        withTiming(val, { duration: duration / animate.scale!.length })
       )
       scale.value = withRepeat(
         withSequence(...sequence),
@@ -153,7 +162,7 @@ export function useRepeatingAnimation({
 
     if (animate.rotate && animate.rotate.length > 1) {
       const sequence = animate.rotate.map((val) => 
-        withTiming(val, { duration: duration / animate.rotate.length })
+        withTiming(val, { duration: duration / animate.rotate!.length })
       )
       rotate.value = withRepeat(
         withSequence(...sequence),
@@ -164,7 +173,7 @@ export function useRepeatingAnimation({
 
     if (animate.x && animate.x.length > 1) {
       const sequence = animate.x.map((val) => 
-        withTiming(val, { duration: duration / animate.x.length })
+        withTiming(val, { duration: duration / animate.x!.length })
       )
       x.value = withRepeat(
         withSequence(...sequence),
@@ -175,7 +184,7 @@ export function useRepeatingAnimation({
 
     if (animate.opacity && animate.opacity.length > 1) {
       const sequence = animate.opacity.map((val) => 
-        withTiming(val, { duration: duration / animate.opacity.length })
+        withTiming(val, { duration: duration / animate.opacity!.length })
       )
       opacity.value = withRepeat(
         withSequence(...sequence),
@@ -186,15 +195,19 @@ export function useRepeatingAnimation({
   }, [enabled, animate, duration, repeat, scale, rotate, x, opacity, isReducedMotion])
 
   const animatedStyle = useAnimatedStyle(() => {
-    const transforms: Array<{ translateX?: number; scale?: number; rotate?: string }> = []
+    const transforms: Array<
+      | { translateX: number }
+      | { scale: number }
+      | { rotate: string }
+    > = []
     
     if (x.value !== 0) transforms.push({ translateX: x.value })
     if (scale.value !== 1) transforms.push({ scale: scale.value })
-    if (rotate.value !== 0) transforms.push({ rotate: `${String(rotate.value ?? '')}deg` })
+    if (rotate.value !== 0) transforms.push({ rotate: `${String(rotate.value)}deg` })
 
     return {
       opacity: opacity.value,
-      transform: transforms.length > 0 ? transforms : []
+      transform: transforms.length > 0 ? transforms : undefined
     }
   })
 

@@ -4,7 +4,6 @@ import { useSharedValue, useAnimatedStyle, withSpring, withTiming, MotionView } 
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { usePrefersReducedMotion } from '@/utils/reduced-motion';
 import { useFeatureFlags } from '@/config/feature-flags';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { X } from '@phosphor-icons/react';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -35,9 +34,9 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const scale = useSharedValue(0.9);
-  const opacity = useSharedValue(0);
-  const backdropOpacity = useSharedValue(0);
+  const scale = useSharedValue<number>(0.9);
+  const opacity = useSharedValue<number>(0);
+  const backdropOpacity = useSharedValue<number>(0);
 
   useEffect(() => {
     if (!enableMessagePeek) {
@@ -130,11 +129,11 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
-  })) as AnimatedStyle;
+  }));
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: backdropOpacity.value,
-  })) as AnimatedStyle;
+  }));
 
   if (!enableMessagePeek || !visible) {
     return null;

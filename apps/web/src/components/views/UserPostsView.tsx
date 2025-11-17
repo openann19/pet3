@@ -59,7 +59,16 @@ function PostItemView({
     <MotionView animatedStyle={entry.animatedStyle}>
       <div
         onClick={() => { onPostClick(post.id); }}
-        className="cursor-pointer"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onPostClick(post.id);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded"
+        aria-label={`View post: ${post.title || post.content?.substring(0, 50) || 'Untitled post'}`}
       >
         <PostCard
           post={post}
@@ -230,7 +239,19 @@ function UserPostsViewContent({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <div onClick={() => handlePostClick(post.id)} className="cursor-pointer">
+                  <div
+                    onClick={() => handlePostClick(post.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handlePostClick(post.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    aria-label={`View post by ${post.author?.name || 'user'}`}
+                  >
                     <ErrorBoundary
                       fallback={
                         <div className="p-4 text-sm text-muted-foreground">

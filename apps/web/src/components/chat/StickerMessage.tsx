@@ -3,7 +3,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSharedValue, useAnimatedStyle, withSpring, MotionView } from '@petspark/motion';
 import type { Sticker } from '@/lib/sticker-library';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useStickerAnimation } from '@/effects/reanimated/use-sticker-animation';
 import { useHoverTap } from '@/effects/reanimated/use-hover-tap';
 import { springConfigs } from '@/effects/reanimated/transitions';
@@ -15,12 +14,27 @@ export interface StickerMessageProps {
   onHover?: () => void;
 }
 
-export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessageProps) {
-    const _uiConfig = useUIConfig();
-    const [isHovered, setIsHovered] = useState(false);
+function useStickerEntryAnimation() {
+  const entryOpacity = useSharedValue<number>(0);
+  const entryScale = useSharedValue<number>(0.5);
 
-  const entryOpacity = useSharedValue(0);
-  const entryScale = useSharedValue(0.5);
+  useEffect(() => {
+    entryOpacity.value = withSpring(1, springConfigs.smooth);
+    entryScale.value = withSpring(1, springConfigs.bouncy);
+  }, [entryOpacity, entryScale]);
+
+  const entryStyle = useAnimatedStyle(() => ({
+    opacity: entryOpacity.value,
+    transform: [{ scale: entryScale.value }],
+  }));
+
+  return entryStyle;
+}
+
+export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessageProps) {
+  const _uiConfig = useUIConfig();
+  const [isHovered, setIsHovered] = useState(false);
+  const entryStyle = useStickerEntryAnimation();
 
   const stickerAnimation = useStickerAnimation({
     animation: sticker.animation ?? undefined,
@@ -31,11 +45,6 @@ export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessa
     hoverScale: 1.1,
     tapScale: 0.95,
   });
-
-  useEffect(() => {
-    entryOpacity.value = withSpring(1, springConfigs.smooth);
-    entryScale.value = withSpring(1, springConfigs.bouncy);
-  }, [entryOpacity, entryScale]);
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
@@ -52,32 +61,9 @@ export function StickerMessage({ sticker, isOwn = false, onHover }: StickerMessa
     hoverTap.handleMouseLeave();
   }, [stickerAnimation, hoverTap]);
 
-  const entryStyle = useAnimatedStyle(() => {
-    return {
-      opacity: entryOpacity.value,
-      transform: [{ scale: entryScale.value }],
-    };
-  }) as AnimatedStyle;
-
-  const combinedStyle = useAnimatedStyle(() => {
-    const hoverStyle = hoverTap.animatedStyle as { transform?: Record<string, number>[] };
-    const stickerStyle = stickerAnimation.animatedStyle as { transform?: Record<string, number>[] };
-
-    const transforms: Record<string, number>[] = [];
-
-    if (hoverStyle.transform) {
-      transforms.push(...hoverStyle.transform);
-    }
-    if (stickerStyle.transform) {
-      transforms.push(...stickerStyle.transform);
-    }
-
-    return {
-      ...hoverStyle,
-      ...stickerStyle,
-      transform: transforms.length > 0 ? transforms : undefined,
-    };
-  }) as AnimatedStyle;
+  const combinedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: hoverTap.scale.get() }],
+  }));
 
   return (
     <MotionView

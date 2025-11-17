@@ -9,7 +9,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export function CommunityScreen(): React.JSX.Element {
-  const { community } = useDomainSnapshots()
+  const { data } = useDomainSnapshots()
+  const community = data.community
 
   const handleRefresh = useCallback(async (): Promise<void> => {
     // Simulate network delay for better UX

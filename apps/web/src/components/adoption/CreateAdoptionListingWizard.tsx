@@ -212,9 +212,11 @@ export function CreateAdoptionListingWizard({
           </div>
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            isIconOnly
             onClick={onClose}
             aria-label="Close adoption listing wizard"
+            className="w-10 h-10 p-0"
           >
             <X size={24} />
           </Button>

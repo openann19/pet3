@@ -38,10 +38,11 @@ export function CallButton({
     <Button
       type="button"
       variant="outline"
-      size="icon"
+      size="sm"
+      isIconOnly
       aria-label={`Call ${remoteDisplayName}`}
       onClick={handleClick}
-      className={cn('rounded-full', className)}
+      className={cn('rounded-full w-10 h-10 p-0', className)}
     >
       <Phone className="h-4 w-4" />
     </Button>

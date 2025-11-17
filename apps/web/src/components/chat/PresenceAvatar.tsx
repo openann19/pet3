@@ -10,7 +10,6 @@ import { useMemo } from 'react';
 import { useSharedValue, useAnimatedStyle, withTiming, withRepeat, MotionView } from '@petspark/motion';
 import { useReducedMotion, getReducedMotionDuration } from '@/effects/chat/core/reduced-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 export interface PresenceAvatarProps {
@@ -32,7 +31,7 @@ export function PresenceAvatar({
 }: PresenceAvatarProps) {
     const _uiConfig = useUIConfig();
     const reduced = useReducedMotion();
-  const rot = useSharedValue(0);
+  const rot = useSharedValue<number>(0);
 
   const dur = getReducedMotionDuration(3600, reduced);
   useMemo(() => {
@@ -45,7 +44,7 @@ export function PresenceAvatar({
   const ring = useAnimatedStyle(() => ({
     transform: [{ rotate: `${String(rot.value ?? '')}deg` }],
     opacity: status === 'offline' ? 0 : 1,
-  })) as AnimatedStyle;
+  }));
 
   const ringColors =
     status === 'online'

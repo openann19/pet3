@@ -9,14 +9,17 @@ declare module 'expo-document-picker' {
     multiple?: boolean;
   }
 
-  export interface DocumentPickerResult {
-    type: 'success' | 'cancel';
-    uri?: string;
+  export interface DocumentPickerAsset {
+    uri: string;
     name?: string;
     size?: number;
     mimeType?: string;
     file?: File;
-    output?: FileList | null;
+  }
+
+  export interface DocumentPickerResult {
+    canceled: boolean;
+    assets?: DocumentPickerAsset[];
   }
 
   export function getDocumentAsync(

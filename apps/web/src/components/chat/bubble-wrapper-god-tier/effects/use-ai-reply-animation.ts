@@ -51,11 +51,11 @@ export function useAiReplyAnimation(
     glowIntensity = DEFAULT_GLOW_INTENSITY,
   } = options;
 
-  const shimmerProgress = useSharedValue(0);
-  const glowOpacity = useSharedValue(0);
-  const sparkleOpacity = useSharedValue(0);
-  const sparkleScale = useSharedValue(1);
-  const sparkleRotation = useSharedValue(0);
+  const shimmerProgress = useSharedValue<number>(0);
+  const glowOpacity = useSharedValue<number>(0);
+  const sparkleOpacity = useSharedValue<number>(0);
+  const sparkleScale = useSharedValue<number>(1);
+  const sparkleRotation = useSharedValue<number>(0);
 
   useEffect(() => {
     if (!enabled) {
@@ -160,7 +160,12 @@ export function useAiReplyAnimation(
       return { opacity: 0 };
     }
 
-    const translateX = interpolate(shimmerProgress.value, [0, 1], [-100, 100], Extrapolation.CLAMP);
+    const translateX = interpolate(
+      shimmerProgress.value,
+      [0, 1],
+      [-100, 100],
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    );
 
     return {
       opacity: 0.3,
@@ -173,9 +178,11 @@ export function useAiReplyAnimation(
       return { opacity: 0 };
     }
 
+    const scale = sparkleScale.value;
+    const rotate = `${sparkleRotation.value}deg`;
     return {
       opacity: sparkleOpacity.value,
-      transform: [{ scale: sparkleScale.value }, { rotate: `${sparkleRotation.value}deg` }],
+      transform: [{ scale, rotate }],
     };
   });
 

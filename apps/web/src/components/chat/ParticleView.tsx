@@ -1,7 +1,6 @@
 'use client';
 
 import { useAnimatedStyle, MotionView } from '@petspark/motion';
-import { type AnimatedStyle } from '@/effects/reanimated/animated-view';
 import type { Particle } from '@/effects/reanimated/particle-engine';
 
 export interface ParticleViewProps {
@@ -25,15 +24,12 @@ export function ParticleView({ particle, className }: ParticleViewProps): React.
             borderRadius: particle.size / 2,
             opacity: particle.opacity.value,
             transform: [
-                { translateX: particle.x.value },
-                { translateY: particle.y.value },
-                { scale: particle.scale.value },
-                { rotate: `${particle.rotation.value}deg` },
+                { translateX: particle.x.value, translateY: particle.y.value, scale: particle.scale.value, rotate: `${particle.rotation.value}deg` },
             ],
             pointerEvents: 'none' as const,
             zIndex: 9999,
         };
-    }) as AnimatedStyle;
+    });
 
     return (
         <MotionView style={animatedStyle} className={className}>

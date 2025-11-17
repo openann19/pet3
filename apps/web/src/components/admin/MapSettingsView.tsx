@@ -765,7 +765,7 @@ export default function MapSettingsView() {
                           <div className="flex gap-2">
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="sm"
                               onClick={() => setEditingCategory(category)}
                               aria-label={`Edit category ${category.name}`}
                             >
@@ -773,7 +773,7 @@ export default function MapSettingsView() {
                             </Button>
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="sm"
                               onClick={() => handleDeleteCategory(category.id)}
                               aria-label={`Delete category ${category.name}`}
                             >

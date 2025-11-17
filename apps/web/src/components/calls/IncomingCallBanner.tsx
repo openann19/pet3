@@ -18,7 +18,8 @@ export interface IncomingCallBannerProps {
 const DeclineButton = memo<{ readonly onClick: () => void }>(({ onClick }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="outline"
     onClick={onClick}
     aria-label="Decline call"
@@ -32,7 +33,8 @@ DeclineButton.displayName = 'DeclineButton';
 const AcceptButton = memo<{ readonly onClick: () => void }>(({ onClick }) => (
   <Button
     type="button"
-    size="icon"
+    size="sm"
+    isIconOnly
     variant="secondary"
     onClick={onClick}
     aria-label="Accept call"

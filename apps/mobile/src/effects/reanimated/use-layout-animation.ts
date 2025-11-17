@@ -10,7 +10,7 @@ import {
   withSpring,
   type SharedValue
 } from 'react-native-reanimated'
-import { LayoutChangeEvent } from 'react-native'
+import type { LayoutChangeEvent } from 'react-native'
 import { springConfigs } from './transitions'
 import { useReducedMotionSV } from '../../effects/core/use-reduced-motion-sv'
 import { isTruthy, isDefined } from '@petspark/shared';

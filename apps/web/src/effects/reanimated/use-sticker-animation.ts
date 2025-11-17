@@ -11,7 +11,7 @@ import {
   Easing,
 } from '@petspark/motion';
 import { springConfigs, timingConfigs } from './transitions';
-import type { AnimatedStyle } from './animated-view';
+import type { CSSProperties } from 'react';
 
 export type StickerAnimationType =
   | 'bounce'
@@ -31,7 +31,7 @@ export interface UseStickerAnimationOptions {
 }
 
 export interface UseStickerAnimationReturn {
-  animatedStyle: AnimatedStyle;
+  animatedStyle: CSSProperties;
   trigger: () => void;
   reset: () => void;
 }
@@ -187,16 +187,17 @@ export function useStickerAnimation(
   }, [enabled, animation, duration, intensity, scale, rotation, translateY, translateX, reset]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const scaleVal = scale.value;
+    const rotateVal = `${String(rotation.value ?? '')}deg`;
+    const translateXVal = translateX.value;
+    const translateYVal = translateY.value;
     return {
       transform: [
-        { scale: scale.value },
-        { rotate: `${String(rotation.value ?? '')}deg` },
-        { translateX: translateX.value },
-        { translateY: translateY.value },
+        { scale: scaleVal, rotate: rotateVal, translateX: translateXVal, translateY: translateYVal },
       ],
       opacity: opacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
   return {
     animatedStyle,

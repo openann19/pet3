@@ -37,20 +37,24 @@ export default function VoiceRecorder({
   const timerRef = useRef<number | undefined>(undefined);
 
   // Animation values
-  const containerOpacity = useSharedValue(0);
-  const containerScale = useSharedValue(0.9);
-  const micScale = useSharedValue(1);
+  const containerOpacity = useSharedValue<number>(0);
+  const containerScale = useSharedValue<number>(0.9);
+  const micScale = useSharedValue<number>(1);
 
   useEffect(() => {
     void startRecording();
 
     // Animate container in
-    containerOpacity.value = withTiming(1, { duration: 300 });
-    containerScale.value = withTiming(1, { duration: 300 });
+    const targetOpacity = 1 as const;
+    const targetScale = 1 as const;
+    containerOpacity.value = withTiming(targetOpacity, { duration: 300 });
+    containerScale.value = withTiming(targetScale, { duration: 300 });
 
     // Animate microphone icon
+    const micScaleMax = 1.2 as const;
+    const micScaleMin = 1 as const;
     micScale.value = withRepeat(
-      withSequence(withTiming(1.2, { duration: 750 }), withTiming(1, { duration: 750 })),
+      withSequence(withTiming(micScaleMax, { duration: 750 }), withTiming(micScaleMin, { duration: 750 })),
       -1,
       true
     );
@@ -67,7 +71,7 @@ export default function VoiceRecorder({
         clearInterval(timerRef.current);
       }
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        void audioContextRef.current.close();
       }
     };
   }, []);
@@ -212,19 +216,19 @@ export default function VoiceRecorder({
       </div>
 
       <Button
-        size="icon"
+        size="sm"
         variant="ghost"
         onClick={handleCancel}
-        className="shrink-0"
+        className="shrink-0 w-10 h-10 p-0"
         aria-label="Cancel recording"
       >
         <X size={20} />
       </Button>
 
       <Button
-        size="icon"
+        size="sm"
         onClick={handleStopAndSend}
-        className="shrink-0 bg-linear-to-br from-primary to-accent"
+        className="shrink-0 w-10 h-10 p-0 bg-linear-to-br from-primary to-accent"
         aria-label="Stop and send recording"
       >
         <Check size={20} weight="bold" />
@@ -234,15 +238,16 @@ export default function VoiceRecorder({
 }
 
 function WaveformBar({ value }: { value: number }) {
-  const height = useSharedValue(0);
+  const height = useSharedValue<number>(0);
 
   useEffect(() => {
-    height.value = withTiming(value * 100, { duration: 100 });
+    const targetHeight = value * 100;
+    height.value = withTiming(targetHeight, { duration: 100 });
   }, [value, height]);
 
   const barStyle = useAnimatedStyle(() => ({
     height: `${height.value}%`,
-  })) as AnimatedStyle;
+  }));
 
   return (
     <MotionView style={barStyle} className="flex-1 bg-primary rounded-full">

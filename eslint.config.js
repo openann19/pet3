@@ -6,6 +6,12 @@ import react from 'eslint-plugin-react'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import sonarjs from 'eslint-plugin-sonarjs'
 import globals from 'globals'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const rootDir = resolve(__dirname)
 
 /** Globs where we actually want type-aware linting (web + key packages). */
 const TYPE_AWARE = ['apps/web/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
@@ -30,6 +36,12 @@ export default [
       'MEDIA_EDITOR_EXAMPLES.tsx',
       'apps/backend/**', // Backend uses different tsconfig, exclude from type-aware linting
       'packages/core/**', // Exclude core from linting to avoid tsconfig conflicts
+      '**/test/**', // Test files use different tsconfig setup
+      '**/__tests__/**',
+      '**/*.test.{ts,tsx}',
+      '**/*.spec.{ts,tsx}',
+      '**/setup.ts', // Test setup files
+      '**/setup.tsx',
     ],
   },
 
@@ -39,10 +51,21 @@ export default [
 
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
+    ignores: [
+      '**/test/**',
+      '**/__tests__/**',
+      '**/*.test.{ts,tsx,js,jsx}',
+      '**/*.spec.{ts,tsx,js,jsx}',
+      '**/setup.ts',
+      '**/setup.tsx',
+    ],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: { ...globals.browser, ...globals.node },
+      parserOptions: {
+        tsconfigRootDir: rootDir,
+      },
     },
     plugins: {
       react: react,
@@ -156,6 +179,8 @@ export default [
       '**/e2e/**',
       '**/test/**',
       '**/__tests__/**',
+      '**/setup.ts',
+      '**/setup.tsx',
       'apps/web/android-design-tokens-rn/**',
       'packages/core/**', // Exclude core from type-aware to avoid tsconfig conflicts
     ],
@@ -163,7 +188,7 @@ export default [
       parser: tseslint.parser,
       parserOptions: {
         projectService: true, // <— key perf improvement in typescript-eslint v7
-        // tsconfigRootDir auto-detected from project service
+        tsconfigRootDir: rootDir, // Explicit root for multi-project setup
       },
     },
     rules: {
@@ -188,7 +213,16 @@ export default [
       '**/*.{test,spec}.{ts,tsx,js,jsx}',
       '**/test/**/*.{ts,tsx,js,jsx}',
       '**/__tests__/**/*.{ts,tsx,js,jsx}',
+      '**/setup.ts',
+      '**/setup.tsx',
     ],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: rootDir,
+        project: false, // Disable type-aware linting for tests
+      },
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

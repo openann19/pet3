@@ -104,7 +104,7 @@ export function HighContrastToggle({
         <Button
             type="button"
             onClick={handleToggle}
-            variant={isActive ? 'default' : 'outline'}
+            variant={isActive ? 'primary' : 'outline'}
             aria-pressed={isActive}
             className={`high-contrast-toggle ${className}`}
         >

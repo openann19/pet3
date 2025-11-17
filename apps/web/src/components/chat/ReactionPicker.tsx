@@ -39,9 +39,9 @@ export function ReactionPicker({
   const defaultTrigger = (
     <Button
       type="button"
-      size="icon"
+      size="sm"
+      className="w-10 h-10 p-0 rounded-full"
       variant="ghost"
-      className="rounded-full"
       aria-label="Add reaction"
     >
       <span className="text-lg">😊</span>

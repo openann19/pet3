@@ -159,8 +159,17 @@ export default function ChatModerationPanel() {
               {pendingReports.map((report) => (
                 <Card
                   key={report.id}
-                  className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="p-4 cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   onClick={() => { setSelectedReport(report); }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedReport(report);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View report details for ${report.reportedBy}`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -178,7 +187,7 @@ export default function ChatModerationPanel() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                         e.stopPropagation();
                         setSelectedReport(report);
                       }}
@@ -234,9 +243,11 @@ export default function ChatModerationPanel() {
               <h3 className="text-xl font-bold">Report Details</h3>
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
+                isIconOnly
                 onClick={() => setSelectedReport(null)}
                 aria-label="Close report details"
+                className="w-10 h-10 p-0"
               >
                 <X size={20} />
               </Button>

@@ -487,7 +487,7 @@ export function PhotoModerationQueueAdmin() {
                             logger.error('Failed to approve from button', err);
                           });
                         }}
-                        variant="default"
+                        variant="primary"
                       >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         {t.photoModeration.approvePhoto}
@@ -526,7 +526,7 @@ export function PhotoModerationQueueAdmin() {
                             logger.error('Failed to approve from button', err);
                           });
                         }}
-                        variant="default"
+                        variant="primary"
                       >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         {t.photoModeration.approvePhoto}

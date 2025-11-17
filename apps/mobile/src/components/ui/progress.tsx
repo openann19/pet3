@@ -25,8 +25,9 @@ export function Progress({
   }, [value, max, progress])
 
   const animatedStyle = useAnimatedStyle(() => {
+    const widthValue = progress.value ?? 0
     return {
-      width: `${String(progress.value ?? '')}%`,
+      width: `${widthValue}%` as const,
     }
   })
 
