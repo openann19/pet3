@@ -57,7 +57,7 @@ export function PlaydateScheduler({
 
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const scheduledAt = new Date(selectedDate);
-    scheduledAt.setHours(hours, minutes, 0, 0);
+    scheduledAt.setHours(hours ?? 0, minutes ?? 0, 0, 0);
 
     onSchedule({
       title: title.trim(),

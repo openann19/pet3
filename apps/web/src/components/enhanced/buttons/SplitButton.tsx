@@ -171,7 +171,7 @@ export function SplitButton({
               'transition-all duration-300',
               'rounded-l-none',
               size === 'sm' && 'min-h-11',
-              size === 'md' && 'min-h-11',
+              size === 'default' && 'min-h-11',
               size === 'lg' && 'min-h-11'
             )}
             style={{
@@ -182,7 +182,7 @@ export function SplitButton({
           >
             <ChevronDown
               className={cn('transition-transform duration-300', isOpen && 'rotate-180')}
-              size={size === 'sm' ? 16 : size === 'md' ? 20 : 24}
+              size={size === 'sm' ? 16 : size === 'default' ? 20 : 24}
             />
           </button>
         </DropdownMenuTrigger>
