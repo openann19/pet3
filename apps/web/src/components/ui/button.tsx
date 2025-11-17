@@ -6,7 +6,7 @@
 import * as React from 'react'
 
 const { forwardRef, useCallback, useMemo } = React
-import { motion, type MotionProps } from '@petspark/motion'
+import { motion, type HTMLMotionProps } from '@petspark/motion'
 import { cn } from '@/lib/utils'
 // import { useTheme } from '@/hooks/use-theme' // TODO: Implement when hooks are ready
 import { createLogger } from '@/lib/logger'
