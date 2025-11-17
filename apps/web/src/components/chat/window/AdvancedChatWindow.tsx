@@ -1,7 +1,7 @@
 'use client';
 
 import { MotionView } from "@petspark/motion";
-import { useEffect, useRef, useState, type Dispatch } from 'react';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { buildLLMPrompt } from '@/lib/llm-prompt';
@@ -81,7 +81,7 @@ function useMessageHandling(
       ...(metadata ? { metadata } : {}),
     };
 
-    setMessages((cur) => [...(cur ?? []), msg]);
+    setMessages((cur: ChatMessage[]) => [...(cur ?? []), msg]);
     setInputValue('');
     setShowStickers(false);
     setShowTemplates(false);
@@ -99,30 +99,30 @@ function useMessageHandling(
     toast.success('Message sent!', { duration: 1500, position: 'top-center' });
 
     if (type === 'sticker' || type === 'pet-card') {
-      setConfettiSeed((s) => s + 1);
+      setConfettiSeed((s: number) => s + 1);
     }
   };
 
   const onReaction = (messageId: string, emoji: string): void => {
     haptics.trigger('selection');
 
-    setMessages((cur) =>
-      (cur ?? []).map((m) => {
+    setMessages((cur: ChatMessage[]) =>
+      (cur ?? []).map((m: ChatMessage) => {
         if (m.id !== messageId) {
           return m;
         }
 
         const reactions = Array.isArray(m.reactions) ? m.reactions : [];
 
-        const existing = reactions.find((r) => r.userId === currentUserId);
+        const existing = reactions.find((r: MessageReaction) => r.userId === currentUserId);
 
         if (existing?.emoji === emoji) {
-          return { ...m, reactions: reactions.filter((r) => r.userId !== currentUserId) };
+          return { ...m, reactions: reactions.filter((r: MessageReaction) => r.userId !== currentUserId) };
         } else if (existing) {
           return {
             ...m,
-            reactions: reactions.map((r) =>
-              r.userId === currentUserId ? { ...r, emoji, timestamp: new Date().toISOString() } : r
+            reactions: reactions.map((r: MessageReaction) =>
+              r.userId !== currentUserId ? { ...r, emoji, timestamp: new Date().toISOString() } : r
             ),
           };
         }
@@ -139,7 +139,7 @@ function useMessageHandling(
       })
     );
 
-    setBurstSeed((s) => s + 1);
+    setBurstSeed((s: number) => s + 1);
   };
 
   const onTranslate = async (messageId: string): Promise<void> => {
@@ -152,8 +152,8 @@ function useMessageHandling(
       const prompt = buildLLMPrompt`Translate to English, return text only: "${m.content}"`;
       const translated = await llmService.llm(prompt, 'gpt-4o-mini');
 
-      setMessages((cur) =>
-        (cur ?? []).map((x) =>
+      setMessages((cur: ChatMessage[]) =>
+        (cur ?? []).map((x: ChatMessage) =>
           x.id === messageId
             ? {
               ...x,
@@ -409,7 +409,7 @@ export default function AdvancedChatWindow({
       <ChatErrorBoundary>
         <ChatInputBar
           inputValue={inputValue}
-          setInputValue={(v) => {
+          setInputValue={(v: string) => {
             setInputValue(v);
             typingChange(v);
           }}
@@ -450,7 +450,7 @@ export default function AdvancedChatWindow({
           onTemplate={(t: MessageTemplate) => {
             setInputValue(t.content || t.text || '');
           }}
-          onQuickReaction={(emoji) => {
+          onQuickReaction={(emoji: string) => {
             const lastMessage = messages?.[messages.length - 1];
             if (lastMessage && lastMessage.senderId !== currentUserId) {
               onReaction(lastMessage.id, emoji);

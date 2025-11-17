@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { VoiceRecorder } from '@/components/chat/VoiceRecorder'
+import VoiceRecorder from '@/components/chat/VoiceRecorder'
 import {
   ChatCentered,
   Microphone,
@@ -98,7 +98,7 @@ export function ChatInputBar({
 }: ChatInputBarProps) {
   const inputBarStyle = useAnimatedStyle(() => ({
     opacity: 1,
-    transform: [{ translateY: 0 }],
+    y: 0,
   })) as AnimatedStyle
 
   return (
