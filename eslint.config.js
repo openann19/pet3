@@ -85,18 +85,8 @@ export default [
       'max-lines': ['error', { max: 300, skipComments: true, skipBlankLines: true }],
       'max-lines-per-function': ['error', { max: 60, skipComments: true, skipBlankLines: true }],
       'sonarjs/no-duplicate-string': 'warn',
-      // Block legacy imports and enforce architecture
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'react-native-reanimated',
-              message: 'Use @petspark/motion façade instead of direct Reanimated imports',
-            },
-          ],
-        },
-      ],
+      // Note: react-native-reanimated restriction is web-only (see web-specific config below)
+      // Mobile apps should use react-native-reanimated directly for performance
       // Ban dangerouslySetInnerHTML and eslint-disable comments
       'no-restricted-syntax': [
         'error',
@@ -258,6 +248,25 @@ export default [
     files: ['packages/motion/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': 'off', // Allow direct imports for façade implementation
+    },
+  },
+
+  // Mobile app: allow react-native-reanimated (mobile uses Reanimated directly for 60fps performance)
+  {
+    files: ['apps/mobile/**/*.{ts,tsx}', 'apps/native/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          // Only restrict framer-motion in mobile (should use Reanimated instead)
+          paths: [
+            {
+              name: 'framer-motion',
+              message: 'Mobile should use react-native-reanimated, not framer-motion',
+            },
+          ],
+        },
+      ],
     },
   },
 

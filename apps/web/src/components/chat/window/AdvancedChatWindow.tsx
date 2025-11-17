@@ -1,7 +1,7 @@
 'use client';
 
 import { MotionView } from "@petspark/motion";
-import { useEffect, useRef, useState, type Dispatch } from 'react';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { buildLLMPrompt } from '@/lib/llm-prompt';
@@ -35,6 +35,7 @@ import { AnnounceNewMessage, AnnounceTyping } from './LiveRegions';
 import { useOutbox } from '@petspark/chat-core';
 import { flags } from '@petspark/config';
 import { useChatKeyboardShortcuts } from '@/hooks/chat/use-chat-keyboard-shortcuts';
+import { useChatInputAnimations } from './hooks/useChatInputAnimations';
 
 const logger = createLogger('AdvancedChatWindow');
 
@@ -81,7 +82,7 @@ function useMessageHandling(
       ...(metadata ? { metadata } : {}),
     };
 
-    setMessages((cur) => [...(cur ?? []), msg]);
+    setMessages((cur: ChatMessage[]) => [...(cur ?? []), msg]);
     setInputValue('');
     setShowStickers(false);
     setShowTemplates(false);
@@ -99,30 +100,30 @@ function useMessageHandling(
     toast.success('Message sent!', { duration: 1500, position: 'top-center' });
 
     if (type === 'sticker' || type === 'pet-card') {
-      setConfettiSeed((s) => s + 1);
+      setConfettiSeed((s: number) => s + 1);
     }
   };
 
   const onReaction = (messageId: string, emoji: string): void => {
     haptics.trigger('selection');
 
-    setMessages((cur) =>
-      (cur ?? []).map((m) => {
+    setMessages((cur: ChatMessage[]) =>
+      (cur ?? []).map((m: ChatMessage) => {
         if (m.id !== messageId) {
           return m;
         }
 
         const reactions = Array.isArray(m.reactions) ? m.reactions : [];
 
-        const existing = reactions.find((r) => r.userId === currentUserId);
+        const existing = reactions.find((r: MessageReaction) => r.userId === currentUserId);
 
         if (existing?.emoji === emoji) {
-          return { ...m, reactions: reactions.filter((r) => r.userId !== currentUserId) };
+          return { ...m, reactions: reactions.filter((r: MessageReaction) => r.userId !== currentUserId) };
         } else if (existing) {
           return {
             ...m,
-            reactions: reactions.map((r) =>
-              r.userId === currentUserId ? { ...r, emoji, timestamp: new Date().toISOString() } : r
+            reactions: reactions.map((r: MessageReaction) =>
+              r.userId !== currentUserId ? { ...r, emoji, timestamp: new Date().toISOString() } : r
             ),
           };
         }
@@ -139,7 +140,7 @@ function useMessageHandling(
       })
     );
 
-    setBurstSeed((s) => s + 1);
+    setBurstSeed((s: number) => s + 1);
   };
 
   const onTranslate = async (messageId: string): Promise<void> => {
@@ -152,8 +153,8 @@ function useMessageHandling(
       const prompt = buildLLMPrompt`Translate to English, return text only: "${m.content}"`;
       const translated = await llmService.llm(prompt, 'gpt-4o-mini');
 
-      setMessages((cur) =>
-        (cur ?? []).map((x) =>
+      setMessages((cur: ChatMessage[]) =>
+        (cur ?? []).map((x: ChatMessage) =>
           x.id === messageId
             ? {
               ...x,
@@ -208,7 +209,7 @@ export default function AdvancedChatWindow({
   const [burstSeed, setBurstSeed] = useState(0);
   const [confettiSeed, setConfettiSeed] = useState(0);
   const [lastIncomingText, setLastIncomingText] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null) as React.RefObject<import('@/components/ui/input').InputRef>;
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -335,6 +336,7 @@ export default function AdvancedChatWindow({
   });
 
   const useVirtualization = flags().chat.virtualization;
+  const inputAnimations = useChatInputAnimations(showTemplates);
 
   return (
     <div className="flex flex-col h-full relative">
@@ -409,53 +411,42 @@ export default function AdvancedChatWindow({
       <ChatErrorBoundary>
         <ChatInputBar
           inputValue={inputValue}
-          setInputValue={(v) => {
+          inputRef={inputRef}
+          showTemplates={showTemplates}
+          showStickers={showStickers}
+          isRecording={isRecordingVoice}
+          templatesStyle={inputAnimations.templatesStyle}
+          templateButtonHover={inputAnimations.templateButtonHover}
+          templateButtonTap={inputAnimations.templateButtonTap}
+          stickerButtonTap={inputAnimations.stickerButtonTap}
+          stickerButtonHover={inputAnimations.stickerButtonHover}
+          emojiButtonTap={inputAnimations.emojiButtonTap}
+          emojiButtonHover={inputAnimations.emojiButtonHover}
+          sendButtonHover={inputAnimations.sendButtonHover}
+          sendButtonTap={inputAnimations.sendButtonTap}
+          onInputChange={(v: string) => {
             setInputValue(v);
             typingChange(v);
           }}
-          inputRef={inputRef}
-          showStickers={showStickers}
-          setShowStickers={setShowStickers}
-          showTemplates={showTemplates}
+          onSendMessage={(content: string, type?: 'text' | 'sticker' | 'voice') => {
+            onSend(content, type ?? 'text');
+          }}
+          onUseTemplate={(template: string) => {
+            setInputValue(template);
+            setShowTemplates(false);
+          }}
+          onVoiceRecorded={(_audioBlob: Blob, _duration: number, _waveform: number[]) => {
+            setIsRecordingVoice(false);
+            onSend('Voice message', 'voice');
+          }}
+          onVoiceCancel={() => {
+            setIsRecordingVoice(false);
+          }}
+          onStartRecording={() => {
+            setIsRecordingVoice(true);
+          }}
           setShowTemplates={setShowTemplates}
-          isRecordingVoice={isRecordingVoice}
-          setIsRecordingVoice={setIsRecordingVoice}
-          onSend={onSend}
-          onSuggestion={(s: SmartSuggestion) => {
-            onSend(s.text, 'text');
-          }}
-          onShareLocation={() => {
-            if ('geolocation' in navigator) {
-              navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                  onSend('Shared my location', 'location', undefined, {
-                    location: {
-                      lat: pos.coords.latitude,
-                      lng: pos.coords.longitude,
-                      latitude: pos.coords.latitude,
-                      longitude: pos.coords.longitude,
-                      address: 'Current Location',
-                    },
-                  });
-                  toast.success('Location shared!');
-                },
-                () => {
-                  toast.error('Unable to access location');
-                }
-              );
-            } else {
-              toast.error('Geolocation not supported');
-            }
-          }}
-          onTemplate={(t: MessageTemplate) => {
-            setInputValue(t.content || t.text || '');
-          }}
-          onQuickReaction={(emoji) => {
-            const lastMessage = messages?.[messages.length - 1];
-            if (lastMessage && lastMessage.senderId !== currentUserId) {
-              onReaction(lastMessage.id, emoji);
-            }
-          }}
+          setShowStickers={setShowStickers}
         />
       </ChatErrorBoundary>
     </div>

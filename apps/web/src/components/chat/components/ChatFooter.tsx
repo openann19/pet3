@@ -70,8 +70,7 @@ export function ChatFooter({
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: animation.opacity.get(),
     transform: [
-      { translateY: animation.translateY.get() },
-      { scale: animation.scale.get() },
+      { translateY: animation.translateY.get(), scale: animation.scale.get() },
     ],
   }));
 
