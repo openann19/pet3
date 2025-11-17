@@ -79,7 +79,7 @@ export default function GlassCard({
 
   return (
     <MotionView
-      animatedStyle={animatedStyle}
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(

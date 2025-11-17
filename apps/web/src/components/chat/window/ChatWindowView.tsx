@@ -6,7 +6,7 @@ import {
 import { ChatWindowContent } from '@/components/chat/window/ChatWindowContent';
 import type { ChatRoom, ChatMessage } from '@/lib/chat-types';
 import type { Call, CallSession } from '@/lib/call-types';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle, SharedValue } from '@petspark/motion';
 import type { InputRef } from '@/components/ui/input';
 
 interface ChatWindowViewProps {
@@ -31,8 +31,8 @@ interface ChatWindowViewProps {
     typingContainerStyle: AnimatedStyle;
     typingTextStyle: AnimatedStyle;
     typingDotsStyle: AnimatedStyle;
-    videoButtonHover: { scale: AnimatedStyle; translateY: AnimatedStyle; handleEnter: () => void; handleLeave: () => void };
-    voiceButtonHover: { scale: AnimatedStyle; translateY: AnimatedStyle; handleEnter: () => void; handleLeave: () => void };
+    videoButtonHover: { scale: number | SharedValue<number>; translateY: number | SharedValue<number>; handleEnter: () => void; handleLeave: () => void };
+    voiceButtonHover: { scale: number | SharedValue<number>; translateY: number | SharedValue<number>; handleEnter: () => void; handleLeave: () => void };
     messageBubbleHover: { handleEnter: () => void; handleLeave: () => void };
     messageBubbleHoverStyle: AnimatedStyle;
     voiceButtonHoverStyle: AnimatedStyle;
@@ -107,7 +107,6 @@ export function ChatWindowView({
         currentUserId={currentUserId}
         currentUserName={currentUserName}
         typingUsers={chatWindowData.typingUsers}
-        messages={chatWindowData.messages}
         messageGroups={chatWindowData.messageGroups}
         voiceMessages={chatWindowData.voiceMessages}
         playingVoice={chatWindowData.playingVoice}

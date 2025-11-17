@@ -16,7 +16,7 @@ import { useBounceOnTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
 import { getAriaNavigationAttributes } from '@/lib/accessibility';
 import { isTruthy } from '@petspark/shared';

@@ -3,7 +3,8 @@ declare module 'react-native-reanimated' {
     value: T;
   }
 
-  export type AnimatedStyle<T extends object = Record<string, unknown>> = T;
+  import type { MotionStyle } from 'framer-motion';
+  export type AnimatedStyle<T extends object = Record<string, unknown>> = MotionStyle & T;
 
   export function useSharedValue<T>(initialValue: T): SharedValue<T>;
 

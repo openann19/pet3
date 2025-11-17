@@ -9,7 +9,7 @@ import {
   type SharedValue,
 } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 export interface UseAnimatePresenceOptions {
   isVisible: boolean;

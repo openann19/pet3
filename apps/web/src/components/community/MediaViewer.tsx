@@ -32,7 +32,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 const logger = createLogger('MediaViewer');
 
@@ -647,7 +647,7 @@ export function MediaViewer({
                           className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
                           <MotionView
-                            animatedStyle={playButtonHover.animatedStyle}
+                            style={playButtonHover.animatedStyle}
                             onMouseEnter={playButtonHover.handleMouseEnter}
                             onMouseLeave={playButtonHover.handleMouseLeave}
                             onClick={handleVideoClick}

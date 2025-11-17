@@ -16,7 +16,7 @@ import {
   MotionView,
 } from '@petspark/motion';
 import { useEffect } from 'react';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 const logger = createLogger('IncomingCallNotification');
 
@@ -104,7 +104,7 @@ export default function IncomingCallNotification({
 
   return (
     <MotionView
-      animatedStyle={modalAnimation.style}
+      style={modalAnimation.style}
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
       role="alertdialog"
       aria-labelledby="incoming-call-title"
@@ -112,11 +112,11 @@ export default function IncomingCallNotification({
       aria-modal="true"
     >
       <MotionView
-        animatedStyle={glowPulse.animatedStyle}
+        style={glowPulse.animatedStyle}
         className="glass-strong backdrop-blur-2xl rounded-3xl p-6 border border-white/30 shadow-2xl"
       >
         <div className="flex items-center gap-4 mb-6">
-            <MotionView animatedStyle={avatarAnimatedStyle}>
+            <MotionView style={avatarAnimatedStyle}>
             <Avatar className="w-16 h-16 ring-4 ring-primary/30">
               <AvatarImage src={callerAvatar} alt={callerName} />
               <AvatarFallback className="bg-linear-to-br from-primary to-accent text-white text-2xl font-bold">

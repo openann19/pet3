@@ -76,7 +76,7 @@ export function AdoptionDetailDialog({
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
           <div className="relative h-80 bg-muted">
             {photoPresence.shouldRender && (
-              <MotionView key={currentPhotoIndex} animatedStyle={photoPresence.animatedStyle}>
+              <MotionView key={currentPhotoIndex} style={photoPresence.animatedStyle}>
                 <img
                   src={photos[currentPhotoIndex]}
                   alt={`${profile.petName} - Photo ${currentPhotoIndex + 1}`}
@@ -88,7 +88,7 @@ export function AdoptionDetailDialog({
             {photos.length > 1 && (
               <>
                 <MotionView
-                  animatedStyle={prevButtonHover.animatedStyle}
+                  style={prevButtonHover.animatedStyle}
                   onMouseEnter={prevButtonHover.handleMouseEnter}
                   onMouseLeave={prevButtonHover.handleMouseLeave}
                   onClick={() => {
@@ -104,7 +104,7 @@ export function AdoptionDetailDialog({
                   </button>
                 </MotionView>
                 <MotionView
-                  animatedStyle={nextButtonHover.animatedStyle}
+                  style={nextButtonHover.animatedStyle}
                   onMouseEnter={nextButtonHover.handleMouseEnter}
                   onMouseLeave={nextButtonHover.handleMouseLeave}
                   onClick={() => {

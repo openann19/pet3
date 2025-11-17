@@ -43,7 +43,7 @@ export function usePressBounce(scaleOnPress = 0.96, scaleOnRelease = 1): UsePres
   }, [scaleOnRelease, reducedMotion, s])
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: s.value }],
+    scale: s.value,
   }))
 
   return { onPressIn, onPressOut, animatedStyle }

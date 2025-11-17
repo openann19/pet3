@@ -7,7 +7,7 @@ import {
   withSequence,
   MotionView,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { useAnimatePresence } from '@/effects/reanimated';
 import { Sparkle, Eye, ArrowRight } from '@phosphor-icons/react';
 import { Card } from '@/components/ui/card';
@@ -143,7 +143,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
     <Card className="p-6 bg-linear-to-br from-primary/5 via-accent/5 to-secondary/5">
       <div className="flex items-start gap-4 mb-6">
         <MotionView
-          animatedStyle={iconStyle}
+          style={iconStyle}
           className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0"
         >
           <Eye size={24} weight="fill" className="text-white" />
@@ -159,7 +159,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
         <div>
           <MotionView
             key={selectedIndex}
-            animatedStyle={photoStyle}
+            style={photoStyle}
             className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-4"
           >
             <ProgressiveImage
@@ -183,7 +183,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
             >
               {analyzing ? (
                 <>
-                  <MotionView animatedStyle={sparkleStyle}>
+                  <MotionView style={sparkleStyle}>
                     <Sparkle size={18} weight="fill" />
                   </MotionView>
                   <span className="ml-2">Analyzing...</span>
@@ -204,7 +204,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
         <div>
           {promptPresence.shouldRender && !showResult && !analyzing && (
             <MotionView
-              animatedStyle={promptPresence.animatedStyle}
+              style={promptPresence.animatedStyle}
               className="flex items-center justify-center h-full text-center p-8"
             >
               <div>
@@ -217,10 +217,10 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
           )}
 
           {analyzingPresence.shouldRender && analyzing && (
-            <MotionView animatedStyle={analyzingPresence.animatedStyle} className="space-y-4">
+            <MotionView style={analyzingPresence.animatedStyle} className="space-y-4">
               <Card className="p-4 bg-background/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <MotionView animatedStyle={sparkleStyle}>
+                  <MotionView style={sparkleStyle}>
                     <Sparkle size={24} weight="fill" className="text-primary" />
                   </MotionView>
                   <div>
@@ -242,7 +242,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
                       style={{ animationDelay: `${idx * 400}ms` }}
                     >
                       <MotionView
-                        animatedStyle={dotStyle}
+                        style={dotStyle}
                         className="w-1.5 h-1.5 rounded-full bg-primary"
                       />
                       {text}
@@ -254,7 +254,7 @@ export default function VisualAnalysisDemo(): JSX.Element | null {
           )}
 
           {resultPresence.shouldRender && showResult && (
-            <MotionView animatedStyle={resultPresence.animatedStyle} className="h-full">
+            <MotionView style={resultPresence.animatedStyle} className="h-full">
               <Card className="p-5 bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold text-lg">Analysis Results</h4>

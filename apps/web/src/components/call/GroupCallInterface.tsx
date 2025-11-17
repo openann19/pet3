@@ -443,7 +443,7 @@ export default function GroupCallInterface({
 
   return (
     <MotionView
-      animatedStyle={modalAnimation.style}
+      style={modalAnimation.style}
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
         isFullscreen ? 'bg-background' : 'bg-background/95 backdrop-blur-xl p-4'

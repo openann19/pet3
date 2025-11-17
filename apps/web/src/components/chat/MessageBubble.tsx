@@ -193,7 +193,7 @@ function MessageBubble({
             `${stableReference.stableId}-description`
           );
         }
-        ensureFocusAppearance(bubbleElement);
+        ensureFocusAppearance(bubbleElement as HTMLElement);
       }
     }
   }, [stableReference, bubbleRef]);
@@ -448,7 +448,7 @@ function MessageBubble({
                   <AnimatedAIWrapper enabled={true}>
                     <>
                       <MotionView
-                        animatedStyle={typingReveal.animatedStyle}
+                        style={typingReveal.animatedStyle}
                       >
                         {typingReveal.revealedText}
                       </MotionView>

@@ -106,12 +106,12 @@ export function AppHeader({
   return (
     <MotionView
       className="backdrop-blur-2xl bg-card/90 border-b border-border/50 sticky top-0 z-40 shadow-2xl shadow-primary/20"
-      animatedStyle={animations.headerAnimation.headerStyle}
+      style={animations.headerAnimation.headerStyle}
     >
       <div className="absolute inset-0 bg-linear-to-r from-primary/8 via-accent/8 to-secondary/8 pointer-events-none" />
       <MotionView
         className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
-        animatedStyle={animations.headerAnimation.shimmerStyle}
+        style={animations.headerAnimation.shimmerStyle}
       >
         <div />
       </MotionView>
@@ -119,17 +119,17 @@ export function AppHeader({
         <div className="flex items-center justify-between h-14 sm:h-16">
           <MotionView
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
-            animatedStyle={{
+            style={{
               scale: animations.logoButtonHover.scale,
               y: animations.logoButtonHover.translateY,
             }}
             onMouseEnter={animations.logoButtonHover.handleEnter}
             onMouseLeave={animations.logoButtonHover.handleLeave}
           >
-            <MotionView className="relative" animatedStyle={animations.logoAnimation.style}>
+            <MotionView className="relative" style={animations.logoAnimation.style}>
               <MotionView
                 className="absolute inset-0 bg-linear-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-xl"
-                animatedStyle={animations.logoGlow.style}
+                style={animations.logoGlow.style}
               >
                 <div />
               </MotionView>
@@ -145,7 +145,7 @@ export function AppHeader({
           </MotionView>
           <MotionView
             className="flex items-center gap-1 sm:gap-2"
-            animatedStyle={{
+            style={{
               opacity: animations.headerButtonsContainer.opacity,
               x: animations.headerButtonsContainer.x,
             }}
@@ -181,7 +181,7 @@ export function AppHeader({
                   aria-pressed={language === 'bg'}
                   title={language === 'en' ? 'Switch to Bulgarian' : 'Превключи на English'}
                 >
-                  <MotionView animatedStyle={animations.languageIconRotation.style}>
+                  <MotionView style={animations.languageIconRotation.style}>
                     <Translate size={18} weight="bold" className="text-foreground" />
                   </MotionView>
                   <span className="text-xs font-semibold">{language === 'en' ? 'БГ' : 'EN'}</span>
@@ -266,7 +266,7 @@ function HeaderButton({
 }) {
   return (
     <MotionView
-      animatedStyle={animation.buttonStyle}
+      style={animation.buttonStyle}
       onMouseEnter={animation.handleEnter}
       onMouseLeave={animation.handleLeave}
       onClick={animation.handleTap}

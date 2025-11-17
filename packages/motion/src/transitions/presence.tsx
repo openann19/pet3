@@ -34,19 +34,23 @@ export function Presence({ visible = true, children }: PresenceProps): JSX.Eleme
     }
   }, [visible, reducedMotion, a])
 
-  const style = useAnimatedStyle(() => {
-    if (isTruthy(reducedMotion.value)) {
-      // Minimal transform for reduced motion
+  const style = useAnimatedStyle(
+    () => {
+      if (isTruthy(reducedMotion.value)) {
+        // Minimal transform for reduced motion
+        return {
+          opacity: a.value,
+          scale: 0.99 + a.value * 0.01, // Very subtle scale
+        }
+      }
       return {
         opacity: a.value,
-        transform: [{ scale: 0.99 + a.value * 0.01 }], // Very subtle scale
+        y: (1 - a.value) * 12,
+        scale: 0.98 + a.value * 0.02,
       }
-    }
-    return {
-      opacity: a.value,
-      transform: [{ translateY: (1 - a.value) * 12 }, { scale: 0.98 + a.value * 0.02 }],
-    }
-  })
+    },
+    [reducedMotion, a]
+  )
 
   return <Animated.View style={style}>{children}</Animated.View>
 }
@@ -81,15 +85,18 @@ export function usePageTransitions(): UsePageTransitionsReturn {
     }
   }
 
-  const animatedStyle = useAnimatedStyle(() => {
-    if (reducedMotion.value) {
-      return { opacity: t.value }
-    }
-    return {
-      transform: [{ translateX: (1 - t.value) * 20 }],
-      opacity: t.value,
-    }
-  })
+  const animatedStyle = useAnimatedStyle(
+    () => {
+      if (reducedMotion.value) {
+        return { opacity: t.value }
+      }
+      return {
+        x: (1 - t.value) * 20,
+        opacity: t.value,
+      }
+    },
+    [reducedMotion, t]
+  )
 
   return { enter, exit, animatedStyle }
 }

@@ -45,7 +45,7 @@ export function ChatCallOverlays({
   return (
     <>
       {incomingCallPresence.shouldRender && incomingCall && matchedPetName && (
-        <MotionView animatedStyle={incomingCallPresence.animatedStyle}>
+        <MotionView style={incomingCallPresence.animatedStyle}>
           <IncomingCallNotification
             call={incomingCall}
             callerName={matchedPetName}
@@ -56,7 +56,7 @@ export function ChatCallOverlays({
         </MotionView>
       )}
       {activeCallPresence.shouldRender && activeCall && (
-        <MotionView animatedStyle={activeCallPresence.animatedStyle}>
+        <MotionView style={activeCallPresence.animatedStyle}>
           <CallInterface
             session={activeCall}
             onEndCall={onEndCall}

@@ -154,7 +154,7 @@ export function MessageItem({
           className="relative"
         >
           <MotionView
-            animatedStyle={bubbleHover.animatedStyle}
+            style={bubbleHover.animatedStyle}
             onMouseEnter={bubbleHover.handleMouseEnter}
             onMouseLeave={bubbleHover.handleMouseLeave}
             className={`relative group ${message.type === 'sticker' ? 'p-0' : 'p-3'

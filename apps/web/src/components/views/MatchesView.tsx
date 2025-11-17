@@ -36,7 +36,7 @@ import {
   MotionView,
   Presence,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
 interface MatchesViewProps {
@@ -149,7 +149,7 @@ export default function MatchesView({ onNavigateToChat }: MatchesViewProps) {
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
           {emptyStatePresence.shouldRender && (
             <MotionView
-              animatedStyle={emptyStatePresence.animatedStyle}
+              style={emptyStatePresence.animatedStyle}
               style={emptyHeartStyle}
               className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 relative"
             >

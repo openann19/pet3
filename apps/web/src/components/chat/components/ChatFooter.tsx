@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 /**
  * Chat Footer Component
  *
@@ -65,11 +65,19 @@ export function ChatFooter({
   setShowStickers,
 }: ChatFooterProps): JSX.Element {
     const _uiConfig = useUIConfig();
-    const animation = useEntryAnimation({ initialY: 20, delay: 0 });
+  const animation = useEntryAnimation({ initialY: 20, delay: 0 });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: animation.opacity.get(),
+    transform: [
+      { translateY: animation.translateY.get() },
+      { scale: animation.scale.get() },
+    ],
+  }));
 
   return (
     <MotionView
-      animatedStyle={animation.animatedStyle}
+      style={animatedStyle}
       className="glass-strong border-t border-white/20 p-4 shadow-2xl backdrop-blur-2xl space-y-3"
     >
       <div className="flex items-center gap-2 overflow-x-auto pb-2">

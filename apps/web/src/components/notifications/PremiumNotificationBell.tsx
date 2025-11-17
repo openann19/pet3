@@ -19,7 +19,7 @@ import { haptics } from '@/lib/haptics';
 import { createLogger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { PremiumNotificationCenter, type PremiumNotification } from './PremiumNotificationCenter';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 const logger = createLogger('PremiumNotificationBell');
 

@@ -28,7 +28,7 @@ import {
 } from '@/lib/sticker-library';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
 interface StickerPickerProps {
@@ -98,13 +98,13 @@ export function StickerPicker({ onSelectSticker, onClose }: StickerPickerProps) 
       opacity: containerOpacity.value,
       transform: [{ translateY: containerY.value }],
     };
-  }) as AnimatedStyle;
+  });
 
   const contentStyle = useAnimatedStyle(() => {
     return {
       opacity: contentOpacity.value,
     };
-  }) as AnimatedStyle;
+  });
 
   const handleClose = useCallback(() => {
     haptics.impact('light');
@@ -280,9 +280,7 @@ function StickerButton({
 
   useEffect(() => {
     if (isTruthy(isHovered)) {
-      hoverScale.value = withSpring(1.2, springConfigs.bouncy, () => {
-        hoverScale.value = withSpring(1, springConfigs.smooth);
-      });
+      hoverScale.value = withSpring(1.2, springConfigs.bouncy);
     } else {
       hoverScale.value = withSpring(1, springConfigs.smooth);
     }
@@ -294,7 +292,7 @@ function StickerButton({
       opacity: opacity.value,
       transform: [{ scale: combinedScale }],
     };
-  }) as AnimatedStyle;
+  });
 
   return (
     <MotionView

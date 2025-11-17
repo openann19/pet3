@@ -27,7 +27,7 @@ import {
   withSequence,
   MotionView,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 interface CallInterfaceProps {
   session: CallSession;
@@ -145,14 +145,14 @@ export default function CallInterface({
 
   return (
     <MotionView
-      animatedStyle={containerStyle}
+      style={containerStyle}
       className={`fixed inset-0 z-50 flex items-center justify-center ${
-        String(isFullscreen ? 'bg-black' : 'bg-black/90 backdrop-blur-xl p-4' ?? '')
+        isFullscreen ? 'bg-black' : 'bg-black/90 backdrop-blur-xl p-4'
       }`}
     >
       <div
         className={`relative w-full ${
-          String(isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]' ?? '')
+          String(isFullscreen ? 'h-full' : 'max-w-2xl h-[80vh]')
         } bg-gradient-to-br from-primary/20 via-background/95 to-accent/20 rounded-3xl overflow-hidden shadow-2xl`}
       >
         {isVideoCall && session.remoteParticipant.isVideoEnabled ? (
@@ -245,7 +245,7 @@ function AvatarPulseView({ avatar, name, isMuted, isActive, audioWaveform }: Ava
 
   return (
     <div className="absolute inset-0 flex items-center justify-center">
-      <MotionView animatedStyle={avatarStyle} className="flex flex-col items-center">
+      <MotionView style={avatarStyle} className="flex flex-col items-center">
         <Avatar className="w-40 h-40 ring-4 ring-white/30 mb-6">
           <AvatarImage src={avatar} alt={name} />
           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-5xl font-bold">
@@ -290,7 +290,7 @@ function WaveformBar({ value }: WaveformBarProps) {
     };
   }) as AnimatedStyle;
 
-  return <MotionView animatedStyle={barStyle} className="w-1.5 bg-primary rounded-full" />;
+  return <MotionView style={barStyle} className="w-1.5 bg-primary rounded-full" />;
 }
 
 interface LocalVideoViewProps {
@@ -315,7 +315,7 @@ function LocalVideoView({ videoRef }: LocalVideoViewProps) {
 
   return (
     <MotionView
-      animatedStyle={videoStyle}
+      style={videoStyle}
       className="absolute top-6 right-6 w-40 h-28 rounded-2xl overflow-hidden shadow-2xl ring-2 ring-white/30"
     >
       <video
@@ -395,21 +395,21 @@ function CallInfoView({
 
   return (
     <MotionView
-      animatedStyle={infoStyle}
+      style={infoStyle}
       className="glass-strong rounded-2xl px-4 py-3 backdrop-blur-2xl"
     >
       <h3 className="font-bold text-white text-lg mb-1">{name}</h3>
       <div className="flex items-center gap-2">
         {isActive ? (
           <>
-            <MotionView animatedStyle={statusStyle} className="w-2 h-2 bg-green-500 rounded-full" />
+            <MotionView style={statusStyle} className="w-2 h-2 bg-green-500 rounded-full" />
             <span className="text-sm text-white/90 font-medium">
               {formatCallDuration(duration)}
             </span>
           </>
         ) : (
           <>
-            <MotionView animatedStyle={statusStyle} className="w-2 h-2 bg-yellow-500 rounded-full" />
+            <MotionView style={statusStyle} className="w-2 h-2 bg-yellow-500 rounded-full" />
             <span className="text-sm text-white/90">
               {callStatus === 'ringing' ? 'Ringing...' : 'Connecting...'}
             </span>
@@ -488,7 +488,7 @@ function CallControlsView({
 
   return (
     <div className="absolute bottom-0 left-0 right-0 p-8">
-      <MotionView animatedStyle={controlsStyle} className="flex items-center justify-center gap-4">
+      <MotionView style={controlsStyle} className="flex items-center justify-center gap-4">
         <MotionView variants={muteAnimation.variants} initial="rest" animate="rest" whileTap="tap">
           <Button
             onClick={() => {
@@ -499,7 +499,7 @@ function CallControlsView({
             className={`w-14 h-14 rounded-full shadow-xl ${
               String(isMuted
                                 ? 'bg-red-500 hover:bg-red-600'
-                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
+                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20')
             }`}
           >
             {isMuted ? (
@@ -521,7 +521,7 @@ function CallControlsView({
               className={`w-14 h-14 rounded-full shadow-xl ${
                 String(!isVideoEnabled
                                     ? 'bg-red-500 hover:bg-red-600'
-                                    : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
+                                    : 'glass-strong backdrop-blur-2xl hover:bg-white/20')
               }`}
             >
               {isVideoEnabled ? (
@@ -556,7 +556,7 @@ function CallControlsView({
             className={`w-14 h-14 rounded-full shadow-xl ${
               String(!isSpeakerOn
                                 ? 'bg-yellow-500 hover:bg-yellow-600'
-                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20' ?? '')
+                                : 'glass-strong backdrop-blur-2xl hover:bg-white/20')
             }`}
           >
             {isSpeakerOn ? (

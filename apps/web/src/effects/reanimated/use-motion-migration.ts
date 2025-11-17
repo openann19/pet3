@@ -13,7 +13,7 @@ import {
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { useHoverLift } from '@/effects/reanimated/use-hover-lift';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 /**
  * Hook to replace motion.div with initial/animate props

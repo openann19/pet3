@@ -25,7 +25,7 @@ export function PhotoInputSection({ photo, photoPresence, actions }: PhotoInputS
       />
       {photoPresence.shouldRender && photo && (
         <MotionView
-          animatedStyle={photoPresence.animatedStyle}
+          style={photoPresence.animatedStyle}
           className="mt-4 relative h-64 rounded-xl overflow-hidden bg-muted shadow-lg"
         >
           <ProgressiveImage

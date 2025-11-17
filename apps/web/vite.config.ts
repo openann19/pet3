@@ -494,6 +494,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
   return {
     plugins,
     define: {
+      __DEV__: process.env.NODE_ENV !== 'production',
       'process.version': JSON.stringify(''),
       'process.platform': JSON.stringify('browser'),
       'process.browser': 'true',

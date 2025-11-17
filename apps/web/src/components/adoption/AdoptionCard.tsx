@@ -128,7 +128,7 @@ function AdoptionCardComponent({ profile, onSelect, onFavorite, isFavorited }: A
             </Badge>
             {onFavorite && (
               <MotionView
-                animatedStyle={favoriteButtonAnimation.animatedStyle}
+                style={favoriteButtonAnimation.animatedStyle}
                 onMouseEnter={favoriteButtonAnimation.handleMouseEnter}
                 onMouseLeave={favoriteButtonAnimation.handleMouseLeave}
                 onClick={handleFavoriteClick}

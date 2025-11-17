@@ -139,21 +139,21 @@ export function MessagePeek({ message, visible, onClose, position, triggerRef }:
     return null;
   }
 
-  const cardPosition = position
-    ? { left: `${position.x}px`, top: `${position.y}px`, transform: 'translate(-50%, -50%)' }
-    : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' };
+  // Position style no longer needed—cardStyle now includes positioning
+  // const cardPosition = position
+  //   ? { left: `${position.x}px`, top: `${position.y}px`, transform: 'translate(-50%, -50%)' }
+  //   : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' };
 
   return (
     <>
       <MotionView
-        animatedStyle={backdropStyle}
+        style={backdropStyle}
         className="fixed inset-0 bg-black z-40"
         onClick={onClose}
         aria-hidden="true"
       />
       <MotionView
-        style={cardPosition}
-        animatedStyle={cardStyle}
+        style={cardStyle}
         className="fixed z-50 bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-[90vw]"
         role="dialog"
         aria-modal="true"

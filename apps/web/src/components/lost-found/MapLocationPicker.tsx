@@ -12,7 +12,7 @@ import { isTruthy } from '@petspark/shared';
 import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, MapPin, Check, Crosshair } from '@phosphor-icons/react';
@@ -163,7 +163,7 @@ export function MapLocationPicker({
             <h2 className="text-2xl font-bold">Pick Location on Map</h2>
             <p className="text-sm text-muted-foreground">Drag the map or use current location</p>
           </div>
-          <MotionView animatedStyle={closeButtonAnimation.animatedStyle}>
+          <MotionView style={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>

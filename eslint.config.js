@@ -183,6 +183,7 @@ export default [
       '**/setup.tsx',
       'apps/web/android-design-tokens-rn/**',
       'packages/core/**', // Exclude core from type-aware to avoid tsconfig conflicts
+      'packages/motion/src/**/*.native.tsx', // Excluded from motion tsconfig
     ],
     languageOptions: {
       parser: tseslint.parser,
@@ -249,6 +250,14 @@ export default [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/require-await': 'off',
+    },
+  },
+
+  // Motion package: allow direct react-native-reanimated imports (façade implementation)
+  {
+    files: ['packages/motion/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off', // Allow direct imports for façade implementation
     },
   },
 

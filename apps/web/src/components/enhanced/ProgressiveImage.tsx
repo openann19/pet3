@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, useMotionValue, AnimatePresence, animate, type Variants } from '@petspark/motion';
+import { motion, useMotionValue, animate, type Variants } from '@petspark/motion';
+import { AnimatePresence } from '@/effects/reanimated/animate-presence';
 import { cn } from '@/lib/utils';
 import { supportsWebP, supportsAVIF } from '@/lib/image-loader';
 import { useUIConfig } from "@/hooks/use-ui-config";

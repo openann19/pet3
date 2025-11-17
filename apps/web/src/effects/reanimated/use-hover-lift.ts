@@ -16,6 +16,7 @@ export interface UseHoverLiftReturn {
   variants: Variants;
   handleEnter: () => void;
   handleLeave: () => void;
+  animatedStyle: { scale: MotionValue<number>; transform: { translateY: MotionValue<number> }[] };
 }
 
 const DEFAULT_SCALE = 1.05;
@@ -87,5 +88,9 @@ export function useHoverLift(options: UseHoverLiftOptions = {}): UseHoverLiftRet
     variants,
     handleEnter,
     handleLeave,
+    animatedStyle: {
+      scale,
+      transform: [{ translateY }],
+    },
   };
 }

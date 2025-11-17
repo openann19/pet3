@@ -81,7 +81,7 @@ export default function GenerateProfilesButton({
   return (
     <div className={showLabel ? 'w-full' : ''}>
       <MotionView
-        animatedStyle={buttonHover.animatedStyle}
+        style={buttonHover.animatedStyle}
         onMouseEnter={buttonHover.handleMouseEnter}
         onMouseLeave={buttonHover.handleMouseLeave}
       >
@@ -100,11 +100,11 @@ export default function GenerateProfilesButton({
         >
           {showLabel && (
             <MotionView
-              animatedStyle={shimmerStyle}
+              style={shimmerStyle}
               className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
             />
           )}
-          <MotionView animatedStyle={iconStyle} className={showLabel ? 'mr-2' : ''}>
+          <MotionView style={iconStyle} className={showLabel ? 'mr-2' : ''}>
             {isGenerating ? <Sparkle size={20} weight="fill" /> : <Plus size={20} weight="bold" />}
           </MotionView>
           {showLabel && (

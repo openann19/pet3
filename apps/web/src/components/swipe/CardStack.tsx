@@ -4,7 +4,7 @@ import { useSharedValue, withSpring, useAnimatedStyle, MotionView } from '@petsp
 import { springConfigs } from '@/effects/reanimated/transitions';
 import { imagePrefetcher } from '@/lib/image-prefetcher';
 import { useNativeSwipe } from '@/hooks/use-native-swipe';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('CardStack');
@@ -234,7 +234,7 @@ function SwipeableCard<T extends CardData>({
   return (
     <div className="relative" style={{ width, height }}>
       <MotionView
-        animatedStyle={swipeHook.animatedStyle}
+        style={swipeHook.animatedStyle}
         onMouseDown={(e: React.MouseEvent) => {
           const startX = e.clientX;
           const startY = e.clientY;

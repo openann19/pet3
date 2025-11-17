@@ -59,12 +59,12 @@ export function AppNavigation({
 }: AppNavigationProps) {
   return (
     <MotionView
-      animatedStyle={animations.navBarAnimation.navStyle}
+      style={animations.navBarAnimation.navStyle}
       className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/50 z-40 shadow-2xl shadow-primary/20 safe-area-inset-bottom"
     >
       <div className="absolute inset-0 bg-linear-to-t from-primary/8 via-accent/4 to-transparent pointer-events-none" />
       <MotionView
-        animatedStyle={animations.navBarAnimation.shimmerStyle}
+        style={animations.navBarAnimation.shimmerStyle}
         className="absolute inset-0 bg-linear-to-r from-transparent via-accent/5 to-transparent pointer-events-none"
       >
         <div />
@@ -130,7 +130,7 @@ export function AppNavigation({
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               )
             }`}
-            animatedStyle={{
+            style={{
               scale: animations.lostFoundAnimation.scale,
               y: animations.lostFoundAnimation.translateY,
             }}
@@ -143,7 +143,7 @@ export function AppNavigation({
             }}
           >
             <MotionView
-              animatedStyle={{
+              style={{
                 scale: animations.lostFoundAnimation.iconScale,
                 rotate: animations.lostFoundAnimation.iconRotation,
               }}
@@ -156,7 +156,7 @@ export function AppNavigation({
             {currentView === 'lost-found' && (
               <MotionView
                 className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 bg-linear-to-r from-primary via-accent to-secondary rounded-full shadow-lg shadow-primary/50"
-                animatedStyle={{
+                style={{
                   opacity: animations.lostFoundAnimation.indicatorOpacity,
                   width: animations.lostFoundAnimation.indicatorWidth,
                 }}

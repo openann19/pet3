@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { formatDistanceToNow } from 'date-fns';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { cn } from '@/lib/utils';
 import type { NotificationGroup, PremiumNotification, NotificationPreferences } from '../types';
 import type { GetIconFunction, GetPriorityStylesFunction } from './NotificationItem';

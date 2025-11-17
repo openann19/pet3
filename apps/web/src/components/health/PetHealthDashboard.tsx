@@ -5,7 +5,7 @@ import { useModalAnimation } from '@/effects/reanimated/use-modal-animation';
 import { useStaggeredItem } from '@/effects/reanimated/use-staggered-item';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { useStorage } from '@/hooks/use-storage';
 import { createLogger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
@@ -445,7 +445,7 @@ export function PetHealthDashboard({ pet, onClose }: PetHealthDashboardProps): J
               <p className="text-sm text-muted-foreground">{pet.name}'s health records</p>
             </div>
           </div>
-          <MotionView animatedStyle={closeButtonAnimation.animatedStyle}>
+          <MotionView style={closeButtonAnimation.animatedStyle}>
             <Button variant="ghost" size="icon" onClick={closeButtonAnimation.handlePress} aria-label="X">
               <X size={24} />
             </Button>

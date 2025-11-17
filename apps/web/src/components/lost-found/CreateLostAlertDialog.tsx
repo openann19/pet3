@@ -59,7 +59,7 @@ function FeatureBadge({ feature, index, onRemove }: FeatureBadgeProps): JSX.Elem
     <MotionView style={staggeredAnimation.itemStyle}>
       <Badge variant="secondary" className="gap-1">
         {feature}
-        <MotionView animatedStyle={removeButtonAnimation.animatedStyle}>
+        <MotionView style={removeButtonAnimation.animatedStyle}>
           <button onClick={removeButtonAnimation.handlePress} type="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-focus-ring)" aria-label="Button">
             <X size={12} />
           </button>
@@ -336,7 +336,7 @@ export function CreateLostAlertDialog({
                     }}
                     placeholder="e.g., White spot on chest"
                   />
-                  <MotionView animatedStyle={addFeatureButtonAnimation.animatedStyle}>
+                  <MotionView style={addFeatureButtonAnimation.animatedStyle}>
                     <Button
                       type="button"
                       onClick={addFeatureButtonAnimation.handlePress}
@@ -398,7 +398,7 @@ export function CreateLostAlertDialog({
 
               <div className="space-y-2">
                 <Label>Location on Map</Label>
-                <MotionView animatedStyle={mapPickerButtonAnimation.animatedStyle}>
+                <MotionView style={mapPickerButtonAnimation.animatedStyle}>
                   <Button
                     type="button"
                     variant="outline"
@@ -506,7 +506,7 @@ export function CreateLostAlertDialog({
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <MotionView animatedStyle={submitButtonAnimation.animatedStyle}>
+            <MotionView style={submitButtonAnimation.animatedStyle}>
               <Button
                 onClick={submitButtonAnimation.handlePress}
                 disabled={isSubmitting || !isFormValid}

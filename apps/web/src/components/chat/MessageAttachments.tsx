@@ -188,7 +188,9 @@ function DocumentAttachment({ attachment }: DocumentAttachmentProps): React.JSX.
 
   return (
     <MotionView
-      animatedStyle={hoverAnimation.animatedStyle}
+      variants={hoverAnimation.variants}
+      initial="rest"
+      whileHover="hover"
       className="flex items-center gap-3 p-3 glass-effect rounded-lg"
       onMouseEnter={hoverAnimation.handleEnter}
       onMouseLeave={hoverAnimation.handleLeave}

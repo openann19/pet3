@@ -81,7 +81,7 @@ function QuickActionItem({ icon, label, onClick, color, index }: QuickActionItem
 
   return (
     <MotionView
-      animatedStyle={animatedStyle}
+      style={animatedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}

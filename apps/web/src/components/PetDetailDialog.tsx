@@ -110,7 +110,8 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
     }
   }, [open, dialogOpacity, dialogScale, dialogY]);
 
-  const dialogStyle = useAnimatedStyle(() => {
+  // Dialog style no longer needed—animatedStyle from presence hook is used instead
+  const _dialogStyle = useAnimatedStyle(() => {
     const scale = dialogScale.value;
     const translateY = dialogY.value;
     const transforms: { [key: string]: number | string | MotionValue<number> }[] = [];
@@ -157,12 +158,11 @@ export default function PetDetailDialog({ pet, open, onOpenChange }: PetDetailDi
         </DialogDescription>
         {open && dialogPresence.shouldRender ? (
           <MotionView
-            style={dialogStyle}
-            animatedStyle={dialogPresence.animatedStyle}
+            style={dialogPresence.animatedStyle}
             className="relative bg-card rounded-3xl overflow-hidden shadow-2xl"
           >
             <MotionView
-              animatedStyle={closeButtonHoverStyle}
+              style={closeButtonHoverStyle}
               onClick={() => {
                 try {
                   haptics.trigger('light');

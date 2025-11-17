@@ -14,7 +14,7 @@ import {
   withSequence,
   MotionView,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);

@@ -7,7 +7,7 @@ import type { MessageReaction } from '@/lib/chat-types';
 import { useBounceOnTap } from '@/effects/reanimated/use-bounce-on-tap';
 import { useSharedValue, useAnimatedStyle, withSpring, withTiming, MotionView } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { haptics } from '@/lib/haptics';
 import { useUIConfig } from "@/hooks/use-ui-config";
 
@@ -173,7 +173,7 @@ function ReactionButton({
             userReacted ? 'bg-primary/20 ring-1 ring-primary' : 'bg-white/10 hover:bg-white/20'
           }`}
         >
-          <MotionView animatedStyle={buttonStyle} className="flex items-center gap-1">
+          <MotionView style={buttonStyle} className="flex items-center gap-1">
             <span className="text-sm">{emoji}</span>
             <span className="text-[10px] font-semibold">{count}</span>
           </MotionView>
@@ -271,13 +271,13 @@ function AddReactionButton({
           onMouseLeave={handleMouseLeave}
           className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
         >
-          <MotionView animatedStyle={buttonStyle}>
+          <MotionView style={buttonStyle}>
             <Plus size={12} weight="bold" />
           </MotionView>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 glass-strong p-3">
-        <MotionView animatedStyle={pickerStyle}>
+        <MotionView style={pickerStyle}>
           <div className="grid grid-cols-6 gap-2">
             {availableReactions.map((emoji) => (
               <EmojiButton key={emoji} emoji={emoji} onClick={() => handleEmojiClick(emoji)} />
@@ -319,7 +319,7 @@ function EmojiButton({ emoji, onClick }: EmojiButtonProps): React.JSX.Element {
 
   return (
     <MotionView
-      animatedStyle={buttonStyle}
+      style={buttonStyle}
       onClick={bounce.handlePress}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

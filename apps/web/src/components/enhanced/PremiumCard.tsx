@@ -54,7 +54,7 @@ export function PremiumCard({
 
   return (
     <MotionView
-      animatedStyle={combinedStyle}
+      style={combinedStyle}
       onMouseEnter={hover ? hoverLift.onMouseEnter : undefined}
       onMouseLeave={hover ? hoverLift.onMouseLeave : undefined}
       className={cn(

@@ -37,7 +37,7 @@ export function ChatHeader({
 
   return (
     <MotionView
-      animatedStyle={animation.animatedStyle}
+      style={animation.animatedStyle}
       className="glass-strong border-b border-white/20 p-4 shadow-xl backdrop-blur-2xl"
     >
       <div className="flex items-center gap-3">

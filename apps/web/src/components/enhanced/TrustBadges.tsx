@@ -105,7 +105,7 @@ function BadgeAnimated({ index, animated, sizeConfig, config, Icon }: BadgeAnima
 
   return (
     <MotionView
-      animatedStyle={animatedStyle}
+      style={animatedStyle}
       className={`${String(sizeConfig.containerClass ?? '')} ${String(config.bgColor ?? '')} ${String(config.borderColor ?? '')} border rounded-full flex items-center justify-center ${String(config.color ?? '')} transition-all duration-300 hover:scale-110 cursor-default`}
     >
       <Icon size={sizeConfig.iconSize} className={config.color} />
@@ -210,7 +210,7 @@ export function TrustScore({ score, size = 'md', showLabel = false }: TrustScore
             fill="none"
             className="text-muted/20"
           />
-          <MotionView animatedStyle={circleAnimatedStyle}>
+          <MotionView style={circleAnimatedStyle}>
             <circle
               cx="24"
               cy="24"

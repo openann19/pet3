@@ -205,7 +205,7 @@ function ThemeCard({ preset, index, isActive, onPreview, onSelect }: ThemeCardPr
           onMouseUp={elastic.handlePressOut}
           onMouseLeave={elastic.handlePressOut}
         >
-          <MotionView animatedStyle={elastic.animatedStyle}>
+          <MotionView style={elastic.animatedStyle}>
             <div
               onMouseEnter={() => { onPreview(preset.id); }}
               onClick={() => { onSelect(preset.id); }}
@@ -216,7 +216,7 @@ function ThemeCard({ preset, index, isActive, onPreview, onSelect }: ThemeCardPr
               `}
             >
               {isActive && (
-                <MotionView animatedStyle={glow.animatedStyle}>
+                <MotionView style={glow.animatedStyle}>
                   <div className="absolute inset-0 rounded-2xl pointer-events-none" />
                 </MotionView>
               )}

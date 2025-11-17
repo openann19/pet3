@@ -1,5 +1,5 @@
 'use client';;
-import { MotionView } from "@petspark/motion";
+import { MotionView, type MotionStyle } from "@petspark/motion";
 
 import { useReactionAnimation } from '@/hooks/use-reaction-animation';
 import { type AnimatedStyle } from '@/effects/reanimated/animated-view';
@@ -40,7 +40,7 @@ export function AnimatedReaction({
 
   return (
     <MotionView
-      animatedStyle={animatedStyle}
+      style={animatedStyle as unknown as MotionStyle}
       onClick={handleClick}
       className={cn('text-2xl cursor-pointer select-none', className)}
     >

@@ -14,7 +14,7 @@ export function StickerButton({ sticker, onSelect }: StickerButtonProps): JSX.El
 
   return (
     <MotionView
-      animatedStyle={hover.animatedStyle}
+      style={hover.animatedStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
       onMouseDown={hover.handleMouseDown}
@@ -39,7 +39,7 @@ export function ReactionButton({ emoji, onClick }: ReactionButtonProps): JSX.Ele
 
   return (
     <MotionView
-      animatedStyle={hover.animatedStyle}
+      style={hover.animatedStyle}
       onMouseEnter={hover.handleMouseEnter}
       onMouseLeave={hover.handleMouseLeave}
       onMouseDown={hover.handleMouseDown}

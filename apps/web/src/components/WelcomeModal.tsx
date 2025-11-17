@@ -181,7 +181,7 @@ export default function WelcomeModal(): JSX.Element | null {
           />
 
           <MotionView
-            animatedStyle={closeButtonHover.animatedStyle}
+            style={closeButtonHover.animatedStyle}
             onMouseEnter={closeButtonHover.handleMouseEnter}
             onMouseLeave={closeButtonHover.handleMouseLeave}
             onClick={closeButtonHover.handlePress}
@@ -237,7 +237,7 @@ export default function WelcomeModal(): JSX.Element | null {
 
           <div className="flex justify-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-300 delay-1000">
             <MotionView
-              animatedStyle={buttonHover.animatedStyle}
+              style={buttonHover.animatedStyle}
               onMouseEnter={buttonHover.handleMouseEnter}
               onMouseLeave={buttonHover.handleMouseLeave}
               onClick={buttonHover.handlePress}

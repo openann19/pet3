@@ -37,7 +37,7 @@ import {
   Sparkle,
 } from '@phosphor-icons/react';
 import { timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { haptics } from '@/lib/haptics';
 import { useNotifications } from './hooks/useNotifications';
 import { useNotificationActions } from './hooks/useNotificationActions';

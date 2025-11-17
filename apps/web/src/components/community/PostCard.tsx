@@ -39,7 +39,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { Suspense } from 'react';
 import { CommentsSheet } from './CommentsSheet';
 import { MediaViewer, type MediaItem } from '@/components/lazy-exports';
@@ -382,7 +382,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
               className="flex items-center gap-3 group cursor-pointer"
             >
               <MotionView
-                animatedStyle={avatarHover.animatedStyle}
+                style={avatarHover.animatedStyle}
                 onMouseEnter={avatarHover.handleMouseEnter}
                 onMouseLeave={avatarHover.handleMouseLeave}
                 onClick={avatarHover.handlePress}
@@ -410,7 +410,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <MotionView
-                  animatedStyle={optionsButtonHover.animatedStyle}
+                  style={optionsButtonHover.animatedStyle}
                   onMouseEnter={optionsButtonHover.handleMouseEnter}
                   onMouseLeave={optionsButtonHover.handleMouseLeave}
                   onClick={optionsButtonHover.handlePress}
@@ -558,7 +558,7 @@ function PostCardComponent({ post, onAuthorClick, onPostClick }: PostCardProps):
               }}
             >
               <MotionView
-                animatedStyle={bookmarkHover.animatedStyle}
+                style={bookmarkHover.animatedStyle}
                 onMouseEnter={bookmarkHover.handleMouseEnter}
                 onMouseLeave={bookmarkHover.handleMouseLeave}
                 onClick={bookmarkHover.handlePress}

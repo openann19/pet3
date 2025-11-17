@@ -69,7 +69,7 @@ function DateGroup({ date, delay }: DateGroupProps): JSX.Element {
   const anim = useEntryAnimation({ initialScale: 0.8, delay });
 
   return (
-    <MotionView animatedStyle={anim.animatedStyle} className="flex justify-center">
+    <MotionView style={anim.animatedStyle} className="flex justify-center">
       <div className="glass-effect px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
         {date}
       </div>

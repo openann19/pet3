@@ -168,7 +168,7 @@ export function SmartSearch<T extends Record<string, unknown>>({
       </div>
       {presence.shouldRender && (
         <MotionView
-          animatedStyle={presence.animatedStyle}
+          style={presence.animatedStyle}
         >
           <Card className="absolute top-full mt-2 w-full max-h-100 overflow-y-auto shadow-xl border z-50 p-2">
             {query.trim() ? (

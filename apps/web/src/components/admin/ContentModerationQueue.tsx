@@ -414,7 +414,7 @@ export function ContentModerationQueue() {
     if (!presence.shouldRender) return null
     
     return (
-      <MotionView animatedStyle={presence.animatedStyle} className="text-center py-12">
+      <MotionView style={presence.animatedStyle} className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No items in this queue</p>
       </MotionView>

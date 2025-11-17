@@ -17,7 +17,7 @@ import {
 } from '@petspark/motion';
 import { Bell } from '@phosphor-icons/react';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import type { NotificationFilter } from '../types';
 
 export interface EmptyStateProps {

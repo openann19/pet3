@@ -1,4 +1,4 @@
-import { MotionView } from "@petspark/motion";
+import { MotionView, useAnimatedStyle } from "@petspark/motion";
 /**
  * Template Panel Component
  *
@@ -22,9 +22,17 @@ export function TemplatePanel({ onClose, onSelect }: TemplatePanelProps): JSX.El
     const _uiConfig = useUIConfig();
     const animation = useEntryAnimation({ initialY: 20, delay: 0 });
 
+    const animatedStyle = useAnimatedStyle(() => ({
+      opacity: animation.opacity.get(),
+      transform: [
+        { translateY: animation.translateY.get() },
+        { scale: animation.scale.get() },
+      ],
+    }));
+
   return (
     <MotionView
-      animatedStyle={animation.animatedStyle}
+      style={animatedStyle}
       className="glass-strong border border-white/20 rounded-xl p-4 space-y-3 backdrop-blur-xl"
     >
       <div className="flex items-center justify-between">

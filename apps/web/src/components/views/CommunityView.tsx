@@ -41,7 +41,7 @@ import {
   withSequence,
   MotionView,
 } from '@petspark/motion';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
 import { usePageTransition } from '@/effects/reanimated/use-page-transition';
 import { PageTransitionWrapper } from '@/components/ui/page-transition-wrapper';
@@ -506,7 +506,7 @@ function CommunityViewContent(): JSX.Element {
         </MotionView>
 
         {/* Header */}
-        <MotionView animatedStyle={headerTransition.style} className="flex items-center justify-between">
+        <MotionView style={headerTransition.style} className="flex items-center justify-between">
           <div>
             <h1
               className={cn(
@@ -587,7 +587,7 @@ function CommunityViewContent(): JSX.Element {
               {/* Trending Tags */}
               {trendingTags.trendingTags.length > 0 && (
                 <MotionView
-                  animatedStyle={trendingTransition.style}
+                  style={trendingTransition.style}
                   className="bg-linear-to-br from-card via-card to-card/50 rounded-xl p-4 border border-border/50 shadow-lg"
                 >
                   <div className="flex items-center gap-2 mb-3">
@@ -629,7 +629,7 @@ function CommunityViewContent(): JSX.Element {
                   {feedManagement.loading && feedManagement.posts.length === 0 ? (
                     <RankingSkeleton count={3} variant="post" />
                   ) : feedManagement.posts.length === 0 ? (
-                    <MotionView animatedStyle={emptyStateTransition.style} className="text-center py-20">
+                    <MotionView style={emptyStateTransition.style} className="text-center py-20">
                       <MotionView style={emptyStateStyle} className="text-8xl mb-6">
                         🐾
                       </MotionView>

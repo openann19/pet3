@@ -215,14 +215,14 @@ Return ONLY valid JSON with this exact structure, nothing else:
 
   return (
     <div className="space-y-4">
-      <MotionView animatedStyle={entryStyle} className="relative">
+      <MotionView style={entryStyle} className="relative">
         <Card className="p-6 bg-linear-to-br from-primary/5 via-accent/5 to-secondary/5 border-2 border-dashed border-primary/20">
           <div className="flex items-start gap-4">
             <MotionView
-              animatedStyle={glowStyle}
+              style={glowStyle}
               className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0"
             >
-              <MotionView animatedStyle={rotateStyle}>
+              <MotionView style={rotateStyle}>
                 <Sparkle size={24} weight="fill" className="text-white" />
               </MotionView>
             </MotionView>
@@ -240,7 +240,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
 
               <div className="flex gap-2 mb-3">
                 <MotionView
-                  animatedStyle={buttonHover.animatedStyle}
+                  style={buttonHover.animatedStyle}
                   onMouseEnter={buttonHover.handleMouseEnter}
                   onMouseLeave={buttonHover.handleMouseLeave}
                   onClick={buttonHover.handlePress}
@@ -260,7 +260,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                   </Button>
                 </MotionView>
                 <MotionView
-                  animatedStyle={buttonHover.animatedStyle}
+                  style={buttonHover.animatedStyle}
                   onMouseEnter={buttonHover.handleMouseEnter}
                   onMouseLeave={buttonHover.handleMouseLeave}
                   onClick={buttonHover.handlePress}
@@ -280,7 +280,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
                   </Button>
                 </MotionView>
                 <MotionView
-                  animatedStyle={buttonHover.animatedStyle}
+                  style={buttonHover.animatedStyle}
                   onMouseEnter={buttonHover.handleMouseEnter}
                   onMouseLeave={buttonHover.handleMouseLeave}
                   onClick={buttonHover.handlePress}
@@ -390,7 +390,7 @@ Return ONLY valid JSON with this exact structure, nothing else:
       </MotionView>
       {photoPresence.shouldRender && photo && !analyzing && (
         <MotionView
-          animatedStyle={photoPresence.animatedStyle}
+          style={photoPresence.animatedStyle}
           className="relative h-64 rounded-lg overflow-hidden bg-muted"
         >
           <img src={photo} alt="Pet preview" className="w-full h-full object-cover" />

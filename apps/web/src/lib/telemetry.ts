@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from './logger';
-import { env } from '@/config/env';
+import { ENV, flags } from '@/config/env';
 
 const logger = createLogger('Telemetry');
 
@@ -63,7 +63,7 @@ class TelemetryService {
   private flushInterval?: ReturnType<typeof setInterval>;
 
   constructor() {
-    this.enabled = !env.flags.mocks && typeof window !== 'undefined';
+    this.enabled = !flags.mocks && typeof window !== 'undefined';
     this.sessionId = this.generateSessionId();
 
     if (this.enabled) {
@@ -146,7 +146,7 @@ class TelemetryService {
 
     try {
       // Send to backend telemetry endpoint
-      const response = await fetch(`${env.VITE_API_URL}/telemetry`, {
+      const response = await fetch(`${ENV.VITE_API_URL}/telemetry`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

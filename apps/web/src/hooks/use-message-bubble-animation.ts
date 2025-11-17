@@ -10,6 +10,7 @@ import {
   interpolate,
   Extrapolation,
   Easing,
+  animateWithTiming,
   type SharedValue,
 } from '@petspark/motion';
 import { isTruthy } from '@petspark/shared';
@@ -164,9 +165,17 @@ export function useMessageBubbleAnimation(
   }, [isHighlighted, backgroundOpacity, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    const transforms: Record<string, string | number>[] = [];
+    
+    const translateYValue = translateY.get();
+    if (translateYValue !== 0) transforms.push({ translateY: translateYValue });
+    
+    const scaleValue = scale.get();
+    if (scaleValue !== 1) transforms.push({ scale: scaleValue });
+
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }, { scale: scale.value }],
+      opacity: opacity.get(),
+      transform: transforms,
     };
   });
 
@@ -189,9 +198,17 @@ export function useMessageBubbleAnimation(
   });
 
   const reactionStyle = useAnimatedStyle(() => {
+    const transforms: Record<string, string | number>[] = [];
+    
+    const scaleValue = reactionScale.get();
+    if (scaleValue !== 1) transforms.push({ scale: scaleValue });
+    
+    const translateYValue = reactionTranslateY.get();
+    if (translateYValue !== 0) transforms.push({ translateY: translateYValue });
+
     return {
-      transform: [{ scale: reactionScale.value }, { translateY: reactionTranslateY.value }],
-      opacity: reactionOpacity.value,
+      transform: transforms,
+      opacity: reactionOpacity.get(),
     };
   });
 
@@ -287,19 +304,15 @@ export function useMessageBubbleAnimation(
 
     if (isReducedMotion) {
       const duration = getReducedMotionDuration(120, true);
-      scale.value = withTiming(
-        0.94,
-        {
+      void animateWithTiming(scale, 0.94, {
+        duration: duration,
+        easing: Easing.linear,
+      }).then(() => {
+        scale.value = withTiming(1, {
           duration: duration,
           easing: Easing.linear,
-        },
-        () => {
-          scale.value = withTiming(1, {
-            duration: duration,
-            easing: Easing.linear,
-          });
-        }
-      );
+        });
+      });
     } else {
       scale.value = withSequence(
         withSpring(0.94, {
@@ -333,19 +346,15 @@ export function useMessageBubbleAnimation(
 
       if (isReducedMotion) {
         // Reduced motion: simplified animation
-        reactionScale.value = withTiming(
-          1.2,
-          {
-            duration: fastDuration,
+        void animateWithTiming(reactionScale, 1.2, {
+          duration: fastDuration,
+          easing: Easing.linear,
+        }).then(() => {
+          reactionScale.value = withTiming(1, {
+            duration: smoothDuration,
             easing: Easing.linear,
-          },
-          () => {
-            reactionScale.value = withTiming(1, {
-              duration: smoothDuration,
-              easing: Easing.linear,
-            });
-          }
-        );
+          });
+        });
         reactionTranslateY.value = withTiming(-15, {
           duration: fastDuration,
           easing: Easing.linear,

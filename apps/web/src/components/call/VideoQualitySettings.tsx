@@ -9,7 +9,7 @@ import type { VideoQuality } from '@/lib/call-types';
 import { haptics } from '@/lib/haptics';
 import { useHoverTap } from '@/effects/reanimated';
 import { springConfigs } from '@/effects/reanimated/transitions';
-import type { AnimatedStyle } from '@/effects/reanimated/animated-view';
+import type { AnimatedStyle } from '@petspark/motion';
 
 interface VideoQualitySettingsProps {
   currentQuality: VideoQuality;
@@ -91,7 +91,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
 
   return (
     <MotionView
-      animatedStyle={hoverTap.animatedStyle}
+      style={hoverTap.animatedStyle}
       onMouseEnter={hoverTap.handleMouseEnter}
       onMouseLeave={hoverTap.handleMouseLeave}
     >
@@ -100,7 +100,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
         className={`w-full h-auto py-4 px-4 justify-between ${
           String(isSelected
                         ? 'bg-gradient-to-r from-primary to-accent border-primary/50'
-                        : 'hover:bg-muted/50' ?? '')
+                        : 'hover:bg-muted/50')
         }`}
         onClick={handleClick}
       >
@@ -116,7 +116,7 @@ function QualityButton({ option, isSelected, onSelect }: QualityButtonProps): JS
           <span className="text-sm font-mono opacity-80">{option.resolution}</span>
           <span className="text-xs opacity-70 text-left">{option.description}</span>
         </div>
-        <MotionView animatedStyle={checkAnimatedStyle}>
+        <MotionView style={checkAnimatedStyle}>
           <Check size={24} weight="bold" />
         </MotionView>
       </Button>
