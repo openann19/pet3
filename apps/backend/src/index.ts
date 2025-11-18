@@ -22,6 +22,7 @@ import {
 import { createGDPRRoutes } from './routes/gdpr-routes';
 import { createAdminConfigRoutes } from './routes/admin-config-routes';
 import { createAdminRoutes } from './routes/admin-routes';
+import { authRouter } from './routes/auth.js';
 import { GDPRService } from './services/gdpr-service';
 import { PostgresDatabase, type PostgresConfig } from './services/postgres-database';
 import { MockDatabase } from './services/mock-database';
@@ -67,6 +68,9 @@ app.get('/health', (req, res) => {
     requestId: req.requestId,
   });
 });
+
+// Auth routes (public)
+app.use('/auth', authRouter);
 
 // Initialize database
 let db: PostgresDatabase | MockDatabase;

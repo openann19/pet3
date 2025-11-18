@@ -45,7 +45,10 @@ declare module 'react-native-reanimated' {
 
   export function useSharedValue<T>(value: T): SharedValue<T>
   export function useDerivedValue<T>(factory: () => T): SharedValue<T>
-  export function useAnimatedStyle<T extends object>(factory: () => T): AnimatedStyle<T>                                                                        
+  export function useAnimatedStyle<T extends object>(
+    factory: () => T,
+    deps?: ReadonlyArray<unknown>
+  ): AnimatedStyle<T>                                                                        
   export function useAnimatedProps<T extends object>(factory: () => T): AnimatedProps<T>
   export function useAnimatedReaction<T>(
     dependencies: () => T,

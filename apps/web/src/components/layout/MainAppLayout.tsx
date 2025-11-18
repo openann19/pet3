@@ -13,7 +13,6 @@ import QuickActionsMenu from '@/components/QuickActionsMenu'
 import BottomNavBar from '@/components/navigation/BottomNavBar'
 import { Toaster } from '@/components/ui/sonner'
 import { AppHeader } from './AppHeader'
-import { AppNavigation } from './AppNavigation'
 import { AppMainContent } from './AppMainContent'
 import { AppModals } from './AppModals'
 import type { Playdate } from '@/lib/playdate-types'
@@ -105,14 +104,6 @@ export function MainAppLayout({
 
       <AppMainContent currentView={currentView} navigation={navigation} animations={animations} />
 
-      <AppNavigation
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        animations={animations}
-        t={t}
-        NAV_BUTTON_BASE_CLASSES={NAV_BUTTON_BASE_CLASSES}
-      />
-
       <Suspense fallback={null}>
         <QuickActionsMenu
           onCreatePet={() => {
@@ -159,7 +150,7 @@ export function MainAppLayout({
 
       <Toaster />
       <Suspense fallback={null}>
-        <BottomNavBar />
+        <BottomNavBar currentView={currentView} setCurrentView={setCurrentView} />
       </Suspense>
     </div>
   )

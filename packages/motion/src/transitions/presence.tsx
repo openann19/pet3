@@ -48,7 +48,8 @@ export function Presence({ visible = true, children }: PresenceProps): JSX.Eleme
         y: (1 - a.value) * 12,
         scale: 0.98 + a.value * 0.02,
       }
-    }
+    },
+    [reducedMotion]
   )
 
   return <Animated.View style={style}>{children}</Animated.View>
@@ -93,7 +94,8 @@ export function usePageTransitions(): UsePageTransitionsReturn {
         x: (1 - t.value) * 20,
         opacity: t.value,
       }
-    }
+    },
+    [reducedMotion]
   )
 
   return { enter, exit, animatedStyle }

@@ -1,153 +1,62 @@
-'use client';;
-import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withDelay,
-  withRepeat,
-  withSequence,
-  MotionView,
-} from '@petspark/motion';
-import { useNavButtonAnimation } from '@/hooks/use-nav-button-animation';
-import { useBounceOnTap } from '@/effects/reanimated';
-import { springConfigs, timingConfigs } from '@/effects/reanimated/transitions';
-import { haptics } from '@/lib/haptics';
+'use client';
+import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import type { AnimatedStyle } from '@petspark/motion';
-import { getTypographyClasses, getSpacingClassesFromConfig } from '@/lib/typography';
-import { getAriaNavigationAttributes } from '@/lib/accessibility';
-import { isTruthy } from '@petspark/shared';
+import { haptics } from '@/lib/haptics';
+import type { View } from '@/lib/routes';
 
 interface NavItem {
-  to: string;
+  view: View;
   label: string;
   icon: string;
   badge?: number;
 }
 
 const items: NavItem[] = [
-  { to: '/discover', label: 'Discover', icon: '🧭' },
-  { to: '/chat', label: 'Chat', icon: '💬' },
-  { to: '/matches', label: 'Matches', icon: '❤️' },
-  { to: '/adopt', label: 'Adopt', icon: '🐾' },
-  { to: '/community', label: 'Community', icon: '👥' },
-  { to: '/profile', label: 'Profile', icon: '👤' },
+  { view: 'discover', label: 'Premium', icon: '💎' },
+  { view: 'chat', label: 'Chat', icon: '💬' },
+  { view: 'matches', label: 'Matches', icon: '❤️' },
+  { view: 'adoption', label: 'Adopt', icon: '🐾' },
+  { view: 'community', label: 'Community', icon: '👥' },
+  { view: 'profile', label: 'Profile', icon: '👤' },
 ];
 
-export default function BottomNavBar() {
-  const { pathname } = useLocation();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+interface BottomNavBarProps {
+  currentView: View;
+  setCurrentView: (view: View) => void;
+}
 
-  const barOpacity = useSharedValue(0);
-  const barY = useSharedValue(20);
-
-  useEffect(() => {
-    barOpacity.value = withDelay(200, withTiming(1, timingConfigs.smooth));
-    barY.value = withDelay(200, withSpring(0, springConfigs.smooth));
-  }, [barOpacity, barY]);
-
-  const barStyle = useAnimatedStyle(() => {
-    return {
-      opacity: barOpacity.value,
-      transform: [{ translateY: barY.value }],
-    };
-  }) as AnimatedStyle;
-
-  // Holographic shimmer effect
-  const shimmerX = useSharedValue(-100);
-  useEffect(() => {
-    shimmerX.value = withRepeat(
-      withSequence(
-        withTiming(300, { duration: 4000 }),
-        withTiming(-100, { duration: 0 })
-      ),
-      -1,
-      false
-    );
-  }, [shimmerX]);
-
-  const shimmerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: shimmerX.value }],
-    };
-  }) as AnimatedStyle;
-
-  const holographicGlow = useSharedValue(0.4);
-  useEffect(() => {
-    holographicGlow.value = withRepeat(
-      withSequence(
-        withTiming(0.7, { duration: 2000 }),
-        withTiming(0.4, { duration: 2000 })
-      ),
-      -1,
-      true
-    );
-  }, [holographicGlow]);
-
-  const glowStyle2 = useAnimatedStyle(() => {
-    return {
-      opacity: holographicGlow.value,
-    };
-  }) as AnimatedStyle;
+export default function BottomNavBar({ currentView, setCurrentView }: BottomNavBarProps) {
+  const [hoveredItem, setHoveredItem] = useState<View | null>(null);
 
   return (
-    <MotionView style={barStyle} className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
       <nav 
-        className="border-t border-border/40 bg-card/85 backdrop-blur-3xl shadow-2xl relative overflow-hidden"
+        className="border-t border-border/20 bg-background/95 backdrop-blur-sm shadow-lg"
         aria-label="Bottom navigation"
       >
-        <div className="relative overflow-hidden">
-          {/* Holographic gradient layers */}
-          <div className="absolute inset-0 bg-linear-to-t from-primary/15 via-accent/10 to-secondary/15 opacity-60 pointer-events-none" />
-          <div className="absolute inset-0 bg-linear-to-b from-transparent via-accent/5 to-transparent pointer-events-none" />
+        <ul 
+          className="grid grid-cols-6 px-2 py-1"
+          role="list"
+        >
+          {items.map((item) => {
+            const isActive = currentView === item.view;
+            const isHovered = hoveredItem === item.view;
 
-          {/* Animated shimmer effect */}
-          <MotionView
-            style={shimmerStyle}
-            className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent w-1/2 h-full pointer-events-none"
-          />
-
-          {/* Pulsing glow effect */}
-          <MotionView
-            style={glowStyle2}
-            className="absolute inset-0 bg-linear-to-t from-accent/20 via-primary/15 to-accent/20 blur-2xl pointer-events-none"
-          />
-
-          {/* Glassmorphism overlay with enhanced blur */}
-          <div className="absolute inset-0 bg-linear-to-t from-background/70 to-background/50 backdrop-blur-2xl pointer-events-none" />
-
-          {/* Holographic color shift overlay */}
-          <div className="absolute inset-0 bg-linear-to-r from-primary/10 via-accent/10 via-secondary/10 to-primary/10 opacity-40 pointer-events-none mix-blend-overlay" />
-
-          <ul 
-            className={cn(
-              'grid grid-cols-6 relative z-10',
-              getSpacingClassesFromConfig({ gap: 'xs' })
-            )}
-            role="list"
-          >
-            {items.map((item) => {
-              const isActive = pathname.startsWith(item.to);
-              const isHovered = hoveredItem === item.to;
-
-              return (
-                <NavItem
-                  key={item.to}
-                  item={item}
-                  isActive={isActive}
-                  isHovered={isHovered}
-                  onHover={() => { setHoveredItem(item.to); }}
-                  onLeave={() => { setHoveredItem(null); }}
-                />
-              );
-            })}
-          </ul>
-        </div>
+            return (
+              <NavItem
+                key={item.view}
+                item={item}
+                isActive={isActive}
+                isHovered={isHovered}
+                onHover={() => { setHoveredItem(item.view); }}
+                onLeave={() => { setHoveredItem(null); }}
+                onClick={() => { setCurrentView(item.view); }}
+              />
+            );
+          })}
+        </ul>
       </nav>
-    </MotionView>
+    </div>
   );
 }
 
@@ -157,123 +66,45 @@ interface NavItemProps {
   isHovered: boolean;
   onHover: () => void;
   onLeave: () => void;
+  onClick: () => void;
 }
 
-function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) {
-  const animation = useNavButtonAnimation({
-    isActive,
-    enablePulse: true,
-    enableRotation: false,
-    hapticFeedback: true,
-  });
-
-  const bounceAnimation = useBounceOnTap({
-    scale: 0.85,
-    hapticFeedback: false,
-  });
-
-  const iconScale = useSharedValue(1);
-  const iconY = useSharedValue(0);
-  const glowOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (isActive) {
-      iconScale.value = withSpring(1.15, springConfigs.bouncy);
-      iconY.value = withSpring(-2, springConfigs.smooth);
-      glowOpacity.value = withSpring(1, springConfigs.smooth);
-    } else {
-      iconScale.value = withSpring(1, springConfigs.smooth);
-      iconY.value = withSpring(0, springConfigs.smooth);
-      glowOpacity.value = withSpring(0, springConfigs.smooth);
-    }
-  }, [isActive, iconScale, iconY, glowOpacity]);
-
-  useEffect(() => {
-    if (isHovered && !isActive) {
-      iconScale.value = withSpring(1.1, springConfigs.smooth);
-    } else if (!isActive) {
-      iconScale.value = withSpring(1, springConfigs.smooth);
-    }
-  }, [isHovered, isActive, iconScale]);
-
-  const iconStyle = useAnimatedStyle((): Record<string, unknown> => {
-    return {
-      transform: [
-        { scale: iconScale.value },
-        { translateY: iconY.value },
-      ],
-    };
-  }) as AnimatedStyle;
-
-  const glowStyle = useAnimatedStyle(() => {
-    return {
-      opacity: glowOpacity.value * 0.6,
-    };
-  }) as AnimatedStyle;
-
+function NavItem({ item, isActive, isHovered, onHover, onLeave, onClick }: NavItemProps) {
   const handleClick = useCallback(() => {
-    bounceAnimation.handlePress();
     if (!isActive) {
       haptics.impact('light');
     }
-  }, [bounceAnimation, isActive]);
-
-  const navAriaAttrs = getAriaNavigationAttributes({
-    label: item.label,
-    current: isActive ? 'page' : undefined,
-  });
+    onClick();
+  }, [isActive, onClick]);
 
   return (
     <li className="text-center relative" role="listitem">
-      <Link
-        to={item.to}
-        className={cn(
-          'block relative group',
-          getSpacingClassesFromConfig({ paddingY: 'md', paddingX: 'xs' })
-        )}
+      <button
+        className="block relative group py-3 px-2 w-full"
         onMouseEnter={onHover}
         onMouseLeave={onLeave}
         onClick={handleClick}
-        {...navAriaAttrs}
+        aria-label={item.label}
+        aria-current={isActive ? 'page' : undefined}
       >
-        <MotionView
-          style={animation.buttonStyle}
-          className={cn(
-            'relative flex flex-col items-center justify-center',
-            getSpacingClassesFromConfig({ gap: 'xs' })
-          )}
-        >
-          {/* Active indicator background */}
-          {isActive && (
-            <MotionView
-              style={animation.indicatorStyle}
-              className="absolute inset-0 rounded-2xl bg-(--coral-primary)/20 blur-xl"
-            >
-              <></>
-            </MotionView>
-          )}
-
-          {/* Glow effect for active item */}
-          {isActive && (
-            <MotionView
-              style={glowStyle}
-              className="absolute inset-0 rounded-2xl bg-(--coral-primary)/30 blur-2xl -z-10"
-            >
-              <></>
-            </MotionView>
-          )}
-
+        <div className="flex flex-col items-center justify-center gap-1">
           {/* Icon container */}
-          <MotionView style={iconStyle} className="relative z-10" aria-hidden="true">
-            <span className="text-2xl leading-none select-none">{item.icon}</span>
-          </MotionView>
+          <div 
+            className={cn(
+              'relative transition-all duration-200',
+              isActive ? 'scale-110 -translate-y-0.5' : 'scale-100',
+              isHovered && !isActive ? 'scale-105' : ''
+            )}
+            aria-hidden="true"
+          >
+            <span className="text-xl leading-none select-none">{item.icon}</span>
+          </div>
 
           {/* Label */}
           <span
             className={cn(
-              getTypographyClasses('badge'),
-              'transition-all duration-200 relative z-10',
-              isActive ? 'text-(--coral-primary) font-bold' : 'text-(--text-secondary) opacity-70'
+              'text-xs font-medium transition-colors duration-200',
+              isActive ? 'text-primary font-semibold' : 'text-muted-foreground'
             )}
           >
             {item.label}
@@ -281,18 +112,15 @@ function NavItem({ item, isActive, isHovered, onHover, onLeave }: NavItemProps) 
 
           {/* Active indicator dot */}
           {isActive && (
-            <MotionView
-              style={animation.indicatorStyle}
-              className="absolute bottom-0 w-1 h-1 rounded-full bg-(--coral-primary)"
-            >
-              <></>
-            </MotionView>
+            <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
           )}
 
           {/* Badge */}
-          {item.badge && item.badge > 0 && <Badge count={item.badge} isActive={isActive} />}
-        </MotionView>
-      </Link>
+          {item.badge !== null && item.badge !== undefined && item.badge > 0 && (
+            <Badge count={item.badge} isActive={isActive} />
+          )}
+        </div>
+      </button>
     </li>
   );
 }
@@ -303,46 +131,14 @@ interface BadgeProps {
 }
 
 function Badge({ count, isActive }: BadgeProps) {
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withSpring(1, springConfigs.bouncy);
-    opacity.value = withTiming(1, timingConfigs.fast);
-  }, [scale, opacity]);
-
-  useEffect(() => {
-    if (isTruthy(isActive)) {
-      pulseScale.value = withSpring(1.2, springConfigs.bouncy);
-      setTimeout(() => {
-        pulseScale.value = withSpring(1, springConfigs.smooth);
-      }, 200);
-    }
-  }, [isActive, pulseScale]);
-
-  const badgeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value * pulseScale.value }],
-      opacity: opacity.value,
-    };
-  }) as AnimatedStyle;
-
   return (
-    <MotionView
-      style={badgeStyle}
-      className={cn(
-        'absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-destructive flex items-center justify-center shadow-lg z-20',
-        getSpacingClassesFromConfig({ paddingX: 'xs' })
-      )}
+    <div
+      className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-destructive flex items-center justify-center shadow-sm z-20 px-1"
       aria-label={`${count} ${count === 1 ? 'notification' : 'notifications'}`}
     >
-      <span className={cn(
-        getTypographyClasses('badge'),
-        'font-bold text-destructive-foreground'
-      )}>
+      <span className="text-xs font-bold text-destructive-foreground">
         {count > 9 ? '9+' : count}
       </span>
-    </MotionView>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { APIClient } from '@/lib/api-client';
 import { createLogger } from '@/lib/logger';
-import { authApi } from '@/api/auth-api';
+import { authAPI } from '@/lib/api-services';
 import type { User } from '@/lib/contracts';
 
 const logger = createLogger('AuthContext');
@@ -92,9 +92,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loadUserProfile = async (): Promise<void> => {
     try {
-      const profile = await authApi.me();
-      setUser(profile);
-      logger.info('User profile loaded', { userId: profile.id });
+      const response = await authAPI.getCurrentUser();
+      setUser(response.data);
+      logger.info('User profile loaded', { userId: response.data.id });
     } catch (error) {
       logger.error('Failed to load user profile', error);
       // Token might be invalid, clear it
@@ -132,10 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (accessToken && !cancelled) {
           APIClient.setTokens(accessToken, refreshToken ?? undefined);
-          const profile = await authApi.me();
+          const response = await authAPI.getCurrentUser();
           if (!cancelled) {
-            setUser(profile);
-            logger.info('User profile loaded', { userId: profile.id });
+            setUser(response.data);
+            logger.info('User profile loaded', { userId: response.data.id });
           }
         }
       } catch (error) {
@@ -173,14 +173,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authApi.login({ email, password });
-      APIClient.setTokens(response.accessToken, response.refreshToken);
-      setUser(response.user);
+      const response = await authAPI.login(email, password);
+      APIClient.setTokens(response.data.accessToken, response.data.refreshToken);
+      
+      // Store tokens in localStorage for persistence
+      try {
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          localStorage.setItem('access_token', response.data.accessToken);
+          localStorage.setItem('refresh_token', response.data.refreshToken);
+        }
+      } catch (storageError) {
+        const err = storageError instanceof Error ? storageError : new Error(String(storageError));
+        logger.warn('Failed to store tokens in localStorage', err);
+      }
+      
+      setUser(response.data.user);
       setLastLoginAt(new Date());
       setSessionExpiresAt(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
 
-      logger.info('User logged in successfully', { userId: response.user.id });
-      return response.user;
+      logger.info('User logged in successfully', { userId: response.data.user.id });
+      return response.data.user;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       setError(errorMessage);
@@ -195,14 +207,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authApi.register({ email, password, displayName });
-      APIClient.setTokens(response.accessToken, response.refreshToken);
-      setUser(response.user);
+      const response = await authAPI.signup({ email, password, displayName });
+      APIClient.setTokens(response.data.accessToken, response.data.refreshToken);
+      
+      // Store tokens in localStorage for persistence
+      try {
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          localStorage.setItem('access_token', response.data.accessToken);
+          localStorage.setItem('refresh_token', response.data.refreshToken);
+        }
+      } catch (storageError) {
+        const err = storageError instanceof Error ? storageError : new Error(String(storageError));
+        logger.warn('Failed to store tokens in localStorage', err);
+      }
+      
+      setUser(response.data.user);
       setLastLoginAt(new Date());
       setSessionExpiresAt(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
 
-      logger.info('User registered successfully', { userId: response.user.id });
-      return response.user;
+      logger.info('User registered successfully', { userId: response.data.user.id });
+      return response.data.user;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       setError(errorMessage);
@@ -215,13 +239,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      await authAPI.logout();
     } catch (error) {
       logger.warn('Logout API call failed, proceeding with local logout', error);
     }
 
     // Clear local state
     APIClient.logout();
+    
+    // Clear tokens from localStorage
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      }
+    } catch (storageError) {
+      const err = storageError instanceof Error ? storageError : new Error(String(storageError));
+      logger.warn('Failed to clear tokens from localStorage', err);
+    }
+    
     setUser(null);
     setLastLoginAt(null);
     setSessionExpiresAt(null);
@@ -318,8 +354,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logger.info('Extending user session');
       
       // Use the existing refresh method
-      const response = await authApi.refresh();
-      APIClient.setTokens(response.accessToken, response.refreshToken);
+      const currentRefreshToken = typeof window !== 'undefined' && typeof localStorage !== 'undefined' 
+        ? localStorage.getItem('refresh_token')
+        : null;
+        
+      if (!currentRefreshToken) {
+        throw new Error('No refresh token available');
+      }
+      
+      const response = await authAPI.refreshToken(currentRefreshToken);
+      APIClient.setTokens(response.data.accessToken, response.data.refreshToken);
+      
+      // Update localStorage
+      try {
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          localStorage.setItem('access_token', response.data.accessToken);
+          if (response.data.refreshToken) {
+            localStorage.setItem('refresh_token', response.data.refreshToken);
+          }
+        }
+      } catch (storageError) {
+        const err = storageError instanceof Error ? storageError : new Error(String(storageError));
+        logger.warn('Failed to update tokens in localStorage', err);
+      }
       setSessionExpiresAt(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
       
       logger.info('Session extended successfully');

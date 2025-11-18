@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -15,7 +15,7 @@ datasource db {
 // ===================================
 
 model User {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   email         String   @unique
   passwordHash  String   @map("password_hash")
   emailVerified Boolean  @default(false) @map("email_verified")
@@ -31,7 +31,7 @@ model User {
 }
 
 model UserProfile {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String   @unique @map("user_id")
   firstName String?  @map("first_name")
   lastName  String?  @map("last_name")
@@ -48,7 +48,7 @@ model UserProfile {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String   @map("user_id")
   token     String   @unique
   expiresAt DateTime @map("expires_at")
@@ -66,7 +66,7 @@ model RefreshToken {
 // ===================================
 
 model Pet {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   ownerId     String   @map("owner_id")
   name        String
   species     String   // dog, cat, etc.
@@ -76,7 +76,8 @@ model Pet {
   size        String?  // small, medium, large
   description String?
   photos      Photo[]
-  matches     Match[]  @relation("MatchedPets")
+  pet1Matches Match[]  @relation("Pet1Matches")
+  pet2Matches Match[]  @relation("Pet2Matches")
   blockedPets BlockedPet[] @relation("BlockerPet")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -92,7 +93,7 @@ model Pet {
 // ===================================
 
 model Photo {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   petId       String?  @map("pet_id")
   userId      String?  @map("user_id")
   url         String
@@ -110,7 +111,7 @@ model Photo {
 }
 
 model ModerationTask {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   photoId   String   @unique @map("photo_id")
   status    String   @default("pending") // pending, in_progress, completed
   assignedTo String? @map("assigned_to")
@@ -130,7 +131,7 @@ model ModerationTask {
 // ===================================
 
 model Match {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   pet1Id    String   @map("pet1_id")
   pet2Id    String   @map("pet2_id")
   score     Float
@@ -138,8 +139,8 @@ model Match {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   
-  pet1 Pet @relation("MatchedPets", fields: [pet1Id], references: [id])
-  pet2 Pet @relation("MatchedPets", fields: [pet2Id], references: [id])
+  pet1 Pet @relation("Pet1Matches", fields: [pet1Id], references: [id])
+  pet2 Pet @relation("Pet2Matches", fields: [pet2Id], references: [id])
   
   @@unique([pet1Id, pet2Id])
   @@index([pet1Id])
@@ -152,7 +153,7 @@ model Match {
 // ===================================
 
 model Conversation {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   matchId   String?  @unique @map("match_id")
   userId1   String   @map("user_id1")
   userId2   String   @map("user_id2")
@@ -168,7 +169,7 @@ model Conversation {
 }
 
 model Message {
-  id             String   @id @default(uuid())
+  id             String   @id @default(cuid())
   conversationId String   @map("conversation_id")
   senderId       String   @map("sender_id")
   content        String
@@ -188,7 +189,7 @@ model Message {
 // ===================================
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String   @map("user_id")
   type      String   // match, message, like, comment, etc.
   title     String
@@ -208,7 +209,7 @@ model Notification {
 // ===================================
 
 model AdoptionListing {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   petId       String   @map("pet_id")
   ownerId     String   @map("owner_id")
   title       String
@@ -226,7 +227,7 @@ model AdoptionListing {
 }
 
 model AdoptionApplication {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   listingId String  @map("listing_id")
   applicantId String @map("applicant_id")
   message   String
@@ -246,7 +247,7 @@ model AdoptionApplication {
 // ===================================
 
 model CommunityPost {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   authorId  String   @map("author_id")
   content   String
   photos    Json?    // Array of photo URLs
@@ -262,7 +263,7 @@ model CommunityPost {
 }
 
 model CommunityComment {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   postId    String   @map("post_id")
   authorId  String   @map("author_id")
   content   String
@@ -281,7 +282,7 @@ model CommunityComment {
 // ===================================
 
 model BlockedPet {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   blockerPetId String   @map("blocker_pet_id")
   blockedPetId String   @map("blocked_pet_id")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -298,7 +299,7 @@ model BlockedPet {
 // ===================================
 
 model Subscription {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   userId        String   @map("user_id")
   stripeId      String?  @unique @map("stripe_id")
   status        String   // active, canceled, past_due
@@ -316,7 +317,7 @@ model Subscription {
 // ===================================
 
 model KYCVerification {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String   @map("user_id")
   status    String   @default("pending") // pending, approved, rejected
   documents Json?    // Document URLs
@@ -334,7 +335,7 @@ model KYCVerification {
 // ===================================
 
 model LostFoundAlert {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   petId     String?  @map("pet_id")
   ownerId   String   @map("owner_id")
   type      String   // lost, found
@@ -357,7 +358,7 @@ model LostFoundAlert {
 // ===================================
 
 model LiveStream {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   hostId    String   @map("host_id")
   roomId    String   @unique @map("room_id")
   title     String?
@@ -376,7 +377,7 @@ model LiveStream {
 // ===================================
 
 model AuditLog {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String?  @map("user_id")
   action    String
   resource  String
@@ -397,7 +398,7 @@ model AuditLog {
 // ===================================
 
 model UserQuota {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String   @unique @map("user_id")
   limits    Json     // { pets: number, photos: number, matches: number, messages: number }
   createdAt DateTime @default(now()) @map("created_at")
@@ -412,7 +413,7 @@ model UserQuota {
 // ===================================
 
 model Event {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   type      String
   data      Json?
   userId    String?  @map("user_id")

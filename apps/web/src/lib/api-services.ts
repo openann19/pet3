@@ -94,30 +94,49 @@ export const chatAPI = {
 export const authAPI = {
   async login(email: string, password: string) {
     return validatedAPI.post(
-      '/api/v1/auth/login',
-      z.object({ user: userSchema, tokens: authTokensSchema }),
+      '/auth/login',
+      z.object({ 
+        data: z.object({
+          user: userSchema, 
+          accessToken: z.string(),
+          refreshToken: z.string()
+        })
+      }),
       { email, password }
     );
   },
 
   async signup(data: { email: string; password: string; displayName: string }) {
     return validatedAPI.post(
-      '/api/v1/auth/signup',
-      z.object({ user: userSchema, tokens: authTokensSchema }),
+      '/auth/register',
+      z.object({ 
+        data: z.object({
+          user: userSchema, 
+          accessToken: z.string(),
+          refreshToken: z.string()
+        })
+      }),
       data
     );
   },
 
   async refreshToken(refreshToken: string) {
-    return validatedAPI.post('/api/v1/auth/refresh', authTokensSchema, { refreshToken });
+    return validatedAPI.post('/auth/refresh', z.object({ 
+      data: z.object({
+        accessToken: z.string(),
+        refreshToken: z.string()
+      })
+    }), { refreshToken });
   },
 
   async logout() {
-    return validatedAPI.post('/api/v1/auth/logout', z.object({ success: z.boolean() }), {});
+    return validatedAPI.post('/auth/logout', z.object({ 
+      data: z.object({ success: z.boolean() })
+    }), {});
   },
 
   async getCurrentUser() {
-    return validatedAPI.get('/api/v1/auth/me', userSchema);
+    return validatedAPI.get('/auth/me', z.object({ data: userSchema }));
   },
 };
 

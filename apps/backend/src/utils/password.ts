@@ -1,15 +1,11 @@
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 
 /**
- * Hash password using argon2
+ * Hash password using bcrypt
  */
 export async function hashPassword(password: string): Promise<string> {
-  return argon2.hash(password, {
-    type: argon2.argon2id,
-    memoryCost: 65536, // 64 MB
-    timeCost: 3,
-    parallelism: 4,
-  });
+  const saltRounds = Number(process.env.BCRYPT_ROUNDS) || 12;
+  return bcrypt.hash(password, saltRounds);
 }
 
 /**
@@ -20,7 +16,7 @@ export async function verifyPassword(
   password: string,
 ): Promise<boolean> {
   try {
-    return await argon2.verify(hash, password);
+    return await bcrypt.compare(password, hash);
   } catch (error) {
     return false;
   }

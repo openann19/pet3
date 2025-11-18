@@ -5,10 +5,29 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+
+declare global {
+  namespace Express {
+    interface Request {
+      requestId?: string;
+    }
+  }
+}
 import { APIError } from '../utils/errors';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ErrorHandler');
+
+/**
+ * Async handler wrapper to catch async errors
+ */
+export function asyncHandler<T extends Request = Request, U extends Response = Response>(
+  fn: (req: T, res: U, next: NextFunction) => Promise<void>
+) {
+  return (req: T, res: U, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
 
 export function errorHandler(
   err: Error | APIError,

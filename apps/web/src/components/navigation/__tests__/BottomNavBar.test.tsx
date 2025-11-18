@@ -32,17 +32,18 @@ vi.mock('react-router-dom', async () => {
 describe('BottomNavBar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPathname = '/discover';
   });
 
   describe('Rendering', () => {
-    it('should render all navigation items', () => {
+    it('should render all navigation items with labels', () => {
       renderWithProviders(
         <BrowserRouter>
           <BottomNavBar />
         </BrowserRouter>
       );
 
-      expect(screen.getByText('Discover')).toBeInTheDocument();
+      expect(screen.getByText('Premium')).toBeInTheDocument();
       expect(screen.getByText('Chat')).toBeInTheDocument();
       expect(screen.getByText('Matches')).toBeInTheDocument();
       expect(screen.getByText('Adopt')).toBeInTheDocument();
@@ -58,7 +59,7 @@ describe('BottomNavBar', () => {
       );
 
       // Icons are rendered as emoji text
-      expect(screen.getByText('🧭')).toBeInTheDocument();
+      expect(screen.getByText('💎')).toBeInTheDocument();
       expect(screen.getByText('💬')).toBeInTheDocument();
       expect(screen.getByText('❤️')).toBeInTheDocument();
       expect(screen.getByText('🐾')).toBeInTheDocument();
@@ -75,7 +76,14 @@ describe('BottomNavBar', () => {
 
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
-      expect(nav).toHaveClass('fixed', 'bottom-0');
+
+      // The outer container div is fixed at the bottom; the nav sits inside it.
+      const container = nav.closest('div');
+      expect(container).not.toBeNull();
+      if (container) {
+        expect(container.className).toContain('fixed');
+        expect(container.className).toContain('bottom-0');
+      }
     });
   });
 
@@ -87,7 +95,7 @@ describe('BottomNavBar', () => {
         </BrowserRouter>
       );
 
-      const discoverLink = screen.getByText('Discover').closest('a');
+      const discoverLink = screen.getByText('Premium').closest('a');
       expect(discoverLink).toHaveAttribute('href', '/discover');
     });
 
@@ -156,9 +164,10 @@ describe('BottomNavBar', () => {
       );
 
       // Discover should be active based on mocked pathname
-      const discoverLink = screen.getByText('Discover').closest('a');
+      const discoverLink = screen.getByText('Premium').closest('a');
       expect(discoverLink).toBeInTheDocument();
-      // Active state styling is applied via classes
+      // Active state styling is applied via classes; aria-current reflects it
+      expect(discoverLink).toHaveAttribute('aria-current', 'page');
     });
   });
 
@@ -181,7 +190,7 @@ describe('BottomNavBar', () => {
   });
 
   describe('Click Interactions', () => {
-    it('should navigate when navigation item is clicked', async () => {
+    it('should have correct hrefs for navigation when clicked', async () => {
       const user = userEvent.setup();
       renderWithProviders(
         <BrowserRouter>
@@ -190,16 +199,21 @@ describe('BottomNavBar', () => {
       );
 
       const chatLink = screen.getByText('Chat').closest('a');
+      expect(chatLink).toHaveAttribute('href', '/chat');
+
       if (chatLink) {
         await user.click(chatLink);
-        // Navigation is handled by React Router
+        // Actual navigation is handled by React Router; we only assert href.
         expect(chatLink).toHaveAttribute('href', '/chat');
       }
     });
 
-    it('should trigger haptic feedback on click', async () => {
+    it('should trigger haptic feedback when clicking an inactive item', async () => {
       const user = userEvent.setup();
       const { haptics } = await import('@/lib/haptics');
+
+      // Active path is /discover, so clicking Chat should be inactive → haptics
+      mockPathname = '/discover';
 
       renderWithProviders(
         <BrowserRouter>
@@ -207,11 +221,34 @@ describe('BottomNavBar', () => {
         </BrowserRouter>
       );
 
-      const matchesLink = screen.getByText('Matches').closest('a');
-      if (matchesLink) {
-        await user.click(matchesLink);
-        // Haptic feedback may be triggered
-        expect(matchesLink).toBeInTheDocument();
+      const chatLink = screen.getByText('Chat').closest('a');
+      expect(chatLink).toBeInTheDocument();
+
+      if (chatLink) {
+        await user.click(chatLink);
+        expect(haptics.impact).toHaveBeenCalledWith('light');
+      }
+    });
+
+    it('should not trigger haptic feedback when clicking the active item', async () => {
+      const user = userEvent.setup();
+      const { haptics } = await import('@/lib/haptics');
+
+      // Make /chat the active route
+      mockPathname = '/chat';
+
+      renderWithProviders(
+        <BrowserRouter>
+          <BottomNavBar />
+        </BrowserRouter>
+      );
+
+      const chatLink = screen.getByText('Chat').closest('a');
+      expect(chatLink).toBeInTheDocument();
+
+      if (chatLink) {
+        await user.click(chatLink);
+        expect(haptics.impact).not.toHaveBeenCalled();
       }
     });
   });
@@ -252,7 +289,7 @@ describe('BottomNavBar', () => {
         </BrowserRouter>
       );
 
-      const discoverLink = screen.getByText('Discover').closest('a');
+      const discoverLink = screen.getByText('Premium').closest('a');
       expect(discoverLink).toBeInTheDocument();
       expect(discoverLink).toHaveAttribute('href');
     });
@@ -267,7 +304,11 @@ describe('BottomNavBar', () => {
       );
 
       const nav = screen.getByRole('navigation');
-      expect(nav).toHaveClass('md:hidden');
+      const container = nav.closest('div');
+      expect(container).not.toBeNull();
+      if (container) {
+        expect(container.className).toContain('md:hidden');
+      }
     });
   });
 });
